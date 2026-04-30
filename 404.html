@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BLOOM</title>
+    <script>
+      (function () {
+        const path = window.location.pathname.replace(/^\/+/, '');
+        const target = path ? `/frontend/${path}` : '/frontend/index.html';
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to BLOOM...</p>
+  </body>
+</html>
