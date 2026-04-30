@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="styles.css" />
     <script src="config.js"></script>
-    <script src="api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
     <style>
       .submission-select {
         padding: 0.72rem 0.8rem;
@@ -896,6 +897,7 @@
       const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
       const isAdminRole = activeRole === 'admin';
       const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+      const supabase = window.bloomSupabase;
 
       document.body.classList.remove('researcher-mode', 'admin-mode');
       document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
@@ -1318,114 +1320,141 @@
           }
 
           try {
-            const payload = new FormData();
-            payload.append('scientificName', submissionScientificNameEl ? submissionScientificNameEl.value.trim() : '');
-            payload.append('identificationConfidence', document.getElementById('submission-identification-confidence')?.value || 'Unidentified');
-            payload.append('observationDate', document.getElementById('submission-observation-date')?.value || '');
-            payload.append('observationTime', document.getElementById('submission-observation-time')?.value || '');
-            payload.append('collectionMethod', document.getElementById('submission-collection-method')?.value || '');
-            payload.append('observationType', document.getElementById('submission-observation-type')?.value || '');
-            payload.append('voucherCollected', document.getElementById('submission-voucher-collected')?.value || '');
-            payload.append('specificSiteZone', document.getElementById('submission-specific-site-zone')?.value || '');
-            payload.append('specificSiteOther', document.getElementById('submission-specific-site-other')?.value || '');
-            payload.append('latitude', document.getElementById('submission-latitude')?.value || '');
-            payload.append('longitude', document.getElementById('submission-longitude')?.value || '');
-            payload.append('elevation', document.getElementById('submission-elevation')?.value || '');
-            payload.append('habitatType', document.getElementById('submission-habitat-type')?.value || '');
-            payload.append('microhabitat', document.getElementById('submission-microhabitat')?.value || '');
-            payload.append('growthSubstrate', document.getElementById('submission-growth-substrate')?.value || '');
-            payload.append('hostTreeSpecies', document.getElementById('submission-host-tree-species')?.value || '');
-            payload.append('hostTreeDbh', document.getElementById('submission-host-tree-dbh')?.value || '');
-            payload.append('canopyCover', document.getElementById('submission-canopy-cover')?.value || '');
-            payload.append('lightExposure', document.getElementById('submission-light-exposure')?.value || '');
-            payload.append('soilType', document.getElementById('submission-soil-type')?.value || '');
-            payload.append('nearbyWaterSource', document.getElementById('submission-nearby-water-source')?.value || '');
-            payload.append('plantHeight', document.getElementById('submission-plant-height')?.value || '');
-            payload.append('pseudobulbPresent', document.getElementById('submission-pseudobulb-present')?.value || '');
-            payload.append('stemLength', document.getElementById('submission-stem-length')?.value || '');
-            payload.append('rootLength', document.getElementById('submission-root-length')?.value || '');
-            payload.append('leafCount', document.getElementById('submission-leaf-count')?.value || '');
-            payload.append('leafShape', document.getElementById('submission-leaf-shape')?.value || '');
-            payload.append('leafShapeOther', document.getElementById('submission-leaf-shape-other')?.value || '');
-            payload.append('leafLength', document.getElementById('submission-leaf-length')?.value || '');
-            payload.append('leafWidth', document.getElementById('submission-leaf-width')?.value || '');
-            payload.append('leafArrangement', document.getElementById('submission-leaf-arrangement')?.value || '');
-            payload.append('flowerColor', document.getElementById('submission-flower-color')?.value || '');
-            payload.append('flowerCount', document.getElementById('submission-flower-count')?.value || '');
-            payload.append('flowerDiameter', document.getElementById('submission-flower-diameter')?.value || '');
-            payload.append('inflorescenceType', document.getElementById('submission-inflorescence-type')?.value || '');
-            payload.append('petalCharacteristics', document.getElementById('submission-petal-characteristics')?.value || '');
-            payload.append('sepalCharacteristics', document.getElementById('submission-sepal-characteristics')?.value || '');
-            payload.append('labellumDescription', document.getElementById('submission-labellum-description')?.value || '');
-            payload.append('fragrance', document.getElementById('submission-fragrance')?.value || '');
-            payload.append('bloomingStage', document.getElementById('submission-blooming-stage')?.value || '');
-            payload.append('fruitPresent', document.getElementById('submission-fruit-present')?.value || '');
-            payload.append('fruitType', document.getElementById('submission-fruit-type')?.value || '');
-            payload.append('seedCapsuleCondition', document.getElementById('submission-seed-capsule-condition')?.value || '');
-            payload.append('lifeStage', document.getElementById('submission-life-stage')?.value || '');
-            payload.append('phenology', document.getElementById('submission-phenology')?.value || '');
-            payload.append('populationCount', document.getElementById('submission-population-count')?.value || '');
-            payload.append('populationStatus', document.getElementById('submission-population-status')?.value || '');
-            payload.append('threatLevel', document.getElementById('submission-threat-level')?.value || '');
-            payload.append('headObserver', document.getElementById('submission-head-observer')?.value || '');
-            payload.append('teamMembers', document.getElementById('submission-team-members')?.value || '');
-            payload.append('institution', document.getElementById('submission-institution')?.value || '');
-            payload.append('researcherNotes', document.getElementById('submission-researcher-notes')?.value || '');
-            payload.append('unusualObservations', document.getElementById('submission-unusual-observations')?.value || '');
-            payload.append('userId', parsedActiveUser.id || '');
-            payload.append('email', parsedActiveUser.email || parsedActiveUser.username || '');
+            if (!supabase) {
+              throw new Error('Supabase is not configured');
+            }
+
+            const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+            const entryId = `SIGHT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+            const currentEmail = String(parsedActiveUser.email || '').trim() || null;
+            const currentName = [parsedActiveUser.first_name, parsedActiveUser.last_name].filter(Boolean).join(' ').trim() || null;
 
             const commonNames = Array.from(document.querySelectorAll('.submission-common-name-item'))
               .map((el) => (el.value || '').trim())
               .filter(Boolean)
               .slice(0, 5);
-            payload.append('commonNames', JSON.stringify(commonNames));
-
             const leafTextures = Array.from(document.querySelectorAll('.submission-leaf-texture-option:checked')).map((opt) => opt.value);
-            payload.append('leafTextures', JSON.stringify(leafTextures));
-
             const threatTypes = Array.from(document.querySelectorAll('.submission-threat-type-option:checked')).map((opt) => opt.value);
-            payload.append('threatTypes', JSON.stringify(threatTypes));
 
-            const wholePlantPhoto = document.getElementById('submission-whole-plant-photo');
-            const closeupFlowerPhoto = document.getElementById('submission-closeup-flower-photo');
-            const habitatPhoto = document.getElementById('submission-habitat-photo');
-            const video = document.getElementById('submission-video');
+            async function uploadFilesFromInput(inputEl, fieldName) {
+              const files = Array.from(inputEl?.files || []);
+              if (!files.length) {
+                return [];
+              }
 
-            if (wholePlantPhoto && wholePlantPhoto.files) {
-              Array.from(wholePlantPhoto.files).forEach((file) => {
-                payload.append('wholePlantPhoto', file);
-              });
-            }
-            if (closeupFlowerPhoto && closeupFlowerPhoto.files) {
-              Array.from(closeupFlowerPhoto.files).forEach((file) => {
-                payload.append('closeupFlowerPhoto', file);
-              });
-            }
-            if (habitatPhoto && habitatPhoto.files) {
-              Array.from(habitatPhoto.files).forEach((file) => {
-                payload.append('habitatPhoto', file);
-              });
-            }
-            if (video && video.files && video.files[0]) {
-              payload.append('video', video.files[0]);
+              const uploadedUrls = [];
+              for (const file of files) {
+                const extension = (file.name && file.name.includes('.')) ? `.${file.name.split('.').pop()}` : '';
+                const safeExt = extension || '.jpg';
+                const token = Math.random().toString(16).slice(2, 10);
+                const storagePath = `submissions/${entryId}/${fieldName}-${Date.now()}-${token}${safeExt}`;
+
+                const { error } = await supabase.storage
+                  .from(uploadBucket)
+                  .upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+
+                if (error) {
+                  throw new Error(error.message || `Failed to upload ${file.name}`);
+                }
+
+                const { data: publicUrlData } = supabase.storage.from(uploadBucket).getPublicUrl(storagePath);
+                uploadedUrls.push(publicUrlData.publicUrl);
+              }
+
+              return uploadedUrls;
             }
 
-            const response = await fetch(apiUrl('/api/submissions'), {
-              method: 'POST',
-              body: payload
-            });
+            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, videoUrls] = await Promise.all([
+              uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-video'), 'video')
+            ]);
 
-            const data = await response.json();
-            if (!response.ok) {
-              throw new Error(data.message || 'Failed to submit record');
+            const insertPayload = {
+              entry_id: entryId,
+              user_id: null,
+              researcher_email: currentEmail,
+              researcher_name: currentName,
+              scientific_name: submissionScientificNameEl ? submissionScientificNameEl.value.trim() : '',
+              common_names: commonNames,
+              identification_confidence: document.getElementById('submission-identification-confidence')?.value || 'Unidentified',
+              observation_date: document.getElementById('submission-observation-date')?.value || null,
+              observation_time: document.getElementById('submission-observation-time')?.value || null,
+              collection_method: document.getElementById('submission-collection-method')?.value || null,
+              observation_type: document.getElementById('submission-observation-type')?.value || null,
+              voucher_collected: document.getElementById('submission-voucher-collected')?.value === 'yes',
+              mountain_name: document.getElementById('submission-mountain')?.value || 'Mt. Busa',
+              specific_site_zone: document.getElementById('submission-specific-site-zone')?.value || null,
+              specific_site_other: document.getElementById('submission-specific-site-other')?.value || null,
+              latitude: Number(document.getElementById('submission-latitude')?.value || 0),
+              longitude: Number(document.getElementById('submission-longitude')?.value || 0),
+              elevation_meters: Number(document.getElementById('submission-elevation')?.value || 0),
+              habitat_type: document.getElementById('submission-habitat-type')?.value || null,
+              microhabitat: document.getElementById('submission-microhabitat')?.value || null,
+              growth_substrate: document.getElementById('submission-growth-substrate')?.value || null,
+              host_tree_species: document.getElementById('submission-host-tree-species')?.value || null,
+              host_tree_dbh_cm: document.getElementById('submission-host-tree-dbh')?.value ? Number(document.getElementById('submission-host-tree-dbh').value) : null,
+              canopy_cover_percent: document.getElementById('submission-canopy-cover')?.value ? Number(document.getElementById('submission-canopy-cover').value) : null,
+              light_exposure: document.getElementById('submission-light-exposure')?.value || null,
+              soil_type: document.getElementById('submission-soil-type')?.value || null,
+              nearby_water_source: document.getElementById('submission-nearby-water-source')?.value || null,
+              plant_height_cm: document.getElementById('submission-plant-height')?.value ? Number(document.getElementById('submission-plant-height').value) : null,
+              pseudobulb_present: document.getElementById('submission-pseudobulb-present')?.value === 'yes',
+              stem_length_cm: document.getElementById('submission-stem-length')?.value ? Number(document.getElementById('submission-stem-length').value) : null,
+              root_length_cm: document.getElementById('submission-root-length')?.value ? Number(document.getElementById('submission-root-length').value) : null,
+              leaf_count: document.getElementById('submission-leaf-count')?.value ? Number(document.getElementById('submission-leaf-count').value) : null,
+              leaf_shape: document.getElementById('submission-leaf-shape')?.value || null,
+              leaf_shape_other: document.getElementById('submission-leaf-shape-other')?.value || null,
+              leaf_length_cm: document.getElementById('submission-leaf-length')?.value ? Number(document.getElementById('submission-leaf-length').value) : null,
+              leaf_width_cm: document.getElementById('submission-leaf-width')?.value ? Number(document.getElementById('submission-leaf-width').value) : null,
+              leaf_textures: leafTextures,
+              leaf_arrangement: document.getElementById('submission-leaf-arrangement')?.value || null,
+              flower_color: document.getElementById('submission-flower-color')?.value || null,
+              flower_count: document.getElementById('submission-flower-count')?.value ? Number(document.getElementById('submission-flower-count').value) : null,
+              flower_diameter_cm: document.getElementById('submission-flower-diameter')?.value ? Number(document.getElementById('submission-flower-diameter').value) : null,
+              inflorescence_type: document.getElementById('submission-inflorescence-type')?.value || null,
+              petal_characteristics: document.getElementById('submission-petal-characteristics')?.value || null,
+              sepal_characteristics: document.getElementById('submission-sepal-characteristics')?.value || null,
+              labellum_lip_description: document.getElementById('submission-labellum-description')?.value || null,
+              fragrance: document.getElementById('submission-fragrance')?.value || null,
+              blooming_stage: document.getElementById('submission-blooming-stage')?.value || null,
+              fruit_present: document.getElementById('submission-fruit-present')?.value === 'yes',
+              fruit_type: document.getElementById('submission-fruit-type')?.value || null,
+              seed_capsule_condition: document.getElementById('submission-seed-capsule-condition')?.value || null,
+              life_stage: document.getElementById('submission-life-stage')?.value || null,
+              phenology: document.getElementById('submission-phenology')?.value || null,
+              population_count: document.getElementById('submission-population-count')?.value ? Number(document.getElementById('submission-population-count').value) : null,
+              population_status: document.getElementById('submission-population-status')?.value || null,
+              threat_level: document.getElementById('submission-threat-level')?.value || null,
+              threat_types: threatTypes,
+              whole_plant_photo_path: JSON.stringify(wholePlantPhotoUrls),
+              closeup_flower_photo_path: JSON.stringify(closeupFlowerPhotoUrls),
+              habitat_photo_path: JSON.stringify(habitatPhotoUrls),
+              photo_3d_path: JSON.stringify([]),
+              video_path: JSON.stringify(videoUrls),
+              institution: document.getElementById('submission-institution')?.value || null,
+              team_members: document.getElementById('submission-team-members')?.value || null,
+              researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
+              unusual_observations: document.getElementById('submission-unusual-observations')?.value || null,
+              review_status: 'pending'
+            };
+
+            const { data, error } = await supabase
+              .from('species_sightings')
+              .insert(insertPayload)
+              .select('sighting_id, entry_id, scientific_name, review_status')
+              .single();
+
+            if (error) {
+              throw new Error(error.message || 'Failed to submit record');
             }
 
             researcherSubmissionFormEl.reset();
             initializeResearcherSightingForm();
             if (researcherSubmissionFeedbackEl) {
               researcherSubmissionFeedbackEl.style.color = '#2D5128';
-              researcherSubmissionFeedbackEl.textContent = `Submission sent successfully. Entry ID: ${data?.submission?.entry_id || 'generated on server'}.`;
+              researcherSubmissionFeedbackEl.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}.`;
             }
             await loadSubmissions('');
             closeResearcherSubmissionModal();
@@ -1438,7 +1467,14 @@
         });
       }
 
-      signOutButton.addEventListener('click', function() {
+      signOutButton.addEventListener('click', async function() {
+        try {
+          if (supabase) {
+            await supabase.auth.signOut();
+          }
+        } catch {
+          // Ignore sign-out failures and clear local state anyway.
+        }
         localStorage.removeItem('bloomUser');
         window.location.href = 'index.html';
       });
@@ -1624,6 +1660,77 @@
           .replace(/'/g, '&#39;');
       }
 
+      function parseJsonArrayValue(value) {
+        if (Array.isArray(value)) {
+          return value.filter(Boolean);
+        }
+
+        if (value === null || value === undefined || value === '') {
+          return [];
+        }
+
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+              return parsed.filter(Boolean);
+            }
+          } catch {
+            return value.split(',').map((item) => item.trim()).filter(Boolean);
+          }
+        }
+
+        return [value].filter(Boolean);
+      }
+
+      function normalizeSubmissionRow(row) {
+        const commonNames = parseJsonArrayValue(row.common_names);
+        const wholePlantPhotos = parseJsonArrayValue(row.whole_plant_photo_path);
+        const closeupFlowerPhotos = parseJsonArrayValue(row.closeup_flower_photo_path);
+        const habitatPhotos = parseJsonArrayValue(row.habitat_photo_path);
+        const videoFiles = parseJsonArrayValue(row.video_path);
+        const location = row.location || [row.mountain_name || 'Mt. Busa', row.specific_site_zone || row.specific_site_other].filter(Boolean).join(', ') || 'Mt. Busa';
+
+        return {
+          ...row,
+          id: row.sighting_id,
+          researcher: row.researcher_name || row.researcher_email || 'Unknown Researcher',
+          species: row.scientific_name,
+          family: row.family || '',
+          genus: row.genus || '',
+          common_name: commonNames[0] || row.common_name || '-',
+          common_names: commonNames,
+          submission_date: row.submission_date || row.observation_date || row.created_at?.slice(0, 10) || '-',
+          review_status: row.review_status || 'pending',
+          habitat: row.habitat || row.habitat_type || '-',
+          endemicity: row.endemicity || row.population_status || '-',
+          conservation_status: row.conservation_status || row.threat_level || 'Unassigned',
+          ethnobotanical: row.ethnobotanical || row.researcher_notes || '-',
+          horticulture_value: row.horticulture_value || row.institution || '-',
+          cultural_importance: row.cultural_importance || row.unusual_observations || '-',
+          location,
+          whole_plant_photos: wholePlantPhotos,
+          closeup_flower_photos: closeupFlowerPhotos,
+          habitat_photos: habitatPhotos,
+          video_files: videoFiles
+        };
+      }
+
+      function normalizeOrchidRow(row) {
+        return {
+          ...row,
+          id: row.id ?? row.orchid_id,
+          name: row.name || row.sci_name,
+          genus: row.genus || '',
+          common_name: row.common_name || '',
+          endemicity: row.endemicity || '',
+          ethnobotanical: row.ethnobotanical || '',
+          horticulture_value: row.horticulture_value || '',
+          cultural_importance: row.cultural_importance || '',
+          image_url: row.image_url || ''
+        };
+      }
+
       function renderSubmissions(items) {
         if (!submissionsTableBody) {
           return;
@@ -1664,28 +1771,54 @@
         }
 
         try {
-          const query = new URLSearchParams();
-          query.set('search', searchTerm || '');
-
-          if (isResearcherRole) {
-            query.set('ownOnly', '1');
-            if (parsedActiveUser.id !== undefined && parsedActiveUser.id !== null && String(parsedActiveUser.id).trim() !== '') {
-              query.set('userId', String(parsedActiveUser.id));
-            }
-            const identity = String(parsedActiveUser.email || parsedActiveUser.username || '').trim();
-            if (identity) {
-              query.set('email', identity);
-            }
+          if (!supabase) {
+            throw new Error('Supabase is not configured');
           }
 
-          const response = await fetch(apiUrl(`/api/submissions?${query.toString()}`));
-          const data = await response.json();
+          const { data, error } = await supabase
+            .from('species_sightings')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-          if (!response.ok) {
-            throw new Error(data.message || 'Failed to load submissions');
+          if (error) {
+            throw new Error(error.message || 'Failed to load submissions');
           }
 
-          submissionRows = data;
+          const searchValue = String(searchTerm || '').trim().toLowerCase();
+          const currentEmail = String(parsedActiveUser.email || '').trim().toLowerCase();
+          const normalizedRows = (data || []).map(normalizeSubmissionRow);
+
+          submissionRows = normalizedRows.filter((submission) => {
+            const matchesResearcher = !isResearcherRole || !currentEmail || String(submission.researcher_email || '').trim().toLowerCase() === currentEmail;
+            if (!matchesResearcher) {
+              return false;
+            }
+
+            if (!searchValue) {
+              return true;
+            }
+
+            const searchableValues = [
+              submission.scientific_name,
+              submission.researcher,
+              submission.researcher_email,
+              submission.review_status,
+              submission.mountain_name,
+              submission.specific_site_zone,
+              submission.specific_site_other,
+              submission.common_name,
+              Array.isArray(submission.common_names) ? submission.common_names.join(' ') : '',
+              submission.threat_level,
+              submission.institution,
+              submission.team_members
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase();
+
+            return searchableValues.includes(searchValue);
+          });
+
           renderSubmissions(submissionRows);
         } catch {
           submissionsTableBody.innerHTML = `
@@ -1796,7 +1929,7 @@
 
         catalogGrid.innerHTML = items.map((orchid) => `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
-            <img src="${orchidImage}" alt="${orchid.name}" class="orchid-card-image" />
+            <img src="${orchid.image_url || orchidImage}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${orchid.name}</p>
               <p class="orchid-card-genus">${orchid.genus}</p>
@@ -1822,14 +1955,20 @@
         if (!catalogGrid || orchidCatalogLoaded) return;
 
         try {
-          const response = await fetch(apiUrl('/api/orchids'));
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || 'Failed to load orchids');
+          if (!supabase) {
+            throw new Error('Supabase is not configured');
           }
 
-          orchidRows = data;
+          const { data, error } = await supabase
+            .from('orchid_overview')
+            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
+            .order('name', { ascending: true });
+
+          if (error) {
+            throw new Error(error.message || 'Failed to load orchids');
+          }
+
+          orchidRows = (data || []).map(normalizeOrchidRow);
           orchidCatalogLoaded = true;
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
@@ -2528,17 +2667,17 @@
       }
 
       async function updateSubmissionReviewStatus(submissionId, nextStatus) {
-        const response = await fetch(apiUrl(`/api/submissions/${submissionId}/status`), {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status: nextStatus })
-        });
+        if (!supabase) {
+          throw new Error('Supabase is not configured');
+        }
 
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to update submission status');
+        const { error } = await supabase
+          .from('species_sightings')
+          .update({ review_status: nextStatus, updated_at: new Date().toISOString() })
+          .eq('sighting_id', submissionId);
+
+        if (error) {
+          throw new Error(error.message || 'Failed to update submission status');
         }
 
         const row = submissionRows.find((item) => String(item.id) === String(submissionId));
@@ -2748,11 +2887,16 @@
 
       async function loadConservationSummary() {
         try {
-          const response = await fetch(apiUrl('/api/conservation-summary'));
-          const data = await response.json();
+          if (!supabase) {
+            throw new Error('Supabase is not configured');
+          }
 
-          if (!response.ok) {
-            throw new Error(data.message || 'Failed to load conservation summary');
+          const { data, error } = await supabase
+            .from('orchid_overview')
+            .select('conservation_status_key');
+
+          if (error) {
+            throw new Error(error.message || 'Failed to load conservation summary');
           }
 
           const ce = document.getElementById('count-critically-endangered');
@@ -2761,13 +2905,28 @@
           const lc = document.getElementById('count-least-concern');
           const ua = document.getElementById('count-unassigned');
 
-          if (ce) ce.textContent = `${data.critically_endangered || 0} species recorded`;
-          if (en) en.textContent = `${data.endangered || 0} species recorded`;
-          if (vu) vu.textContent = `${data.vulnerable || 0} species recorded`;
-          if (lc) lc.textContent = `${data.least_concern || 0} species recorded`;
-          if (ua) ua.textContent = `${data.unassigned || 0} species recorded`;
+          const summary = {
+            critically_endangered: 0,
+            endangered: 0,
+            vulnerable: 0,
+            least_concern: 0,
+            unassigned: 0
+          };
 
-          refreshConservationAnalytics(data);
+          (data || []).forEach((row) => {
+            const key = row.conservation_status_key || 'unassigned';
+            if (summary[key] !== undefined) {
+              summary[key] += 1;
+            }
+          });
+
+          if (ce) ce.textContent = `${summary.critically_endangered || 0} species recorded`;
+          if (en) en.textContent = `${summary.endangered || 0} species recorded`;
+          if (vu) vu.textContent = `${summary.vulnerable || 0} species recorded`;
+          if (lc) lc.textContent = `${summary.least_concern || 0} species recorded`;
+          if (ua) ua.textContent = `${summary.unassigned || 0} species recorded`;
+
+          refreshConservationAnalytics(summary);
         } catch {
           // Keep default values if summary cannot be loaded.
         }
@@ -2788,12 +2947,21 @@
         content.innerHTML = '<p style="margin:0;color:#666;">Loading conservation records...</p>';
 
         try {
-          const response = await fetch(apiUrl(`/api/conservation-list/${status}`));
-          const rows = await response.json();
-
-          if (!response.ok) {
-            throw new Error(rows.message || 'Failed to load conservation list');
+          if (!supabase) {
+            throw new Error('Supabase is not configured');
           }
+
+          const { data, error } = await supabase
+            .from('orchid_overview')
+            .select('name, genus, conservation_status, conservation_status_key')
+            .eq('conservation_status_key', status)
+            .order('name', { ascending: true });
+
+          if (error) {
+            throw new Error(error.message || 'Failed to load conservation list');
+          }
+
+          const rows = data || [];
 
           content.innerHTML = '';
           if (rows.length === 0) {
@@ -2867,32 +3035,45 @@
       }
 
       async function getReportSourceData() {
+        if (!supabase) {
+          throw new Error('Supabase is not configured');
+        }
+
         const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
-          fetch(apiUrl('/api/orchids')),
-          fetch(apiUrl('/api/submissions?search=')),
-          fetch(apiUrl('/api/conservation-summary'))
+          supabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
+          supabase.from('species_sightings').select('*').order('created_at', { ascending: false }),
+          supabase.from('orchid_overview').select('conservation_status_key')
         ]);
 
-        const [orchidsData, submissionsData, conservationData] = await Promise.all([
-          orchidsResponse.json(),
-          submissionsResponse.json(),
-          conservationResponse.json()
-        ]);
+        if (orchidsResponse.error) {
+          throw new Error(orchidsResponse.error.message || 'Failed to load orchids data');
+        }
+        if (submissionsResponse.error) {
+          throw new Error(submissionsResponse.error.message || 'Failed to load submissions data');
+        }
+        if (conservationResponse.error) {
+          throw new Error(conservationResponse.error.message || 'Failed to load conservation data');
+        }
 
-        if (!orchidsResponse.ok) {
-          throw new Error(orchidsData.message || 'Failed to load orchids data');
-        }
-        if (!submissionsResponse.ok) {
-          throw new Error(submissionsData.message || 'Failed to load submissions data');
-        }
-        if (!conservationResponse.ok) {
-          throw new Error(conservationData.message || 'Failed to load conservation data');
-        }
+        const conservationSummary = {
+          critically_endangered: 0,
+          endangered: 0,
+          vulnerable: 0,
+          least_concern: 0,
+          unassigned: 0
+        };
+
+        (conservationResponse.data || []).forEach((row) => {
+          const key = row.conservation_status_key || 'unassigned';
+          if (conservationSummary[key] !== undefined) {
+            conservationSummary[key] += 1;
+          }
+        });
 
         return {
-          orchids: orchidsData,
-          submissions: submissionsData,
-          conservationSummary: conservationData
+          orchids: (orchidsResponse.data || []).map(normalizeOrchidRow),
+          submissions: (submissionsResponse.data || []).map(normalizeSubmissionRow),
+          conservationSummary
         };
       }
 
