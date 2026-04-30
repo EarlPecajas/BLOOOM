@@ -107,6 +107,7 @@
           };
 
           localStorage.setItem('bloomUser', JSON.stringify(userRecord));
+          sessionStorage.setItem('bloomUser', JSON.stringify(userRecord));
           window.location.href = (role === 'admin' || role === 'researcher' || role === 'user') ? 'dashboard.html' : 'catalog.html';
         } catch (error) {
           alert(error.message || 'Could not connect to Supabase. Please try again.');

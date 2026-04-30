@@ -882,7 +882,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
       const supabase = window.bloomSupabase;
-      const activeUser = localStorage.getItem('bloomUser');
+      const activeUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
 
       let parsedActiveUser = {};
       try {
@@ -920,6 +920,7 @@
           };
 
           localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
+          sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
           return parsedActiveUser;
         } catch {
           return null;
