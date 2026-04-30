@@ -881,23 +881,60 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
+      const supabase = window.bloomSupabase;
       const activeUser = localStorage.getItem('bloomUser');
-      if (!activeUser) {
-        window.location.href = 'signin.html';
-      }
 
       let parsedActiveUser = {};
       try {
         parsedActiveUser = JSON.parse(activeUser || '{}');
       } catch {
         localStorage.removeItem('bloomUser');
+        parsedActiveUser = {};
+      }
+
+      function hydrateUserFromSupabaseSession() {
+        if (parsedActiveUser && parsedActiveUser.role) {
+          return parsedActiveUser;
+        }
+
+        const sessionKey = Object.keys(localStorage).find((key) => key.includes('auth-token') && key.includes('hvyrngjfcvazxaoujduo'));
+        if (!sessionKey) {
+          return null;
+        }
+
+        try {
+          const sessionValue = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+          const sessionUser = sessionValue?.currentSession?.user || sessionValue?.session?.user || sessionValue?.user || null;
+
+          if (!sessionUser) {
+            return null;
+          }
+
+          const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
+          parsedActiveUser = {
+            id: sessionUser.id,
+            email: sessionUser.email,
+            role,
+            first_name: sessionUser.user_metadata?.first_name || '',
+            last_name: sessionUser.user_metadata?.last_name || ''
+          };
+
+          localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
+          return parsedActiveUser;
+        } catch {
+          return null;
+        }
+      }
+
+      const resolvedActiveUser = hydrateUserFromSupabaseSession();
+
+      if (!resolvedActiveUser) {
         window.location.href = 'signin.html';
       }
 
       const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
       const isAdminRole = activeRole === 'admin';
       const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
-      const supabase = window.bloomSupabase;
 
       document.body.classList.remove('researcher-mode', 'admin-mode');
       document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
