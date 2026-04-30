@@ -1,37 +1,23 @@
 require("dotenv").config();
 
 const path = require("path");
-const fs = require("fs");
 const crypto = require("crypto");
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const { Pool } = require("pg");
+const { getPgConfig } = require("./db");
+const { uploadFile } = require("./storage");
 
 const app = express();
 const port = process.env.PORT || 3000;
 const frontendPath = path.join(__dirname, "..", "frontend");
-const uploadsPath = path.join(frontendPath, "uploads");
 
-if (!fs.existsSync(uploadsPath)) {
-  fs.mkdirSync(uploadsPath, { recursive: true });
-}
-
-const uploadStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadsPath);
-  },
-  filename: (_req, file, cb) => {
-    const extension = path.extname(file.originalname || "").toLowerCase();
-    const safeExt = extension || ".jpg";
-    const token = crypto.randomBytes(8).toString("hex");
-    cb(null, `${Date.now()}-${token}${safeExt}`);
-  }
-});
+const supabaseEnabled = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY;
 
 const submissionUpload = multer({
-  storage: uploadStorage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype || (!file.mimetype.startsWith("image/") && !file.mimetype.startsWith("video/"))) {
@@ -46,28 +32,62 @@ const submissionUpload = multer({
   }
 });
 
-function handleSubmissionMediaUpload(req, res, next) {
-  submissionUpload.any()(req, res, (error) => {
-    if (!error) {
-      next();
-      return;
-    }
-
-    if (error instanceof multer.MulterError) {
-      if (error.code === "LIMIT_FILE_SIZE") {
-        res.status(400).json({ message: "Image file size must be 5MB or less." });
+async function handleSubmissionMediaUpload(req, res, next) {
+  submissionUpload.any()(req, res, async (error) => {
+    if (error) {
+      if (error instanceof multer.MulterError) {
+        if (error.code === "LIMIT_FILE_SIZE") {
+          res.status(400).json({ message: "Image file size must be 5MB or less." });
+          return;
+        }
+        res.status(400).json({ message: error.message || "Media upload failed." });
         return;
       }
       res.status(400).json({ message: error.message || "Media upload failed." });
       return;
     }
 
-    res.status(400).json({ message: error.message || "Media upload failed." });
+    if (!supabaseEnabled || !req.files) {
+      next();
+      return;
+    }
+
+    try {
+      const filesToUpload = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+      const uploadedMetadata = {};
+
+      for (const file of filesToUpload) {
+        const extension = path.extname(file.originalname || "").toLowerCase();
+        const safeExt = extension || ".jpg";
+        const token = crypto.randomBytes(8).toString("hex");
+        const fileName = `${Date.now()}-${token}${safeExt}`;
+        const filePath = `submissions/${fileName}`;
+
+        try {
+          const publicUrl = await uploadFile("bloom-uploads", filePath, file.buffer, file.mimetype);
+          const fieldName = file.fieldname;
+          if (!uploadedMetadata[fieldName]) {
+            uploadedMetadata[fieldName] = [];
+          }
+          uploadedMetadata[fieldName].push({ url: publicUrl, originalName: file.originalname });
+        } catch (uploadError) {
+          console.error(`Failed to upload ${file.originalname}:`, uploadError.message);
+          res.status(500).json({ message: `Failed to upload ${file.originalname}`, error: uploadError.message });
+          return;
+        }
+      }
+
+      req.uploadedFiles = uploadedMetadata;
+      next();
+    } catch (err) {
+      console.error("Upload handling error:", err.message);
+      res.status(500).json({ message: "Media upload failed", error: err.message });
+    }
   });
 }
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  ...getPgConfig()
 });
 
 app.use(cors());
@@ -426,7 +446,12 @@ function toNullableBoolean(value) {
 }
 
 function getUploadedFilePaths(req, fieldName) {
-  // Support both multer .fields() (object) and .any() (array)
+  // If using Supabase Storage, pull from uploadedFiles metadata
+  if (supabaseEnabled && req.uploadedFiles && req.uploadedFiles[fieldName]) {
+    return req.uploadedFiles[fieldName].map((f) => f.url);
+  }
+
+  // Fallback to local files (for backward compatibility or if Supabase is disabled)
   if (!req.files) return [];
 
   // If multer produced an object keyed by field name (fields())

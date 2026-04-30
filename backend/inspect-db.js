@@ -1,8 +1,9 @@
 require('dotenv').config();
 const { Client } = require('pg');
+const { getPgConfig } = require('./db');
 
 async function run() {
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  const client = new Client(getPgConfig());
   await client.connect();
 
   const tables = await client.query(

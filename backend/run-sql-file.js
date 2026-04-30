@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
+const { getPgConfig } = require('./db');
 
 async function run() {
   const sqlPath = process.argv[2];
@@ -13,7 +14,7 @@ async function run() {
   const absolutePath = path.resolve(process.cwd(), sqlPath);
   const sql = fs.readFileSync(absolutePath, 'utf8');
 
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  const client = new Client(getPgConfig());
   await client.connect();
   await client.query(sql);
   await client.end();
