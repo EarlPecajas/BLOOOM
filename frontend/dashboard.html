@@ -1406,7 +1406,7 @@
           }
 
           try {
-            if (!supabase) {
+            if (!bloomSupabase) {
               throw new Error('Supabase is not configured');
             }
 
@@ -1857,11 +1857,11 @@
         }
 
         try {
-          if (!supabase) {
+          if (!bloomSupabase) {
             throw new Error('Supabase is not configured');
           }
 
-          const { data, error } = await supabase
+          const { data, error } = await bloomSupabase
             .from('species_sightings')
             .select('*')
             .order('created_at', { ascending: false });
@@ -2754,11 +2754,11 @@
       }
 
       async function updateSubmissionReviewStatus(submissionId, nextStatus) {
-        if (!supabase) {
+        if (!bloomSupabase) {
           throw new Error('Supabase is not configured');
         }
 
-        const { error } = await supabase
+        const { error } = await bloomSupabase
           .from('species_sightings')
           .update({ review_status: nextStatus, updated_at: new Date().toISOString() })
           .eq('sighting_id', submissionId);
@@ -2974,11 +2974,11 @@
 
       async function loadConservationSummary() {
         try {
-          if (!supabase) {
+          if (!bloomSupabase) {
             throw new Error('Supabase is not configured');
           }
 
-          const { data, error } = await supabase
+          const { data, error } = await bloomSupabase
             .from('orchid_overview')
             .select('conservation_status_key');
 
@@ -3034,11 +3034,11 @@
         content.innerHTML = '<p style="margin:0;color:#666;">Loading conservation records...</p>';
 
         try {
-          if (!supabase) {
+          if (!bloomSupabase) {
             throw new Error('Supabase is not configured');
           }
 
-          const { data, error } = await supabase
+          const { data, error } = await bloomSupabase
             .from('orchid_overview')
             .select('name, genus, conservation_status, conservation_status_key')
             .eq('conservation_status_key', status)
@@ -3122,7 +3122,7 @@
       }
 
       async function getReportSourceData() {
-        if (!supabase) {
+        if (!bloomSupabase) {
           throw new Error('Supabase is not configured');
         }
 
