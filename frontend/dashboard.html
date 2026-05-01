@@ -882,58 +882,93 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
       const supabase = window.bloomSupabase;
-      const activeUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
 
-      let parsedActiveUser = {};
-      try {
-        parsedActiveUser = JSON.parse(activeUser || '{}');
-      } catch {
-        localStorage.removeItem('bloomUser');
-        parsedActiveUser = {};
-      }
-
-      function hydrateUserFromSupabaseSession() {
-        if (parsedActiveUser && parsedActiveUser.role) {
-          return parsedActiveUser;
-        }
-
-        const sessionKey = Object.keys(localStorage).find((key) => key.includes('auth-token') && key.includes('hvyrngjfcvazxaoujduo'));
-        if (!sessionKey) {
-          return null;
-        }
-
-        try {
-          const sessionValue = JSON.parse(localStorage.getItem(sessionKey) || '{}');
-          const sessionUser = sessionValue?.currentSession?.user || sessionValue?.session?.user || sessionValue?.user || null;
-
-          if (!sessionUser) {
-            return null;
+      // Try to hydrate `bloomUser` from local/session storage or from Supabase client session.
+      async function resolveActiveUser() {
+        const fromStorage = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
+        if (fromStorage) {
+          try {
+            const parsed = JSON.parse(fromStorage);
+            if (parsed && parsed.role) return parsed;
+          } catch {
+            localStorage.removeItem('bloomUser');
           }
-
-          const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
-          parsedActiveUser = {
-            id: sessionUser.id,
-            email: sessionUser.email,
-            role,
-            first_name: sessionUser.user_metadata?.first_name || '',
-            last_name: sessionUser.user_metadata?.last_name || ''
-          };
-
-          localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
-          sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
-          return parsedActiveUser;
-        } catch {
-          return null;
         }
+
+        // Prefer using the Supabase client if available.
+        if (supabase && supabase.auth && typeof supabase.auth.getSession === 'function') {
+          try {
+            const { data } = await supabase.auth.getSession();
+            const sessionUser = data?.session?.user || data?.user || null;
+            if (sessionUser) {
+              const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
+              const parsedActiveUser = {
+                id: sessionUser.id,
+                email: sessionUser.email,
+                role,
+                first_name: sessionUser.user_metadata?.first_name || '',
+                last_name: sessionUser.user_metadata?.last_name || ''
+              };
+              localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
+              sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
+              return parsedActiveUser;
+            }
+          } catch (e) {
+            // ignore and fall back to scanning storage keys
+          }
+        }
+
+        // Fallback: scan common supabase storage keys for a session object.
+        try {
+          const keys = Object.keys(localStorage);
+          for (const k of keys) {
+            if (/supabase|@supabase|sb:|auth.token|auth-token|session/i.test(k)) {
+              try {
+                const candidate = JSON.parse(localStorage.getItem(k) || '{}');
+                const sessionUser = candidate?.currentSession?.user || candidate?.session?.user || candidate?.user || null;
+                if (sessionUser) {
+                  const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
+                  const parsedActiveUser = {
+                    id: sessionUser.id,
+                    email: sessionUser.email,
+                    role,
+                    first_name: sessionUser.user_metadata?.first_name || '',
+                    last_name: sessionUser.user_metadata?.last_name || ''
+                  };
+                  localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
+                  sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
+                  return parsedActiveUser;
+                }
+              } catch {}
+            }
+          }
+        } catch {}
+
+        return null;
       }
 
-      const resolvedActiveUser = hydrateUserFromSupabaseSession();
+      // Resolve asynchronously, then decide redirect. This avoids race conditions where
+      // a freshly-signed-in page redirects before the auth client persisted its session.
+      let parsedActiveUser = {};
+      (async () => {
+        const resolved = await resolveActiveUser();
+        if (!resolved) {
+          window.location.href = 'signin.html';
+          return;
+        }
+        parsedActiveUser = resolved;
 
-      if (!resolvedActiveUser) {
-        window.location.href = 'signin.html';
-      }
+        const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
+        const isAdminRole = activeRole === 'admin';
+        const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
 
-      const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
+        document.body.classList.remove('researcher-mode', 'admin-mode');
+        document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
+
+        // expose role-dependent UI or initialize views after auth resolved
+        // initialize the default dashboard view
+        try { openDashboardView('dashboard'); } catch {}
+      })();
       const isAdminRole = activeRole === 'admin';
       const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
 
