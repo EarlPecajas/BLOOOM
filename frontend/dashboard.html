@@ -1526,7 +1526,7 @@
               review_status: 'pending'
             };
 
-            const { data, error } = await supabase
+            const { data, error } = await bloomSupabase
               .from('species_sightings')
               .insert(insertPayload)
               .select('sighting_id, entry_id, scientific_name, review_status')
@@ -1555,7 +1555,7 @@
 
       signOutButton.addEventListener('click', async function() {
         try {
-          if (supabase) {
+          if (bloomSupabase) {
             await bloomSupabase.auth.signOut();
           }
         } catch {
