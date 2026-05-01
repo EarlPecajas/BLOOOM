@@ -650,11 +650,11 @@
           <input id="submission-specific-site-other" type="text" placeholder="Specific Site: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span></label>
-            <input id="submission-latitude" type="number" step="any" placeholder="Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <input id="submission-latitude" type="number" step="any" min="-90" max="90" placeholder="Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span></label>
-            <input id="submission-longitude" type="number" step="any" placeholder="Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <input id="submission-longitude" type="number" step="any" min="-180" max="180" placeholder="Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation (meters) <span style="color:#b42318;">*</span></label>
@@ -1934,6 +1934,8 @@
             const threatTypes = Array.from(document.querySelectorAll('.submission-threat-type-option:checked')).map((opt) => opt.value);
             const teamMemberEntries = getTeamMemberEntries();
             const floweringSeasonValue = document.getElementById('submission-flowering-season')?.value || 'Unknown';
+            const latitude = parseCoordinateValue('submission-latitude', 'Latitude', -90, 90);
+            const longitude = parseCoordinateValue('submission-longitude', 'Longitude', -180, 180);
 
             async function uploadFilesFromInput(inputEl, fieldName) {
               const files = Array.from(inputEl?.files || []);
@@ -1986,8 +1988,8 @@
               mountain_name: document.getElementById('submission-mountain')?.value || 'Mt. Busa',
               specific_site_zone: document.getElementById('submission-specific-site-zone')?.value || null,
               specific_site_other: document.getElementById('submission-specific-site-other')?.value || null,
-              latitude: Number(document.getElementById('submission-latitude')?.value || 0),
-              longitude: Number(document.getElementById('submission-longitude')?.value || 0),
+              latitude,
+              longitude,
               elevation_meters: Number(document.getElementById('submission-elevation')?.value || 0),
               habitat_type: document.getElementById('submission-habitat-type')?.value || null,
               microhabitat: document.getElementById('submission-microhabitat')?.value || null,
@@ -2281,6 +2283,24 @@
         }
 
         return [value].filter(Boolean);
+      }
+
+      function parseCoordinateValue(inputId, label, min, max) {
+        const rawValue = String(document.getElementById(inputId)?.value || '').trim();
+        if (!rawValue) {
+          throw new Error(`${label} is required.`);
+        }
+
+        const numericValue = Number(rawValue);
+        if (!Number.isFinite(numericValue)) {
+          throw new Error(`${label} must be a valid number.`);
+        }
+
+        if (numericValue < min || numericValue > max) {
+          throw new Error(`${label} must be between ${min} and ${max}.`);
+        }
+
+        return numericValue;
       }
 
       function normalizeSubmissionRow(row) {

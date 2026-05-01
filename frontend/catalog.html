@@ -97,6 +97,20 @@
           <div class="orchid-detail-row" id="row-genus"><span class="orchid-detail-label">Genus</span><span id="detail-genus">-</span></div>
           <div class="orchid-detail-row" id="row-common-name"><span class="orchid-detail-label">Common Name</span><span id="detail-common-name">-</span></div>
           <div class="orchid-detail-row" id="row-endemicity"><span class="orchid-detail-label">Endemicity</span><span id="detail-endemicity">-</span></div>
+          <div class="orchid-detail-row" id="row-identification-status"><span class="orchid-detail-label">Identification Status</span><span id="detail-identification-status">-</span></div>
+          <div class="orchid-detail-row" id="row-observation-summary"><span class="orchid-detail-label">Observation Summary</span><span id="detail-observation-summary">-</span></div>
+          <div class="orchid-detail-row" id="row-observation-type"><span class="orchid-detail-label">Observation Type</span><span id="detail-observation-type">-</span></div>
+          <div class="orchid-detail-row" id="row-observation-month"><span class="orchid-detail-label">Observation Month</span><span id="detail-observation-month">-</span></div>
+          <div class="orchid-detail-row" id="row-mountain"><span class="orchid-detail-label">Mountain</span><span id="detail-mountain">-</span></div>
+          <div class="orchid-detail-row" id="row-habitat-type"><span class="orchid-detail-label">Habitat Type</span><span id="detail-habitat-type">-</span></div>
+          <div class="orchid-detail-row" id="row-flower-color"><span class="orchid-detail-label">Flower Color</span><span id="detail-flower-color">-</span></div>
+          <div class="orchid-detail-row" id="row-flowering-stage"><span class="orchid-detail-label">Flowering Stage</span><span id="detail-flowering-stage">-</span></div>
+          <div class="orchid-detail-row" id="row-population-status"><span class="orchid-detail-label">Population Status</span><span id="detail-population-status">-</span></div>
+          <div class="orchid-detail-row" id="row-growth-substrate"><span class="orchid-detail-label">Growth Substrate</span><span id="detail-growth-substrate">-</span></div>
+          <div class="orchid-detail-row" id="row-light-exposure"><span class="orchid-detail-label">Light Exposure</span><span id="detail-light-exposure">-</span></div>
+          <div class="orchid-detail-row" id="row-soil-type"><span class="orchid-detail-label">Soil Type</span><span id="detail-soil-type">-</span></div>
+          <div class="orchid-detail-row" id="row-nearby-water"><span class="orchid-detail-label">Nearby Water Source</span><span id="detail-nearby-water">-</span></div>
+          <div class="orchid-detail-row" id="row-location-visibility"><span class="orchid-detail-label">Location</span><span id="detail-location-visibility">-</span></div>
         </div>
       </div>
     </div>
@@ -128,6 +142,7 @@
       const catalogImage = encodeURI('./catalogicon.png');
       const showcaseImages = ['./orchid1.webp', './orchid2.jpg', './orchid3.webp'];
       let orchids = [];
+      let approvedSightingsByScientificName = new Map();
       let isListView = false;
       const bloomSupabase = window.bloomSupabase;
 
@@ -151,6 +166,98 @@
 
         const unavailableTokens = new Set(['none', 'n/a', 'na', 'not available', 'null', 'unknown', '-']);
         return !unavailableTokens.has(normalized);
+      }
+
+      function normalizeScientificKey(value) {
+        return String(value || '').trim().toLowerCase();
+      }
+
+      function parseJsonArrayValue(value) {
+        if (Array.isArray(value)) {
+          return value.filter(Boolean);
+        }
+
+        if (value === null || value === undefined || value === '') {
+          return [];
+        }
+
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+              return parsed.filter(Boolean);
+            }
+          } catch {
+            return [];
+          }
+        }
+
+        return [];
+      }
+
+      function normalizeObservationMonth(observationDate, fallbackMonth) {
+        if (hasUsableValue(fallbackMonth)) {
+          return String(fallbackMonth).trim();
+        }
+
+        if (!hasUsableValue(observationDate)) {
+          return '';
+        }
+
+        const rawDate = String(observationDate).trim();
+        if (/^\d{4}-\d{2}/.test(rawDate)) {
+          return rawDate.slice(0, 7);
+        }
+
+        return '';
+      }
+
+      function normalizePublicSightingRow(row) {
+        return {
+          scientific_name: row.scientific_name || '',
+          verification_status: row.verification_status || '',
+          observation_type: row.observation_type || '',
+          observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
+          mountain_name: row.mountain_name || '',
+          habitat_type: row.habitat_type || '',
+          flower_color: row.flower_color || '',
+          flowering_stage: row.flowering_stage || '',
+          population_status: row.population_status || '',
+          growth_substrate: row.growth_substrate || '',
+          light_exposure: row.light_exposure || '',
+          soil_type: row.soil_type || '',
+          nearby_water_source: row.nearby_water_source || '',
+          location_visibility_note: row.location_visibility_note || 'Location hidden for conservation',
+          whole_plant_photo_path: parseJsonArrayValue(row.whole_plant_photo_path),
+          closeup_flower_photo_path: parseJsonArrayValue(row.closeup_flower_photo_path),
+          habitat_photo_path: parseJsonArrayValue(row.habitat_photo_path)
+        };
+      }
+
+      function getPublicSightingImages(publicSighting) {
+        if (!publicSighting) {
+          return [];
+        }
+
+        return [
+          ...publicSighting.whole_plant_photo_path,
+          ...publicSighting.closeup_flower_photo_path,
+          ...publicSighting.habitat_photo_path
+        ].filter(Boolean);
+      }
+
+      function getObservationSummaryText(publicSighting) {
+        if (!publicSighting) {
+          return '';
+        }
+
+        const parts = [
+          publicSighting.observation_type,
+          publicSighting.habitat_type,
+          publicSighting.flowering_stage
+        ].filter((value) => hasUsableValue(value));
+
+        return parts.join(' | ');
       }
 
       function setDetailRow(rowId, valueId, value) {
@@ -185,18 +292,43 @@
       }
 
       function openOrchidDetails(orchid) {
+        const scientificKey = normalizeScientificKey(orchid.name);
+        const publicSighting = approvedSightingsByScientificName.get(scientificKey) || null;
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Flower';
+        const publicSightingImages = getPublicSightingImages(publicSighting);
+        const showcaseSet = publicSightingImages.length
+          ? [
+              publicSightingImages[0],
+              publicSightingImages[1] || publicSightingImages[0],
+              publicSightingImages[2] || publicSightingImages[0]
+            ]
+          : showcaseImages;
+
         orchidShowcaseName.textContent = orchidName;
         seeGalleryLink.href = `gallery.html?name=${encodeURIComponent(orchidName)}`;
-        samplePhotoOne.src = showcaseImages[0];
-        samplePhotoTwo.src = showcaseImages[1];
-        samplePhotoThree.src = showcaseImages[2];
+        samplePhotoOne.src = showcaseSet[0];
+        samplePhotoTwo.src = showcaseSet[1];
+        samplePhotoThree.src = showcaseSet[2];
 
         setContributorsView(false);
         setDetailRow('row-scientific-name', 'detail-scientific-name', orchid.name);
         setDetailRow('row-genus', 'detail-genus', orchid.genus);
         setDetailRow('row-common-name', 'detail-common-name', orchid.common_name);
         setDetailRow('row-endemicity', 'detail-endemicity', orchid.endemicity);
+        setDetailRow('row-identification-status', 'detail-identification-status', publicSighting?.verification_status || '');
+        setDetailRow('row-observation-summary', 'detail-observation-summary', getObservationSummaryText(publicSighting));
+        setDetailRow('row-observation-type', 'detail-observation-type', publicSighting?.observation_type || '');
+        setDetailRow('row-observation-month', 'detail-observation-month', publicSighting?.observation_month || '');
+        setDetailRow('row-mountain', 'detail-mountain', publicSighting?.mountain_name || '');
+        setDetailRow('row-habitat-type', 'detail-habitat-type', publicSighting?.habitat_type || '');
+        setDetailRow('row-flower-color', 'detail-flower-color', publicSighting?.flower_color || '');
+        setDetailRow('row-flowering-stage', 'detail-flowering-stage', publicSighting?.flowering_stage || '');
+        setDetailRow('row-population-status', 'detail-population-status', publicSighting?.population_status || '');
+        setDetailRow('row-growth-substrate', 'detail-growth-substrate', publicSighting?.growth_substrate || '');
+        setDetailRow('row-light-exposure', 'detail-light-exposure', publicSighting?.light_exposure || '');
+        setDetailRow('row-soil-type', 'detail-soil-type', publicSighting?.soil_type || '');
+        setDetailRow('row-nearby-water', 'detail-nearby-water', publicSighting?.nearby_water_source || '');
+        setDetailRow('row-location-visibility', 'detail-location-visibility', publicSighting?.location_visibility_note || 'Location hidden for conservation');
         orchidDetailModal.hidden = false;
       }
 
@@ -297,6 +429,37 @@
         }
       }
 
+      async function loadApprovedSightings() {
+        if (!bloomSupabase) {
+          approvedSightingsByScientificName = new Map();
+          return;
+        }
+
+        try {
+          const { data, error } = await bloomSupabase
+            .from('public_approved_sightings')
+            .select('scientific_name, verification_status, observation_type, observation_date, observation_month, mountain_name, habitat_type, flower_color, flowering_stage, population_status, growth_substrate, light_exposure, soil_type, nearby_water_source, location_visibility_note, whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path')
+            .order('observation_date', { ascending: false });
+
+          if (error) {
+            throw new Error(error.message || 'Failed to load public approved sightings');
+          }
+
+          const sightingsMap = new Map();
+          (data || []).map(normalizePublicSightingRow).forEach((row) => {
+            const scientificKey = normalizeScientificKey(row.scientific_name);
+            if (!scientificKey || sightingsMap.has(scientificKey)) {
+              return;
+            }
+            sightingsMap.set(scientificKey, row);
+          });
+
+          approvedSightingsByScientificName = sightingsMap;
+        } catch {
+          approvedSightingsByScientificName = new Map();
+        }
+      }
+
       searchInput.addEventListener('input', function(e) {
         applySearchFilter();
       });
@@ -358,7 +521,7 @@
 
       syncCatalogViewState();
 
-      loadCatalog();
+      Promise.all([loadCatalog(), loadApprovedSightings()]);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>

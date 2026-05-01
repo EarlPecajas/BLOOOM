@@ -26,7 +26,35 @@ LEFT JOIN biogeography b ON b.orchid_id = o.orchid_id
 LEFT JOIN conservation_status cs ON cs.conservation_id = b.conservation_id
 LEFT JOIN picture p ON p.picture_id = b.picture_id;
 
+CREATE OR REPLACE VIEW public_approved_sightings AS
+SELECT
+  s.sighting_id AS id,
+  s.scientific_name,
+  CASE
+    WHEN lower(coalesce(s.identification_confidence, '')) = 'confirmed' THEN 'Verified'
+    ELSE 'Unverified'
+  END AS verification_status,
+  s.observation_type,
+  s.observation_date,
+  to_char(s.observation_date, 'YYYY-MM') AS observation_month,
+  s.mountain_name,
+  s.habitat_type,
+  s.flower_color,
+  s.blooming_stage AS flowering_stage,
+  s.population_status,
+  s.growth_substrate,
+  s.light_exposure,
+  s.soil_type,
+  s.nearby_water_source,
+  'Location hidden for conservation'::text AS location_visibility_note,
+  s.whole_plant_photo_path,
+  s.closeup_flower_photo_path,
+  s.habitat_photo_path
+FROM species_sightings s
+WHERE lower(coalesce(s.review_status, '')) = 'approved';
+
 GRANT SELECT ON orchid_overview TO anon, authenticated;
+GRANT SELECT ON public_approved_sightings TO anon, authenticated;
 GRANT SELECT ON orchids TO anon, authenticated;
 GRANT SELECT ON genus TO anon, authenticated;
 GRANT SELECT ON biogeography TO anon, authenticated;

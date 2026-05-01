@@ -169,8 +169,8 @@ CREATE TABLE IF NOT EXISTS species_sightings (
   mountain_name VARCHAR(120) NOT NULL DEFAULT 'Mt. Busa',
   specific_site_zone VARCHAR(120),
   specific_site_other VARCHAR(255),
-  latitude DOUBLE PRECISION NOT NULL,
-  longitude DOUBLE PRECISION NOT NULL,
+  latitude DOUBLE PRECISION NOT NULL CHECK (latitude BETWEEN -90 AND 90),
+  longitude DOUBLE PRECISION NOT NULL CHECK (longitude BETWEEN -180 AND 180),
   elevation_meters NUMERIC(8, 2),
 
   habitat_type VARCHAR(100),
