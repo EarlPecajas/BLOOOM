@@ -600,10 +600,6 @@
           </div>
         </div>
         <form id="researcher-submission-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-          <datalist id="submission-family-options">
-            <option value="Orchidaceae"></option>
-            <option value="Others"></option>
-          </datalist>
           <datalist id="submission-genus-options"></datalist>
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Basic Taxonomic Information</strong>
@@ -612,7 +608,7 @@
           <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.65rem;align-items:start;">
             <div style="display:grid;gap:0.35rem;">
               <label for="submission-family" style="font-size:0.88rem;font-weight:600;color:#334155;">Family <span style="color:#b42318;">*</span></label>
-              <input id="submission-family" list="submission-family-options" type="text" placeholder="Search family..." required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+              <input id="submission-family" type="text" value="Orchidaceae" readonly aria-readonly="true" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;color:#334155;" />
             </div>
             <div style="display:grid;gap:0.35rem;">
               <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus <span style="color:#b42318;">*</span></label>
@@ -1233,7 +1229,11 @@
       function updateScientificNamePreview() {
         if (!submissionScientificNameEl) return;
 
-        const family = String(submissionFamilyEl?.value || '').trim();
+        if (submissionFamilyEl) {
+          submissionFamilyEl.value = ORCHID_FAMILY_NAME;
+        }
+
+        const family = ORCHID_FAMILY_NAME;
         const genus = String(submissionGenusEl?.value || '').trim();
         submissionScientificNameEl.value = [family, genus].filter(Boolean).join(' ').trim();
       }
@@ -1276,7 +1276,7 @@
 
       function serializeSubmissionDraft() {
         return {
-          family: submissionFamilyEl?.value || '',
+          family: ORCHID_FAMILY_NAME,
           genus: submissionGenusEl?.value || '',
           commonNames: Array.from(document.querySelectorAll('.submission-common-name-item')).map((el) => el.value || ''),
           identificationConfidence: document.getElementById('submission-identification-confidence')?.value || '',
@@ -1365,9 +1365,9 @@
           return;
         }
 
-        if (submissionFamilyEl) submissionFamilyEl.value = draft.family || '';
+        if (submissionFamilyEl) submissionFamilyEl.value = ORCHID_FAMILY_NAME;
         if (submissionGenusEl) submissionGenusEl.value = draft.genus || '';
-        if (submissionScientificNameEl) submissionScientificNameEl.value = [draft.family, draft.genus].filter(Boolean).join(' ').trim();
+        if (submissionScientificNameEl) submissionScientificNameEl.value = [ORCHID_FAMILY_NAME, draft.genus].filter(Boolean).join(' ').trim();
 
         const commonNamesWrap = document.getElementById('submission-common-names-wrap');
         if (commonNamesWrap) {
@@ -1456,7 +1456,7 @@
           submissionTeamMembersWrapEl.appendChild(createTeamMemberRow());
         }
 
-        if (submissionFamilyEl) submissionFamilyEl.value = '';
+        if (submissionFamilyEl) submissionFamilyEl.value = ORCHID_FAMILY_NAME;
         if (submissionGenusEl) submissionGenusEl.value = '';
         if (submissionScientificNameEl) submissionScientificNameEl.value = '';
         if (submissionGrowthSubstrateEl) submissionGrowthSubstrateEl.value = '';
@@ -1475,20 +1475,28 @@
         syncSubmissionTreeFields();
       }
 
+      function renderGenusOptions(genusNames) {
+        const genusDatalist = document.getElementById('submission-genus-options');
+        if (!genusDatalist) return;
+
+        const uniqueGenusNames = Array.from(new Set((genusNames || []).map((value) => String(value || '').trim()).filter(Boolean)));
+        genusDatalist.innerHTML = uniqueGenusNames.map((genusName) => `<option value="${genusName.replaceAll('"', '&quot;')}"></option>`).join('');
+      }
+
       async function loadGenusOptions() {
-        if (genusOptionsLoaded || !bloomSupabase) {
+        if (genusOptionsLoaded) {
           return;
         }
 
         try {
-          const { data } = await bloomSupabase.from('genus').select('genus_name').order('genus_name', { ascending: true });
-          const genusDatalist = document.getElementById('submission-genus-options');
-          if (genusDatalist) {
-            genusDatalist.innerHTML = (data || []).map((row) => `<option value="${String(row.genus_name || '').replaceAll('"', '&quot;')}"></option>`).join('');
-          }
+          const { data } = bloomSupabase
+            ? await bloomSupabase.from('genus').select('genus_name').order('genus_name', { ascending: true })
+            : { data: [] };
+          const dbGenusNames = (data || []).map((row) => row.genus_name).filter(Boolean);
+          renderGenusOptions([...ORCHID_GENUS_OPTIONS, ...dbGenusNames]);
           genusOptionsLoaded = true;
         } catch {
-          // Leave the list empty if taxonomy options cannot be loaded.
+          renderGenusOptions(ORCHID_GENUS_OPTIONS);
         }
       }
 
@@ -1824,6 +1832,58 @@
       }
 
       const submissionDraftKey = 'bloomSubmissionDraft';
+      const ORCHID_FAMILY_NAME = 'Orchidaceae';
+      const ORCHID_GENUS_OPTIONS = [
+        'Acanthophippium',
+        'Acriopsis',
+        'Aerangis',
+        'Aerides',
+        'Angraecum',
+        'Anoectochilus',
+        'Arundina',
+        'Ascocentrum',
+        'Bletilla',
+        'Brassavola',
+        'Brassia',
+        'Bulbophyllum',
+        'Calanthe',
+        'Catasetum',
+        'Cattleya',
+        'Cochlioda',
+        'Coelogyne',
+        'Coryanthes',
+        'Cymbidium',
+        'Cypripedium',
+        'Dendrobium',
+        'Dendrochilum',
+        'Dracula',
+        'Encyclia',
+        'Epidendrum',
+        'Eria',
+        'Gongora',
+        'Grammatophyllum',
+        'Habenaria',
+        'Laelia',
+        'Lycaste',
+        'Masdevallia',
+        'Miltonia',
+        'Miltoniopsis',
+        'Neofinetia',
+        'Oncidium',
+        'Ophrys',
+        'Paphiopedilum',
+        'Phaius',
+        'Phalaenopsis',
+        'Phragmipedium',
+        'Pleione',
+        'Renanthera',
+        'Rhynchostylis',
+        'Spathoglottis',
+        'Stanhopea',
+        'Vanda',
+        'Vanilla',
+        'Zygopetalum'
+      ];
       let genusOptionsLoaded = false;
       let submissionDraftSaveTimer = null;
       const researcherSubmissionFormEl = document.getElementById('researcher-submission-form');
