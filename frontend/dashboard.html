@@ -589,18 +589,39 @@
 
     <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
       <div id="researcher-submission-panel" style="background:white;border-radius:12px;padding:1.4rem;border:1px solid #dfe7e2;box-shadow:0 12px 30px rgba(0,0,0,0.18);max-width:980px;margin:0 auto;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;">
-          <h2 style="margin:0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.3rem;">Add Species Sighting</h2>
-          <button type="button" aria-label="Close submission form" onclick="closeResearcherSubmissionModal()" style="background:#f8fafc;border:1px solid #d5dee8;color:#334155;border-radius:8px;width:34px;height:34px;font-size:1.1rem;line-height:1;cursor:pointer;">x</button>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <div>
+            <h2 style="margin:0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.3rem;">Add Orchid</h2>
+            <p style="margin:0.25rem 0 0 0;color:#66786e;font-size:0.88rem;">Drafts save automatically when you close the form.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+            <button type="button" id="submission-clear-form" style="background:#eef6ef;border:1px solid #cfe0d3;color:#2D5128;border-radius:8px;padding:0.68rem 0.9rem;font-size:0.92rem;cursor:pointer;">Clear Form</button>
+            <button type="button" aria-label="Close submission form" onclick="closeResearcherSubmissionModal()" style="background:#f8fafc;border:1px solid #d5dee8;color:#334155;border-radius:8px;width:34px;height:34px;font-size:1.1rem;line-height:1;cursor:pointer;">x</button>
+          </div>
         </div>
         <form id="researcher-submission-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+          <datalist id="submission-family-options">
+            <option value="Orchidaceae"></option>
+            <option value="Others"></option>
+          </datalist>
+          <datalist id="submission-genus-options"></datalist>
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Basic Taxonomic Information</strong>
           </div>
           <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" />
-          <div style="display:flex;gap:0.5rem;">
-            <input id="submission-scientific-name" type="text" placeholder="Scientific Name" required style="flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
-            <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;">IDK</button>
+          <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.65rem;align-items:start;">
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-family" style="font-size:0.88rem;font-weight:600;color:#334155;">Family <span style="color:#b42318;">*</span></label>
+              <input id="submission-family" list="submission-family-options" type="text" placeholder="Search family..." required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus <span style="color:#b42318;">*</span></label>
+              <input id="submission-genus" list="submission-genus-options" type="text" placeholder="Search genus..." required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name <span style="color:#b42318;">*</span></label>
+              <input id="submission-scientific-name" type="text" readonly placeholder="Generated from Family + Genus" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-style:italic;background:#f7faf8;" />
+            </div>
           </div>
 
           <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:0.65rem;align-items:start;">
@@ -622,23 +643,52 @@
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Geographical / Location Data</strong>
           </div>
+          <div style="grid-column:1/-1;display:flex;justify-content:flex-start;">
+            <button type="button" id="submission-auto-location" style="padding:0.72rem 0.85rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;cursor:pointer;">Detect Current Location</button>
+          </div>
           <input id="submission-mountain" type="text" value="Mt. Busa" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;" />
-          <select id="submission-specific-site-zone" required class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
-          <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation (meters)" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span style="color:#b42318;">*</span></label>
+            <select id="submission-specific-site-zone" required class="submission-select"><option value="" disabled selected hidden>Choose one</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
+          </div>
+          <input id="submission-specific-site-other" type="text" placeholder="Specific Site: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span></label>
+            <input id="submission-latitude" type="number" step="any" placeholder="Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span></label>
+            <input id="submission-longitude" type="number" step="any" placeholder="Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation (meters) <span style="color:#b42318;">*</span></label>
+            <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Habitat Information</strong>
           </div>
-          <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Habitat Type</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option></select>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span style="color:#b42318;">*</span></label>
+            <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Choose one</option><option value="tree">Tree</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option><option value="others">Others: Specify</option></select>
+          </div>
+          <input id="submission-growth-substrate-other" type="text" placeholder="Growth Substrate: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
+          <div id="tree-dependent-fields" style="grid-column:1/-1;display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;padding:0.9rem;border:1px solid #dfe7e2;border-radius:10px;background:#fbfdfb;">
+            <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+              <strong>Tree-Specific Details</strong>
+              <span style="color:#66786e;font-size:0.84rem;">Shown when Tree is selected</span>
+            </div>
+            <input id="submission-host-tree-species" type="text" placeholder="Tree Species" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Diameter / DBH (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <input id="submission-canopy-cover" type="number" min="0" max="100" step="0.01" placeholder="Canopy Cover (%)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-habitat-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Habitat Type</label>
+              <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Choose one</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option><option value="others">Others: Specify</option></select>
+            </div>
+            <input id="submission-habitat-type-other" type="text" placeholder="Habitat Type: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
+            <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
+          </div>
           <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
-          <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Growth Substrate</option><option value="tree bark">Tree Bark</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option></select>
-          <input id="submission-host-tree-species" type="text" placeholder="Host Tree Species (optional)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Host Tree Diameter / DBH (optional)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-canopy-cover" type="number" min="0" max="100" step="0.01" placeholder="Canopy Cover (%)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
           <select id="submission-soil-type" class="submission-select"><option value="" disabled selected hidden>Soil Type</option><option value="loamy">Loamy</option><option value="clay">Clay</option><option value="sandy">Sandy</option><option value="silty">Silty</option><option value="peaty">Peaty</option><option value="rocky">Rocky</option></select>
           <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
 
@@ -687,6 +737,7 @@
             <strong>Ecological / Biological Data</strong>
           </div>
           <select id="submission-life-stage" class="submission-select"><option value="" disabled selected hidden>Life Stage</option><option value="Seedling">Seedling</option><option value="juvenile">Juvenile</option><option value="Mature">Mature</option></select>
+          <select id="submission-flowering-season" class="submission-select"><option value="" disabled selected hidden>Flowering Season</option><option value="Wet season">Wet season</option><option value="Dry season">Dry season</option><option value="Year-round">Year-round</option><option value="Unknown">Unknown</option></select>
           <select id="submission-phenology" class="submission-select"><option value="" disabled selected hidden>Phenology</option><option value="Vegetative">Vegetative</option><option value="budding">Budding</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option></select>
           <input id="submission-population-count" type="number" placeholder="Population Count" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
 
@@ -723,7 +774,13 @@
             <strong>Notes, Remarks, and Researchers</strong>
           </div>
           <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-team-members" type="text" placeholder="Team Members" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <div style="grid-column:1/-1;display:grid;gap:0.65rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members and Roles</label>
+              <button type="button" id="submission-add-team-member" style="padding:0.6rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;cursor:pointer;">+ Add member</button>
+            </div>
+            <div id="submission-team-members-wrap" style="display:grid;gap:0.6rem;"></div>
+          </div>
           <input id="submission-institution" type="text" placeholder="Institution / Organization" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
           <textarea id="submission-unusual-observations" placeholder="Unusual Observations" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
@@ -820,6 +877,7 @@
             <div id="row-labellum"><strong>Labellum / Lip:</strong> <span id="value-labellum"></span></div>
             <div id="row-fragrance"><strong>Fragrance:</strong> <span id="value-fragrance"></span></div>
             <div id="row-blooming-stage"><strong>Blooming Stage:</strong> <span id="value-blooming-stage"></span></div>
+            <div id="row-flowering-season"><strong>Flowering Season:</strong> <span id="value-flowering-season"></span></div>
             <div id="row-fruit-present"><strong>Fruit Present:</strong> <span id="value-fruit-present"></span></div>
             <div id="row-fruit-type"><strong>Fruit Type:</strong> <span id="value-fruit-type"></span></div>
             <div id="row-seed-capsule"><strong>Seed Capsule Condition:</strong> <span id="value-seed-capsule"></span></div>
@@ -1104,31 +1162,398 @@
         return input;
       }
 
-      function initializeResearcherSightingForm() {
+      function createTeamMemberRow(member = {}) {
+        const row = document.createElement('div');
+        row.className = 'submission-team-member-row';
+        row.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:0.5rem;align-items:center;';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'submission-team-member-name';
+        nameInput.placeholder = 'Team Member Name';
+        nameInput.value = member.name || '';
+        nameInput.style.cssText = 'padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
+
+        const roleInput = document.createElement('input');
+        roleInput.type = 'text';
+        roleInput.className = 'submission-team-member-role';
+        roleInput.placeholder = 'Role';
+        roleInput.value = member.role || '';
+        roleInput.style.cssText = 'padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.textContent = 'Remove';
+        removeButton.style.cssText = 'padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;';
+        removeButton.addEventListener('click', function() {
+          row.remove();
+          if (submissionTeamMembersWrapEl && submissionTeamMembersWrapEl.children.length === 0) {
+            submissionTeamMembersWrapEl.appendChild(createTeamMemberRow());
+          }
+          scheduleSubmissionDraftSave();
+        });
+
+        row.append(nameInput, roleInput, removeButton);
+        return row;
+      }
+
+      function getTeamMemberEntries() {
+        return Array.from(document.querySelectorAll('.submission-team-member-row')).map((row) => {
+          const name = row.querySelector('.submission-team-member-name')?.value?.trim() || '';
+          const role = row.querySelector('.submission-team-member-role')?.value?.trim() || '';
+          return { name, role };
+        }).filter((entry) => entry.name || entry.role);
+      }
+
+      function formatTeamMembersValue(value) {
+        if (!value) return '';
+
+        try {
+          const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+          if (Array.isArray(parsed)) {
+            return parsed
+              .map((member) => {
+                if (!member) return '';
+                if (typeof member === 'string') return member.trim();
+                const name = String(member.name || '').trim();
+                const role = String(member.role || '').trim();
+                if (name && role) return `${name} (${role})`;
+                return name || role;
+              })
+              .filter(Boolean)
+              .join(', ');
+          }
+        } catch {
+          // Fallback to plain text below.
+        }
+
+        return String(value).trim();
+      }
+
+      function updateScientificNamePreview() {
+        if (!submissionScientificNameEl) return;
+
+        const family = String(submissionFamilyEl?.value || '').trim();
+        const genus = String(submissionGenusEl?.value || '').trim();
+        submissionScientificNameEl.value = [family, genus].filter(Boolean).join(' ').trim();
+      }
+
+      function syncSubmissionTreeFields() {
+        const isTree = String(submissionGrowthSubstrateEl?.value || '').trim().toLowerCase() === 'tree';
+        if (submissionTreeDependentFieldsEl) {
+          submissionTreeDependentFieldsEl.style.display = isTree ? 'grid' : 'none';
+        }
+        if (!isTree) {
+          if (submissionHostTreeSpeciesEl) submissionHostTreeSpeciesEl.value = '';
+          if (submissionHostTreeDbhEl) submissionHostTreeDbhEl.value = '';
+          if (submissionCanopyCoverEl) submissionCanopyCoverEl.value = '';
+          if (submissionHabitatTypeEl && submissionHabitatTypeEl.value === 'others') submissionHabitatTypeEl.value = '';
+          if (submissionHabitatTypeOtherEl) submissionHabitatTypeOtherEl.style.display = 'none';
+          if (submissionHabitatTypeOtherEl) submissionHabitatTypeOtherEl.value = '';
+          if (submissionLightExposureEl) submissionLightExposureEl.value = '';
+        }
+      }
+
+      function syncSubmissionSpecificInputs() {
+        const showSpecificSite = String(submissionSpecificSiteZoneEl?.value || '').trim().toLowerCase() === 'others';
+        if (submissionSpecificSiteOtherEl) {
+          submissionSpecificSiteOtherEl.style.display = showSpecificSite ? 'block' : 'none';
+          if (!showSpecificSite) submissionSpecificSiteOtherEl.value = '';
+        }
+
+        const showGrowthOther = String(submissionGrowthSubstrateEl?.value || '').trim().toLowerCase() === 'others';
+        if (submissionGrowthSubstrateOtherEl) {
+          submissionGrowthSubstrateOtherEl.style.display = showGrowthOther ? 'block' : 'none';
+          if (!showGrowthOther) submissionGrowthSubstrateOtherEl.value = '';
+        }
+
+        const showHabitatOther = String(submissionHabitatTypeEl?.value || '').trim().toLowerCase() === 'others';
+        if (submissionHabitatTypeOtherEl) {
+          submissionHabitatTypeOtherEl.style.display = showHabitatOther ? 'block' : 'none';
+          if (!showHabitatOther) submissionHabitatTypeOtherEl.value = '';
+        }
+      }
+
+      function serializeSubmissionDraft() {
+        return {
+          family: submissionFamilyEl?.value || '',
+          genus: submissionGenusEl?.value || '',
+          commonNames: Array.from(document.querySelectorAll('.submission-common-name-item')).map((el) => el.value || ''),
+          identificationConfidence: document.getElementById('submission-identification-confidence')?.value || '',
+          observationDate: document.getElementById('submission-observation-date')?.value || '',
+          observationTime: document.getElementById('submission-observation-time')?.value || '',
+          collectionMethod: document.getElementById('submission-collection-method')?.value || '',
+          observationType: document.getElementById('submission-observation-type')?.value || '',
+          voucherCollected: document.getElementById('submission-voucher-collected')?.value || '',
+          specificSiteZone: submissionSpecificSiteZoneEl?.value || '',
+          specificSiteOther: submissionSpecificSiteOtherEl?.value || '',
+          latitude: document.getElementById('submission-latitude')?.value || '',
+          longitude: document.getElementById('submission-longitude')?.value || '',
+          elevation: document.getElementById('submission-elevation')?.value || '',
+          growthSubstrate: submissionGrowthSubstrateEl?.value || '',
+          growthSubstrateOther: submissionGrowthSubstrateOtherEl?.value || '',
+          habitatType: submissionHabitatTypeEl?.value || '',
+          habitatTypeOther: submissionHabitatTypeOtherEl?.value || '',
+          microhabitat: document.getElementById('submission-microhabitat')?.value || '',
+          hostTreeSpecies: submissionHostTreeSpeciesEl?.value || '',
+          hostTreeDbh: submissionHostTreeDbhEl?.value || '',
+          canopyCover: submissionCanopyCoverEl?.value || '',
+          lightExposure: submissionLightExposureEl?.value || '',
+          soilType: document.getElementById('submission-soil-type')?.value || '',
+          nearbyWaterSource: document.getElementById('submission-nearby-water-source')?.value || '',
+          floweringSeason: submissionFloweringSeasonEl?.value || '',
+          lifeStage: document.getElementById('submission-life-stage')?.value || '',
+          phenology: document.getElementById('submission-phenology')?.value || '',
+          populationCount: document.getElementById('submission-population-count')?.value || '',
+          populationStatus: document.getElementById('submission-population-status')?.value || '',
+          threatLevel: document.getElementById('submission-threat-level')?.value || '',
+          teamMembers: getTeamMemberEntries(),
+          institution: document.getElementById('submission-institution')?.value || '',
+          headObserver: document.getElementById('submission-head-observer')?.value || '',
+          researcherNotes: document.getElementById('submission-researcher-notes')?.value || '',
+          unusualObservations: document.getElementById('submission-unusual-observations')?.value || ''
+        };
+      }
+
+      function saveSubmissionDraft() {
+        try {
+          localStorage.setItem(submissionDraftKey, JSON.stringify(serializeSubmissionDraft()));
+        } catch {
+          // Ignore draft persistence failures.
+        }
+      }
+
+      function handleSubmissionFormMutation() {
+        updateScientificNamePreview();
+        syncSubmissionTreeFields();
+        syncSubmissionSpecificInputs();
+        scheduleSubmissionDraftSave();
+      }
+
+      function scheduleSubmissionDraftSave() {
+        if (submissionDraftSaveTimer) {
+          clearTimeout(submissionDraftSaveTimer);
+        }
+
+        submissionDraftSaveTimer = setTimeout(() => {
+          saveSubmissionDraft();
+        }, 120);
+      }
+
+      function clearSubmissionDraft() {
+        try {
+          localStorage.removeItem(submissionDraftKey);
+        } catch {
+          // Ignore clear failures.
+        }
+
+        if (submissionDraftSaveTimer) {
+          clearTimeout(submissionDraftSaveTimer);
+          submissionDraftSaveTimer = null;
+        }
+      }
+
+      function restoreSubmissionDraft() {
+        let draft = null;
+        try {
+          draft = JSON.parse(localStorage.getItem(submissionDraftKey) || 'null');
+        } catch {
+          draft = null;
+        }
+
+        if (!draft) {
+          return;
+        }
+
+        if (submissionFamilyEl) submissionFamilyEl.value = draft.family || '';
+        if (submissionGenusEl) submissionGenusEl.value = draft.genus || '';
+        if (submissionScientificNameEl) submissionScientificNameEl.value = [draft.family, draft.genus].filter(Boolean).join(' ').trim();
+
+        const commonNamesWrap = document.getElementById('submission-common-names-wrap');
+        if (commonNamesWrap) {
+          commonNamesWrap.innerHTML = '';
+          const commonNames = Array.isArray(draft.commonNames) && draft.commonNames.length ? draft.commonNames : [''];
+          commonNames.slice(0, 5).forEach((value, index) => {
+            const input = createCommonNameInput(index + 1);
+            input.value = value || '';
+            commonNamesWrap.appendChild(input);
+          });
+        }
+
+        if (document.getElementById('submission-identification-confidence')) document.getElementById('submission-identification-confidence').value = draft.identificationConfidence || '';
+        if (document.getElementById('submission-observation-date')) document.getElementById('submission-observation-date').value = draft.observationDate || '';
+        if (document.getElementById('submission-observation-time')) document.getElementById('submission-observation-time').value = draft.observationTime || '';
+        if (document.getElementById('submission-collection-method')) document.getElementById('submission-collection-method').value = draft.collectionMethod || '';
+        if (document.getElementById('submission-observation-type')) document.getElementById('submission-observation-type').value = draft.observationType || '';
+        if (document.getElementById('submission-voucher-collected')) document.getElementById('submission-voucher-collected').value = draft.voucherCollected || '';
+        if (submissionSpecificSiteZoneEl) submissionSpecificSiteZoneEl.value = draft.specificSiteZone || '';
+        if (submissionSpecificSiteOtherEl) submissionSpecificSiteOtherEl.value = draft.specificSiteOther || '';
+        if (document.getElementById('submission-latitude')) document.getElementById('submission-latitude').value = draft.latitude || '';
+        if (document.getElementById('submission-longitude')) document.getElementById('submission-longitude').value = draft.longitude || '';
+        if (document.getElementById('submission-elevation')) document.getElementById('submission-elevation').value = draft.elevation || '';
+        if (submissionGrowthSubstrateEl) submissionGrowthSubstrateEl.value = draft.growthSubstrate || '';
+        if (submissionGrowthSubstrateOtherEl) submissionGrowthSubstrateOtherEl.value = draft.growthSubstrateOther || '';
+        if (submissionHabitatTypeEl) submissionHabitatTypeEl.value = draft.habitatType || '';
+        if (submissionHabitatTypeOtherEl) submissionHabitatTypeOtherEl.value = draft.habitatTypeOther || '';
+        if (document.getElementById('submission-microhabitat')) document.getElementById('submission-microhabitat').value = draft.microhabitat || '';
+        if (submissionHostTreeSpeciesEl) submissionHostTreeSpeciesEl.value = draft.hostTreeSpecies || '';
+        if (submissionHostTreeDbhEl) submissionHostTreeDbhEl.value = draft.hostTreeDbh || '';
+        if (submissionCanopyCoverEl) submissionCanopyCoverEl.value = draft.canopyCover || '';
+        if (submissionLightExposureEl) submissionLightExposureEl.value = draft.lightExposure || '';
+        if (document.getElementById('submission-soil-type')) document.getElementById('submission-soil-type').value = draft.soilType || '';
+        if (document.getElementById('submission-nearby-water-source')) document.getElementById('submission-nearby-water-source').value = draft.nearbyWaterSource || '';
+        if (submissionFloweringSeasonEl) submissionFloweringSeasonEl.value = draft.floweringSeason || '';
+        if (document.getElementById('submission-life-stage')) document.getElementById('submission-life-stage').value = draft.lifeStage || '';
+        if (document.getElementById('submission-phenology')) document.getElementById('submission-phenology').value = draft.phenology || '';
+        if (document.getElementById('submission-population-count')) document.getElementById('submission-population-count').value = draft.populationCount || '';
+        if (document.getElementById('submission-population-status')) document.getElementById('submission-population-status').value = draft.populationStatus || '';
+        if (document.getElementById('submission-threat-level')) document.getElementById('submission-threat-level').value = draft.threatLevel || '';
+
+        if (submissionTeamMembersWrapEl) {
+          submissionTeamMembersWrapEl.innerHTML = '';
+          const teamMembers = Array.isArray(draft.teamMembers) && draft.teamMembers.length ? draft.teamMembers : [{}];
+          teamMembers.forEach((member) => submissionTeamMembersWrapEl.appendChild(createTeamMemberRow(member)));
+        }
+
+        if (document.getElementById('submission-institution')) document.getElementById('submission-institution').value = draft.institution || '';
+        if (document.getElementById('submission-head-observer')) document.getElementById('submission-head-observer').value = draft.headObserver || '';
+        if (document.getElementById('submission-researcher-notes')) document.getElementById('submission-researcher-notes').value = draft.researcherNotes || '';
+        if (document.getElementById('submission-unusual-observations')) document.getElementById('submission-unusual-observations').value = draft.unusualObservations || '';
+
+        syncSubmissionSpecificInputs();
+        syncSubmissionTreeFields();
+      }
+
+      function resetResearcherSubmissionForm() {
+        if (!researcherSubmissionFormEl) return;
+
+        researcherSubmissionFormEl.reset();
+
         const entryIdEl = document.getElementById('submission-entry-id');
         const observationDateEl = document.getElementById('submission-observation-date');
         const observationTimeEl = document.getElementById('submission-observation-time');
         const commonNamesWrap = document.getElementById('submission-common-names-wrap');
-        const addCommonNameBtn = document.getElementById('submission-add-common-name');
 
         if (entryIdEl) {
-          const generatedPreviewId = `PENDING-${Date.now().toString().slice(-8)}`;
-          entryIdEl.value = generatedPreviewId;
+          entryIdEl.value = `PENDING-${Date.now().toString().slice(-8)}`;
         }
 
         const now = new Date();
-        if (observationDateEl && !observationDateEl.value) {
+        if (observationDateEl) {
           observationDateEl.value = now.toISOString().slice(0, 10);
         }
-        if (observationTimeEl && !observationTimeEl.value) {
+        if (observationTimeEl) {
           observationTimeEl.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
 
-        if (commonNamesWrap && commonNamesWrap.children.length === 0) {
+        if (commonNamesWrap) {
+          commonNamesWrap.innerHTML = '';
           commonNamesWrap.appendChild(createCommonNameInput(1));
         }
 
-        if (addCommonNameBtn && !addCommonNameBtn.dataset.bound) {
+        if (submissionTeamMembersWrapEl) {
+          submissionTeamMembersWrapEl.innerHTML = '';
+          submissionTeamMembersWrapEl.appendChild(createTeamMemberRow());
+        }
+
+        if (submissionFamilyEl) submissionFamilyEl.value = '';
+        if (submissionGenusEl) submissionGenusEl.value = '';
+        if (submissionScientificNameEl) submissionScientificNameEl.value = '';
+        if (submissionGrowthSubstrateEl) submissionGrowthSubstrateEl.value = '';
+        if (submissionGrowthSubstrateOtherEl) submissionGrowthSubstrateOtherEl.value = '';
+        if (submissionSpecificSiteZoneEl) submissionSpecificSiteZoneEl.value = '';
+        if (submissionSpecificSiteOtherEl) submissionSpecificSiteOtherEl.value = '';
+        if (submissionHabitatTypeEl) submissionHabitatTypeEl.value = '';
+        if (submissionHabitatTypeOtherEl) submissionHabitatTypeOtherEl.value = '';
+        if (submissionLightExposureEl) submissionLightExposureEl.value = '';
+        if (submissionHostTreeSpeciesEl) submissionHostTreeSpeciesEl.value = '';
+        if (submissionHostTreeDbhEl) submissionHostTreeDbhEl.value = '';
+        if (submissionCanopyCoverEl) submissionCanopyCoverEl.value = '';
+        if (submissionFloweringSeasonEl) submissionFloweringSeasonEl.value = '';
+
+        syncSubmissionSpecificInputs();
+        syncSubmissionTreeFields();
+      }
+
+      async function loadGenusOptions() {
+        if (genusOptionsLoaded || !bloomSupabase) {
+          return;
+        }
+
+        try {
+          const { data } = await bloomSupabase.from('genus').select('genus_name').order('genus_name', { ascending: true });
+          const genusDatalist = document.getElementById('submission-genus-options');
+          if (genusDatalist) {
+            genusDatalist.innerHTML = (data || []).map((row) => `<option value="${String(row.genus_name || '').replaceAll('"', '&quot;')}"></option>`).join('');
+          }
+          genusOptionsLoaded = true;
+        } catch {
+          // Leave the list empty if taxonomy options cannot be loaded.
+        }
+      }
+
+      function initializeResearcherSightingForm() {
+        loadGenusOptions();
+
+        if (researcherSubmissionFormEl && !researcherSubmissionFormEl.dataset.bound) {
+          researcherSubmissionFormEl.dataset.bound = '1';
+          researcherSubmissionFormEl.addEventListener('input', handleSubmissionFormMutation);
+          researcherSubmissionFormEl.addEventListener('change', handleSubmissionFormMutation);
+        }
+
+        if (submissionClearFormBtn && !submissionClearFormBtn.dataset.bound) {
+          submissionClearFormBtn.dataset.bound = '1';
+          submissionClearFormBtn.addEventListener('click', function() {
+            clearSubmissionDraft();
+            resetResearcherSubmissionForm();
+          });
+        }
+
+        if (submissionAddTeamMemberBtn && !submissionAddTeamMemberBtn.dataset.bound) {
+          submissionAddTeamMemberBtn.dataset.bound = '1';
+          submissionAddTeamMemberBtn.addEventListener('click', function() {
+            if (submissionTeamMembersWrapEl) {
+              submissionTeamMembersWrapEl.appendChild(createTeamMemberRow());
+              scheduleSubmissionDraftSave();
+            }
+          });
+        }
+
+        if (submissionAutoLocationBtn && !submissionAutoLocationBtn.dataset.bound) {
+          submissionAutoLocationBtn.dataset.bound = '1';
+          submissionAutoLocationBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+              alert('Location detection is not supported in this browser.');
+              return;
+            }
+
+            submissionAutoLocationBtn.disabled = true;
+            submissionAutoLocationBtn.textContent = 'Detecting...';
+
+            navigator.geolocation.getCurrentPosition((position) => {
+              const coords = position.coords || {};
+              const latEl = document.getElementById('submission-latitude');
+              const longEl = document.getElementById('submission-longitude');
+              const elevationEl = document.getElementById('submission-elevation');
+              if (latEl) latEl.value = coords.latitude ?? '';
+              if (longEl) longEl.value = coords.longitude ?? '';
+              if (elevationEl && coords.altitude !== null && coords.altitude !== undefined) {
+                elevationEl.value = coords.altitude.toFixed(2);
+              }
+              handleSubmissionFormMutation();
+              submissionAutoLocationBtn.disabled = false;
+              submissionAutoLocationBtn.textContent = 'Detect Current Location';
+            }, () => {
+              alert('Could not detect your location. Please enter latitude, longitude, and elevation manually.');
+              submissionAutoLocationBtn.disabled = false;
+              submissionAutoLocationBtn.textContent = 'Detect Current Location';
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+          });
+        }
+
+        if (document.getElementById('submission-add-common-name') && !document.getElementById('submission-add-common-name').dataset.bound) {
+          const addCommonNameBtn = document.getElementById('submission-add-common-name');
+          const commonNamesWrap = document.getElementById('submission-common-names-wrap');
           addCommonNameBtn.dataset.bound = '1';
           addCommonNameBtn.addEventListener('click', function() {
             if (!commonNamesWrap) return;
@@ -1137,8 +1562,19 @@
               return;
             }
             commonNamesWrap.appendChild(createCommonNameInput(currentInputs + 1));
+            handleSubmissionFormMutation();
           });
         }
+
+        if (!localStorage.getItem(submissionDraftKey)) {
+          resetResearcherSubmissionForm();
+        } else {
+          restoreSubmissionDraft();
+        }
+
+        updateScientificNamePreview();
+        syncSubmissionSpecificInputs();
+        syncSubmissionTreeFields();
       }
 
       function openResearcherSubmissionModal() {
@@ -1149,6 +1585,7 @@
 
       function closeResearcherSubmissionModal() {
         if (!researcherSubmissionModal) return;
+        saveSubmissionDraft();
         researcherSubmissionModal.style.display = 'none';
       }
 
@@ -1386,16 +1823,30 @@
         });
       }
 
+      const submissionDraftKey = 'bloomSubmissionDraft';
+      let genusOptionsLoaded = false;
+      let submissionDraftSaveTimer = null;
       const researcherSubmissionFormEl = document.getElementById('researcher-submission-form');
       const researcherSubmissionFeedbackEl = document.getElementById('researcher-submission-feedback');
+      const submissionFamilyEl = document.getElementById('submission-family');
+      const submissionGenusEl = document.getElementById('submission-genus');
       const submissionScientificNameEl = document.getElementById('submission-scientific-name');
-      const submissionScientificIdkEl = document.getElementById('submission-scientific-idk');
-
-      if (submissionScientificIdkEl && submissionScientificNameEl) {
-        submissionScientificIdkEl.addEventListener('click', function() {
-          submissionScientificNameEl.value = 'IDK';
-        });
-      }
+      const submissionGrowthSubstrateEl = document.getElementById('submission-growth-substrate');
+      const submissionGrowthSubstrateOtherEl = document.getElementById('submission-growth-substrate-other');
+      const submissionSpecificSiteZoneEl = document.getElementById('submission-specific-site-zone');
+      const submissionSpecificSiteOtherEl = document.getElementById('submission-specific-site-other');
+      const submissionTreeDependentFieldsEl = document.getElementById('tree-dependent-fields');
+      const submissionHabitatTypeEl = document.getElementById('submission-habitat-type');
+      const submissionHabitatTypeOtherEl = document.getElementById('submission-habitat-type-other');
+      const submissionLightExposureEl = document.getElementById('submission-light-exposure');
+      const submissionHostTreeSpeciesEl = document.getElementById('submission-host-tree-species');
+      const submissionHostTreeDbhEl = document.getElementById('submission-host-tree-dbh');
+      const submissionCanopyCoverEl = document.getElementById('submission-canopy-cover');
+      const submissionFloweringSeasonEl = document.getElementById('submission-flowering-season');
+      const submissionTeamMembersWrapEl = document.getElementById('submission-team-members-wrap');
+      const submissionAddTeamMemberBtn = document.getElementById('submission-add-team-member');
+      const submissionClearFormBtn = document.getElementById('submission-clear-form');
+      const submissionAutoLocationBtn = document.getElementById('submission-auto-location');
 
       if (researcherSubmissionFormEl) {
         researcherSubmissionFormEl.addEventListener('submit', async function(e) {
@@ -1421,6 +1872,8 @@
               .slice(0, 5);
             const leafTextures = Array.from(document.querySelectorAll('.submission-leaf-texture-option:checked')).map((opt) => opt.value);
             const threatTypes = Array.from(document.querySelectorAll('.submission-threat-type-option:checked')).map((opt) => opt.value);
+            const teamMemberEntries = getTeamMemberEntries();
+            const floweringSeasonValue = document.getElementById('submission-flowering-season')?.value || 'Unknown';
 
             async function uploadFilesFromInput(inputEl, fieldName) {
               const files = Array.from(inputEl?.files || []);
@@ -1505,6 +1958,7 @@
               labellum_lip_description: document.getElementById('submission-labellum-description')?.value || null,
               fragrance: document.getElementById('submission-fragrance')?.value || null,
               blooming_stage: document.getElementById('submission-blooming-stage')?.value || null,
+              flowering_season: floweringSeasonValue,
               fruit_present: document.getElementById('submission-fruit-present')?.value === 'yes',
               fruit_type: document.getElementById('submission-fruit-type')?.value || null,
               seed_capsule_condition: document.getElementById('submission-seed-capsule-condition')?.value || null,
@@ -1520,7 +1974,7 @@
               photo_3d_path: JSON.stringify([]),
               video_path: JSON.stringify(videoUrls),
               institution: document.getElementById('submission-institution')?.value || null,
-              team_members: document.getElementById('submission-team-members')?.value || null,
+              team_members: teamMemberEntries.length ? JSON.stringify(teamMemberEntries) : null,
               researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
               unusual_observations: document.getElementById('submission-unusual-observations')?.value || null,
               review_status: 'pending'
@@ -1536,8 +1990,8 @@
               throw new Error(error.message || 'Failed to submit record');
             }
 
-            researcherSubmissionFormEl.reset();
-            initializeResearcherSightingForm();
+            clearSubmissionDraft();
+            resetResearcherSubmissionForm();
             if (researcherSubmissionFeedbackEl) {
               researcherSubmissionFeedbackEl.style.color = '#2D5128';
               researcherSubmissionFeedbackEl.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}.`;
@@ -1786,6 +2240,7 @@
           genus: row.genus || '',
           common_name: commonNames[0] || row.common_name || '-',
           common_names: commonNames,
+          team_members_display: formatTeamMembersValue(row.team_members),
           submission_date: row.submission_date || row.observation_date || row.created_at?.slice(0, 10) || '-',
           review_status: row.review_status || 'pending',
           habitat: row.habitat || row.habitat_type || '-',
@@ -2623,7 +3078,7 @@
         const threatTypesText = Array.isArray(submission.threat_types) && submission.threat_types.length
           ? submission.threat_types.join(', ')
           : '-';
-        const teamMembersText = submission.team_members || '-';
+        const teamMembersText = submission.team_members_display || formatTeamMembersValue(submission.team_members) || '-';
         const evidenceNote = evidence.note ? `\n\nReview Note\n${evidence.note}` : '';
         document.getElementById('detailDescription').textContent = `Identification Confidence\n${submission.identification_confidence || '-'}\n\nPopulation Count\n${submission.population_count ?? '-'}\n\nThreat Types\n${threatTypesText}\n\nResearch Team\n${teamMembersText}${evidenceNote}`;
         // Populate expanded detail fields (always visible)
@@ -2690,6 +3145,7 @@
         setDetailFieldAlways('row-labellum', 'value-labellum', submission.labellum_lip_description || '');
         setDetailFieldAlways('row-fragrance', 'value-fragrance', submission.fragrance || '');
         setDetailFieldAlways('row-blooming-stage', 'value-blooming-stage', submission.blooming_stage || '');
+        setDetailFieldAlways('row-flowering-season', 'value-flowering-season', submission.flowering_season || 'Unknown');
         setDetailFieldAlways('row-fruit-present', 'value-fruit-present', submission.fruit_present ? 'Yes' : 'No');
         setDetailFieldAlways('row-fruit-type', 'value-fruit-type', submission.fruit_type || '');
         setDetailFieldAlways('row-seed-capsule', 'value-seed-capsule', submission.seed_capsule_condition || '');
@@ -2700,7 +3156,7 @@
         setDetailFieldAlways('row-threat-level', 'value-threat-level', submission.threat_level || '');
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
-        setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members || '');
+        setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
         
         // Populate image gallery if images array exists
         const imageGallery = document.getElementById('imageGallery');

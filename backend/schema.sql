@@ -205,6 +205,7 @@ CREATE TABLE IF NOT EXISTS species_sightings (
   labellum_lip_description VARCHAR(80),
   fragrance VARCHAR(50),
   blooming_stage VARCHAR(60),
+  flowering_season VARCHAR(60),
 
   fruit_present BOOLEAN,
   fruit_type VARCHAR(50),
