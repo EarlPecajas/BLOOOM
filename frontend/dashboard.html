@@ -947,33 +947,46 @@
         return null;
       }
 
-      // Resolve asynchronously, then decide redirect. This avoids race conditions where
-      // a freshly-signed-in page redirects before the auth client persisted its session.
-      let parsedActiveUser = {};
-      (async () => {
-        const resolved = await resolveActiveUser();
-        if (!resolved) {
-          window.location.href = 'signin.html';
-          return;
-        }
-        parsedActiveUser = resolved;
-
-        const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
-        const isAdminRole = activeRole === 'admin';
-        const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+      function syncRoleState(user) {
+        parsedActiveUser = user || {};
+        activeRole = String(parsedActiveUser.role || '').trim().toLowerCase();
+        isAdminRole = activeRole === 'admin';
+        isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
 
         document.body.classList.remove('researcher-mode', 'admin-mode');
         document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
+      }
 
-        // expose role-dependent UI or initialize views after auth resolved
-        // initialize the default dashboard view
+      let parsedActiveUser = {};
+      let activeRole = '';
+      let isAdminRole = false;
+      let isResearcherRole = false;
+      let authResolved = false;
+
+      try {
+        const initialUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
+        if (initialUser) {
+          syncRoleState(JSON.parse(initialUser));
+        }
+      } catch {
+        localStorage.removeItem('bloomUser');
+      }
+
+      // Resolve asynchronously, then decide redirect. This avoids race conditions where
+      // a freshly-signed-in page redirects before the auth client persisted its session.
+      (async () => {
+        const resolved = await resolveActiveUser();
+        if (!resolved) {
+          authResolved = true;
+          window.location.href = 'signin.html';
+          return;
+        }
+        syncRoleState(resolved);
+        authResolved = true;
+
+        // Expose role-dependent UI or initialize views after auth resolved.
         try { openDashboardView('dashboard'); } catch {}
       })();
-      const isAdminRole = activeRole === 'admin';
-      const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
-
-      document.body.classList.remove('researcher-mode', 'admin-mode');
-      document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
 
       // Safe navigator: always prefer in-page navigation to avoid reload loops.
       function openDashboardView(viewName) {
@@ -1063,7 +1076,7 @@
 
       document.title = isAdminRole ? 'DENR Dashboard - BLOOM' : 'Researcher Dashboard - BLOOM';
 
-      if (!isAdminRole && !isResearcherRole) {
+      if (authResolved && !isAdminRole && !isResearcherRole) {
         window.location.href = 'catalog.html';
       }
 
