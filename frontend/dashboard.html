@@ -2041,11 +2041,11 @@
         if (!catalogGrid || orchidCatalogLoaded) return;
 
         try {
-          if (!supabase) {
+          if (!bloomSupabase) {
             throw new Error('Supabase is not configured');
           }
 
-          const { data, error } = await supabase
+          const { data, error } = await bloomSupabase
             .from('orchid_overview')
             .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
             .order('name', { ascending: true });
@@ -2059,6 +2059,7 @@
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
         } catch (error) {
+          console.error('Dashboard orchid catalog load failed:', error);
           catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
         } finally {
           if (catalogLoadingMessage) {
