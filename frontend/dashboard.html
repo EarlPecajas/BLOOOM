@@ -4038,7 +4038,7 @@
         const galleryOptions = document.getElementById('galleryOptions');
         
         // Populate scientific name
-        scientificNameInput.value = currentSubmission.scientific_name || '';
+        scientificNameInput.value = currentSubmission.species || currentSubmission.scientific_name || '';
         
         // Load genus options
         try {
@@ -4048,7 +4048,7 @@
             genusData.map(g => `<option value="${g.genus_name}">${g.genus_name}</option>`).join('');
           
           // Set current genus if available
-          const currentGenus = currentSubmission.scientific_name?.split(' ')[0];
+          const currentGenus = (currentSubmission.species || currentSubmission.scientific_name || '').split(' ')[0];
           if (currentGenus && genusData.some(g => g.genus_name === currentGenus)) {
             genusSelect.value = currentGenus;
           }
@@ -4058,26 +4058,30 @@
         
         // Get all images from submission
         const allImages = [
-          ...(currentSubmission.whole_plant_photo_path || []),
-          ...(currentSubmission.closeup_flower_photo_path || []),
-          ...(currentSubmission.habitat_photo_path || [])
+          ...(currentSubmission.whole_plant_photos || []),
+          ...(currentSubmission.closeup_flower_photos || []),
+          ...(currentSubmission.habitat_photos || [])
         ].filter(Boolean);
         
         // Populate thumbnail options
-        thumbnailOptions.innerHTML = allImages.map((img, index) => `
-          <label style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.5rem;border:2px solid #ddd;border-radius:4px;cursor:pointer;">
-            <input type="radio" name="thumbnail" value="${img}" ${index === 0 ? 'checked' : ''} style="margin:0;">
-            <img src="${img}" alt="Thumbnail option" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
-          </label>
-        `).join('');
-        
-        // Populate gallery options
-        galleryOptions.innerHTML = allImages.map(img => `
-          <label style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.5rem;border:2px solid #ddd;border-radius:4px;cursor:pointer;">
-            <input type="checkbox" name="gallery" value="${img}" checked style="margin:0;">
-            <img src="${img}" alt="Gallery option" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
-          </label>
-        `).join('');
+        if (allImages.length === 0) {
+          thumbnailOptions.innerHTML = '<div style="color:#666;font-size:0.95rem;">No submission photos are available for thumbnail selection.</div>';
+          galleryOptions.innerHTML = '<div style="color:#666;font-size:0.95rem;">No submission photos are available for gallery selection.</div>';
+        } else {
+          thumbnailOptions.innerHTML = allImages.map((img, index) => `
+            <label style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.5rem;border:2px solid #ddd;border-radius:4px;cursor:pointer;">
+              <input type="radio" name="thumbnail" value="${img}" ${index === 0 ? 'checked' : ''} style="margin:0;">
+              <img src="${img}" alt="Thumbnail option" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
+            </label>
+          `).join('');
+          
+          galleryOptions.innerHTML = allImages.map(img => `
+            <label style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.5rem;border:2px solid #ddd;border-radius:4px;cursor:pointer;">
+              <input type="checkbox" name="gallery" value="${img}" checked style="margin:0;">
+              <img src="${img}" alt="Gallery option" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
+            </label>
+          `).join('');
+        }
         
         modal.style.display = 'flex';
       }
