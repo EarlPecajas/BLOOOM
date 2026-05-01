@@ -69,7 +69,7 @@
     </main>
 
     <script>
-      const supabase = window.bloomSupabase;
+      const bloomSupabase = window.bloomSupabase;
 
       document.getElementById('register-form').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -93,7 +93,7 @@
         }
 
         try {
-          const { data, error } = await supabase.auth.signUp({
+          const { data, error } = await bloomSupabase.auth.signUp({
             email,
             password,
             options: {
