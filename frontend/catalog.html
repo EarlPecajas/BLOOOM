@@ -263,13 +263,13 @@
 
       async function loadCatalog() {
         try {
-          if (!supabase) {
+          if (!bloomSupabase) {
             throw new Error('Supabase is not configured');
           }
 
           const [{ data: orchidData, error: orchidError }, { data: genusData, error: genusError }] = await Promise.all([
-            supabase.from('orchids').select('orchid_id, sci_name, common_name, endemicity, genus_id').order('sci_name', { ascending: true }),
-            supabase.from('genus').select('genus_id, genus_name')
+            bloomSupabase.from('orchids').select('orchid_id, sci_name, common_name, endemicity, genus_id').order('sci_name', { ascending: true }),
+            bloomSupabase.from('genus').select('genus_id, genus_name')
           ]);
 
           if (orchidError) {
