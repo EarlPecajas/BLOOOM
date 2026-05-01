@@ -421,10 +421,45 @@
           }
 
           orchids = (data || []).map(normalizeOrchidRow);
-
           renderCatalog(orchids);
         } catch (error) {
-          console.error('Catalog load failed:', error);
+          console.warn('orchid_overview query failed, attempting fallback to orchids table:', error?.message || error);
+          await loadCatalogFallback();
+        }
+      }
+
+      async function loadCatalogFallback() {
+        try {
+          if (!bloomSupabase) {
+            throw new Error('Supabase is not configured');
+          }
+
+          const { data, error } = await bloomSupabase
+            .from('orchids')
+            .select('orchid_id, sci_name, common_name, endemicity, genus_id')
+            .order('sci_name', { ascending: true });
+
+          if (error) {
+            throw new Error(error.message || 'Failed to load fallback catalog from orchids');
+          }
+
+          orchids = (data || []).map((row) => {
+            const scientificName = row.sci_name || '';
+            const genusFromName = scientificName.split(' ')[0] || '';
+
+            return {
+              id: row.orchid_id,
+              name: scientificName,
+              genus: row.genus?.genus_name || genusFromName,
+              common_name: row.common_name || '',
+              endemicity: row.endemicity || '',
+              image_url: ''
+            };
+          });
+
+          renderCatalog(orchids);
+        } catch (fallbackError) {
+          console.error('Fallback catalog load failed:', fallbackError);
           catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
         }
       }

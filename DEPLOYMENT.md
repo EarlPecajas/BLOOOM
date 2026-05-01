@@ -6,6 +6,8 @@ This version of BLOOM deploys as a static frontend on Vercel and talks directly 
 
 Run [backend/supabase-only.sql](backend/supabase-only.sql) in the Supabase SQL editor.
 
+If you use incremental SQL migrations instead of the full Supabase bootstrap script, also run [backend/add-orchid-overview-view.sql](backend/add-orchid-overview-view.sql).
+
 That SQL file:
 - Creates the `orchid_overview` view used by the catalog and dashboard
 - Enables the required RLS policies for the tables used by the app
