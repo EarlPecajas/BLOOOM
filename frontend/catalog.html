@@ -208,6 +208,18 @@
         orchidDetailModal.hidden = true;
       }
 
+      function normalizeOrchidRow(row) {
+        return {
+          ...row,
+          id: row.id ?? row.orchid_id,
+          name: row.name || row.sci_name || '',
+          genus: row.genus || '',
+          common_name: row.common_name || '',
+          endemicity: row.endemicity || '',
+          image_url: row.image_url || ''
+        };
+      }
+
       function syncCatalogViewState() {
         catalogGrid.classList.toggle('list-view', isListView);
 
@@ -267,29 +279,20 @@
             throw new Error('Supabase is not configured');
           }
 
-          const [{ data: orchidData, error: orchidError }, { data: genusData, error: genusError }] = await Promise.all([
-            bloomSupabase.from('orchids').select('orchid_id, sci_name, common_name, endemicity, genus_id').order('sci_name', { ascending: true }),
-            bloomSupabase.from('genus').select('genus_id, genus_name')
-          ]);
+          const { data, error } = await bloomSupabase
+            .from('orchid_overview')
+            .select('id, name, genus, common_name, endemicity, image_url')
+            .order('name', { ascending: true });
 
-          if (orchidError) {
-            throw new Error(orchidError.message || 'Failed to load catalog');
-          }
-          if (genusError) {
-            throw new Error(genusError.message || 'Failed to load genus data');
+          if (error) {
+            throw new Error(error.message || 'Failed to load catalog');
           }
 
-          const genusMap = new Map((genusData || []).map((genus) => [String(genus.genus_id), genus.genus_name]));
-          orchids = (orchidData || []).map((orchid) => ({
-            id: orchid.orchid_id,
-            name: orchid.sci_name,
-            genus: genusMap.get(String(orchid.genus_id)) || '',
-            common_name: orchid.common_name,
-            endemicity: orchid.endemicity
-          }));
+          orchids = (data || []).map(normalizeOrchidRow);
 
           renderCatalog(orchids);
         } catch (error) {
+          console.error('Catalog load failed:', error);
           catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
         }
       }
