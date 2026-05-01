@@ -368,6 +368,11 @@
       }
 
       function renderCatalog(items) {
+        if (!items || items.length === 0) {
+          catalogGrid.innerHTML = '<p>No orchids found in the database.</p>';
+          return;
+        }
+
         catalogGrid.innerHTML = items.map((orchid) => `
           <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}">
             <img src="${catalogImage}" alt="${orchid.name}" class="orchid-card-image" />

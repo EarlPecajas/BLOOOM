@@ -8,6 +8,8 @@ Run [backend/supabase-only.sql](backend/supabase-only.sql) in the Supabase SQL e
 
 If you use incremental SQL migrations instead of the full Supabase bootstrap script, also run [backend/add-orchid-overview-view.sql](backend/add-orchid-overview-view.sql).
 
+If the catalog is empty after setup, run [backend/seed-genus-species.sql](backend/seed-genus-species.sql) to populate the `genus` and `orchids` tables with initial orchid records.
+
 That SQL file:
 - Creates the `orchid_overview` view used by the catalog and dashboard
 - Enables the required RLS policies for the tables used by the app
