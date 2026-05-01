@@ -89,6 +89,11 @@ CREATE POLICY "Public read orchids"
   FOR SELECT
   USING (true);
 
+CREATE POLICY "Authenticated insert orchids"
+  ON orchids
+  FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
 CREATE POLICY "Public read genus"
   ON genus
   FOR SELECT
@@ -99,10 +104,25 @@ CREATE POLICY "Public read biogeography"
   FOR SELECT
   USING (true);
 
+CREATE POLICY "Authenticated insert biogeography"
+  ON biogeography
+  FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
 CREATE POLICY "Public read conservation_status"
   ON conservation_status
   FOR SELECT
   USING (true);
+
+CREATE POLICY "Authenticated read picture"
+  ON picture
+  FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated insert picture"
+  ON picture
+  FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "Authenticated read sightings"
   ON species_sightings

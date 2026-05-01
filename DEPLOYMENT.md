@@ -14,6 +14,7 @@ That SQL file:
 - Creates the `orchid_overview` view used by the catalog and dashboard
 - Enables the required RLS policies for the tables used by the app
 - Creates the `bloom-uploads` storage bucket if it does not already exist
+- Adds policies for authenticated users to insert into orchids, picture, and biogeography tables (for catalog posting)
 
 Then confirm these items in Supabase:
 - `bloom-uploads` bucket exists and is public

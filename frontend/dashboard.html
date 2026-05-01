@@ -899,6 +899,7 @@
         <!-- Action Buttons -->
         <div id="actionButtons" style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid #e0e0e0;padding-top:1.5rem;">
           <button onclick="closeModal('detailModal')" class="dashboard-btn dashboard-btn-secondary">Close</button>
+          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" class="dashboard-btn dashboard-btn-primary" style="display:none;">Post to Catalog</button>
           <button id="approveBtn" onclick="performDetailAction('approve')" class="dashboard-btn dashboard-btn-success" style="display:none;">Approve</button>
           <button id="denyBtn" onclick="performDetailAction('deny')" class="dashboard-btn dashboard-btn-danger" style="display:none;">Deny</button>
           <button id="revisionBtn" onclick="performDetailAction('revision')" class="dashboard-btn dashboard-btn-primary" style="display:none;">Request Revision</button>
@@ -925,6 +926,46 @@
           <div id="conservationListContent" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
             <!-- Species will be populated here -->
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post to Catalog Modal -->
+    <div id="postToCatalogModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:2rem;">
+      <div style="background:white;border-radius:12px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <div style="background:linear-gradient(135deg,#2D5128,#3d6c36);padding:1.5rem;color:white;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;">
+          <h2 style="margin:0;font-size:1.3rem;font-family:Inter,Roboto,sans-serif;">Post to Orchid Catalog</h2>
+          <button onclick="closeModal('postToCatalogModal')" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:1.5rem;cursor:pointer;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 200ms ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">×</button>
+        </div>
+        <div style="padding:1.5rem;">
+          <form id="postToCatalogForm">
+            <div style="margin-bottom:1rem;">
+              <label for="catalogScientificName" style="display:block;margin-bottom:0.5rem;font-weight:500;">Scientific Name</label>
+              <input type="text" id="catalogScientificName" required style="width:100%;padding:0.5rem;border:1px solid #ddd;border-radius:4px;">
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label for="catalogGenus" style="display:block;margin-bottom:0.5rem;font-weight:500;">Genus</label>
+              <select id="catalogGenus" required style="width:100%;padding:0.5rem;border:1px solid #ddd;border-radius:4px;">
+                <option value="">Select Genus</option>
+              </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Thumbnail Picture</label>
+              <div id="thumbnailOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:0.5rem;max-height:200px;overflow-y:auto;">
+                <!-- Thumbnails will be populated here -->
+              </div>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label style="display:block;margin-bottom:0.5rem;font-weight:500;">Gallery Pictures</label>
+              <div id="galleryOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:0.5rem;max-height:200px;overflow-y:auto;">
+                <!-- Gallery options will be populated here -->
+              </div>
+            </div>
+            <div style="display:flex;gap:1rem;justify-content:flex-end;">
+              <button type="button" onclick="closeModal('postToCatalogModal')" class="dashboard-btn dashboard-btn-secondary">Cancel</button>
+              <button type="submit" class="dashboard-btn dashboard-btn-primary">Post to Catalog</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -3266,6 +3307,10 @@
         document.getElementById('denyBtn').style.display = canReview ? 'inline-block' : 'none';
         document.getElementById('revisionBtn').style.display = canReview ? 'inline-block' : 'none';
         
+        // Show Post to Catalog button for approved submissions (admin only)
+        const canPostToCatalog = isAdminRole && normalizedStatus === 'approved';
+        document.getElementById('postToCatalogBtn').style.display = canPostToCatalog ? 'inline-block' : 'none';
+        
         // Open modal and always start at the top of details
         const detailModal = document.getElementById('detailModal');
         const detailModalCard = document.getElementById('detailModalCard');
@@ -3981,17 +4026,200 @@
         }
       }
 
+      // Post to Catalog functionality
+      async function openPostToCatalogModal() {
+        if (!currentSubmission) return;
+        
+        const modal = document.getElementById('postToCatalogModal');
+        const form = document.getElementById('postToCatalogForm');
+        const scientificNameInput = document.getElementById('catalogScientificName');
+        const genusSelect = document.getElementById('catalogGenus');
+        const thumbnailOptions = document.getElementById('thumbnailOptions');
+        const galleryOptions = document.getElementById('galleryOptions');
+        
+        // Populate scientific name
+        scientificNameInput.value = currentSubmission.scientific_name || '';
+        
+        // Load genus options
+        try {
+          const { data: genusData, error } = await bloomSupabase.from('genus').select('genus_name').order('genus_name');
+          if (error) throw error;
+          genusSelect.innerHTML = '<option value="">Select Genus</option>' + 
+            genusData.map(g => `<option value="${g.genus_name}">${g.genus_name}</option>`).join('');
+          
+          // Set current genus if available
+          const currentGenus = currentSubmission.scientific_name?.split(' ')[0];
+          if (currentGenus && genusData.some(g => g.genus_name === currentGenus)) {
+            genusSelect.value = currentGenus;
+          }
+        } catch (error) {
+          console.error('Failed to load genus options:', error);
+        }
+        
+        // Get all images from submission
+        const allImages = [
+          ...(currentSubmission.whole_plant_photo_path || []),
+          ...(currentSubmission.closeup_flower_photo_path || []),
+          ...(currentSubmission.habitat_photo_path || [])
+        ].filter(Boolean);
+        
+        // Populate thumbnail options
+        thumbnailOptions.innerHTML = allImages.map((img, index) => `
+          <label style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.5rem;border:2px solid #ddd;border-radius:4px;cursor:pointer;">
+            <input type="radio" name="thumbnail" value="${img}" ${index === 0 ? 'checked' : ''} style="margin:0;">
+            <img src="${img}" alt="Thumbnail option" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
+          </label>
+        `).join('');
+        
+        // Populate gallery options
+        galleryOptions.innerHTML = allImages.map(img => `
+          <label style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.5rem;border:2px solid #ddd;border-radius:4px;cursor:pointer;">
+            <input type="checkbox" name="gallery" value="${img}" checked style="margin:0;">
+            <img src="${img}" alt="Gallery option" style="width:80px;height:80px;object-fit:cover;border-radius:4px;">
+          </label>
+        `).join('');
+        
+        modal.style.display = 'flex';
+      }
+      
+      async function submitPostToCatalog(event) {
+        event.preventDefault();
+        
+        const scientificName = document.getElementById('catalogScientificName').value.trim();
+        const genusName = document.getElementById('catalogGenus').value;
+        const thumbnail = document.querySelector('input[name="thumbnail"]:checked')?.value;
+        const galleryImages = Array.from(document.querySelectorAll('input[name="gallery"]:checked')).map(cb => cb.value);
+        
+        if (!scientificName || !genusName || !thumbnail) {
+          alert('Please fill in all required fields and select a thumbnail.');
+          return;
+        }
+        
+        try {
+          // Get genus_id
+          const { data: genusData, error: genusError } = await bloomSupabase
+            .from('genus')
+            .select('genus_id')
+            .eq('genus_name', genusName)
+            .single();
+          
+          if (genusError) throw genusError;
+          const genusId = genusData.genus_id;
+          
+          // Check if orchid already exists
+          const { data: existingOrchid } = await bloomSupabase
+            .from('orchids')
+            .select('orchid_id')
+            .eq('sci_name', scientificName)
+            .single();
+          
+          let orchidId;
+          if (existingOrchid) {
+            orchidId = existingOrchid.orchid_id;
+          } else {
+            // Insert new orchid
+            const { data: newOrchid, error: orchidError } = await bloomSupabase
+              .from('orchids')
+              .insert({
+                sci_name: scientificName,
+                genus_id: genusId,
+                date_discovered: new Date().toISOString()
+              })
+              .select('orchid_id')
+              .single();
+            
+            if (orchidError) throw orchidError;
+            orchidId = newOrchid.orchid_id;
+          }
+          
+          // Insert pictures (avoid duplicates)
+          const allImages = [thumbnail, ...galleryImages];
+          const pictureInserts = [];
+          
+          for (const imgPath of allImages) {
+            const { data: existingPic } = await bloomSupabase
+              .from('picture')
+              .select('picture_id')
+              .eq('file_path', imgPath)
+              .single();
+            
+            if (!existingPic) {
+              pictureInserts.push({ file_path: imgPath });
+            }
+          }
+          
+          if (pictureInserts.length > 0) {
+            const { error: pictureError } = await bloomSupabase
+              .from('picture')
+              .insert(pictureInserts);
+            
+            if (pictureError) throw pictureError;
+          }
+          
+          // Get picture_id for thumbnail
+          const { data: thumbnailPic, error: thumbError } = await bloomSupabase
+            .from('picture')
+            .select('picture_id')
+            .eq('file_path', thumbnail)
+            .single();
+          
+          if (thumbError) throw thumbError;
+          
+          // Check if biogeography record already exists
+          const { data: existingBio } = await bloomSupabase
+            .from('biogeography')
+            .select('biogeographic_id')
+            .eq('orchid_id', orchidId)
+            .single();
+          
+          if (existingBio) {
+            // Update existing record
+            const { error: bioError } = await bloomSupabase
+              .from('biogeography')
+              .update({
+                picture_id: thumbnailPic.picture_id,
+                submission_status: 'approved'
+              })
+              .eq('orchid_id', orchidId);
+            
+            if (bioError) throw bioError;
+          } else {
+            // Insert new biogeography record
+            const { error: bioError } = await bloomSupabase
+              .from('biogeography')
+              .insert({
+                orchid_id: orchidId,
+                picture_id: thumbnailPic.picture_id,
+                submission_status: 'approved'
+              });
+            
+            if (bioError) throw bioError;
+          }
+          
+          alert('Successfully posted to orchid catalog!');
+          closeModal('postToCatalogModal');
+          
+        } catch (error) {
+          console.error('Failed to post to catalog:', error);
+          alert('Failed to post to catalog: ' + error.message);
+        }
+      }
+
       // Close modals when clicking outside
       document.addEventListener('click', function(e) {
         if (e.target.id === 'detailModal') closeModal('detailModal');
         if (e.target.id === 'imageLightbox') closeLightbox();
         if (e.target.id === 'conservationModal') closeModal('conservationModal');
+        if (e.target.id === 'postToCatalogModal') closeModal('postToCatalogModal');
       });
       
       // Initialize data panels on page load
       document.addEventListener('DOMContentLoaded', function() {
         loadOrchidCatalog();
         loadConservationSummary();
+        
+        // Add form submit handler for post to catalog
+        document.getElementById('postToCatalogForm').addEventListener('submit', submitPostToCatalog);
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
