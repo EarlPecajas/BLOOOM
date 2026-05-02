@@ -2820,17 +2820,14 @@
 
         const modeGroup = document.createElement('div');
         modeGroup.className = 'map-trail-mode-group';
-        ['trail', 'heatmap', 'both'].forEach((mode) => {
-          const modeButton = document.createElement('button');
-          modeButton.type = 'button';
-          modeButton.className = 'map-trail-mode-btn';
-          modeButton.dataset.trailMode = mode;
-          modeButton.textContent = mode === 'heatmap' ? 'Heatmap View' : mode === 'trail' ? 'Trail View' : 'Both';
-          modeButton.addEventListener('click', function() {
-            setTrailViewMode(mode);
-          });
-          modeGroup.appendChild(modeButton);
+        const modeButton = document.createElement('button');
+        modeButton.type = 'button';
+        modeButton.className = 'map-trail-mode-btn';
+        modeButton.dataset.trailMode = 'toggle';
+        modeButton.addEventListener('click', function() {
+          setTrailViewMode(trailSelectionState.mode === 'trail' ? 'heatmap' : 'trail');
         });
+        modeGroup.appendChild(modeButton);
 
         header.append(headingWrap, modeGroup);
 
@@ -2911,7 +2908,7 @@
       }
 
       function setTrailViewMode(mode) {
-        trailSelectionState.mode = ['trail', 'heatmap', 'both'].includes(mode) ? mode : 'both';
+        trailSelectionState.mode = ['trail', 'heatmap'].includes(mode) ? mode : 'heatmap';
         syncTrailControlPanels();
         syncTrailMapOverlays();
       }
@@ -2944,15 +2941,14 @@
       function syncTrailControlPanels() {
         const isTrailMode = trailSelectionState.mode === 'trail';
         const isHeatMode = trailSelectionState.mode === 'heatmap';
-        const isBothMode = trailSelectionState.mode === 'both';
 
         document.querySelectorAll('.map-trail-controls').forEach((panelEl) => {
-          panelEl.querySelectorAll('[data-trail-mode]').forEach((buttonEl) => {
-            const mode = buttonEl.getAttribute('data-trail-mode');
-            const isActive = (mode === 'trail' && isTrailMode) || (mode === 'heatmap' && isHeatMode) || (mode === 'both' && isBothMode);
-            buttonEl.classList.toggle('is-active', isActive);
-            buttonEl.setAttribute('aria-pressed', String(isActive));
-          });
+          const modeButton = panelEl.querySelector('[data-trail-mode="toggle"]');
+          if (modeButton) {
+            modeButton.classList.toggle('is-active', true);
+            modeButton.setAttribute('aria-pressed', 'true');
+            modeButton.textContent = isTrailMode ? 'Switch to Heatmap View' : 'Switch to Trail View';
+          }
 
           const selectAllEl = panelEl.querySelector('[data-trail-select-all]');
           const trailCheckBoxes = Array.from(panelEl.querySelectorAll('[data-trail-name]'));
@@ -2981,7 +2977,7 @@
           trailLayerGroup.addLayer(createTrailGeoJsonLayer(feature));
         });
 
-        const shouldShowTrails = trailSelectionState.mode === 'trail' || trailSelectionState.mode === 'both';
+        const shouldShowTrails = trailSelectionState.mode === 'trail';
         if (shouldShowTrails && trailLayerGroup.getLayers().length > 0) {
           if (!mapInstance.hasLayer(trailLayerGroup)) {
             trailLayerGroup.addTo(mapInstance);
@@ -3000,7 +2996,7 @@
         refreshTrailLayerGroup(researcherMap, researcherTrailLayerGroup);
         refreshTrailLayerGroup(conservationHeatMap, conservationTrailLayerGroup);
 
-        const shouldShowHeat = trailSelectionState.mode === 'heatmap' || trailSelectionState.mode === 'both';
+        const shouldShowHeat = trailSelectionState.mode === 'heatmap';
 
         if (researcherMap && researcherHeatLayer) {
           if (shouldShowHeat) {
