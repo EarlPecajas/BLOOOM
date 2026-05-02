@@ -3394,8 +3394,34 @@
         document.getElementById('revisionBtn').style.display = canReview ? 'inline-block' : 'none';
         
         // Show Post to Catalog button for approved submissions (admin only)
+        const postBtnEl = document.getElementById('postToCatalogBtn');
         const canPostToCatalog = isAdminRole && normalizedStatus === 'approved';
-        document.getElementById('postToCatalogBtn').style.display = canPostToCatalog ? 'inline-block' : 'none';
+        postBtnEl.style.display = canPostToCatalog ? 'inline-block' : 'none';
+
+        // If the submission has already been posted to the orchids catalog (an `orchids` record exists
+        // for the same scientific name), hide the Post button — avoid reposting.
+        if (canPostToCatalog) {
+          (async () => {
+            try {
+              const sciName = submission.scientific_name || submission.species || submission.species_name || '';
+              if (sciName) {
+                const { data: existing, error: existErr } = await bloomSupabase
+                  .from('orchids')
+                  .select('orchid_id')
+                  .eq('sci_name', sciName)
+                  .maybeSingle();
+                if (existErr) {
+                  console.error('Error checking orchids table for existing record', existErr);
+                }
+                if (existing) {
+                  postBtnEl.style.display = 'none';
+                }
+              }
+            } catch (err) {
+              console.error('Failed to verify existing orchid record', err);
+            }
+          })();
+        }
         
         // Open modal and always start at the top of details
         const detailModal = document.getElementById('detailModal');
