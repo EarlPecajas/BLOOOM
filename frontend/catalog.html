@@ -189,6 +189,29 @@
       <img src="" alt="Full orchid view" id="catalog-lightbox-image" class="image-lightbox-photo" />
     </div>
 
+    <style>
+      .orchid-card {
+        position: relative;
+      }
+
+      .orchid-posted-badge {
+        position: absolute;
+        top: 0.75rem;
+        left: 0.75rem;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.7rem;
+        border-radius: 999px;
+        background: #2D5128;
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      }
+    </style>
+
     <script>
       const catalogGrid = document.getElementById('catalog-grid');
       const searchInput = document.getElementById('search-input');
@@ -544,6 +567,7 @@
 
         catalogGrid.innerHTML = items.map((orchid) => `
           <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}">
+            ${approvedSightingsByScientificName.has(normalizeScientificKey(orchid.name)) ? '<span class="orchid-posted-badge">Already in Catalog</span>' : ''}
             <img src="${catalogImage}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${orchid.name}</p>
@@ -664,6 +688,14 @@
           });
 
           approvedSightingsByScientificName = sightingsMap;
+
+          if (orchids.length > 0) {
+            if (searchInput.value.trim()) {
+              applySearchFilter();
+            } else {
+              renderCatalog(orchids);
+            }
+          }
         } catch {
           approvedSightingsByScientificName = new Map();
         }
