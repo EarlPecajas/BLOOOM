@@ -6,16 +6,16 @@ SELECT
   o.orchid_id AS id,
   o.sci_name AS name,
   g.genus_name AS genus,
-  o.common_name,
-  o.endemicity,
+  coalesce(o.common_name, '')::text AS common_name,
+  coalesce(o.endemicity, '')::text AS endemicity,
   NULL::text AS ethnobotanical,
   NULL::text AS horticulture_value,
   NULL::text AS cultural_importance,
-  NULL::text AS image_url,
+  ''::text AS image_url,
   'unassigned'::text AS conservation_status_key,
   'Unassigned'::text AS conservation_status
 FROM orchids o
-JOIN genus g ON g.genus_id = o.genus_id;
+INNER JOIN genus g ON g.genus_id = o.genus_id;
 
 DROP VIEW IF EXISTS public_approved_sightings;
 
