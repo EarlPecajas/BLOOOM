@@ -2684,7 +2684,7 @@
         });
       }
 
-      catalogGrid.addEventListener('click', function(e) {
+      catalogGrid.addEventListener('click', async function(e) {
         const card = e.target.closest('[data-dashboard-orchid-id]');
         if (!card) {
           return;
@@ -2693,9 +2693,33 @@
         const orchidId = card.getAttribute('data-dashboard-orchid-id');
         const selectedOrchid = orchidRows.find((orchid) => String(orchid.id) === String(orchidId));
 
-        if (selectedOrchid) {
-          openDashboardOrchidDetails(selectedOrchid);
+        if (!selectedOrchid) return;
+
+        // If authenticated, try to load the latest approved submission for this species
+        if (bloomSupabase && parsedActiveUser && (isAdminRole || isResearcherRole)) {
+          try {
+            const sciName = String(selectedOrchid.name || '').trim();
+            const { data, error } = await bloomSupabase
+              .from('denr_approved_sightings')
+              .select('*')
+              .eq('scientific_name', sciName)
+              .order('observation_date', { ascending: false })
+              .limit(1);
+
+            if (!error && Array.isArray(data) && data.length > 0) {
+              // Normalize and show the submission detail modal used for DENR review
+              const normalized = normalizeSubmissionRow(data[0]);
+              showDetailModal(normalized);
+              return;
+            }
+          } catch (err) {
+            // fallback to showing orchid overview details below
+            console.warn('Failed to load denr sighting for detail view:', err?.message || err);
+          }
         }
+
+        // Fallback: show the orchid overview details
+        openDashboardOrchidDetails(selectedOrchid);
       });
 
       dashboardContributorsToggle.addEventListener('click', function() {
