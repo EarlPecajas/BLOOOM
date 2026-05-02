@@ -750,15 +750,34 @@
           return;
         }
 
-        catalogGrid.innerHTML = items.map((orchid) => `
-          <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}">
-            <img src="${catalogImage}" alt="${orchid.name}" class="orchid-card-image" />
-            <div class="orchid-card-info">
-              <p class="orchid-card-name scientific-name">${orchid.name}</p>
-              <p class="orchid-card-genus">${orchid.genus}</p>
-            </div>
-          </button>
-        `).join('');
+        catalogGrid.innerHTML = items.map((orchid) => {
+          // Try to find an approved sighting with images for this orchid
+          const scientificKey = normalizeScientificKey(orchid.name);
+          const approvedSighting = approvedSightingsByScientificName.get(scientificKey);
+          
+          let thumbnailImage = catalogImage;
+          if (approvedSighting) {
+            const allImages = [
+              ...(approvedSighting.whole_plant_photo_path || []),
+              ...(approvedSighting.closeup_flower_photo_path || []),
+              ...(approvedSighting.habitat_photo_path || [])
+            ].filter(Boolean);
+            
+            if (allImages.length > 0) {
+              thumbnailImage = allImages[0];
+            }
+          }
+
+          return `
+            <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}">
+              <img src="${thumbnailImage}" alt="${orchid.name}" class="orchid-card-image" />
+              <div class="orchid-card-info">
+                <p class="orchid-card-name scientific-name">${orchid.name}</p>
+                <p class="orchid-card-genus">${orchid.genus}</p>
+              </div>
+            </button>
+          `;
+        }).join('');
       }
 
       function applySearchFilter() {
@@ -941,7 +960,11 @@
 
       syncCatalogViewState();
 
-      Promise.all([loadCatalog(), loadApprovedSightings()]);
+      // Load approved sightings first so catalog can use the images
+      (async () => {
+        await loadApprovedSightings();
+        await loadCatalog();
+      })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
