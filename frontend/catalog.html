@@ -517,9 +517,6 @@
           setDetailRow('row-habitat-type', 'detail-habitat-type', source.habitat_type || '');
           setDetailRow('row-microhabitat', 'detail-microhabitat', source.microhabitat || '');
           setDetailRow('row-growth-substrate', 'detail-growth-substrate', source.growth_substrate || '');
-          setDetailRow('row-light-exposure', 'detail-light-exposure', source.light_exposure || '');
-          setDetailRow('row-soil-type', 'detail-soil-type', source.soil_type || '');
-          setDetailRow('row-nearby-water', 'detail-nearby-water', source.nearby_water_source || '');
 
           setDetailRow('row-plant-height', 'detail-plant-height', source.plant_height_cm ?? '');
           setDetailRow('row-leaf-shape', 'detail-leaf-shape', source.leaf_shape || '');
@@ -569,6 +566,9 @@
           document.getElementById('row-team-members').hidden = true;
           document.getElementById('row-collection-method').hidden = true;
           document.getElementById('row-voucher').hidden = true;
+          document.getElementById('row-light-exposure').hidden = true;
+          document.getElementById('row-soil-type').hidden = true;
+          document.getElementById('row-nearby-water').hidden = true;
           document.getElementById('row-identification-confidence').hidden = false;
         } else {
           // Authenticated researcher / DENR / admin: prefer full DENR sighting when available
