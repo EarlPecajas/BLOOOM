@@ -179,7 +179,6 @@
         <!-- Chart Panel -->
         <div class="dashboard-card chart-card card shadow-sm border-0">
           <h3 class="card-title">Orchids Uploaded per Month (2024)</h3>
-          <div id="researcher-map-controls"></div>
           <canvas id="orchidChart" width="300" height="120"></canvas>
         </div>
 
@@ -428,7 +427,6 @@
 
         <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);grid-column:1/-1;">
           <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Conservation Risk Heat Map (Mt. Busa)</h2>
-          <div id="denr-map-controls"></div>
           <div id="conservation-heat-map" style="width:100%;height:460px;border-radius:12px;border:1px solid #dcdcdc;background:#f5f5f5;"></div>
           <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;font-size:0.8rem;color:#666;">
             <span>Lower risk</span>
@@ -533,7 +531,8 @@
 
     <!-- Map View -->
     <div id="map-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <h1 class="catalog-title">Orchid Distribution Map - Mt. Busa</h1>
+      <h1 class="catalog-title">Trail - Mt. Busa</h1>
+      <div id="researcher-map-controls" style="margin-bottom:1rem;"></div>
       <div id="map" style="width:100%;height:450px;border-radius:12px;border:2px solid #e0e0e0;background:#f5f5f5;"></div>
     </div>
 
@@ -2689,7 +2688,7 @@
         }
       ];
       const trailSelectionState = {
-        mode: 'heatmap',
+        mode: 'trail',
         selectedTrailNames: new Set(MT_BUSA_TRAIL_FEATURES.map((feature) => String(feature.properties?.name || '').trim()).filter(Boolean))
       };
       let conservationDonutChart = null;
@@ -2697,7 +2696,6 @@
       let researcherMap = null;
       let researcherHeatLayer = null;
       let researcherTrailLayerGroup = null;
-      let conservationTrailLayerGroup = null;
       let conservationHeatMap = null;
       let conservationHeatLayer = null;
 
@@ -2885,8 +2883,7 @@
 
       function renderTrailControlPanels() {
         const panelMounts = [
-          { mountId: 'researcher-map-controls', key: 'researcher', title: 'Researcher Map Trails', subtitle: 'Choose trails and map layers for the researcher map.' },
-          { mountId: 'denr-map-controls', key: 'denr', title: 'DENR Map Trails', subtitle: 'Use the same trail filters on the conservation map.' }
+          { mountId: 'researcher-map-controls', key: 'researcher', title: 'Trail - Mt. Busa', subtitle: 'Choose which trail lines appear on the researcher map.' }
         ];
 
         panelMounts.forEach((panelConfig) => {
@@ -2994,7 +2991,6 @@
 
       function syncTrailMapOverlays() {
         refreshTrailLayerGroup(researcherMap, researcherTrailLayerGroup);
-        refreshTrailLayerGroup(conservationHeatMap, conservationTrailLayerGroup);
 
         const shouldShowHeat = trailSelectionState.mode === 'heatmap';
 
@@ -3008,15 +3004,6 @@
           }
         }
 
-        if (conservationHeatMap && conservationHeatLayer) {
-          if (shouldShowHeat) {
-            if (!conservationHeatMap.hasLayer(conservationHeatLayer)) {
-              conservationHeatLayer.addTo(conservationHeatMap);
-            }
-          } else if (conservationHeatMap.hasLayer(conservationHeatLayer)) {
-            conservationHeatMap.removeLayer(conservationHeatLayer);
-          }
-        }
       }
 
       function parseCoordinateValue(inputId, label, min, max) {
@@ -3647,16 +3634,8 @@
         const isVisible = conservationView && conservationView.style.display !== 'none';
         if (!isVisible) return;
 
-        renderTrailControlPanels();
-
         if (conservationHeatMap === null) {
           conservationHeatMap = L.map('conservation-heat-map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
-          conservationTrailLayerGroup = conservationTrailLayerGroup || L.layerGroup();
-          if (!conservationHeatMap.getPane('trail-pane')) {
-            conservationHeatMap.createPane('trail-pane');
-            conservationHeatMap.getPane('trail-pane').style.zIndex = '650';
-            conservationHeatMap.getPane('trail-pane').style.pointerEvents = 'auto';
-          }
           L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles © Esri',
             maxZoom: 19
@@ -3766,7 +3745,6 @@
             setTimeout(() => initializeLeafletMap(), 100);
           }
           if (viewName === 'conservation') {
-            renderTrailControlPanels();
             loadConservationSummary();
           }
           if (viewName === 'submissions') {
