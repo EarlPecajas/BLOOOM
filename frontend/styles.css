@@ -1009,12 +1009,16 @@ form {
 
 .orchid-detail-card {
   position: relative;
-  width: min(720px, 100%);
+  width: min(620px, 100%);
+  max-height: min(88vh, 820px);
   background: #ffffff;
   border-radius: 14px;
   border: 2px solid #d7e5dc;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
-  padding: 1.4rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .orchid-showcase-row {
@@ -1022,8 +1026,8 @@ form {
   align-items: center;
   justify-content: space-between;
   gap: 0.9rem;
-  margin: 0 0 1rem;
-  padding: 0.75rem 0.85rem;
+  margin: 0 0 0.85rem;
+  padding: 0.6rem 0.7rem;
   border: 1px solid #d7e5dc;
   border-radius: 10px;
   background: #f6faf7;
@@ -1032,7 +1036,7 @@ form {
 .orchid-showcase-name {
   margin: 0;
   font-family: "Inter", "Roboto", sans-serif;
-  font-size: 1.55rem;
+  font-size: 1.3rem;
   color: #2D5128;
   min-width: 160px;
 }
@@ -1044,8 +1048,8 @@ form {
 }
 
 .orchid-sample-image {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #d5e4da;
@@ -1063,7 +1067,7 @@ form {
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
-  font-size: 1.4rem;
+  font-size: 1.05rem;
 }
 
 .see-gallery-link:hover {
@@ -1083,9 +1087,9 @@ form {
 }
 
 .orchid-detail-title {
-  margin: 0 0 1rem;
+  margin: 0;
   font-family: "Inter", "Roboto", sans-serif;
-  font-size: 1.45rem;
+  font-size: 1.2rem;
   color: #2D5128;
 }
 
@@ -1106,10 +1110,10 @@ form {
   background: #2D5128;
   color: #ffffff;
   border-radius: 999px;
-  padding: 0.48rem 1.25rem;
+  padding: 0.38rem 1rem;
   margin: 0;
   font-family: "Inter", "Roboto", sans-serif;
-  font-size: 1.45rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   line-height: 1;
@@ -1126,7 +1130,7 @@ form {
 }
 
 .contributors-panel {
-  margin: 0 0 0.95rem;
+  margin: 0 0 0.75rem;
   background: #f5faf6;
   border: 1px solid #d7e5dc;
   border-radius: 10px;
@@ -1246,14 +1250,30 @@ form {
 
 .orchid-detail-grid {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.85rem;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  max-height: calc(88vh - 205px);
+}
+
+.orchid-detail-section {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.orchid-detail-section-title {
+  margin: 0 0 0.15rem;
+  color: #2D5128;
+  font-family: "Inter", "Roboto", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 .orchid-detail-row {
   display: grid;
   grid-template-columns: minmax(170px, 230px) 1fr;
   gap: 0.6rem;
-  padding: 0.55rem 0.7rem;
+  padding: 0.45rem 0.6rem;
   border-radius: 8px;
   background: #f7fbf8;
 }
@@ -1322,6 +1342,21 @@ form {
 
   .orchid-showcase-name {
     min-width: 0;
+  }
+
+  .orchid-detail-card {
+    width: min(100%, 100%);
+    max-height: 90vh;
+    padding: 0.85rem;
+  }
+
+  .orchid-detail-grid {
+    max-height: calc(90vh - 190px);
+  }
+
+  .orchid-detail-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 }
 
