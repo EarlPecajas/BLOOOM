@@ -299,7 +299,6 @@
           scientific_name: row.scientific_name || '',
           common_names: parseJsonArrayValue(row.common_names),
           identification_confidence: row.identification_confidence || '',
-          observation_type: row.observation_type || '',
           observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
           mountain_name: row.mountain_name || '',
           specific_site_zone: row.specific_site_zone || '',
@@ -309,10 +308,14 @@
           plant_height_cm: row.plant_height_cm ?? '',
           leaf_shape: row.leaf_shape || '',
           leaf_count: row.leaf_count ?? '',
+          leaf_textures: parseJsonArrayValue(row.leaf_textures),
+          leaf_arrangement: row.leaf_arrangement || '',
           flower_color: row.flower_color || '',
           flower_count: row.flower_count ?? '',
           flower_diameter_cm: row.flower_diameter_cm ?? '',
           inflorescence_type: row.inflorescence_type || '',
+          petal_characteristics: row.petal_characteristics || '',
+          labellum_lip_description: row.labellum_lip_description || '',
           fragrance: row.fragrance || '',
           flowering_season: row.flowering_season || '',
           blooming_stage: row.blooming_stage || '',
@@ -320,10 +323,10 @@
           fruit_present: row.fruit_present,
           fruit_type: row.fruit_type || '',
           population_status: row.population_status || '',
+          threat_level_generalized: row.threat_level_generalized || '',
           growth_substrate: row.growth_substrate || '',
-          light_exposure: row.light_exposure || '',
-          soil_type: row.soil_type || '',
           nearby_water_source: row.nearby_water_source || '',
+          educational_notes: row.educational_notes || '',
           location_visibility_note: row.location_visibility_note || 'Location hidden for conservation',
           whole_plant_photo_path: parseJsonArrayValue(row.whole_plant_photo_path),
           closeup_flower_photo_path: parseJsonArrayValue(row.closeup_flower_photo_path),
@@ -349,7 +352,6 @@
         }
 
         const parts = [
-          publicSighting.observation_type,
           publicSighting.habitat_type,
           publicSighting.blooming_stage || publicSighting.flowering_stage
         ].filter((value) => hasUsableValue(value));
@@ -401,6 +403,19 @@
         const parsed = Number(value);
         if (Number.isFinite(parsed)) {
           return `~${Math.round(parsed)} m`;
+        }
+
+        return String(value);
+      }
+
+      function formatRoundedMeasurement(value, unitLabel) {
+        if (value === null || value === undefined || value === '') {
+          return '';
+        }
+
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+          return `~${Math.round(parsed)} ${unitLabel}`;
         }
 
         return String(value);
@@ -521,10 +536,14 @@
           setDetailRow('row-plant-height', 'detail-plant-height', source.plant_height_cm ?? '');
           setDetailRow('row-leaf-shape', 'detail-leaf-shape', source.leaf_shape || '');
           setDetailRow('row-leaf-count', 'detail-leaf-count', source.leaf_count ?? '');
+          setDetailRow('row-leaf-textures', 'detail-leaf-textures', Array.isArray(source.leaf_textures) ? source.leaf_textures.join(', ') : source.leaf_textures || '');
+          setDetailRow('row-leaf-arrangement', 'detail-leaf-arrangement', source.leaf_arrangement || '');
           setDetailRow('row-flower-color', 'detail-flower-color', source.flower_color || '');
           setDetailRow('row-flower-count', 'detail-flower-count', source.flower_count ?? '');
-          setDetailRow('row-flower-diameter', 'detail-flower-diameter', source.flower_diameter_cm ?? '');
+          setDetailRow('row-flower-diameter', 'detail-flower-diameter', hasUsableValue(source.flower_diameter_cm) ? `~${Math.round(Number(source.flower_diameter_cm))} cm` : '');
           setDetailRow('row-inflorescence-type', 'detail-inflorescence-type', source.inflorescence_type || '');
+          setDetailRow('row-petal-characteristics', 'detail-petal-characteristics', source.petal_characteristics || '');
+          setDetailRow('row-labellum', 'detail-labellum', source.labellum_lip_description || '');
           setDetailRow('row-fragrance', 'detail-fragrance', source.fragrance || '');
           setDetailRow('row-flowering-season', 'detail-flowering-season', source.flowering_season || '');
 
@@ -533,9 +552,11 @@
           setDetailRow('row-fruit-type', 'detail-fruit-type', source.fruit_type || '');
 
           setDetailRow('row-population-status', 'detail-population-status', source.population_status || '');
+          document.getElementById('row-population-status').hidden = true;
+          setDetailRow('row-threat-level', 'detail-threat-level', source.threat_level_generalized || '');
 
-          setDetailRow('row-ethnobotanical', 'detail-ethnobotanical', source.ethnobotanical || '');
-          setDetailRow('row-cultural', 'detail-cultural', source.cultural || source.researcher_notes || '');
+          setDetailRow('row-ethnobotanical', 'detail-ethnobotanical', source.educational_notes || '');
+          setDetailRow('row-cultural', 'detail-cultural', '');
 
           document.getElementById('row-endemicity').hidden = true;
           document.getElementById('row-observation-summary').hidden = true;
@@ -552,15 +573,10 @@
           document.getElementById('row-pseudobulb').hidden = true;
           document.getElementById('row-stem-length').hidden = true;
           document.getElementById('row-root-length').hidden = true;
-          document.getElementById('row-leaf-textures').hidden = true;
-          document.getElementById('row-leaf-arrangement').hidden = true;
-          document.getElementById('row-petal-characteristics').hidden = true;
           document.getElementById('row-sepal-characteristics').hidden = true;
-          document.getElementById('row-labellum').hidden = true;
           document.getElementById('row-life-stage').hidden = true;
           document.getElementById('row-phenology').hidden = true;
           document.getElementById('row-population-count').hidden = true;
-          document.getElementById('row-threat-level').hidden = true;
           document.getElementById('row-threat-types').hidden = true;
           document.getElementById('row-institution').hidden = true;
           document.getElementById('row-team-members').hidden = true;
@@ -568,7 +584,6 @@
           document.getElementById('row-voucher').hidden = true;
           document.getElementById('row-light-exposure').hidden = true;
           document.getElementById('row-soil-type').hidden = true;
-          document.getElementById('row-nearby-water').hidden = true;
           document.getElementById('row-identification-confidence').hidden = false;
         } else {
           // Authenticated researcher / DENR / admin: prefer full DENR sighting when available
@@ -784,7 +799,7 @@
         try {
           const { data, error } = await bloomSupabase
             .from('public_approved_sightings')
-            .select('scientific_name, common_names, identification_confidence, observation_type, observation_date, observation_month, mountain_name, specific_site_zone, elevation_meters, habitat_type, microhabitat, growth_substrate, light_exposure, soil_type, nearby_water_source, plant_height_cm, leaf_shape, leaf_count, flower_color, flower_count, flower_diameter_cm, inflorescence_type, fragrance, flowering_season, blooming_stage, fruit_present, fruit_type, population_status, location_visibility_note, whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path')
+            .select('scientific_name, common_names, identification_confidence, observation_date, observation_month, mountain_name, specific_site_zone, elevation_meters, habitat_type, microhabitat, growth_substrate, nearby_water_source, plant_height_cm, leaf_shape, leaf_count, leaf_textures, leaf_arrangement, flower_color, flower_count, flower_diameter_cm, inflorescence_type, petal_characteristics, labellum_lip_description, fragrance, flowering_season, blooming_stage, fruit_present, fruit_type, population_status, threat_level_generalized, educational_notes, location_visibility_note, whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path')
             .order('observation_date', { ascending: false });
 
           if (error) {
