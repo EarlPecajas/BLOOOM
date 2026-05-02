@@ -826,66 +826,127 @@
           </div>
         </div>
       
-        <!-- Expanded Details Grid -->
+        <!-- Expanded Details Grid grouped into titled sections -->
         <div id="detailFields" style="background:#fff;padding:1rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #eef6ef;">
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-            <!-- Each row: label and value span -->
-            <div id="row-entry-id"><strong>Entry ID:</strong> <span id="value-entry-id"></span></div>
-            <div id="row-researcher-email"><strong>Researcher Email:</strong> <span id="value-researcher-email"></span></div>
-            <div id="row-researcher-name"><strong>Researcher Name:</strong> <span id="value-researcher-name"></span></div>
-            <div id="row-common-names"><strong>Common Names:</strong> <span id="value-common-names"></span></div>
-            <div id="row-identification-confidence"><strong>Identification Confidence:</strong> <span id="value-identification-confidence"></span></div>
-            <div id="row-collection-method"><strong>Collection Method:</strong> <span id="value-collection-method"></span></div>
-            <div id="row-observation-type"><strong>Observation Type:</strong> <span id="value-observation-type"></span></div>
-            <div id="row-voucher-collected"><strong>Voucher Collected:</strong> <span id="value-voucher-collected"></span></div>
-            <div id="row-observation-date"><strong>Observation Date:</strong> <span id="value-observation-date"></span></div>
-            <div id="row-observation-time"><strong>Observation Time:</strong> <span id="value-observation-time"></span></div>
-            <div id="row-mountain-name"><strong>Mountain:</strong> <span id="value-mountain-name"></span></div>
-            <div id="row-specific-site"><strong>Specific Site / Zone:</strong> <span id="value-specific-site"></span></div>
-            <div id="row-latitude"><strong>Latitude:</strong> <span id="value-latitude"></span></div>
-            <div id="row-longitude"><strong>Longitude:</strong> <span id="value-longitude"></span></div>
-            <div id="row-elevation"><strong>Elevation (m):</strong> <span id="value-elevation"></span></div>
-            <div id="row-habitat-type"><strong>Habitat Type:</strong> <span id="value-habitat-type"></span></div>
-            <div id="row-microhabitat"><strong>Microhabitat:</strong> <span id="value-microhabitat"></span></div>
-            <div id="row-growth-substrate"><strong>Growth Substrate:</strong> <span id="value-growth-substrate"></span></div>
-            <div id="row-host-tree"><strong>Host Tree Species:</strong> <span id="value-host-tree"></span></div>
-            <div id="row-host-dbh"><strong>Host Tree DBH (cm):</strong> <span id="value-host-dbh"></span></div>
-            <div id="row-canopy-cover"><strong>Canopy Cover (%):</strong> <span id="value-canopy-cover"></span></div>
-            <div id="row-light-exposure"><strong>Light Exposure:</strong> <span id="value-light-exposure"></span></div>
-            <div id="row-soil-type"><strong>Soil Type:</strong> <span id="value-soil-type"></span></div>
-            <div id="row-nearby-water"><strong>Nearby Water Source:</strong> <span id="value-nearby-water"></span></div>
-            <div id="row-plant-height"><strong>Plant Height (cm):</strong> <span id="value-plant-height"></span></div>
-            <div id="row-pseudobulb"><strong>Pseudobulb Present:</strong> <span id="value-pseudobulb"></span></div>
-            <div id="row-stem-length"><strong>Stem Length (cm):</strong> <span id="value-stem-length"></span></div>
-            <div id="row-root-length"><strong>Root Length (cm):</strong> <span id="value-root-length"></span></div>
-            <div id="row-leaf-count"><strong>Leaf Count:</strong> <span id="value-leaf-count"></span></div>
-            <div id="row-leaf-shape"><strong>Leaf Shape:</strong> <span id="value-leaf-shape"></span></div>
-            <div id="row-leaf-shape-other"><strong>Leaf Shape (other):</strong> <span id="value-leaf-shape-other"></span></div>
-            <div id="row-leaf-dimensions"><strong>Leaf LxW (cm):</strong> <span id="value-leaf-dimensions"></span></div>
-            <div id="row-leaf-textures"><strong>Leaf Textures:</strong> <span id="value-leaf-textures"></span></div>
-            <div id="row-leaf-arrangement"><strong>Leaf Arrangement:</strong> <span id="value-leaf-arrangement"></span></div>
-            <div id="row-flower-color"><strong>Flower Color:</strong> <span id="value-flower-color"></span></div>
-            <div id="row-flower-count"><strong>Flower Count:</strong> <span id="value-flower-count"></span></div>
-            <div id="row-flower-diameter"><strong>Flower Diameter (cm):</strong> <span id="value-flower-diameter"></span></div>
-            <div id="row-inflorescence"><strong>Inflorescence Type:</strong> <span id="value-inflorescence"></span></div>
-            <div id="row-petal-char"><strong>Petal Characteristics:</strong> <span id="value-petal-char"></span></div>
-            <div id="row-sepal-char"><strong>Sepal Characteristics:</strong> <span id="value-sepal-char"></span></div>
-            <div id="row-labellum"><strong>Labellum / Lip:</strong> <span id="value-labellum"></span></div>
-            <div id="row-fragrance"><strong>Fragrance:</strong> <span id="value-fragrance"></span></div>
-            <div id="row-blooming-stage"><strong>Blooming Stage:</strong> <span id="value-blooming-stage"></span></div>
-            <div id="row-flowering-season"><strong>Flowering Season:</strong> <span id="value-flowering-season"></span></div>
-            <div id="row-fruit-present"><strong>Fruit Present:</strong> <span id="value-fruit-present"></span></div>
-            <div id="row-fruit-type"><strong>Fruit Type:</strong> <span id="value-fruit-type"></span></div>
-            <div id="row-seed-capsule"><strong>Seed Capsule Condition:</strong> <span id="value-seed-capsule"></span></div>
-            <div id="row-life-stage"><strong>Life Stage:</strong> <span id="value-life-stage"></span></div>
-            <div id="row-phenology"><strong>Phenology:</strong> <span id="value-phenology"></span></div>
-            <div id="row-population-count"><strong>Population Count:</strong> <span id="value-population-count"></span></div>
-            <div id="row-population-status"><strong>Population Status:</strong> <span id="value-population-status"></span></div>
-            <div id="row-threat-level"><strong>Threat Level:</strong> <span id="value-threat-level"></span></div>
-            <div id="row-threat-types"><strong>Threat Types:</strong> <span id="value-threat-types"></span></div>
-            <div id="row-institution"><strong>Institution:</strong> <span id="value-institution"></span></div>
-            <div id="row-team-members"><strong>Team Members:</strong> <span id="value-team-members"></span></div>
-          </div>
+          <!-- Basic Taxonomic Information -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Basic Taxonomic Information</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-entry-id"><strong>Entry ID:</strong> <span id="value-entry-id"></span></div>
+              <div id="row-common-names"><strong>Common Names:</strong> <span id="value-common-names"></span></div>
+              <div id="row-identification-confidence"><strong>Identification Confidence:</strong> <span id="value-identification-confidence"></span></div>
+            </div>
+          </section>
+
+          <!-- Observation / Collection Details -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Observation / Collection Details</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-collection-method"><strong>Collection Method:</strong> <span id="value-collection-method"></span></div>
+              <div id="row-observation-type"><strong>Observation Type:</strong> <span id="value-observation-type"></span></div>
+              <div id="row-voucher-collected"><strong>Voucher Collected:</strong> <span id="value-voucher-collected"></span></div>
+              <div id="row-observation-date"><strong>Observation Date:</strong> <span id="value-observation-date"></span></div>
+              <div id="row-observation-time"><strong>Observation Time:</strong> <span id="value-observation-time"></span></div>
+            </div>
+          </section>
+
+          <!-- Geographical / Location Data -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Geographical / Location Data</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-mountain-name"><strong>Mountain:</strong> <span id="value-mountain-name"></span></div>
+              <div id="row-specific-site"><strong>Specific Site / Zone:</strong> <span id="value-specific-site"></span></div>
+              <div id="row-latitude"><strong>Latitude:</strong> <span id="value-latitude"></span></div>
+              <div id="row-longitude"><strong>Longitude:</strong> <span id="value-longitude"></span></div>
+              <div id="row-elevation"><strong>Elevation (m):</strong> <span id="value-elevation"></span></div>
+            </div>
+          </section>
+
+          <!-- Habitat Information -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Habitat Information</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-habitat-type"><strong>Habitat Type:</strong> <span id="value-habitat-type"></span></div>
+              <div id="row-microhabitat"><strong>Microhabitat:</strong> <span id="value-microhabitat"></span></div>
+              <div id="row-growth-substrate"><strong>Growth Substrate:</strong> <span id="value-growth-substrate"></span></div>
+              <div id="row-host-tree"><strong>Host Tree Species:</strong> <span id="value-host-tree"></span></div>
+              <div id="row-host-dbh"><strong>Host Tree DBH (cm):</strong> <span id="value-host-dbh"></span></div>
+              <div id="row-canopy-cover"><strong>Canopy Cover (%):</strong> <span id="value-canopy-cover"></span></div>
+              <div id="row-light-exposure"><strong>Light Exposure:</strong> <span id="value-light-exposure"></span></div>
+              <div id="row-soil-type"><strong>Soil Type:</strong> <span id="value-soil-type"></span></div>
+              <div id="row-nearby-water"><strong>Nearby Water Source:</strong> <span id="value-nearby-water"></span></div>
+            </div>
+          </section>
+
+          <!-- Morphological Characteristics -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Morphological Characteristics</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-plant-height"><strong>Plant Height (cm):</strong> <span id="value-plant-height"></span></div>
+              <div id="row-pseudobulb"><strong>Pseudobulb Present:</strong> <span id="value-pseudobulb"></span></div>
+              <div id="row-stem-length"><strong>Stem Length (cm):</strong> <span id="value-stem-length"></span></div>
+              <div id="row-root-length"><strong>Root Length (cm):</strong> <span id="value-root-length"></span></div>
+              <div id="row-leaf-count"><strong>Leaf Count:</strong> <span id="value-leaf-count"></span></div>
+              <div id="row-leaf-shape"><strong>Leaf Shape:</strong> <span id="value-leaf-shape"></span></div>
+              <div id="row-leaf-shape-other"><strong>Leaf Shape (other):</strong> <span id="value-leaf-shape-other"></span></div>
+              <div id="row-leaf-dimensions"><strong>Leaf LxW (cm):</strong> <span id="value-leaf-dimensions"></span></div>
+              <div id="row-leaf-textures"><strong>Leaf Textures:</strong> <span id="value-leaf-textures"></span></div>
+              <div id="row-leaf-arrangement"><strong>Leaf Arrangement:</strong> <span id="value-leaf-arrangement"></span></div>
+            </div>
+          </section>
+
+          <!-- Ecological / Biological Data -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Ecological / Biological Data</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-flower-color"><strong>Flower Color:</strong> <span id="value-flower-color"></span></div>
+              <div id="row-flower-count"><strong>Flower Count:</strong> <span id="value-flower-count"></span></div>
+              <div id="row-flower-diameter"><strong>Flower Diameter (cm):</strong> <span id="value-flower-diameter"></span></div>
+              <div id="row-inflorescence"><strong>Inflorescence Type:</strong> <span id="value-inflorescence"></span></div>
+              <div id="row-petal-char"><strong>Petal Characteristics:</strong> <span id="value-petal-char"></span></div>
+              <div id="row-sepal-char"><strong>Sepal Characteristics:</strong> <span id="value-sepal-char"></span></div>
+              <div id="row-labellum"><strong>Labellum / Lip:</strong> <span id="value-labellum"></span></div>
+              <div id="row-fragrance"><strong>Fragrance:</strong> <span id="value-fragrance"></span></div>
+              <div id="row-blooming-stage"><strong>Blooming Stage:</strong> <span id="value-blooming-stage"></span></div>
+              <div id="row-flowering-season"><strong>Flowering Season:</strong> <span id="value-flowering-season"></span></div>
+              <div id="row-fruit-present"><strong>Fruit Present:</strong> <span id="value-fruit-present"></span></div>
+              <div id="row-fruit-type"><strong>Fruit Type:</strong> <span id="value-fruit-type"></span></div>
+              <div id="row-seed-capsule"><strong>Seed Capsule Condition:</strong> <span id="value-seed-capsule"></span></div>
+            </div>
+          </section>
+
+          <!-- Conservation & Threat Data -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Conservation & Threat Data</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-life-stage"><strong>Life Stage:</strong> <span id="value-life-stage"></span></div>
+              <div id="row-phenology"><strong>Phenology:</strong> <span id="value-phenology"></span></div>
+              <div id="row-population-count"><strong>Population Count:</strong> <span id="value-population-count"></span></div>
+              <div id="row-population-status"><strong>Population Status:</strong> <span id="value-population-status"></span></div>
+              <div id="row-threat-level"><strong>Threat Level:</strong> <span id="value-threat-level"></span></div>
+              <div id="row-threat-types"><strong>Threat Types:</strong> <span id="value-threat-types"></span></div>
+              <div id="row-institution"><strong>Institution:</strong> <span id="value-institution"></span></div>
+            </div>
+          </section>
+
+          <!-- Researchers -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Researchers</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
+              <div id="row-researcher-email"><strong>Researcher Email:</strong> <span id="value-researcher-email"></span></div>
+              <div id="row-researcher-name"><strong>Researcher Name:</strong> <span id="value-researcher-name"></span></div>
+              <div id="row-team-members"><strong>Team Members:</strong> <span id="value-team-members"></span></div>
+            </div>
+          </section>
+
+          <!-- Notes & Remarks -->
+          <section style="margin-bottom:0.75rem;">
+            <h4 style="margin:0 0 0.5rem 0;color:#2D5128;font-size:1rem;font-weight:700;">Notes & Remarks</h4>
+            <div>
+              <div id="row-ethnobotanical"><strong>Ethnobotanical / Notes:</strong> <span id="value-ethnobotanical"></span></div>
+              <div id="row-cultural"><strong>Cultural / Horticulture:</strong> <span id="value-cultural"></span></div>
+            </div>
+          </section>
         </div>
 
         <!-- Image Gallery Section -->
