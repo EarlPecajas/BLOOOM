@@ -6,7 +6,7 @@ SELECT
   s.scientific_name,
   s.common_names,
   s.identification_confidence,
-  s.observation_type,
+  DROP VIEW IF EXISTS public_approved_sightings;
   s.observation_date,
   to_char(s.observation_date, 'YYYY-MM') AS observation_month,
   s.mountain_name,
