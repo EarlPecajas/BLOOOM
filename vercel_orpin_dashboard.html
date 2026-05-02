@@ -530,9 +530,46 @@
     </div>
 
     <!-- Map View -->
-    <div id="map-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <h1 class="catalog-title">Orchid Distribution Map - Mt. Busa</h1>
-      <div id="map" style="width:100%;height:450px;border-radius:12px;border:2px solid #e0e0e0;background:#f5f5f5;"></div>
+    <div id="map-view" class="view-section" style="display:none;padding:0;background:white;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1);height:calc(100vh - 120px);margin:0;">
+      <!-- Map Header -->
+      <div style="background:linear-gradient(135deg,#2D5128 0%,#3a6b34 100%);padding:1rem 1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.12);display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+        <div>
+          <h1 class="catalog-title" style="margin:0;color:white;font-size:1.4rem;">Mt. Busa Trail & Orchid Distribution</h1>
+          <p style="margin:0.25rem 0 0 0;color:rgba(255,255,255,0.85);font-size:0.9rem;">Interactive ecological survey map</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end;">
+          <button onclick="document.getElementById('map-legend').style.display = document.getElementById('map-legend').style.display === 'none' ? 'block' : 'none'" style="padding:0.5rem 1rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s;">Legend</button>
+          <button onclick="leafletMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN)" style="padding:0.5rem 1rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s;">Reset View</button>
+        </div>
+      </div>
+      
+      <!-- Map Container -->
+      <div style="position:relative;width:100%;height:calc(100% - 70px);display:flex;">
+        <div id="map" style="flex:1;width:100%;height:100%;border-radius:0;border:none;background:#f0f4f1;"></div>
+        
+        <!-- Legend Overlay -->
+        <div id="map-legend" style="position:absolute;bottom:20px;left:20px;background:white;border-radius:8px;padding:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:400;max-width:240px;display:none;font-size:0.85rem;">
+          <h4 style="margin:0 0 0.8rem 0;color:#2D5128;font-weight:600;font-size:0.95rem;">Map Legend</h4>
+          <div style="display:flex;flex-direction:column;gap:0.6rem;">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div style="width:20px;height:12px;background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);border-radius:2px;"></div>
+              <span style="color:#52655b;">Orchid Distribution Heat</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div style="width:8px;height:8px;background:#2D5128;border-radius:50%;border:2px solid #4a7c4e;"></div>
+              <span style="color:#52655b;">Mt. Busa Center</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div style="width:16px;height:2px;background:#34a853;"></div>
+              <span style="color:#52655b;">Main Trail</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div style="width:16px;height:2px;background:#fbbc04;border-top:2px dashed #fbbc04;margin-top:1px;"></div>
+              <span style="color:#52655b;">Secondary Trail</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 3D Collection View -->
@@ -2134,15 +2171,76 @@
         
         // Add satellite imagery base layer
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles -ï¿½ Esri',
+          attribution: 'Tiles © Esri',
           maxZoom: 19
         }).addTo(leafletMap);
-        
-        // Add marker for Mt. Busa
-        L.marker(MT_BUSA_COORDS)
-          .bindPopup('<b>Mt. Busa</b><br>Kiamba, Sarangani Province<br>Distribution center')
-          .addTo(leafletMap);
 
+        // Define main trail route
+        const mainTrail = [
+          [5.3521, 125.2521],
+          [5.3525, 125.2520],
+          [5.3530, 125.2515],
+          [5.3535, 125.2510],
+          [5.3540, 125.2505],
+          [5.3545, 125.2500]
+        ];
+
+        // Define secondary trails
+        const secondaryTrail1 = [
+          [5.3521, 125.2521],
+          [5.3515, 125.2525],
+          [5.3510, 125.2530]
+        ];
+
+        const secondaryTrail2 = [
+          [5.3535, 125.2510],
+          [5.3540, 125.2515],
+          [5.3545, 125.2520]
+        ];
+
+        // Draw main trail with professional styling
+        L.polyline(mainTrail, {
+          color: '#34a853',
+          weight: 4,
+          opacity: 0.9,
+          lineCap: 'round',
+          lineJoin: 'round',
+          dashArray: null,
+          className: 'main-trail'
+        }).bindPopup('<b>Main Trail</b><br>Primary trekking route<br>Moderate difficulty').addTo(leafletMap);
+
+        // Draw secondary trails
+        L.polyline(secondaryTrail1, {
+          color: '#fbbc04',
+          weight: 2.5,
+          opacity: 0.75,
+          lineCap: 'round',
+          lineJoin: 'round',
+          dashArray: '5, 5',
+          className: 'secondary-trail'
+        }).bindPopup('<b>Secondary Trail</b><br>Alternative route').addTo(leafletMap);
+
+        L.polyline(secondaryTrail2, {
+          color: '#fbbc04',
+          weight: 2.5,
+          opacity: 0.75,
+          lineCap: 'round',
+          lineJoin: 'round',
+          dashArray: '5, 5',
+          className: 'secondary-trail'
+        }).bindPopup('<b>Secondary Trail</b><br>Alternative route').addTo(leafletMap);
+
+        // Add professional Mt. Busa marker
+        L.marker(MT_BUSA_COORDS, {
+          icon: L.icon({
+            iconUrl: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" fill="%232D5128"><path d="M16 0C9.4 0 4 5.4 4 12c0 10 12 28 12 28s12-18 12-28c0-6.6-5.4-12-12-12z"/><circle cx="16" cy="12" r="5" fill="%23fff"/></svg>',
+            iconSize: [32, 40],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -40]
+          })
+        }).bindPopup('<div style="text-align:center;"><b style="font-size:1.1rem;color:#2D5128;">Mt. Busa Summit</b><br><span style="color:#66786e;font-size:0.9rem;">Kiamba, Sarangani Province<br>Ecological Survey Center</span><br><span style="color:#34a853;font-size:0.85rem;margin-top:0.3rem;display:block;">Primary distribution point</span></div>').openPopup().addTo(leafletMap);
+
+        // Add distribution heat layer
         if (typeof L.heatLayer === 'function') {
           L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
             radius: 30,
@@ -2156,6 +2254,24 @@
             }
           }).addTo(leafletMap);
         }
+
+        // Add trail waypoints
+        const trailWaypoints = [
+          { coords: [5.3521, 125.2521], label: 'Start Point', icon: '??' },
+          { coords: [5.3530, 125.2515], label: 'Mid Point', icon: '??' },
+          { coords: [5.3545, 125.2500], label: 'Summit', icon: '???' }
+        ];
+
+        trailWaypoints.forEach((waypoint) => {
+          L.circleMarker(waypoint.coords, {
+            radius: 5,
+            fillColor: '#34a853',
+            color: '#2D5128',
+            weight: 2,
+            opacity: 0.8,
+            fillOpacity: 0.7
+          }).bindPopup(`<b>${waypoint.label}</b><br>${waypoint.icon}`).addTo(leafletMap);
+        });
       }
 
       function getConservationSummarySnapshot(rawData) {
