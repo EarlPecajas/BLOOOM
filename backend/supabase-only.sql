@@ -89,9 +89,13 @@ ALTER TABLE conservation_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE species_sightings ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Public read orchids" ON orchids;
+DROP POLICY IF EXISTS "Authenticated insert orchids" ON orchids;
 DROP POLICY IF EXISTS "Public read genus" ON genus;
 DROP POLICY IF EXISTS "Public read biogeography" ON biogeography;
+DROP POLICY IF EXISTS "Authenticated insert biogeography" ON biogeography;
 DROP POLICY IF EXISTS "Public read conservation_status" ON conservation_status;
+DROP POLICY IF EXISTS "Authenticated read picture" ON picture;
+DROP POLICY IF EXISTS "Authenticated insert picture" ON picture;
 DROP POLICY IF EXISTS "Authenticated read sightings" ON species_sightings;
 DROP POLICY IF EXISTS "Authenticated insert sightings" ON species_sightings;
 DROP POLICY IF EXISTS "Authenticated update sightings" ON species_sightings;
