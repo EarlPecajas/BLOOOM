@@ -639,8 +639,7 @@
           document.getElementById('row-soil-type').hidden = true;
 
           // Store submission for contributors panel
-          currentSubmission = source;
-          // Authenticated researcher / DENR / admin: prefer full DENR sighting when available
+          currentSubmission = source;        } else {          // Authenticated researcher / DENR / admin: prefer full DENR sighting when available
           const source = denrSighting ? denrSighting : { ...orchid, ...(publicSighting || {}) };
           // Authenticated users see all available details (prefer `source` values)
           setDetailRow('row-scientific-name', 'detail-scientific-name', orchid.name);
