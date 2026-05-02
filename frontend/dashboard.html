@@ -2653,40 +2653,65 @@
       let orchidCatalogLoaded = false;
       let dashboardCatalogListView = false;
       let submissionRows = [];
-      const MT_BUSA_TRAIL_FEATURES = [
-        {
-          type: 'Feature',
-          properties: { name: 'Busa Ridge Trail (Demo)', type: 'mock', difficulty: 'Moderate' },
-          geometry: {
-            type: 'LineString',
-            coordinates: [[125.095, 6.015], [125.098, 6.025], [125.102, 6.035], [125.106, 6.045], [125.110, 6.055], [125.114, 6.065], [125.118, 6.072], [125.121, 6.080], [125.125, 6.088], [125.129, 6.095], [125.133, 6.102]]
-          }
-        },
-        {
-          type: 'Feature',
-          properties: { name: 'Forest Traverse Trail (Demo)', type: 'mock', difficulty: 'Easy' },
-          geometry: {
-            type: 'LineString',
-            coordinates: [[125.060, 6.050], [125.070, 6.055], [125.080, 6.058], [125.090, 6.060], [125.100, 6.062], [125.110, 6.065], [125.120, 6.067]]
-          }
-        },
-        {
-          type: 'Feature',
-          properties: { name: 'Busa Loop Trail (Demo)', type: 'mock', difficulty: 'Moderate' },
-          geometry: {
-            type: 'LineString',
-            coordinates: [[125.085, 6.040], [125.095, 6.050], [125.105, 6.060], [125.115, 6.065], [125.120, 6.055], [125.110, 6.045], [125.100, 6.038], [125.090, 6.035], [125.085, 6.040]]
-          }
-        },
-        {
-          type: 'Feature',
-          properties: { name: 'Summit Spur Trail (Demo)', type: 'mock', difficulty: 'Hard' },
-          geometry: {
-            type: 'LineString',
-            coordinates: [[125.115, 6.070], [125.118, 6.078], [125.120, 6.085], [125.123, 6.093], [125.126, 6.100], [125.130, 6.108]]
-          }
+      const RANDOM_TRAIL_COUNT = 10;
+      const TRAIL_DIFFICULTY_OPTIONS = ['Easy', 'Moderate', 'Hard'];
+      const TRAIL_NAME_PREFIXES = ['Ridge', 'Canopy', 'Summit', 'Forest', 'Valley', 'Riverbend', 'Moss', 'Cloud', 'Busa', 'Eagle'];
+      const TRAIL_NAME_SUFFIXES = ['Path', 'Pass', 'Traverse', 'Route', 'Loop', 'Spur', 'Way', 'Track', 'Corridor', 'Climb'];
+
+      function getRandomBetween(min, max) {
+        return min + (Math.random() * (max - min));
+      }
+
+      function clampNumber(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function getRandomTrailName(index) {
+        const prefix = TRAIL_NAME_PREFIXES[Math.floor(Math.random() * TRAIL_NAME_PREFIXES.length)];
+        const suffix = TRAIL_NAME_SUFFIXES[Math.floor(Math.random() * TRAIL_NAME_SUFFIXES.length)];
+        return `${prefix} ${suffix} ${index + 1}`;
+      }
+
+      function generateRandomTrailFeature(index) {
+        const [baseLat, baseLng] = MT_BUSA_COORDS;
+        const latMin = baseLat - 0.025;
+        const latMax = baseLat + 0.025;
+        const lngMin = baseLng - 0.03;
+        const lngMax = baseLng + 0.03;
+        const pointCount = 7;
+
+        let currentLat = clampNumber(baseLat + getRandomBetween(-0.012, 0.012), latMin, latMax);
+        let currentLng = clampNumber(baseLng + getRandomBetween(-0.015, 0.015), lngMin, lngMax);
+        const coordinates = [];
+
+        for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
+          const angle = getRandomBetween(0, Math.PI * 2);
+          const step = getRandomBetween(0.0018, 0.0042);
+
+          currentLat = clampNumber(currentLat + Math.sin(angle) * step, latMin, latMax);
+          currentLng = clampNumber(currentLng + Math.cos(angle) * step, lngMin, lngMax);
+
+          coordinates.push([
+            Number(currentLng.toFixed(6)),
+            Number(currentLat.toFixed(6))
+          ]);
         }
-      ];
+
+        return {
+          type: 'Feature',
+          properties: {
+            name: getRandomTrailName(index),
+            type: 'generated',
+            difficulty: TRAIL_DIFFICULTY_OPTIONS[Math.floor(Math.random() * TRAIL_DIFFICULTY_OPTIONS.length)]
+          },
+          geometry: {
+            type: 'LineString',
+            coordinates
+          }
+        };
+      }
+
+      const MT_BUSA_TRAIL_FEATURES = Array.from({ length: RANDOM_TRAIL_COUNT }, (_, index) => generateRandomTrailFeature(index));
       const trailSelectionState = {
         mode: 'trail',
         selectedTrailNames: new Set(MT_BUSA_TRAIL_FEATURES.map((feature) => String(feature.properties?.name || '').trim()).filter(Boolean))
@@ -2841,6 +2866,28 @@
         selectAllText.textContent = 'Select all trails';
         selectAllLabel.append(selectAllInput, selectAllText);
 
+        const quickActions = document.createElement('div');
+        quickActions.className = 'map-trail-quick-actions';
+
+        const showAllButton = document.createElement('button');
+        showAllButton.type = 'button';
+        showAllButton.className = 'map-trail-mode-btn';
+        showAllButton.textContent = 'Show All Trails';
+        showAllButton.addEventListener('click', function() {
+          setAllTrailSelections(true);
+          setTrailViewMode('trail');
+        });
+
+        const showSelectedButton = document.createElement('button');
+        showSelectedButton.type = 'button';
+        showSelectedButton.className = 'map-trail-mode-btn';
+        showSelectedButton.textContent = 'Show Selected Trails';
+        showSelectedButton.addEventListener('click', function() {
+          setTrailViewMode('trail');
+        });
+
+        quickActions.append(showAllButton, showSelectedButton);
+
         const trailList = document.createElement('div');
         trailList.className = 'map-trail-list';
 
@@ -2877,7 +2924,7 @@
           trailList.appendChild(item);
         });
 
-        panel.append(header, selectAllLabel, trailList);
+        panel.append(header, selectAllLabel, quickActions, trailList);
         return panel;
       }
 
@@ -4308,6 +4355,32 @@
       };
 
       async function loadConservationSummary() {
+        function getFallbackConservationSummary() {
+          return {
+            critically_endangered: (conservationData.critically_endangered?.species || []).length,
+            endangered: (conservationData.endangered?.species || []).length,
+            vulnerable: (conservationData.vulnerable?.species || []).length,
+            least_concern: (conservationData.least_concern?.species || []).length,
+            unassigned: (conservationData.unassigned?.species || []).length
+          };
+        }
+
+        function applyConservationSummary(summary) {
+          const ce = document.getElementById('count-critically-endangered');
+          const en = document.getElementById('count-endangered');
+          const vu = document.getElementById('count-vulnerable');
+          const lc = document.getElementById('count-least-concern');
+          const ua = document.getElementById('count-unassigned');
+
+          if (ce) ce.textContent = `${summary.critically_endangered || 0} species recorded`;
+          if (en) en.textContent = `${summary.endangered || 0} species recorded`;
+          if (vu) vu.textContent = `${summary.vulnerable || 0} species recorded`;
+          if (lc) lc.textContent = `${summary.least_concern || 0} species recorded`;
+          if (ua) ua.textContent = `${summary.unassigned || 0} species recorded`;
+
+          refreshConservationAnalytics(summary);
+        }
+
         try {
           if (!bloomSupabase) {
             throw new Error('Supabase is not configured');
@@ -4320,12 +4393,6 @@
           if (error) {
             throw new Error(error.message || 'Failed to load conservation summary');
           }
-
-          const ce = document.getElementById('count-critically-endangered');
-          const en = document.getElementById('count-endangered');
-          const vu = document.getElementById('count-vulnerable');
-          const lc = document.getElementById('count-least-concern');
-          const ua = document.getElementById('count-unassigned');
 
           const summary = {
             critically_endangered: 0,
@@ -4342,15 +4409,10 @@
             }
           });
 
-          if (ce) ce.textContent = `${summary.critically_endangered || 0} species recorded`;
-          if (en) en.textContent = `${summary.endangered || 0} species recorded`;
-          if (vu) vu.textContent = `${summary.vulnerable || 0} species recorded`;
-          if (lc) lc.textContent = `${summary.least_concern || 0} species recorded`;
-          if (ua) ua.textContent = `${summary.unassigned || 0} species recorded`;
-
-          refreshConservationAnalytics(summary);
+          const hasAnyData = Object.values(summary).some((count) => count > 0);
+          applyConservationSummary(hasAnyData ? summary : getFallbackConservationSummary());
         } catch {
-          // Keep default values if summary cannot be loaded.
+          applyConservationSummary(getFallbackConservationSummary());
         }
       }
 

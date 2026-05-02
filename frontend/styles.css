@@ -154,6 +154,12 @@ body::before {
   accent-color: #2d5128;
 }
 
+.map-trail-quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .map-trail-list {
   display: grid;
   gap: 0.65rem;
