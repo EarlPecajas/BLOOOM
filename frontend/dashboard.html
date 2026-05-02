@@ -766,29 +766,31 @@
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Multimedia Documentation</strong>
-            <div style="margin-top:0.35rem;color:#66786e;font-size:0.84rem;">Add up to 3 photos in each section. Put the contributor name below each photo.</div>
           </div>
           <div style="grid-column:1/-1;display:grid;gap:0.75rem;">
-            <div style="display:grid;gap:0.55rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="wholePlant" data-media-title="Whole Plant Photo">
+            <div style="display:grid;gap:0.75rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="wholePlant" data-media-title="Whole Plant Photo">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
                 <strong>Whole Plant Photo</strong>
-                <span style="color:#66786e;font-size:0.84rem;">Up to 3 photos</span>
+                <button type="button" class="submission-media-add-btn" data-media-target="wholePlant" style="padding:0.62rem 0.85rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;cursor:pointer;">Choose photo</button>
               </div>
-              <div id="submission-whole-plant-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0.75rem;"></div>
+              <input id="submission-whole-plant-photo-input" type="file" accept="image/*" hidden />
+              <div id="submission-whole-plant-photo-grid" style="display:grid;gap:0.75rem;"></div>
             </div>
-            <div style="display:grid;gap:0.55rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="closeupFlower" data-media-title="Close-up Flower Photo">
+            <div style="display:grid;gap:0.75rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="closeupFlower" data-media-title="Close-up Flower Photo">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
                 <strong>Close-up Flower Photo</strong>
-                <span style="color:#66786e;font-size:0.84rem;">Up to 3 photos</span>
+                <button type="button" class="submission-media-add-btn" data-media-target="closeupFlower" style="padding:0.62rem 0.85rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;cursor:pointer;">Choose photo</button>
               </div>
-              <div id="submission-closeup-flower-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0.75rem;"></div>
+              <input id="submission-closeup-flower-photo-input" type="file" accept="image/*" hidden />
+              <div id="submission-closeup-flower-photo-grid" style="display:grid;gap:0.75rem;"></div>
             </div>
-            <div style="display:grid;gap:0.55rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="habitat" data-media-title="Habitat Photo">
+            <div style="display:grid;gap:0.75rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="habitat" data-media-title="Habitat Photo">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
                 <strong>Habitat Photo</strong>
-                <span style="color:#66786e;font-size:0.84rem;">Up to 3 photos</span>
+                <button type="button" class="submission-media-add-btn" data-media-target="habitat" style="padding:0.62rem 0.85rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;cursor:pointer;">Choose photo</button>
               </div>
-              <div id="submission-habitat-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0.75rem;"></div>
+              <input id="submission-habitat-photo-input" type="file" accept="image/*" hidden />
+              <div id="submission-habitat-photo-grid" style="display:grid;gap:0.75rem;"></div>
             </div>
           </div>
           <div style="grid-column:1/-1;"><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Video Documentation</label><input id="submission-video" type="file" accept="video/*" style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
@@ -1279,9 +1281,9 @@
       const submissionGenusResultsEl = document.getElementById('submission-genus-results');
 
       const submissionMediaSectionConfigs = [
-        { key: 'wholePlant', title: 'Whole Plant Photo', gridId: 'submission-whole-plant-photo-grid', draftKey: 'wholePlantPhotoContributors' },
-        { key: 'closeupFlower', title: 'Close-up Flower Photo', gridId: 'submission-closeup-flower-photo-grid', draftKey: 'closeupFlowerPhotoContributors' },
-        { key: 'habitat', title: 'Habitat Photo', gridId: 'submission-habitat-photo-grid', draftKey: 'habitatPhotoContributors' }
+        { key: 'wholePlant', title: 'Whole Plant Photo', listId: 'submission-whole-plant-photo-grid', inputId: 'submission-whole-plant-photo-input' },
+        { key: 'closeupFlower', title: 'Close-up Flower Photo', listId: 'submission-closeup-flower-photo-grid', inputId: 'submission-closeup-flower-photo-input' },
+        { key: 'habitat', title: 'Habitat Photo', listId: 'submission-habitat-photo-grid', inputId: 'submission-habitat-photo-input' }
       ];
 
       let availableGenusOptions = [];
@@ -1346,95 +1348,151 @@
         return { src, contributor };
       }
 
-      function createMediaSlot(sectionKey, index, sectionTitle) {
-        const card = document.createElement('div');
-        card.className = 'submission-media-slot';
-        card.dataset.mediaSection = sectionKey;
-        card.dataset.mediaIndex = String(index);
-        card.style.cssText = 'display:grid;gap:0.45rem;padding:0.85rem;border:1px solid #d4ddd7;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,0.04);';
+      function getMediaSectionList(sectionKey) {
+        return document.querySelector(`[data-media-section="${sectionKey}"] [data-media-list]`);
+      }
 
-        const header = document.createElement('div');
-        header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;';
+      function getMediaSectionInput(sectionKey) {
+        return document.getElementById(`submission-${sectionKey === 'wholePlant' ? 'whole-plant' : sectionKey === 'closeupFlower' ? 'closeup-flower' : 'habitat'}-photo-input`);
+      }
 
-        const title = document.createElement('div');
-        title.style.cssText = 'font-size:0.92rem;font-weight:700;color:#1f2937;';
-        title.textContent = `${sectionTitle} ${index + 1}`;
+      function getMediaSectionAddButton(sectionKey) {
+        return document.querySelector(`.submission-media-add-btn[data-media-target="${sectionKey}"]`);
+      }
 
-        const hint = document.createElement('span');
-        hint.style.cssText = 'font-size:0.8rem;color:#6b7280;';
-        hint.textContent = 'Photo slot';
+      function getMediaSectionItems(sectionKey) {
+        return Array.from(document.querySelectorAll(`[data-media-item-section="${sectionKey}"]`));
+      }
 
-        header.append(title, hint);
+      function getMediaSectionContributors(sectionKey) {
+        return getMediaSectionItems(sectionKey).map((item) => item.querySelector('.submission-media-contributor')?.value?.trim() || '');
+      }
 
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.style.cssText = 'width:100%;padding:0.65rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;background:#fdfefe;';
-        fileInput.addEventListener('change', handleSubmissionFormMutation);
+      function createMediaItemRow(sectionKey, file, contributor = '') {
+        const row = document.createElement('div');
+        row.className = 'submission-media-item';
+        row.dataset.mediaItemSection = sectionKey;
+        row.style.cssText = 'display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:0.75rem;align-items:start;padding:0.75rem;border:1px solid #d4ddd7;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,0.04);';
+        row.mediaFile = file;
+
+        const preview = document.createElement('div');
+        preview.style.cssText = 'width:96px;height:96px;border-radius:10px;overflow:hidden;background:#edf3ee;border:1px solid #d8e3dc;display:flex;align-items:center;justify-content:center;';
+
+        const image = document.createElement('img');
+        image.alt = file.name || 'Selected photo';
+        image.src = URL.createObjectURL(file);
+        image.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        image.addEventListener('load', function() {
+          URL.revokeObjectURL(image.src);
+        });
+        preview.appendChild(image);
+
+        const meta = document.createElement('div');
+        meta.style.cssText = 'display:grid;gap:0.55rem;align-content:start;';
+
+        const fileName = document.createElement('div');
+        fileName.style.cssText = 'font-size:0.92rem;font-weight:700;color:#1f2937;word-break:break-word;';
+        fileName.textContent = file.name || 'Selected photo';
 
         const contributorLabel = document.createElement('label');
-        contributorLabel.textContent = 'Contributor name';
         contributorLabel.style.cssText = 'font-size:0.84rem;font-weight:600;color:#334155;';
+        contributorLabel.textContent = 'Contributor name';
 
         const contributorInput = document.createElement('input');
         contributorInput.type = 'text';
         contributorInput.className = 'submission-media-contributor';
         contributorInput.placeholder = 'Enter contributor name';
+        contributorInput.value = contributor || '';
         contributorInput.style.cssText = 'padding:0.68rem 0.75rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;';
         contributorInput.addEventListener('input', handleSubmissionFormMutation);
 
-        card.append(header, fileInput, contributorLabel, contributorInput);
-        return card;
+        meta.append(fileName, contributorLabel, contributorInput);
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.setAttribute('aria-label', 'Remove photo');
+        removeButton.title = 'Remove photo';
+        removeButton.textContent = '×';
+        removeButton.style.cssText = 'width:34px;height:34px;border:1px solid #d4ddd7;border-radius:999px;background:#fff;color:#7a1c1c;font-size:1.2rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;justify-self:end;';
+        removeButton.addEventListener('click', function() {
+          row.remove();
+          handleSubmissionFormMutation();
+        });
+
+        row.append(preview, meta, removeButton);
+        return row;
       }
 
       function renderSubmissionMediaSections() {
         submissionMediaSectionConfigs.forEach((config) => {
-          const gridEl = document.getElementById(config.gridId);
-          if (!gridEl || gridEl.dataset.rendered === '1') {
-            return;
+          const listEl = document.getElementById(config.listId);
+          const inputEl = document.getElementById(config.inputId);
+          const addButton = getMediaSectionAddButton(config.key);
+
+          if (listEl && !listEl.dataset.bound) {
+            listEl.dataset.bound = '1';
           }
 
-          gridEl.innerHTML = '';
-          for (let index = 0; index < 3; index += 1) {
-            gridEl.appendChild(createMediaSlot(config.key, index, config.title));
+          if (inputEl && !inputEl.dataset.bound) {
+            inputEl.dataset.bound = '1';
+            inputEl.addEventListener('change', function() {
+              const file = inputEl.files && inputEl.files[0] ? inputEl.files[0] : null;
+              if (!file) {
+                return;
+              }
+
+              const currentCount = getMediaSectionItems(config.key).length;
+              if (currentCount >= 3) {
+                alert('You can add up to 3 photos in this section.');
+                inputEl.value = '';
+                return;
+              }
+
+              listEl.appendChild(createMediaItemRow(config.key, file));
+              inputEl.value = '';
+              handleSubmissionFormMutation();
+            });
           }
-          gridEl.dataset.rendered = '1';
+
+          if (addButton && !addButton.dataset.bound) {
+            addButton.dataset.bound = '1';
+            addButton.addEventListener('click', function() {
+              const currentCount = getMediaSectionItems(config.key).length;
+              if (currentCount >= 3) {
+                alert('You can add up to 3 photos in this section.');
+                return;
+              }
+
+              inputEl?.click();
+            });
+          }
         });
       }
 
-      function getMediaSectionSlots(sectionKey) {
-        return Array.from(document.querySelectorAll(`[data-media-section="${sectionKey}"]`));
-      }
-
-      function getMediaSectionContributors(sectionKey) {
-        return getMediaSectionSlots(sectionKey).map((slot) => slot.querySelector('.submission-media-contributor')?.value?.trim() || '');
-      }
-
-      function setMediaSectionContributors(sectionKey, values) {
-        const slots = getMediaSectionSlots(sectionKey);
-        const contributorValues = Array.isArray(values) ? values : [];
-
-        slots.forEach((slot, index) => {
-          const contributorInput = slot.querySelector('.submission-media-contributor');
-          if (!contributorInput) return;
-          const entry = contributorValues[index];
-          const normalizedEntry = typeof entry === 'string' ? { contributor: entry } : (entry || {});
-          contributorInput.value = String(normalizedEntry.contributor || normalizedEntry.credit || normalizedEntry.name || '').trim();
+      function clearSubmissionMediaSections() {
+        submissionMediaSectionConfigs.forEach((config) => {
+          const listEl = document.getElementById(config.listId);
+          if (listEl) {
+            listEl.innerHTML = '';
+          }
+          const inputEl = document.getElementById(config.inputId);
+          if (inputEl) {
+            inputEl.value = '';
+          }
         });
       }
 
-      async function uploadMediaSection(sectionKey, entryId, uploadBucket) {
-        const slots = getMediaSectionSlots(sectionKey);
+      function uploadMediaSection(sectionKey, entryId, uploadBucket) {
+        const items = getMediaSectionItems(sectionKey);
         const uploadedEntries = [];
 
-        for (let index = 0; index < slots.length; index += 1) {
-          const slot = slots[index];
-          const fileInput = slot.querySelector('input[type="file"]');
-          const contributor = slot.querySelector('.submission-media-contributor')?.value?.trim() || '';
-          const file = fileInput?.files?.[0] || null;
+        return items.reduce(async (previousPromise, item, index) => {
+          await previousPromise;
 
+          const file = item.mediaFile || null;
+          const contributor = item.querySelector('.submission-media-contributor')?.value?.trim() || '';
           if (!file) {
-            continue;
+            return undefined;
           }
 
           const extension = file.name && file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
@@ -1455,9 +1513,8 @@
             url: publicUrlData.publicUrl,
             contributor: contributor || ''
           });
-        }
-
-        return uploadedEntries;
+          return undefined;
+        }, Promise.resolve()).then(() => uploadedEntries);
       }
 
       function getFilteredGenusOptions(searchTerm) {
@@ -1763,10 +1820,6 @@
           teamMembers.forEach((member) => submissionTeamMembersWrapEl.appendChild(createTeamMemberRow(member)));
         }
 
-        setMediaSectionContributors('wholePlant', draft.wholePlantPhotoContributors || []);
-        setMediaSectionContributors('closeupFlower', draft.closeupFlowerPhotoContributors || []);
-        setMediaSectionContributors('habitat', draft.habitatPhotoContributors || []);
-
         if (document.getElementById('submission-institution')) document.getElementById('submission-institution').value = draft.institution || '';
         if (document.getElementById('submission-head-observer')) document.getElementById('submission-head-observer').value = draft.headObserver || '';
         if (document.getElementById('submission-researcher-notes')) document.getElementById('submission-researcher-notes').value = draft.researcherNotes || '';
@@ -1806,9 +1859,7 @@
         if (submissionGenusEl) submissionGenusEl.value = '';
         if (submissionScientificNameEl) submissionScientificNameEl.value = '';
         renderSubmissionMediaSections();
-        setMediaSectionContributors('wholePlant', ['', '', '']);
-        setMediaSectionContributors('closeupFlower', ['', '', '']);
-        setMediaSectionContributors('habitat', ['', '', '']);
+        clearSubmissionMediaSections();
         if (submissionGrowthSubstrateEl) submissionGrowthSubstrateEl.value = '';
         if (submissionGrowthSubstrateOtherEl) submissionGrowthSubstrateOtherEl.value = '';
         if (submissionSpecificSiteZoneEl) submissionSpecificSiteZoneEl.value = '';
