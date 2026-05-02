@@ -73,6 +73,128 @@ body::before {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.submission-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.map-trail-controls {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  margin: 0.9rem 0 1rem 0;
+  border: 1px solid #d7e3db;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+  box-shadow: 0 8px 20px rgba(34, 66, 50, 0.06);
+}
+
+.map-trail-controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.map-trail-controls-title {
+  margin: 0;
+  color: #2d5128;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.map-trail-controls-subtitle {
+  margin: 0.2rem 0 0 0;
+  color: #66786e;
+  font-size: 0.84rem;
+}
+
+.map-trail-mode-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.map-trail-mode-btn {
+  padding: 0.62rem 0.9rem;
+  border: 1px solid #cfdcd4;
+  border-radius: 999px;
+  background: #fff;
+  color: #35523a;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.map-trail-mode-btn:hover {
+  transform: translateY(-1px);
+  border-color: #2d5128;
+}
+
+.map-trail-mode-btn.is-active {
+  background: #2d5128;
+  border-color: #2d5128;
+  color: #ffffff;
+}
+
+.map-trail-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.map-trail-select-all input,
+.map-trail-item input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2d5128;
+}
+
+.map-trail-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.map-trail-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: start;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid #dbe6dd;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.map-trail-item-label {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.map-trail-item-name {
+  color: #1f2937;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.map-trail-item-meta {
+  color: #66786e;
+  font-size: 0.78rem;
+}
+
+.map-trail-item-badge {
+  padding: 0.26rem 0.55rem;
+  border-radius: 999px;
+  background: #eef6ef;
+  color: #2d5128;
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
 .brand-container {
   display: flex;
   align-items: center;

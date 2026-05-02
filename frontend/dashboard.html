@@ -179,6 +179,7 @@
         <!-- Chart Panel -->
         <div class="dashboard-card chart-card card shadow-sm border-0">
           <h3 class="card-title">Orchids Uploaded per Month (2024)</h3>
+          <div id="researcher-map-controls"></div>
           <canvas id="orchidChart" width="300" height="120"></canvas>
         </div>
 
@@ -427,6 +428,7 @@
 
         <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);grid-column:1/-1;">
           <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Conservation Risk Heat Map (Mt. Busa)</h2>
+          <div id="denr-map-controls"></div>
           <div id="conservation-heat-map" style="width:100%;height:460px;border-radius:12px;border:1px solid #dcdcdc;background:#f5f5f5;"></div>
           <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;font-size:0.8rem;color:#666;">
             <span>Lower risk</span>
@@ -2652,8 +2654,50 @@
       let orchidCatalogLoaded = false;
       let dashboardCatalogListView = false;
       let submissionRows = [];
+      const MT_BUSA_TRAIL_FEATURES = [
+        {
+          type: 'Feature',
+          properties: { name: 'Busa Ridge Trail (Demo)', type: 'mock', difficulty: 'Moderate' },
+          geometry: {
+            type: 'LineString',
+            coordinates: [[125.095, 6.015], [125.098, 6.025], [125.102, 6.035], [125.106, 6.045], [125.110, 6.055], [125.114, 6.065], [125.118, 6.072], [125.121, 6.080], [125.125, 6.088], [125.129, 6.095], [125.133, 6.102]]
+          }
+        },
+        {
+          type: 'Feature',
+          properties: { name: 'Forest Traverse Trail (Demo)', type: 'mock', difficulty: 'Easy' },
+          geometry: {
+            type: 'LineString',
+            coordinates: [[125.060, 6.050], [125.070, 6.055], [125.080, 6.058], [125.090, 6.060], [125.100, 6.062], [125.110, 6.065], [125.120, 6.067]]
+          }
+        },
+        {
+          type: 'Feature',
+          properties: { name: 'Busa Loop Trail (Demo)', type: 'mock', difficulty: 'Moderate' },
+          geometry: {
+            type: 'LineString',
+            coordinates: [[125.085, 6.040], [125.095, 6.050], [125.105, 6.060], [125.115, 6.065], [125.120, 6.055], [125.110, 6.045], [125.100, 6.038], [125.090, 6.035], [125.085, 6.040]]
+          }
+        },
+        {
+          type: 'Feature',
+          properties: { name: 'Summit Spur Trail (Demo)', type: 'mock', difficulty: 'Hard' },
+          geometry: {
+            type: 'LineString',
+            coordinates: [[125.115, 6.070], [125.118, 6.078], [125.120, 6.085], [125.123, 6.093], [125.126, 6.100], [125.130, 6.108]]
+          }
+        }
+      ];
+      const trailSelectionState = {
+        mode: 'both',
+        selectedTrailNames: new Set(MT_BUSA_TRAIL_FEATURES.map((feature) => String(feature.properties?.name || '').trim()).filter(Boolean))
+      };
       let conservationDonutChart = null;
       let conservationBarChart = null;
+      let researcherMap = null;
+      let researcherHeatLayer = null;
+      let researcherTrailLayerGroup = null;
+      let conservationTrailLayerGroup = null;
       let conservationHeatMap = null;
       let conservationHeatLayer = null;
 
@@ -2721,6 +2765,256 @@
         return parseJsonArrayValue(value)
           .map((item) => normalizeMediaItem(item))
           .filter((item) => item.src);
+      }
+
+      function getTrailFeatureName(feature) {
+        return String(feature?.properties?.name || '').trim();
+      }
+
+      function getTrailFeatureDifficulty(feature) {
+        return String(feature?.properties?.difficulty || '').trim();
+      }
+
+      function getTrailFeatureColor(feature) {
+        const difficulty = getTrailFeatureDifficulty(feature).toLowerCase();
+        if (difficulty === 'easy') return '#16a34a';
+        if (difficulty === 'hard') return '#dc2626';
+        return '#f59e0b';
+      }
+
+      function createTrailGeoJsonLayer(feature) {
+        const trailName = getTrailFeatureName(feature);
+        const trailDifficulty = getTrailFeatureDifficulty(feature) || 'Unspecified';
+
+        return L.geoJSON(feature, {
+          style: {
+            color: getTrailFeatureColor(feature),
+            weight: 5,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round'
+          },
+          onEachFeature: function(trailFeature, trailLayer) {
+            trailLayer.bindPopup(`<strong>${escapeHtml(trailName)}</strong><br>Difficulty: ${escapeHtml(trailDifficulty)}`);
+          }
+        });
+      }
+
+      function buildTrailControlPanel(panelKey, title, subtitle) {
+        const panel = document.createElement('div');
+        panel.className = 'map-trail-controls';
+        panel.dataset.trailPanel = panelKey;
+
+        const header = document.createElement('div');
+        header.className = 'map-trail-controls-header';
+
+        const headingWrap = document.createElement('div');
+        const heading = document.createElement('h3');
+        heading.className = 'map-trail-controls-title';
+        heading.textContent = title;
+        const body = document.createElement('p');
+        body.className = 'map-trail-controls-subtitle';
+        body.textContent = subtitle;
+        headingWrap.append(heading, body);
+
+        const modeGroup = document.createElement('div');
+        modeGroup.className = 'map-trail-mode-group';
+        ['trail', 'heatmap', 'both'].forEach((mode) => {
+          const modeButton = document.createElement('button');
+          modeButton.type = 'button';
+          modeButton.className = 'map-trail-mode-btn';
+          modeButton.dataset.trailMode = mode;
+          modeButton.textContent = mode === 'heatmap' ? 'Heatmap View' : mode === 'trail' ? 'Trail View' : 'Both';
+          modeButton.addEventListener('click', function() {
+            setTrailViewMode(mode);
+          });
+          modeGroup.appendChild(modeButton);
+        });
+
+        header.append(headingWrap, modeGroup);
+
+        const selectAllLabel = document.createElement('label');
+        selectAllLabel.className = 'map-trail-select-all';
+        const selectAllInput = document.createElement('input');
+        selectAllInput.type = 'checkbox';
+        selectAllInput.dataset.trailSelectAll = panelKey;
+        selectAllInput.addEventListener('change', function() {
+          setAllTrailSelections(selectAllInput.checked);
+        });
+        const selectAllText = document.createElement('span');
+        selectAllText.textContent = 'Select all trails';
+        selectAllLabel.append(selectAllInput, selectAllText);
+
+        const trailList = document.createElement('div');
+        trailList.className = 'map-trail-list';
+
+        MT_BUSA_TRAIL_FEATURES.forEach((feature) => {
+          const trailName = getTrailFeatureName(feature);
+          const trailDifficulty = getTrailFeatureDifficulty(feature) || 'Unspecified';
+
+          const item = document.createElement('label');
+          item.className = 'map-trail-item';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.trailName = trailName;
+          checkbox.checked = true;
+          checkbox.addEventListener('change', function() {
+            setTrailSelection(trailName, checkbox.checked);
+          });
+
+          const labelBlock = document.createElement('span');
+          labelBlock.className = 'map-trail-item-label';
+          const nameLine = document.createElement('span');
+          nameLine.className = 'map-trail-item-name';
+          nameLine.textContent = trailName;
+          const metaLine = document.createElement('span');
+          metaLine.className = 'map-trail-item-meta';
+          metaLine.textContent = `Difficulty: ${trailDifficulty}`;
+          labelBlock.append(nameLine, metaLine);
+
+          const badge = document.createElement('span');
+          badge.className = 'map-trail-item-badge';
+          badge.textContent = 'Trail';
+
+          item.append(checkbox, labelBlock, badge);
+          trailList.appendChild(item);
+        });
+
+        panel.append(header, selectAllLabel, trailList);
+        return panel;
+      }
+
+      function renderTrailControlPanels() {
+        const panelMounts = [
+          { mountId: 'researcher-map-controls', key: 'researcher', title: 'Researcher Map Trails', subtitle: 'Choose trails and map layers for the researcher map.' },
+          { mountId: 'denr-map-controls', key: 'denr', title: 'DENR Map Trails', subtitle: 'Use the same trail filters on the conservation map.' }
+        ];
+
+        panelMounts.forEach((panelConfig) => {
+          const mountEl = document.getElementById(panelConfig.mountId);
+          if (!mountEl || mountEl.dataset.rendered === '1') {
+            return;
+          }
+
+          mountEl.innerHTML = '';
+          mountEl.appendChild(buildTrailControlPanel(panelConfig.key, panelConfig.title, panelConfig.subtitle));
+          mountEl.dataset.rendered = '1';
+        });
+
+        syncTrailControlPanels();
+      }
+
+      function getSelectedTrailFeatures() {
+        return MT_BUSA_TRAIL_FEATURES.filter((feature) => trailSelectionState.selectedTrailNames.has(getTrailFeatureName(feature)));
+      }
+
+      function setTrailViewMode(mode) {
+        trailSelectionState.mode = ['trail', 'heatmap', 'both'].includes(mode) ? mode : 'both';
+        syncTrailControlPanels();
+        syncTrailMapOverlays();
+      }
+
+      function setTrailSelection(trailName, isSelected) {
+        const normalizedName = String(trailName || '').trim();
+        if (!normalizedName) {
+          return;
+        }
+
+        if (isSelected) {
+          trailSelectionState.selectedTrailNames.add(normalizedName);
+        } else {
+          trailSelectionState.selectedTrailNames.delete(normalizedName);
+        }
+
+        syncTrailControlPanels();
+        syncTrailMapOverlays();
+      }
+
+      function setAllTrailSelections(isSelected) {
+        trailSelectionState.selectedTrailNames = new Set(
+          isSelected ? MT_BUSA_TRAIL_FEATURES.map((feature) => getTrailFeatureName(feature)).filter(Boolean) : []
+        );
+
+        syncTrailControlPanels();
+        syncTrailMapOverlays();
+      }
+
+      function syncTrailControlPanels() {
+        const isTrailMode = trailSelectionState.mode === 'trail';
+        const isHeatMode = trailSelectionState.mode === 'heatmap';
+        const isBothMode = trailSelectionState.mode === 'both';
+
+        document.querySelectorAll('.map-trail-controls').forEach((panelEl) => {
+          panelEl.querySelectorAll('[data-trail-mode]').forEach((buttonEl) => {
+            const mode = buttonEl.getAttribute('data-trail-mode');
+            const isActive = (mode === 'trail' && isTrailMode) || (mode === 'heatmap' && isHeatMode) || (mode === 'both' && isBothMode);
+            buttonEl.classList.toggle('is-active', isActive);
+            buttonEl.setAttribute('aria-pressed', String(isActive));
+          });
+
+          const selectAllEl = panelEl.querySelector('[data-trail-select-all]');
+          const trailCheckBoxes = Array.from(panelEl.querySelectorAll('[data-trail-name]'));
+          const selectedCount = trailCheckBoxes.filter((checkboxEl) => checkboxEl.checked).length;
+          const totalCount = trailCheckBoxes.length;
+
+          if (selectAllEl) {
+            selectAllEl.checked = totalCount > 0 && selectedCount === totalCount;
+            selectAllEl.indeterminate = selectedCount > 0 && selectedCount < totalCount;
+          }
+        });
+
+        document.querySelectorAll('.map-trail-controls [data-trail-name]').forEach((checkboxEl) => {
+          const trailName = String(checkboxEl.getAttribute('data-trail-name') || '').trim();
+          checkboxEl.checked = trailSelectionState.selectedTrailNames.has(trailName);
+        });
+      }
+
+      function refreshTrailLayerGroup(mapInstance, trailLayerGroup) {
+        if (!mapInstance || !trailLayerGroup) {
+          return;
+        }
+
+        trailLayerGroup.clearLayers();
+        getSelectedTrailFeatures().forEach((feature) => {
+          trailLayerGroup.addLayer(createTrailGeoJsonLayer(feature));
+        });
+
+        const shouldShowTrails = trailSelectionState.mode === 'trail' || trailSelectionState.mode === 'both';
+        if (shouldShowTrails && trailLayerGroup.getLayers().length > 0) {
+          if (!mapInstance.hasLayer(trailLayerGroup)) {
+            trailLayerGroup.addTo(mapInstance);
+          }
+        } else if (mapInstance.hasLayer(trailLayerGroup)) {
+          mapInstance.removeLayer(trailLayerGroup);
+        }
+      }
+
+      function syncTrailMapOverlays() {
+        refreshTrailLayerGroup(researcherMap, researcherTrailLayerGroup);
+        refreshTrailLayerGroup(conservationHeatMap, conservationTrailLayerGroup);
+
+        const shouldShowHeat = trailSelectionState.mode === 'heatmap' || trailSelectionState.mode === 'both';
+
+        if (researcherMap && researcherHeatLayer) {
+          if (shouldShowHeat) {
+            if (!researcherMap.hasLayer(researcherHeatLayer)) {
+              researcherHeatLayer.addTo(researcherMap);
+            }
+          } else if (researcherMap.hasLayer(researcherHeatLayer)) {
+            researcherMap.removeLayer(researcherHeatLayer);
+          }
+        }
+
+        if (conservationHeatMap && conservationHeatLayer) {
+          if (shouldShowHeat) {
+            if (!conservationHeatMap.hasLayer(conservationHeatLayer)) {
+              conservationHeatLayer.addTo(conservationHeatMap);
+            }
+          } else if (conservationHeatMap.hasLayer(conservationHeatLayer)) {
+            conservationHeatMap.removeLayer(conservationHeatLayer);
+          }
+        }
       }
 
       function parseCoordinateValue(inputId, label, min, max) {
@@ -3172,11 +3466,16 @@
         if (leafletMap !== null) {
           leafletMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
           leafletMap.invalidateSize();
+          syncTrailMapOverlays();
           return;
         }
 
+        renderTrailControlPanels();
+
         // Initialize map
         leafletMap = L.map('map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
+        researcherMap = leafletMap;
+        researcherTrailLayerGroup = researcherTrailLayerGroup || L.layerGroup();
         
         // Add satellite imagery base layer
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -3190,7 +3489,7 @@
           .addTo(leafletMap);
 
         if (typeof L.heatLayer === 'function') {
-          L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
+          researcherHeatLayer = L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
             radius: 30,
             blur: 22,
             maxZoom: 16,
@@ -3200,8 +3499,10 @@
               0.75: '#f97316',
               1.0: '#dc2626'
             }
-          }).addTo(leafletMap);
+          });
         }
+
+        syncTrailMapOverlays();
       }
 
       function getConservationSummarySnapshot(rawData) {
@@ -3339,8 +3640,11 @@
         const isVisible = conservationView && conservationView.style.display !== 'none';
         if (!isVisible) return;
 
+        renderTrailControlPanels();
+
         if (conservationHeatMap === null) {
           conservationHeatMap = L.map('conservation-heat-map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
+          conservationTrailLayerGroup = conservationTrailLayerGroup || L.layerGroup();
           L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles © Esri',
             maxZoom: 19
@@ -3370,10 +3674,11 @@
               0.75: '#f97316',
               1.0: '#dc2626'
             }
-          }).addTo(conservationHeatMap);
+          });
         }
 
         conservationHeatMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
+        syncTrailMapOverlays();
         setTimeout(() => conservationHeatMap.invalidateSize(), 50);
         setTimeout(() => conservationHeatMap.invalidateSize(), 220);
       }
