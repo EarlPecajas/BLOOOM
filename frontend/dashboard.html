@@ -2689,7 +2689,7 @@
         }
       ];
       const trailSelectionState = {
-        mode: 'both',
+        mode: 'heatmap',
         selectedTrailNames: new Set(MT_BUSA_TRAIL_FEATURES.map((feature) => String(feature.properties?.name || '').trim()).filter(Boolean))
       };
       let conservationDonutChart = null;
@@ -3762,9 +3762,11 @@
           selectedView.style.pointerEvents = 'auto';
           // Initialize map if showing map view
           if (viewName === 'map') {
+            renderTrailControlPanels();
             setTimeout(() => initializeLeafletMap(), 100);
           }
           if (viewName === 'conservation') {
+            renderTrailControlPanels();
             loadConservationSummary();
           }
           if (viewName === 'submissions') {
