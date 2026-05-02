@@ -127,6 +127,8 @@
             <h4 class="orchid-detail-section-title">Habitat Information</h4>
             <div class="orchid-detail-row" id="row-habitat-type"><span class="orchid-detail-label">Habitat Type</span><span id="detail-habitat-type">-</span></div>
             <div class="orchid-detail-row" id="row-microhabitat"><span class="orchid-detail-label">Microhabitat</span><span id="detail-microhabitat">-</span></div>
+            <div class="orchid-detail-row" id="row-flower-color"><span class="orchid-detail-label">Flower Color</span><span id="detail-flower-color">-</span></div>
+            <div class="orchid-detail-row" id="row-flowering-stage"><span class="orchid-detail-label">Flowering Stage</span><span id="detail-flowering-stage">-</span></div>
             <div class="orchid-detail-row" id="row-growth-substrate"><span class="orchid-detail-label">Growth Substrate</span><span id="detail-growth-substrate">-</span></div>
             <div class="orchid-detail-row" id="row-host-tree"><span class="orchid-detail-label">Host Tree Species</span><span id="detail-host-tree">-</span></div>
             <div class="orchid-detail-row" id="row-canopy-cover"><span class="orchid-detail-label">Canopy Cover (%)</span><span id="detail-canopy-cover">-</span></div>
@@ -338,6 +340,10 @@
         const rowEl = document.getElementById(rowId);
         const valueEl = document.getElementById(valueId);
         const isAvailable = hasUsableValue(value);
+
+        if (!rowEl || !valueEl) {
+          return;
+        }
 
         rowEl.hidden = !isAvailable;
         if (isAvailable) {
