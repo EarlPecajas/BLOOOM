@@ -2787,10 +2787,11 @@
         const trailDifficulty = getTrailFeatureDifficulty(feature) || 'Unspecified';
 
         return L.geoJSON(feature, {
+          pane: 'trail-pane',
           style: {
             color: getTrailFeatureColor(feature),
-            weight: 5,
-            opacity: 0.95,
+            weight: 6,
+            opacity: 1,
             lineCap: 'round',
             lineJoin: 'round'
           },
@@ -2985,6 +2986,11 @@
           if (!mapInstance.hasLayer(trailLayerGroup)) {
             trailLayerGroup.addTo(mapInstance);
           }
+          trailLayerGroup.eachLayer((trailLayer) => {
+            if (typeof trailLayer.bringToFront === 'function') {
+              trailLayer.bringToFront();
+            }
+          });
         } else if (mapInstance.hasLayer(trailLayerGroup)) {
           mapInstance.removeLayer(trailLayerGroup);
         }
@@ -3476,6 +3482,11 @@
         leafletMap = L.map('map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
         researcherMap = leafletMap;
         researcherTrailLayerGroup = researcherTrailLayerGroup || L.layerGroup();
+        if (!leafletMap.getPane('trail-pane')) {
+          leafletMap.createPane('trail-pane');
+          leafletMap.getPane('trail-pane').style.zIndex = '650';
+          leafletMap.getPane('trail-pane').style.pointerEvents = 'auto';
+        }
         
         // Add satellite imagery base layer
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -3645,6 +3656,11 @@
         if (conservationHeatMap === null) {
           conservationHeatMap = L.map('conservation-heat-map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
           conservationTrailLayerGroup = conservationTrailLayerGroup || L.layerGroup();
+          if (!conservationHeatMap.getPane('trail-pane')) {
+            conservationHeatMap.createPane('trail-pane');
+            conservationHeatMap.getPane('trail-pane').style.zIndex = '650';
+            conservationHeatMap.getPane('trail-pane').style.pointerEvents = 'auto';
+          }
           L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles © Esri',
             maxZoom: 19
