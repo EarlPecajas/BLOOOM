@@ -600,19 +600,22 @@
           </div>
         </div>
         <form id="researcher-submission-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-          <datalist id="submission-genus-options"></datalist>
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Basic Taxonomic Information</strong>
           </div>
-          <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" />
+          <div style="display:grid;gap:0.35rem;align-self:start;">
+            <label style="font-size:0.88rem;font-weight:600;color:#334155;">Entry ID</label>
+            <div id="submission-entry-id" aria-live="polite" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;color:#64748b;font-family:Inter,Roboto,sans-serif;font-weight:600;letter-spacing:0.02em;user-select:none;pointer-events:none;">Auto-generated on submit</div>
+          </div>
           <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.65rem;align-items:start;">
             <div style="display:grid;gap:0.35rem;">
               <label for="submission-family" style="font-size:0.88rem;font-weight:600;color:#334155;">Family <span style="color:#b42318;">*</span></label>
               <input id="submission-family" type="text" value="Orchidaceae" readonly aria-readonly="true" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;color:#334155;" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div id="submission-genus-picker" style="display:grid;gap:0.35rem;position:relative;">
               <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus <span style="color:#b42318;">*</span></label>
-              <input id="submission-genus" list="submission-genus-options" type="text" placeholder="Search genus..." required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+              <input id="submission-genus" type="text" placeholder="Type to search and select a genus" required autocomplete="off" spellcheck="false" style="padding:0.72rem 0.8rem;border:1px solid #c9d7cf;border-radius:10px;font-family:Inter,Roboto,sans-serif;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,0.04);transition:border-color 160ms ease,box-shadow 160ms ease;" />
+              <div id="submission-genus-results" hidden style="position:absolute;left:0;right:0;top:calc(100% + 0.4rem);z-index:30;max-height:260px;overflow-y:auto;background:#fff;border:1px solid #d7e1da;border-radius:12px;box-shadow:0 18px 40px rgba(15,23,42,0.12);padding:0.35rem;"></div>
             </div>
             <div style="display:grid;gap:0.35rem;">
               <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name <span style="color:#b42318;">*</span></label>
@@ -684,7 +687,10 @@
             <input id="submission-habitat-type-other" type="text" placeholder="Habitat Type: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
             <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
           </div>
-          <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-microhabitat" style="font-size:0.88rem;font-weight:600;color:#334155;">Microhabitat</label>
+            <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Choose microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+          </div>
           <select id="submission-soil-type" class="submission-select"><option value="" disabled selected hidden>Soil Type</option><option value="loamy">Loamy</option><option value="clay">Clay</option><option value="sandy">Sandy</option><option value="silty">Silty</option><option value="peaty">Peaty</option><option value="rocky">Rocky</option></select>
           <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
 
@@ -760,10 +766,31 @@
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Multimedia Documentation</strong>
+            <div style="margin-top:0.35rem;color:#66786e;font-size:0.84rem;">Add up to 3 photos in each section. Put the contributor name below each photo.</div>
           </div>
-          <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Whole Plant Photo</label><input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
-          <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Close-up Flower Photo</label><input id="submission-closeup-flower-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
-          <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Habitat Photo</label><input id="submission-habitat-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
+          <div style="grid-column:1/-1;display:grid;gap:0.75rem;">
+            <div style="display:grid;gap:0.55rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="wholePlant" data-media-title="Whole Plant Photo">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                <strong>Whole Plant Photo</strong>
+                <span style="color:#66786e;font-size:0.84rem;">Up to 3 photos</span>
+              </div>
+              <div id="submission-whole-plant-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0.75rem;"></div>
+            </div>
+            <div style="display:grid;gap:0.55rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="closeupFlower" data-media-title="Close-up Flower Photo">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                <strong>Close-up Flower Photo</strong>
+                <span style="color:#66786e;font-size:0.84rem;">Up to 3 photos</span>
+              </div>
+              <div id="submission-closeup-flower-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0.75rem;"></div>
+            </div>
+            <div style="display:grid;gap:0.55rem;padding:1rem;border:1px solid #dfe7e2;border-radius:12px;background:#fbfdfb;" data-media-section="habitat" data-media-title="Habitat Photo">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                <strong>Habitat Photo</strong>
+                <span style="color:#66786e;font-size:0.84rem;">Up to 3 photos</span>
+              </div>
+              <div id="submission-habitat-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0.75rem;"></div>
+            </div>
+          </div>
           <div style="grid-column:1/-1;"><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Video Documentation</label><input id="submission-video" type="file" accept="video/*" style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
@@ -1249,6 +1276,15 @@
       const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
       const sidebarToggleButton = document.getElementById('sidebar-toggle-button');
       const sidebarElement = document.getElementById('sidebar');
+      const submissionGenusResultsEl = document.getElementById('submission-genus-results');
+
+      const submissionMediaSectionConfigs = [
+        { key: 'wholePlant', title: 'Whole Plant Photo', gridId: 'submission-whole-plant-photo-grid', draftKey: 'wholePlantPhotoContributors' },
+        { key: 'closeupFlower', title: 'Close-up Flower Photo', gridId: 'submission-closeup-flower-photo-grid', draftKey: 'closeupFlowerPhotoContributors' },
+        { key: 'habitat', title: 'Habitat Photo', gridId: 'submission-habitat-photo-grid', draftKey: 'habitatPhotoContributors' }
+      ];
+
+      let availableGenusOptions = [];
 
       function createCommonNameInput(index) {
         const input = document.createElement('input');
@@ -1294,6 +1330,211 @@
 
         row.append(nameInput, roleInput, removeButton);
         return row;
+      }
+
+      function normalizeMediaItem(value) {
+        if (!value) {
+          return { src: '', contributor: '' };
+        }
+
+        if (typeof value === 'string') {
+          return { src: value.trim(), contributor: '' };
+        }
+
+        const src = String(value.src || value.url || value.path || value.file_path || '').trim();
+        const contributor = String(value.contributor || value.credit || value.name || value.caption || '').trim();
+        return { src, contributor };
+      }
+
+      function createMediaSlot(sectionKey, index, sectionTitle) {
+        const card = document.createElement('div');
+        card.className = 'submission-media-slot';
+        card.dataset.mediaSection = sectionKey;
+        card.dataset.mediaIndex = String(index);
+        card.style.cssText = 'display:grid;gap:0.45rem;padding:0.85rem;border:1px solid #d4ddd7;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,0.04);';
+
+        const header = document.createElement('div');
+        header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;';
+
+        const title = document.createElement('div');
+        title.style.cssText = 'font-size:0.92rem;font-weight:700;color:#1f2937;';
+        title.textContent = `${sectionTitle} ${index + 1}`;
+
+        const hint = document.createElement('span');
+        hint.style.cssText = 'font-size:0.8rem;color:#6b7280;';
+        hint.textContent = 'Photo slot';
+
+        header.append(title, hint);
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.cssText = 'width:100%;padding:0.65rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;background:#fdfefe;';
+        fileInput.addEventListener('change', handleSubmissionFormMutation);
+
+        const contributorLabel = document.createElement('label');
+        contributorLabel.textContent = 'Contributor name';
+        contributorLabel.style.cssText = 'font-size:0.84rem;font-weight:600;color:#334155;';
+
+        const contributorInput = document.createElement('input');
+        contributorInput.type = 'text';
+        contributorInput.className = 'submission-media-contributor';
+        contributorInput.placeholder = 'Enter contributor name';
+        contributorInput.style.cssText = 'padding:0.68rem 0.75rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;';
+        contributorInput.addEventListener('input', handleSubmissionFormMutation);
+
+        card.append(header, fileInput, contributorLabel, contributorInput);
+        return card;
+      }
+
+      function renderSubmissionMediaSections() {
+        submissionMediaSectionConfigs.forEach((config) => {
+          const gridEl = document.getElementById(config.gridId);
+          if (!gridEl || gridEl.dataset.rendered === '1') {
+            return;
+          }
+
+          gridEl.innerHTML = '';
+          for (let index = 0; index < 3; index += 1) {
+            gridEl.appendChild(createMediaSlot(config.key, index, config.title));
+          }
+          gridEl.dataset.rendered = '1';
+        });
+      }
+
+      function getMediaSectionSlots(sectionKey) {
+        return Array.from(document.querySelectorAll(`[data-media-section="${sectionKey}"]`));
+      }
+
+      function getMediaSectionContributors(sectionKey) {
+        return getMediaSectionSlots(sectionKey).map((slot) => slot.querySelector('.submission-media-contributor')?.value?.trim() || '');
+      }
+
+      function setMediaSectionContributors(sectionKey, values) {
+        const slots = getMediaSectionSlots(sectionKey);
+        const contributorValues = Array.isArray(values) ? values : [];
+
+        slots.forEach((slot, index) => {
+          const contributorInput = slot.querySelector('.submission-media-contributor');
+          if (!contributorInput) return;
+          const entry = contributorValues[index];
+          const normalizedEntry = typeof entry === 'string' ? { contributor: entry } : (entry || {});
+          contributorInput.value = String(normalizedEntry.contributor || normalizedEntry.credit || normalizedEntry.name || '').trim();
+        });
+      }
+
+      async function uploadMediaSection(sectionKey, entryId, uploadBucket) {
+        const slots = getMediaSectionSlots(sectionKey);
+        const uploadedEntries = [];
+
+        for (let index = 0; index < slots.length; index += 1) {
+          const slot = slots[index];
+          const fileInput = slot.querySelector('input[type="file"]');
+          const contributor = slot.querySelector('.submission-media-contributor')?.value?.trim() || '';
+          const file = fileInput?.files?.[0] || null;
+
+          if (!file) {
+            continue;
+          }
+
+          const extension = file.name && file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
+          const safeExt = extension || '.jpg';
+          const token = Math.random().toString(16).slice(2, 10);
+          const storagePath = `submissions/${entryId}/${sectionKey}-${index + 1}-${Date.now()}-${token}${safeExt}`;
+
+          const { error } = await bloomSupabase.storage
+            .from(uploadBucket)
+            .upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+
+          if (error) {
+            throw new Error(error.message || `Failed to upload ${file.name}`);
+          }
+
+          const { data: publicUrlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(storagePath);
+          uploadedEntries.push({
+            url: publicUrlData.publicUrl,
+            contributor: contributor || ''
+          });
+        }
+
+        return uploadedEntries;
+      }
+
+      function getFilteredGenusOptions(searchTerm) {
+        const query = String(searchTerm || '').trim().toLowerCase();
+        const options = availableGenusOptions.slice();
+
+        if (!query) {
+          return options.slice(0, 12);
+        }
+
+        return options
+          .filter((value) => String(value || '').toLowerCase().includes(query))
+          .slice(0, 12);
+      }
+
+      function hideGenusResults() {
+        if (submissionGenusResultsEl) {
+          submissionGenusResultsEl.hidden = true;
+          submissionGenusResultsEl.innerHTML = '';
+        }
+      }
+
+      function renderGenusResults(searchTerm = '') {
+        if (!submissionGenusResultsEl) {
+          return;
+        }
+
+        const matches = getFilteredGenusOptions(searchTerm);
+        submissionGenusResultsEl.innerHTML = '';
+
+        if (!matches.length) {
+          const emptyState = document.createElement('div');
+          emptyState.style.cssText = 'padding:0.75rem 0.85rem;color:#64748b;font-size:0.9rem;';
+          emptyState.textContent = 'No matching genera found';
+          submissionGenusResultsEl.appendChild(emptyState);
+          submissionGenusResultsEl.hidden = false;
+          return;
+        }
+
+        matches.forEach((genusName) => {
+          const optionButton = document.createElement('button');
+          optionButton.type = 'button';
+          optionButton.style.cssText = 'display:flex;width:100%;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.7rem 0.8rem;border:none;border-radius:10px;background:#fff;text-align:left;cursor:pointer;transition:background 160ms ease;';
+          optionButton.innerHTML = `<span style="font-weight:600;color:#1f2937;">${escapeHtml(genusName)}</span><span style="font-size:0.78rem;color:#6b7280;">Select</span>`;
+          optionButton.addEventListener('mousedown', function(event) {
+            event.preventDefault();
+            if (submissionGenusEl) {
+              submissionGenusEl.value = genusName;
+              submissionGenusEl.setAttribute('aria-activedescendant', '');
+            }
+            hideGenusResults();
+            handleSubmissionFormMutation();
+          });
+          optionButton.addEventListener('mouseenter', function() {
+            optionButton.style.background = '#f3f7f4';
+          });
+          optionButton.addEventListener('mouseleave', function() {
+            optionButton.style.background = '#fff';
+          });
+          submissionGenusResultsEl.appendChild(optionButton);
+        });
+
+        submissionGenusResultsEl.hidden = false;
+      }
+
+      function openGenusResults() {
+        renderGenusResults(submissionGenusEl?.value || '');
+      }
+
+      function setSubmissionGenusValue(genusName) {
+        if (!submissionGenusEl) {
+          return;
+        }
+
+        submissionGenusEl.value = String(genusName || '').trim();
+        hideGenusResults();
+        handleSubmissionFormMutation();
       }
 
       function getTeamMemberEntries() {
@@ -1410,6 +1651,9 @@
           populationCount: document.getElementById('submission-population-count')?.value || '',
           populationStatus: document.getElementById('submission-population-status')?.value || '',
           threatLevel: document.getElementById('submission-threat-level')?.value || '',
+          wholePlantPhotoContributors: getMediaSectionContributors('wholePlant'),
+          closeupFlowerPhotoContributors: getMediaSectionContributors('closeupFlower'),
+          habitatPhotoContributors: getMediaSectionContributors('habitat'),
           teamMembers: getTeamMemberEntries(),
           institution: document.getElementById('submission-institution')?.value || '',
           headObserver: document.getElementById('submission-head-observer')?.value || '',
@@ -1471,6 +1715,7 @@
         if (submissionFamilyEl) submissionFamilyEl.value = ORCHID_FAMILY_NAME;
         if (submissionGenusEl) submissionGenusEl.value = draft.genus || '';
         if (submissionScientificNameEl) submissionScientificNameEl.value = [ORCHID_FAMILY_NAME, draft.genus].filter(Boolean).join(' ').trim();
+        renderSubmissionMediaSections();
 
         const commonNamesWrap = document.getElementById('submission-common-names-wrap');
         if (commonNamesWrap) {
@@ -1518,6 +1763,10 @@
           teamMembers.forEach((member) => submissionTeamMembersWrapEl.appendChild(createTeamMemberRow(member)));
         }
 
+        setMediaSectionContributors('wholePlant', draft.wholePlantPhotoContributors || []);
+        setMediaSectionContributors('closeupFlower', draft.closeupFlowerPhotoContributors || []);
+        setMediaSectionContributors('habitat', draft.habitatPhotoContributors || []);
+
         if (document.getElementById('submission-institution')) document.getElementById('submission-institution').value = draft.institution || '';
         if (document.getElementById('submission-head-observer')) document.getElementById('submission-head-observer').value = draft.headObserver || '';
         if (document.getElementById('submission-researcher-notes')) document.getElementById('submission-researcher-notes').value = draft.researcherNotes || '';
@@ -1531,15 +1780,9 @@
         if (!researcherSubmissionFormEl) return;
 
         researcherSubmissionFormEl.reset();
-
-        const entryIdEl = document.getElementById('submission-entry-id');
         const observationDateEl = document.getElementById('submission-observation-date');
         const observationTimeEl = document.getElementById('submission-observation-time');
         const commonNamesWrap = document.getElementById('submission-common-names-wrap');
-
-        if (entryIdEl) {
-          entryIdEl.value = `PENDING-${Date.now().toString().slice(-8)}`;
-        }
 
         const now = new Date();
         if (observationDateEl) {
@@ -1562,6 +1805,10 @@
         if (submissionFamilyEl) submissionFamilyEl.value = ORCHID_FAMILY_NAME;
         if (submissionGenusEl) submissionGenusEl.value = '';
         if (submissionScientificNameEl) submissionScientificNameEl.value = '';
+        renderSubmissionMediaSections();
+        setMediaSectionContributors('wholePlant', ['', '', '']);
+        setMediaSectionContributors('closeupFlower', ['', '', '']);
+        setMediaSectionContributors('habitat', ['', '', '']);
         if (submissionGrowthSubstrateEl) submissionGrowthSubstrateEl.value = '';
         if (submissionGrowthSubstrateOtherEl) submissionGrowthSubstrateOtherEl.value = '';
         if (submissionSpecificSiteZoneEl) submissionSpecificSiteZoneEl.value = '';
@@ -1579,11 +1826,11 @@
       }
 
       function renderGenusOptions(genusNames) {
-        const genusDatalist = document.getElementById('submission-genus-options');
-        if (!genusDatalist) return;
-
         const uniqueGenusNames = Array.from(new Set((genusNames || []).map((value) => String(value || '').trim()).filter(Boolean)));
-        genusDatalist.innerHTML = uniqueGenusNames.map((genusName) => `<option value="${genusName.replaceAll('"', '&quot;')}"></option>`).join('');
+        availableGenusOptions = uniqueGenusNames;
+        if (submissionGenusResultsEl && !submissionGenusResultsEl.hidden) {
+          renderGenusResults(submissionGenusEl?.value || '');
+        }
       }
 
       async function loadGenusOptions() {
@@ -1605,11 +1852,42 @@
 
       function initializeResearcherSightingForm() {
         loadGenusOptions();
+        renderSubmissionMediaSections();
 
         if (researcherSubmissionFormEl && !researcherSubmissionFormEl.dataset.bound) {
           researcherSubmissionFormEl.dataset.bound = '1';
           researcherSubmissionFormEl.addEventListener('input', handleSubmissionFormMutation);
           researcherSubmissionFormEl.addEventListener('change', handleSubmissionFormMutation);
+        }
+
+        if (submissionGenusEl && !submissionGenusEl.dataset.bound) {
+          submissionGenusEl.dataset.bound = '1';
+          submissionGenusEl.addEventListener('focus', function() {
+            openGenusResults();
+          });
+          submissionGenusEl.addEventListener('input', function() {
+            renderGenusResults(submissionGenusEl.value);
+            handleSubmissionFormMutation();
+          });
+          submissionGenusEl.addEventListener('change', function() {
+            renderGenusResults(submissionGenusEl.value);
+            handleSubmissionFormMutation();
+          });
+          submissionGenusEl.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+              hideGenusResults();
+            }
+          });
+          submissionGenusEl.addEventListener('blur', function() {
+            window.setTimeout(() => hideGenusResults(), 120);
+          });
+        }
+
+        if (submissionGenusResultsEl && !submissionGenusResultsEl.dataset.bound) {
+          submissionGenusResultsEl.dataset.bound = '1';
+          submissionGenusResultsEl.addEventListener('mousedown', function(event) {
+            event.preventDefault();
+          });
         }
 
         if (submissionClearFormBtn && !submissionClearFormBtn.dataset.bound) {
@@ -2040,7 +2318,7 @@
             const latitude = parseCoordinateValue('submission-latitude', 'Latitude', -90, 90);
             const longitude = parseCoordinateValue('submission-longitude', 'Longitude', -180, 180);
 
-            async function uploadFilesFromInput(inputEl, fieldName) {
+            async function uploadVideoFilesFromInput(inputEl, fieldName) {
               const files = Array.from(inputEl?.files || []);
               if (!files.length) {
                 return [];
@@ -2048,12 +2326,12 @@
 
               const uploadedUrls = [];
               for (const file of files) {
-                const extension = (file.name && file.name.includes('.')) ? `.${file.name.split('.').pop()}` : '';
-                const safeExt = extension || '.jpg';
+                const extension = file.name && file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
+                const safeExt = extension || '.mp4';
                 const token = Math.random().toString(16).slice(2, 10);
                 const storagePath = `submissions/${entryId}/${fieldName}-${Date.now()}-${token}${safeExt}`;
 
-                  const { error } = await bloomSupabase.storage
+                const { error } = await bloomSupabase.storage
                   .from(uploadBucket)
                   .upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
 
@@ -2068,11 +2346,11 @@
               return uploadedUrls;
             }
 
-            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, videoUrls] = await Promise.all([
-              uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-video'), 'video')
+            const [wholePlantPhotoEntries, closeupFlowerPhotoEntries, habitatPhotoEntries, videoUrls] = await Promise.all([
+              uploadMediaSection('wholePlant', entryId, uploadBucket),
+              uploadMediaSection('closeupFlower', entryId, uploadBucket),
+              uploadMediaSection('habitat', entryId, uploadBucket),
+              uploadVideoFilesFromInput(document.getElementById('submission-video'), 'video')
             ]);
 
             const insertPayload = {
@@ -2133,9 +2411,9 @@
               population_status: document.getElementById('submission-population-status')?.value || null,
               threat_level: document.getElementById('submission-threat-level')?.value || null,
               threat_types: threatTypes,
-              whole_plant_photo_path: JSON.stringify(wholePlantPhotoUrls),
-              closeup_flower_photo_path: JSON.stringify(closeupFlowerPhotoUrls),
-              habitat_photo_path: JSON.stringify(habitatPhotoUrls),
+              whole_plant_photo_path: JSON.stringify(wholePlantPhotoEntries),
+              closeup_flower_photo_path: JSON.stringify(closeupFlowerPhotoEntries),
+              habitat_photo_path: JSON.stringify(habitatPhotoEntries),
               photo_3d_path: JSON.stringify([]),
               video_path: JSON.stringify(videoUrls),
               institution: document.getElementById('submission-institution')?.value || null,
@@ -2388,6 +2666,12 @@
         return [value].filter(Boolean);
       }
 
+      function normalizeMediaEntries(value) {
+        return parseJsonArrayValue(value)
+          .map((item) => normalizeMediaItem(item))
+          .filter((item) => item.src);
+      }
+
       function parseCoordinateValue(inputId, label, min, max) {
         const rawValue = String(document.getElementById(inputId)?.value || '').trim();
         if (!rawValue) {
@@ -2408,9 +2692,9 @@
 
       function normalizeSubmissionRow(row) {
         const commonNames = parseJsonArrayValue(row.common_names);
-        const wholePlantPhotos = parseJsonArrayValue(row.whole_plant_photo_path);
-        const closeupFlowerPhotos = parseJsonArrayValue(row.closeup_flower_photo_path);
-        const habitatPhotos = parseJsonArrayValue(row.habitat_photo_path);
+        const wholePlantPhotos = normalizeMediaEntries(row.whole_plant_photo_path);
+        const closeupFlowerPhotos = normalizeMediaEntries(row.closeup_flower_photo_path);
+        const habitatPhotos = normalizeMediaEntries(row.habitat_photo_path);
         const videoFiles = parseJsonArrayValue(row.video_path);
         const location = row.location || [row.mountain_name || 'Mt. Busa', row.specific_site_zone || row.specific_site_other].filter(Boolean).join(', ') || 'Mt. Busa';
 
@@ -3235,8 +3519,9 @@
         function addImages(arr, label) {
           if (!Array.isArray(arr)) return;
           arr.forEach((src, idx) => {
-            if (!src) return;
-            images.push({ name: `${label} ${idx + 1}`, src });
+            const media = normalizeMediaItem(src);
+            if (!media.src) return;
+            images.push({ name: `${label} ${idx + 1}`, src: media.src, contributor: media.contributor || '' });
           });
         }
 
@@ -3371,11 +3656,20 @@
           imageGallery.innerHTML = '';
           if (evidence.images.length > 0) {
           evidence.images.forEach((img) => {
-            const thumbnail = document.createElement('div');
-            thumbnail.style.cssText = 'cursor:pointer;overflow:hidden;border-radius:8px;background:linear-gradient(135deg,#f5f5f5,#e8e8e8);aspect-ratio:1;display:flex;align-items:center;justify-content:center;transition:transform 200ms ease,box-shadow 200ms ease;border:1px solid #ddd;';
-            thumbnail.onmouseover = function() { this.style.transform = 'scale(1.05)'; this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; };
-            thumbnail.onmouseout = function() { this.style.transform = 'scale(1)'; this.style.boxShadow = 'none'; };
-            thumbnail.innerHTML = `<img src="${img.src}" alt="${img.name}" style="width:100%;height:100%;object-fit:cover;display:block;" />`;
+            const thumbnail = document.createElement('button');
+            thumbnail.type = 'button';
+            thumbnail.style.cssText = 'cursor:pointer;overflow:hidden;border-radius:12px;background:#fff;display:grid;gap:0.55rem;padding:0;border:1px solid #d8e3dc;transition:transform 200ms ease,box-shadow 200ms ease;text-align:left;';
+            thumbnail.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)'; };
+            thumbnail.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; };
+            thumbnail.innerHTML = `
+              <div style="aspect-ratio:1;overflow:hidden;background:linear-gradient(135deg,#f5f5f5,#e8e8e8);border-bottom:1px solid #e5ece7;">
+                <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.name)}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+              </div>
+              <div style="padding:0 0.75rem 0.75rem 0.75rem;display:grid;gap:0.2rem;">
+                <div style="font-size:0.86rem;font-weight:700;color:#1f2937;">${escapeHtml(img.name)}</div>
+                <div style="font-size:0.78rem;color:#64748b;">${escapeHtml(img.contributor || 'Contributor not specified')}</div>
+              </div>
+            `;
             thumbnail.onclick = () => openLightbox(img.src);
             imageGallery.appendChild(thumbnail);
           });
