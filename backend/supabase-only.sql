@@ -68,6 +68,9 @@ SELECT
   s.nearby_water_source,
   s.unusual_observations AS educational_notes,
   'Location hidden for conservation'::text AS location_visibility_note,
+  s.researcher_name,
+  s.team_members,
+  s.institution,
   s.whole_plant_photo_path,
   s.closeup_flower_photo_path,
   s.habitat_photo_path

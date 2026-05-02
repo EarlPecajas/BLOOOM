@@ -216,6 +216,7 @@
       let orchids = [];
       let approvedSightingsByScientificName = new Map();
       let isListView = false;
+      let currentSubmission = null;
       const bloomSupabase = window.bloomSupabase;
 
       const activeUserRaw = localStorage.getItem('bloomUser');
@@ -330,7 +331,10 @@
           location_visibility_note: row.location_visibility_note || 'Location hidden for conservation',
           whole_plant_photo_path: parseJsonArrayValue(row.whole_plant_photo_path),
           closeup_flower_photo_path: parseJsonArrayValue(row.closeup_flower_photo_path),
-          habitat_photo_path: parseJsonArrayValue(row.habitat_photo_path)
+          habitat_photo_path: parseJsonArrayValue(row.habitat_photo_path),
+          researcher_name: row.researcher_name || '',
+          team_members: parseJsonArrayValue(row.team_members),
+          institution: row.institution || ''
         };
       }
 
@@ -464,6 +468,54 @@
         contributorsToggle.setAttribute('aria-expanded', String(showContributors));
       }
 
+      function populateContributorsPanel(submission) {
+        if (!submission) {
+          contributorsPanel.innerHTML = '<p class="text-muted">No contributor information available.</p>';
+          return;
+        }
+
+        const contributors = [];
+        
+        // Add researcher name
+        if (hasUsableValue(submission.researcher_name)) {
+          contributors.push({
+            name: String(submission.researcher_name).trim(),
+            role: 'Lead Researcher'
+          });
+        }
+
+        // Add team members
+        const teamMembers = parseJsonArrayValue(submission.team_members);
+        teamMembers.forEach((member) => {
+          if (hasUsableValue(member)) {
+            contributors.push({
+              name: String(member).trim(),
+              role: 'Team Member'
+            });
+          }
+        });
+
+        // Add institution if available
+        if (hasUsableValue(submission.institution)) {
+          contributors.push({
+            name: String(submission.institution).trim(),
+            role: 'Institution'
+          });
+        }
+
+        if (contributors.length === 0) {
+          contributorsPanel.innerHTML = '<p class="text-muted">No contributor information available.</p>';
+          return;
+        }
+
+        contributorsPanel.innerHTML = contributors.map((contributor) => `
+          <div class="contributor-item">
+            <p class="contributor-name">${contributor.name}</p>
+            <p class="contributor-date">${contributor.role}</p>
+          </div>
+        `).join('');
+      }
+
       function openCatalogLightbox(imageSrc) {
         catalogLightboxImage.src = imageSrc;
         catalogImageLightbox.hidden = false;
@@ -524,6 +576,7 @@
           setDetailRow('row-genus', 'detail-genus', orchid.genus);
           setDetailRow('row-common-name', 'detail-common-name', getPrimaryCommonName(source.common_names) || source.common_name || orchid.common_name);
           setDetailRow('row-identification-status', 'detail-identification-status', formatSimplifiedConfidence(source.identification_confidence || source.verification_status));
+          setDetailRow('row-identification-confidence', 'detail-identification-confidence', source.identification_confidence || '');
 
           setDetailRow('row-mountain', 'detail-mountain', source.mountain_name || 'Mt. Busa');
           setDetailRow('row-specific-site', 'detail-specific-site', source.specific_site_zone || 'ridge area');
@@ -557,6 +610,7 @@
 
           setDetailRow('row-ethnobotanical', 'detail-ethnobotanical', source.educational_notes || '');
           setDetailRow('row-cultural', 'detail-cultural', '');
+          setDetailRow('row-researcher', 'detail-researcher', source.researcher_name || '');
 
           document.getElementById('row-endemicity').hidden = true;
           document.getElementById('row-observation-summary').hidden = true;
@@ -565,7 +619,6 @@
           document.getElementById('row-location-visibility').hidden = true;
           document.getElementById('row-latitude').hidden = true;
           document.getElementById('row-longitude').hidden = true;
-          document.getElementById('row-researcher').hidden = true;
           document.getElementById('row-observation-date').hidden = true;
           document.getElementById('row-observation-time').hidden = true;
           document.getElementById('row-host-tree').hidden = true;
@@ -584,8 +637,9 @@
           document.getElementById('row-voucher').hidden = true;
           document.getElementById('row-light-exposure').hidden = true;
           document.getElementById('row-soil-type').hidden = true;
-          document.getElementById('row-identification-confidence').hidden = false;
-        } else {
+
+          // Store submission for contributors panel
+          currentSubmission = source;
           // Authenticated researcher / DENR / admin: prefer full DENR sighting when available
           const source = denrSighting ? denrSighting : { ...orchid, ...(publicSighting || {}) };
           // Authenticated users see all available details (prefer `source` values)
@@ -648,6 +702,9 @@
           setDetailRow('row-collection-method', 'detail-collection-method', source.collection_method || '');
           setDetailRow('row-voucher', 'detail-voucher', source.voucher_collected ? 'Yes' : 'No');
           setDetailRow('row-identification-confidence', 'detail-identification-confidence', source.identification_confidence || '');
+
+          // Store submission for contributors panel
+          currentSubmission = source;
         }
         refreshSectionVisibility();
         orchidDetailModal.hidden = false;
@@ -799,7 +856,7 @@
         try {
           const { data, error } = await bloomSupabase
             .from('public_approved_sightings')
-            .select('scientific_name, common_names, identification_confidence, observation_date, observation_month, mountain_name, specific_site_zone, elevation_meters, habitat_type, microhabitat, growth_substrate, nearby_water_source, plant_height_cm, leaf_shape, leaf_count, leaf_textures, leaf_arrangement, flower_color, flower_count, flower_diameter_cm, inflorescence_type, petal_characteristics, labellum_lip_description, fragrance, flowering_season, blooming_stage, fruit_present, fruit_type, population_status, threat_level_generalized, educational_notes, location_visibility_note, whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path')
+            .select('scientific_name, common_names, identification_confidence, observation_date, observation_month, mountain_name, specific_site_zone, elevation_meters, habitat_type, microhabitat, growth_substrate, nearby_water_source, plant_height_cm, leaf_shape, leaf_count, leaf_textures, leaf_arrangement, flower_color, flower_count, flower_diameter_cm, inflorescence_type, petal_characteristics, labellum_lip_description, fragrance, flowering_season, blooming_stage, fruit_present, fruit_type, population_status, threat_level_generalized, educational_notes, location_visibility_note, whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path, researcher_name, team_members, institution')
             .order('observation_date', { ascending: false });
 
           if (error) {
@@ -852,6 +909,9 @@
 
       contributorsToggle.addEventListener('click', function() {
         const shouldShowContributors = contributorsPanel.hidden;
+        if (shouldShowContributors) {
+          populateContributorsPanel(currentSubmission);
+        }
         setContributorsView(shouldShowContributors);
       });
 
