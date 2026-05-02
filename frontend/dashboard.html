@@ -2653,7 +2653,7 @@
       let orchidCatalogLoaded = false;
       let dashboardCatalogListView = false;
       let submissionRows = [];
-      const RANDOM_TRAIL_COUNT = 10;
+      const RANDOM_TRAIL_COUNT = 5;
       const TRAIL_DIFFICULTY_OPTIONS = ['Easy', 'Moderate', 'Hard'];
       const TRAIL_NAME_PREFIXES = ['Ridge', 'Canopy', 'Summit', 'Forest', 'Valley', 'Riverbend', 'Moss', 'Cloud', 'Busa', 'Eagle'];
       const TRAIL_NAME_SUFFIXES = ['Path', 'Pass', 'Traverse', 'Route', 'Loop', 'Spur', 'Way', 'Track', 'Corridor', 'Climb'];
@@ -2800,21 +2800,66 @@
 
       function getTrailFeatureColor(feature) {
         const difficulty = getTrailFeatureDifficulty(feature).toLowerCase();
-        if (difficulty === 'easy') return '#16a34a';
-        if (difficulty === 'hard') return '#dc2626';
+        if (difficulty === 'easy') return '#22c55e';
+        if (difficulty === 'hard') return '#ef4444';
         return '#f59e0b';
+      }
+
+      function getTrailDifficultyStyle(feature) {
+        const difficulty = getTrailFeatureDifficulty(feature).toLowerCase();
+        if (difficulty === 'easy') {
+          return {
+            dashArray: null,
+            coreWeight: 4,
+            casingWeight: 8,
+            coreOpacity: 0.95,
+            casingOpacity: 0.36
+          };
+        }
+        if (difficulty === 'hard') {
+          return {
+            dashArray: '10 6',
+            coreWeight: 4,
+            casingWeight: 8,
+            coreOpacity: 0.98,
+            casingOpacity: 0.42
+          };
+        }
+        return {
+          dashArray: '14 7',
+          coreWeight: 4,
+          casingWeight: 8,
+          coreOpacity: 0.96,
+          casingOpacity: 0.38
+        };
       }
 
       function createTrailGeoJsonLayer(feature) {
         const trailName = getTrailFeatureName(feature);
         const trailDifficulty = getTrailFeatureDifficulty(feature) || 'Unspecified';
 
-        return L.geoJSON(feature, {
+        const styleProfile = getTrailDifficultyStyle(feature);
+        const trailColor = getTrailFeatureColor(feature);
+
+        const casingLayer = L.geoJSON(feature, {
+          pane: 'trail-pane',
+          interactive: false,
+          style: {
+            color: '#0f172a',
+            weight: styleProfile.casingWeight,
+            opacity: styleProfile.casingOpacity,
+            lineCap: 'round',
+            lineJoin: 'round'
+          }
+        });
+
+        const coreLayer = L.geoJSON(feature, {
           pane: 'trail-pane',
           style: {
-            color: getTrailFeatureColor(feature),
-            weight: 6,
-            opacity: 1,
+            color: trailColor,
+            weight: styleProfile.coreWeight,
+            opacity: styleProfile.coreOpacity,
+            dashArray: styleProfile.dashArray,
             lineCap: 'round',
             lineJoin: 'round'
           },
@@ -2822,6 +2867,8 @@
             trailLayer.bindPopup(`<strong>${escapeHtml(trailName)}</strong><br>Difficulty: ${escapeHtml(trailDifficulty)}`);
           }
         });
+
+        return L.featureGroup([casingLayer, coreLayer]);
       }
 
       function buildTrailControlPanel(panelKey, title, subtitle) {
