@@ -340,11 +340,32 @@
         catalogImageLightbox.hidden = true;
       }
 
-      function openOrchidDetails(orchid) {
+      async function openOrchidDetails(orchid) {
         const scientificKey = normalizeScientificKey(orchid.name);
         const publicSighting = approvedSightingsByScientificName.get(scientificKey) || null;
+        // For DENR / authenticated users, try to fetch the full approved sighting row
+        let denrSighting = null;
+        if (!isPublicVisitor && bloomSupabase) {
+          try {
+            const sciName = orchid.name || orchid.sci_name || '';
+            if (sciName) {
+              const { data: denrData, error: denrErr } = await bloomSupabase
+                .from('denr_approved_sightings')
+                .select('*')
+                .eq('scientific_name', sciName)
+                .order('observation_date', { ascending: false })
+                .limit(1);
+              if (!denrErr && Array.isArray(denrData) && denrData.length > 0) {
+                denrSighting = denrData[0];
+              }
+            }
+          } catch (e) {
+            console.error('Failed to fetch DENR sighting:', e);
+          }
+        }
+
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Flower';
-        const publicSightingImages = getPublicSightingImages(publicSighting);
+        const publicSightingImages = getPublicSightingImages(denrSighting || publicSighting);
         const showcaseSet = publicSightingImages.length
           ? [
               publicSightingImages[0],
@@ -383,66 +404,68 @@
           document.getElementById('row-identification-status').hidden = true;
           document.getElementById('row-location-visibility').hidden = true;
         } else {
-          // Authenticated researcher / DENR / admin: show all available details
+          // Authenticated researcher / DENR / admin: prefer full DENR sighting when available
+          const source = denrSighting ? denrSighting : { ...orchid, ...(publicSighting || {}) };
+          // Authenticated users see all available details (prefer `source` values)
           setDetailRow('row-scientific-name', 'detail-scientific-name', orchid.name);
           setDetailRow('row-genus', 'detail-genus', orchid.genus);
           setDetailRow('row-common-name', 'detail-common-name', orchid.common_name);
-          setDetailRow('row-endemicity', 'detail-endemicity', orchid.endemicity);
-          setDetailRow('row-identification-status', 'detail-identification-status', publicSighting?.verification_status || '');
-          setDetailRow('row-observation-summary', 'detail-observation-summary', getObservationSummaryText(publicSighting));
-          setDetailRow('row-observation-type', 'detail-observation-type', publicSighting?.observation_type || '');
-          setDetailRow('row-observation-month', 'detail-observation-month', publicSighting?.observation_month || '');
-          setDetailRow('row-mountain', 'detail-mountain', publicSighting?.mountain_name || '');
-          setDetailRow('row-habitat-type', 'detail-habitat-type', publicSighting?.habitat_type || '');
-          setDetailRow('row-flower-color', 'detail-flower-color', publicSighting?.flower_color || '');
-          setDetailRow('row-flowering-stage', 'detail-flowering-stage', publicSighting?.flowering_stage || '');
-          setDetailRow('row-population-status', 'detail-population-status', publicSighting?.population_status || '');
-          setDetailRow('row-growth-substrate', 'detail-growth-substrate', publicSighting?.growth_substrate || '');
-          setDetailRow('row-light-exposure', 'detail-light-exposure', publicSighting?.light_exposure || '');
-          setDetailRow('row-soil-type', 'detail-soil-type', publicSighting?.soil_type || '');
-          setDetailRow('row-nearby-water', 'detail-nearby-water', publicSighting?.nearby_water_source || '');
-          setDetailRow('row-location-visibility', 'detail-location-visibility', publicSighting?.location_visibility_note || 'Location hidden for conservation');
+          setDetailRow('row-endemicity', 'detail-endemicity', source.endemicity);
+          setDetailRow('row-identification-status', 'detail-identification-status', source.verification_status || source.identification_confidence || '');
+          setDetailRow('row-observation-summary', 'detail-observation-summary', getObservationSummaryText(source));
+          setDetailRow('row-observation-type', 'detail-observation-type', source.observation_type || '');
+          setDetailRow('row-observation-month', 'detail-observation-month', source.observation_month || source.observation_date || '');
+          setDetailRow('row-mountain', 'detail-mountain', source.mountain_name || '');
+          setDetailRow('row-habitat-type', 'detail-habitat-type', source.habitat_type || '');
+          setDetailRow('row-flower-color', 'detail-flower-color', source.flower_color || '');
+          setDetailRow('row-flowering-stage', 'detail-flowering-stage', source.flowering_stage || '');
+          setDetailRow('row-population-status', 'detail-population-status', source.population_status || source.population_count || '');
+          setDetailRow('row-growth-substrate', 'detail-growth-substrate', source.growth_substrate || '');
+          setDetailRow('row-light-exposure', 'detail-light-exposure', source.light_exposure || '');
+          setDetailRow('row-soil-type', 'detail-soil-type', source.soil_type || '');
+          setDetailRow('row-nearby-water', 'detail-nearby-water', source.nearby_water_source || '');
+          setDetailRow('row-location-visibility', 'detail-location-visibility', source.location_visibility_note || 'Location hidden for conservation');
 
           // Additional submission fields (from orchid object or public sighting)
-          setDetailRow('row-researcher', 'detail-researcher', orchid.researcher || publicSighting?.researcher || orchid.contributor || '');
-          setDetailRow('row-observation-date', 'detail-observation-date', orchid.observation_date || publicSighting?.observation_date || '');
-          setDetailRow('row-observation-time', 'detail-observation-time', orchid.observation_time || publicSighting?.observation_time || '');
-          setDetailRow('row-specific-site', 'detail-specific-site', orchid.specific_site || publicSighting?.specific_site || orchid.specific_site_zone || '');
-          setDetailRow('row-latitude', 'detail-latitude', orchid.latitude || publicSighting?.latitude || '');
-          setDetailRow('row-longitude', 'detail-longitude', orchid.longitude || publicSighting?.longitude || '');
-          setDetailRow('row-elevation', 'detail-elevation', orchid.elevation || publicSighting?.elevation || '');
-          setDetailRow('row-microhabitat', 'detail-microhabitat', orchid.microhabitat || publicSighting?.microhabitat || '');
-          setDetailRow('row-host-tree', 'detail-host-tree', orchid.host_tree_species || publicSighting?.host_tree_species || '');
-          setDetailRow('row-canopy-cover', 'detail-canopy-cover', orchid.canopy_cover || publicSighting?.canopy_cover || '');
-          setDetailRow('row-plant-height', 'detail-plant-height', orchid.plant_height || publicSighting?.plant_height || '');
-          setDetailRow('row-pseudobulb', 'detail-pseudobulb', orchid.pseudobulb_present || publicSighting?.pseudobulb_present || '');
-          setDetailRow('row-stem-length', 'detail-stem-length', orchid.stem_length || publicSighting?.stem_length || '');
-          setDetailRow('row-root-length', 'detail-root-length', orchid.root_length || publicSighting?.root_length || '');
-          setDetailRow('row-leaf-count', 'detail-leaf-count', orchid.leaf_count || publicSighting?.leaf_count || '');
-          setDetailRow('row-leaf-shape', 'detail-leaf-shape', orchid.leaf_shape || publicSighting?.leaf_shape || '');
-          setDetailRow('row-leaf-textures', 'detail-leaf-textures', orchid.leaf_textures || publicSighting?.leaf_textures || '');
-          setDetailRow('row-leaf-arrangement', 'detail-leaf-arrangement', orchid.leaf_arrangement || publicSighting?.leaf_arrangement || '');
-          setDetailRow('row-flower-count', 'detail-flower-count', orchid.flower_count || publicSighting?.flower_count || '');
-          setDetailRow('row-flower-diameter', 'detail-flower-diameter', orchid.flower_diameter || publicSighting?.flower_diameter || '');
-          setDetailRow('row-inflorescence-type', 'detail-inflorescence-type', orchid.inflorescence_type || publicSighting?.inflorescence_type || '');
-          setDetailRow('row-petal-characteristics', 'detail-petal-characteristics', orchid.petal_characteristics || publicSighting?.petal_characteristics || '');
-          setDetailRow('row-sepal-characteristics', 'detail-sepal-characteristics', orchid.sepal_characteristics || publicSighting?.sepal_characteristics || '');
-          setDetailRow('row-labellum', 'detail-labellum', orchid.labellum || publicSighting?.labellum || '');
-          setDetailRow('row-fragrance', 'detail-fragrance', orchid.fragrance || publicSighting?.fragrance || '');
-          setDetailRow('row-flowering-season', 'detail-flowering-season', orchid.flowering_season || publicSighting?.flowering_season || '');
-          setDetailRow('row-fruit-present', 'detail-fruit-present', orchid.fruit_present || publicSighting?.fruit_present || '');
-          setDetailRow('row-fruit-type', 'detail-fruit-type', orchid.fruit_type || publicSighting?.fruit_type || '');
-          setDetailRow('row-seed-capsule', 'detail-seed-capsule', orchid.seed_capsule_condition || publicSighting?.seed_capsule_condition || '');
-          setDetailRow('row-life-stage', 'detail-life-stage', orchid.life_stage || publicSighting?.life_stage || '');
-          setDetailRow('row-phenology', 'detail-phenology', orchid.phenology || publicSighting?.phenology || '');
-          setDetailRow('row-population-count', 'detail-population-count', orchid.population_count || publicSighting?.population_count || '');
-          setDetailRow('row-threat-level', 'detail-threat-level', orchid.threat_level || publicSighting?.threat_level || '');
-          setDetailRow('row-threat-types', 'detail-threat-types', orchid.threat_types || publicSighting?.threat_types || '');
-          setDetailRow('row-institution', 'detail-institution', orchid.institution || publicSighting?.institution || '');
-          setDetailRow('row-team-members', 'detail-team-members', orchid.team_members || publicSighting?.team_members || '');
-          setDetailRow('row-collection-method', 'detail-collection-method', orchid.collection_method || publicSighting?.collection_method || '');
-          setDetailRow('row-voucher', 'detail-voucher', orchid.voucher_collected || publicSighting?.voucher_collected || '');
-          setDetailRow('row-identification-confidence', 'detail-identification-confidence', orchid.identification_confidence || publicSighting?.identification_confidence || '');
+          setDetailRow('row-researcher', 'detail-researcher', source.researcher_name || source.researcher || source.researcher_name || orchid.researcher || '');
+          setDetailRow('row-observation-date', 'detail-observation-date', source.observation_date || source.observation_month || '');
+          setDetailRow('row-observation-time', 'detail-observation-time', source.observation_time || '');
+          setDetailRow('row-specific-site', 'detail-specific-site', source.specific_site || source.specific_site_zone || '');
+          setDetailRow('row-latitude', 'detail-latitude', source.latitude ?? '');
+          setDetailRow('row-longitude', 'detail-longitude', source.longitude ?? '');
+          setDetailRow('row-elevation', 'detail-elevation', source.elevation_meters ?? '');
+          setDetailRow('row-microhabitat', 'detail-microhabitat', source.microhabitat || '');
+          setDetailRow('row-host-tree', 'detail-host-tree', source.host_tree_species || '');
+          setDetailRow('row-canopy-cover', 'detail-canopy-cover', source.canopy_cover_percent ?? '');
+          setDetailRow('row-plant-height', 'detail-plant-height', source.plant_height_cm ?? '');
+          setDetailRow('row-pseudobulb', 'detail-pseudobulb', source.pseudobulb_present ? 'Yes' : 'No');
+          setDetailRow('row-stem-length', 'detail-stem-length', source.stem_length_cm ?? '');
+          setDetailRow('row-root-length', 'detail-root-length', source.root_length_cm ?? '');
+          setDetailRow('row-leaf-count', 'detail-leaf-count', source.leaf_count ?? '');
+          setDetailRow('row-leaf-shape', 'detail-leaf-shape', source.leaf_shape || '');
+          setDetailRow('row-leaf-textures', 'detail-leaf-textures', source.leaf_textures || '');
+          setDetailRow('row-leaf-arrangement', 'detail-leaf-arrangement', source.leaf_arrangement || '');
+          setDetailRow('row-flower-count', 'detail-flower-count', source.flower_count ?? '');
+          setDetailRow('row-flower-diameter', 'detail-flower-diameter', source.flower_diameter_cm ?? '');
+          setDetailRow('row-inflorescence-type', 'detail-inflorescence-type', source.inflorescence_type || '');
+          setDetailRow('row-petal-characteristics', 'detail-petal-characteristics', source.petal_characteristics || '');
+          setDetailRow('row-sepal-characteristics', 'detail-sepal-characteristics', source.sepal_characteristics || '');
+          setDetailRow('row-labellum', 'detail-labellum', source.labellum_lip_description || '');
+          setDetailRow('row-fragrance', 'detail-fragrance', source.fragrance || '');
+          setDetailRow('row-flowering-season', 'detail-flowering-season', source.flowering_season || '');
+          setDetailRow('row-fruit-present', 'detail-fruit-present', source.fruit_present ? 'Yes' : 'No');
+          setDetailRow('row-fruit-type', 'detail-fruit-type', source.fruit_type || '');
+          setDetailRow('row-seed-capsule', 'detail-seed-capsule', source.seed_capsule_condition || '');
+          setDetailRow('row-life-stage', 'detail-life-stage', source.life_stage || '');
+          setDetailRow('row-phenology', 'detail-phenology', source.phenology || '');
+          setDetailRow('row-population-count', 'detail-population-count', source.population_count ?? '');
+          setDetailRow('row-threat-level', 'detail-threat-level', source.threat_level || '');
+          setDetailRow('row-threat-types', 'detail-threat-types', source.threat_types || '');
+          setDetailRow('row-institution', 'detail-institution', source.institution || '');
+          setDetailRow('row-team-members', 'detail-team-members', source.team_members || '');
+          setDetailRow('row-collection-method', 'detail-collection-method', source.collection_method || '');
+          setDetailRow('row-voucher', 'detail-voucher', source.voucher_collected ? 'Yes' : 'No');
+          setDetailRow('row-identification-confidence', 'detail-identification-confidence', source.identification_confidence || '');
         }
         orchidDetailModal.hidden = false;
       }
