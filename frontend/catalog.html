@@ -75,7 +75,10 @@
             <img src="./catalogicon.png" alt="Sample orchid photo" class="orchid-sample-image" id="sample-photo-2" />
             <img src="./catalogicon.png" alt="Sample orchid photo" class="orchid-sample-image" id="sample-photo-3" />
           </div>
-          <a href="gallery.html" class="see-gallery-link" id="see-gallery-link">See Gallery</a>
+          <div class="orchid-showcase-actions">
+            <a href="gallery.html" class="see-gallery-link" id="see-gallery-link">See Gallery</a>
+            <button type="button" class="add-instance-button" id="add-instance-button" hidden>Add Instance</button>
+          </div>
         </div>
 
         <div class="orchid-detail-header">
@@ -206,6 +209,7 @@
       const contributorsPanel = document.getElementById('contributors-panel');
       const orchidShowcaseName = document.getElementById('orchid-showcase-name');
       const seeGalleryLink = document.getElementById('see-gallery-link');
+      const addInstanceButton = document.getElementById('add-instance-button');
       const samplePhotoOne = document.getElementById('sample-photo-1');
       const samplePhotoTwo = document.getElementById('sample-photo-2');
       const samplePhotoThree = document.getElementById('sample-photo-3');
@@ -229,6 +233,7 @@
 
       const viewerRole = (viewer && viewer.role) ? String(viewer.role).trim().toLowerCase() : 'visitor';
       const isPublicVisitor = !viewer || viewerRole === 'visitor';
+      const isResearcherViewer = viewerRole === 'researcher' || viewerRole === 'user';
 
       if (viewer) {
         catalogBrandLink.href = 'dashboard.html?view=orchids';
@@ -380,6 +385,31 @@
         }
 
         return '';
+      }
+
+      function buildAddInstanceUrl(orchid, source) {
+        const speciesName = hasUsableValue(orchid?.name) ? String(orchid.name).trim() : '';
+        const genusFromSpecies = speciesName ? speciesName.split(' ')[0] : '';
+        const genus = hasUsableValue(orchid?.genus) ? String(orchid.genus).trim() : genusFromSpecies;
+        const commonName = getPrimaryCommonName(source?.common_names) || source?.common_name || orchid?.common_name || '';
+
+        const params = new URLSearchParams();
+        params.set('view', 'submissions');
+        params.set('action', 'add-instance');
+
+        if (speciesName) {
+          params.set('species', speciesName);
+        }
+
+        if (genus) {
+          params.set('genus', genus);
+        }
+
+        if (hasUsableValue(commonName)) {
+          params.set('commonName', String(commonName).trim());
+        }
+
+        return `dashboard.html?${params.toString()}`;
       }
 
       function formatSimplifiedConfidence(value) {
@@ -565,6 +595,18 @@
         samplePhotoOne.src = showcaseSet[0];
         samplePhotoTwo.src = showcaseSet[1];
         samplePhotoThree.src = showcaseSet[2];
+
+        if (addInstanceButton) {
+          addInstanceButton.hidden = !isResearcherViewer;
+          addInstanceButton.onclick = null;
+
+          if (isResearcherViewer) {
+            const sourceForPrefill = denrSighting || publicSighting || orchid;
+            addInstanceButton.onclick = function() {
+              window.location.href = buildAddInstanceUrl(orchid, sourceForPrefill);
+            };
+          }
+        }
 
         setContributorsView(false);
         resetDetailRows();
