@@ -3485,27 +3485,59 @@
             throw new Error('Supabase is not configured');
           }
 
+          // Helper: Retry logic with exponential backoff
+          const retryQuery = async (queryFn, name = 'Query', maxRetries = 3) => {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+              try {
+                console.log(`⏳ ${name} attempt ${attempt}/${maxRetries}...`);
+                const result = await queryFn();
+                if (result.error) {
+                  throw new Error(result.error.message || String(result.error));
+                }
+                console.log(`✓ ${name} succeeded`);
+                return result;
+              } catch (err) {
+                const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+                if (attempt < maxRetries) {
+                  console.warn(`⚠️ ${name} attempt ${attempt} failed, retrying in ${backoffMs}ms:`, err.message);
+                  await new Promise(resolve => setTimeout(resolve, backoffMs));
+                } else {
+                  console.error(`✗ ${name} failed after ${maxRetries} attempts:`, err.message);
+                  throw err;
+                }
+              }
+            }
+          };
+
           let loadedRows = [];
 
-          // Load orchid catalog directly from orchids + genus tables (bypassing problematic view).
-          const [{ data: orchidsData, error: orchidsError }, { data: genusData, error: genusError }] = await Promise.all([
-            bloomSupabase
-              .from('orchids')
-              .select('orchid_id, sci_name, common_name, endemicity, genus_id')
-              .order('sci_name', { ascending: true }),
-            bloomSupabase
-              .from('genus')
-              .select('genus_id, genus_name')
+          // Load orchid catalog directly from orchids + genus tables with retry logic.
+          const [orchidsResult, genusResult] = await Promise.all([
+            retryQuery(
+              () => bloomSupabase
+                .from('orchids')
+                .select('orchid_id, sci_name, common_name, endemicity, genus_id')
+                .order('sci_name', { ascending: true }),
+              'Orchids query',
+              3
+            ),
+            retryQuery(
+              () => bloomSupabase
+                .from('genus')
+                .select('genus_id, genus_name'),
+              'Genus query',
+              3
+            )
           ]);
 
-          if (orchidsError) {
-            throw new Error(`Failed to load orchids table: ${orchidsError.message || orchidsError}`);
-          }
-          if (genusError) {
-            throw new Error(`Failed to load genus table: ${genusError.message || genusError}`);
+          const orchidsData = orchidsResult.data;
+          const genusData = genusResult.data;
+
+          if (!orchidsData || !genusData) {
+            throw new Error('Failed to load data after retries');
           }
 
-          console.log('✓ Orchids catalog loaded: ', orchidsData?.length || 0, 'orchids,', genusData?.length || 0, 'genera');
+          console.log('✓ Orchids catalog loaded: ', orchidsData.length, 'orchids,', genusData.length, 'genera');
 
           const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
           loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({

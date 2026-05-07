@@ -7,5 +7,41 @@
     return;
   }
 
-  window.bloomSupabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+  // Create base Supabase client with HTTP/1.1 and retry configuration
+  window.bloomSupabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
+    db: { schema: 'public' },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    global: { 
+      headers: {
+        'X-Client-Info': 'bloom-frontend'
+      },
+      fetch: (url, options = {}) => {
+        console.log('🔗 Supabase request:', url.toString().split('?')[0]);
+        
+        // Add timeout (30 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          console.warn('⏱️ Request timeout, aborting:', url);
+          controller.abort();
+        }, 30000);
+        
+        return fetch(url, {
+          ...options,
+          signal: controller.signal
+        })
+          .then(response => {
+            clearTimeout(timeoutId);
+            console.log('✓ Supabase response:', response.status, url.toString().split('?')[0]);
+            return response;
+          })
+          .catch(error => {
+            clearTimeout(timeoutId);
+            console.error('✗ Supabase request failed:', error.message, url.toString().split('?')[0]);
+            throw error;
+          });
+      }
+    }
+  });
+
+  console.log('✓ Supabase client initialized:', supabaseUrl);
 })();
