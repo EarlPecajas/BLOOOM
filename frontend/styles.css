@@ -2365,6 +2365,25 @@ button:active {
   text-align: center;
 }
 
+.dashboard-page.researcher-mode .dashboard-grid,
+.dashboard-page.researcher-mode #dashboard-admin-overview {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.dashboard-page.researcher-mode #researcher-home {
+  display: block !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 4;
+}
+
+.dashboard-page.researcher-mode .researcher-home-cards,
+.dashboard-page.researcher-mode .researcher-home-card {
+  position: relative;
+  z-index: 5;
+}
+
 .researcher-home::before {
   content: '';
   position: fixed;
