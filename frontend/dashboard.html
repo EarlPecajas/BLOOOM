@@ -3511,46 +3511,66 @@
 
           let loadedRows = [];
 
-          // Load orchid catalog directly from orchids + genus tables with retry logic.
-          const [orchidsResult, genusResult] = await Promise.all([
-            retryQuery(
+          // Try orchestrated loading: first attempt orchid_overview (original working approach),
+          // then fallback to direct orchids + genus tables if view unavailable or fails
+          try {
+            console.log('Attempting orchid_overview query...');
+            const overviewResult = await retryQuery(
               () => bloomSupabase
-                .from('orchids')
-                .select('orchid_id, sci_name, common_name, endemicity, genus_id')
-                .order('sci_name', { ascending: true }),
-              'Orchids query',
-              3
-            ),
-            retryQuery(
-              () => bloomSupabase
-                .from('genus')
-                .select('genus_id, genus_name'),
-              'Genus query',
-              3
-            )
-          ]);
+                .from('orchid_overview')
+                .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
+                .order('name', { ascending: true }),
+              'orchid_overview query',
+              2
+            );
+            if (overviewResult.data && overviewResult.data.length > 0) {
+              console.log('✓ orchid_overview succeeded with', overviewResult.data.length, 'rows');
+              loadedRows = overviewResult.data.map(normalizeOrchidRow);
+            } else {
+              throw new Error('No data from orchid_overview');
+            }
+          } catch (overviewErr) {
+            console.warn('orchid_overview failed, trying direct tables:', overviewErr.message);
+            // Fallback: direct orchids + genus tables
+            const [orchidsResult, genusResult] = await Promise.all([
+              retryQuery(
+                () => bloomSupabase
+                  .from('orchids')
+                  .select('orchid_id, sci_name, common_name, endemicity, genus_id')
+                  .order('sci_name', { ascending: true }),
+                'orchids fallback query',
+                2
+              ),
+              retryQuery(
+                () => bloomSupabase
+                  .from('genus')
+                  .select('genus_id, genus_name'),
+                'genus fallback query',
+                2
+              )
+            ]);
 
-          const orchidsData = orchidsResult.data;
-          const genusData = genusResult.data;
+            const orchidsData = orchidsResult.data;
+            const genusData = genusResult.data;
 
-          if (!orchidsData || !genusData) {
-            throw new Error('Failed to load data after retries');
+            if (!orchidsData || !genusData) {
+              throw new Error('Failed to load data after retries');
+            }
+
+            console.log('✓ Direct tables succeeded:', orchidsData.length, 'orchids,', genusData.length, 'genera');
+            const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
+            loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({
+              id: row.orchid_id,
+              name: row.sci_name,
+              genus: genusById.get(row.genus_id) || String(row.sci_name || '').split(' ')[0] || '',
+              common_name: row.common_name || '',
+              endemicity: row.endemicity || '',
+              ethnobotanical: '',
+              horticulture_value: '',
+              cultural_importance: '',
+              image_url: ''
+            }));
           }
-
-          console.log('✓ Orchids catalog loaded: ', orchidsData.length, 'orchids,', genusData.length, 'genera');
-
-          const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
-          loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({
-            id: row.orchid_id,
-            name: row.sci_name,
-            genus: genusById.get(row.genus_id) || String(row.sci_name || '').split(' ')[0] || '',
-            common_name: row.common_name || '',
-            endemicity: row.endemicity || '',
-            ethnobotanical: '',
-            horticulture_value: '',
-            cultural_importance: '',
-            image_url: ''
-          }));
 
           orchidRows = loadedRows;
           orchidCatalogLoaded = true;
