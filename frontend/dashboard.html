@@ -3488,146 +3488,8 @@
         }
 
         console.log('⏳ Starting catalog load...');
-        
-        // Force a hard 20-second timeout no matter what
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            console.error('🔴 HARD TIMEOUT: Catalog loading exceeded 20 seconds');
-            reject(new Error('Catalog loading timeout after 20 seconds - Supabase is not responding'));
-          }, 20000);
-        });
 
-        const loadPromise = (async () => {
-          try {
-            if (!bloomSupabase) {
-              throw new Error('Supabase client not initialized - check config.js and that Supabase library is loaded');
-            }
-            console.log('✓ Supabase client found');
-
-            // Helper: Retry logic with exponential backoff
-            const retryQuery = async (queryFn, name = 'Query', maxRetries = 3) => {
-              for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                  console.log(`⏳ ${name} attempt ${attempt}/${maxRetries}...`);
-                  const result = await queryFn();
-                  if (result.error) {
-                    throw new Error(result.error.message || String(result.error));
-                  }
-                  console.log(`✓ ${name} succeeded`);
-                  return result;
-                } catch (err) {
-                  const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-                  if (attempt < maxRetries) {
-                    console.warn(`⚠️ ${name} attempt ${attempt} failed, retrying in ${backoffMs}ms:`, err.message);
-                    await new Promise(resolve => setTimeout(resolve, backoffMs));
-                  } else {
-                    console.error(`✗ ${name} failed after ${maxRetries} attempts:`, err.message);
-                    throw err;
-                  }
-                }
-              }
-            };
-
-            let loadedRows = [];
-
-            // Try orchestrated loading: first attempt orchid_overview (original working approach),
-            // then fallback to direct orchids + genus tables if view unavailable or fails
-                try {
-                  console.log('Attempting orchid_overview query via REST fetch...');
-
-                  // Use direct REST fetch for orchid_overview to avoid SDK-specific connection issues
-                  const fetchOverview = async () => {
-                    try {
-                      const base = (window.BLOOM_SUPABASE_URL || '').replace(/\/$/, '');
-                      const select = encodeURIComponent('id,name,genus,common_name,endemicity,ethnobotanical,horticulture_value,cultural_importance,image_url,conservation_status_key,conservation_status');
-                      const url = `${base}/rest/v1/orchid_overview?select=${select}&order=name.asc`;
-                      const res = await fetch(url, {
-                        headers: {
-                          apikey: window.BLOOM_SUPABASE_ANON_KEY || '',
-                          Authorization: 'Bearer ' + (window.BLOOM_SUPABASE_ANON_KEY || '')
-                        }
-                      });
-                      if (!res.ok) {
-                        return { data: null, error: { message: `HTTP ${res.status}` } };
-                      }
-                      const data = await res.json();
-                      return { data, error: null };
-                    } catch (err) {
-                      return { data: null, error: { message: String(err && err.message ? err.message : err) } };
-                    }
-                  };
-
-                  const overviewResult = await retryQuery(fetchOverview, 'orchid_overview REST fetch', 2);
-                  if (overviewResult.data && overviewResult.data.length > 0) {
-                    console.log('✓ orchid_overview (REST) succeeded with', overviewResult.data.length, 'rows');
-                    loadedRows = overviewResult.data.map(normalizeOrchidRow);
-                  } else {
-                    throw new Error(overviewResult.error ? overviewResult.error.message : 'No data from orchid_overview');
-                  }
-                } catch (overviewErr) {
-                  console.warn('orchid_overview (REST) failed, trying direct tables:', overviewErr.message);
-              // Fallback: direct orchids + genus tables
-              const [orchidsResult, genusResult] = await Promise.all([
-                retryQuery(
-                  () => bloomSupabase
-                    .from('orchids')
-                    .select('orchid_id, sci_name, common_name, endemicity, genus_id')
-                    .order('sci_name', { ascending: true }),
-                  'orchids fallback query',
-                  2
-                ),
-                retryQuery(
-                  () => bloomSupabase
-                    .from('genus')
-                    .select('genus_id, genus_name'),
-                  'genus fallback query',
-                  2
-                )
-              ]);
-
-              const orchidsData = orchidsResult.data;
-              const genusData = genusResult.data;
-
-              if (!orchidsData || !genusData) {
-                throw new Error('Failed to load data after retries');
-              }
-
-              console.log('✓ Direct tables succeeded:', orchidsData.length, 'orchids,', genusData.length, 'genera');
-              const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
-              loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({
-                id: row.orchid_id,
-                name: row.sci_name,
-                genus: genusById.get(row.genus_id) || String(row.sci_name || '').split(' ')[0] || '',
-                common_name: row.common_name || '',
-                endemicity: row.endemicity || '',
-                ethnobotanical: '',
-                horticulture_value: '',
-                cultural_importance: '',
-                image_url: ''
-              }));
-            }
-
-            orchidRows = loadedRows;
-            orchidCatalogLoaded = true;
-            console.log('✓ Orchid catalog ready with', loadedRows.length, 'species');
-            renderOrchidCatalog(orchidRows);
-            updateDashboardCounts(orchidRows);
-          } catch (error) {
-            console.error('Dashboard orchid catalog load failed:', error);
-            const errorMessage = String(error?.message || error || 'Unknown error').trim();
-            const debugInfo = `<details style="margin:1rem 0;padding:1rem;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;">
-              <summary style="cursor:pointer;font-weight:600;color:#333;">Could not load orchids from database. Click for details.</summary>
-              <pre style="margin:0.5rem 0 0 0;font-size:0.85rem;color:#666;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(errorMessage)}</pre>
-            </details>`;
-            catalogGrid.innerHTML = debugInfo;
-          }
-        })();
-
-        try {
-          console.log('Racing between catalog load and 20-second timeout...');
-          await Promise.race([loadPromise, timeoutPromise]);
-        } catch (error) {
-          console.error('Catalog load error:', error);
+        const showCatalogError = (error) => {
           const errorMessage = String(error?.message || error || 'Unknown error').trim();
           const debugInfo = `<details style="margin:1rem 0;padding:1rem;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;">
             <summary style="cursor:pointer;font-weight:600;color:#333;">Could not load orchids from database. Click for details.</summary>
@@ -3635,6 +3497,73 @@
           </details>`;
           if (catalogGrid) {
             catalogGrid.innerHTML = debugInfo;
+          }
+        };
+
+        try {
+          if (!bloomSupabase) {
+            throw new Error('Supabase client not initialized - check config.js and that Supabase library is loaded');
+          }
+
+          const overviewResult = await bloomSupabase
+            .from('orchid_overview')
+            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url')
+            .order('name', { ascending: true });
+
+          if (overviewResult.error) {
+            throw new Error(overviewResult.error.message || 'Failed to load orchid_overview');
+          }
+
+          orchidRows = (overviewResult.data || []).map(normalizeOrchidRow);
+          orchidCatalogLoaded = true;
+          console.log('✓ Orchid catalog ready with', orchidRows.length, 'species');
+          renderOrchidCatalog(orchidRows);
+          updateDashboardCounts(orchidRows);
+        } catch (overviewError) {
+          console.warn('orchid_overview query failed, trying direct orchids table fallback:', overviewError?.message || overviewError);
+
+          try {
+            if (!bloomSupabase) {
+              throw new Error('Supabase client not initialized - check config.js and that Supabase library is loaded');
+            }
+
+            const [orchidsResult, genusResult] = await Promise.all([
+              bloomSupabase
+                .from('orchids')
+                .select('orchid_id, sci_name, common_name, endemicity, genus_id')
+                .order('sci_name', { ascending: true }),
+              bloomSupabase
+                .from('genus')
+                .select('genus_id, genus_name')
+            ]);
+
+            if (orchidsResult.error) {
+              throw new Error(orchidsResult.error.message || 'Failed to load fallback catalog from orchids');
+            }
+
+            if (genusResult.error) {
+              throw new Error(genusResult.error.message || 'Failed to load genus fallback data');
+            }
+
+            const genusById = new Map((genusResult.data || []).map((row) => [row.genus_id, row.genus_name]));
+            orchidRows = (orchidsResult.data || []).map((row) => normalizeOrchidRow({
+              id: row.orchid_id,
+              name: row.sci_name,
+              genus: genusById.get(row.genus_id) || String(row.sci_name || '').split(' ')[0] || '',
+              common_name: row.common_name || '',
+              endemicity: row.endemicity || '',
+              ethnobotanical: '',
+              horticulture_value: '',
+              cultural_importance: '',
+              image_url: ''
+            }));
+            orchidCatalogLoaded = true;
+            console.log('✓ Orchid fallback catalog ready with', orchidRows.length, 'species');
+            renderOrchidCatalog(orchidRows);
+            updateDashboardCounts(orchidRows);
+          } catch (fallbackError) {
+            console.error('Dashboard orchid catalog load failed:', fallbackError);
+            showCatalogError(fallbackError);
           }
         } finally {
           console.log('✓ Removing loading message (if exists)');
