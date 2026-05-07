@@ -236,9 +236,9 @@
       const isResearcherViewer = viewerRole === 'researcher' || viewerRole === 'user';
 
       if (viewer) {
-        catalogBrandLink.href = 'dashboard.html?view=orchids';
+        catalogBrandLink.href = 'dashboard.html';
         if (catalogAuthActions) {
-          catalogAuthActions.innerHTML = '<a href="dashboard.html?view=orchids" class="btn btn-solid">Back to Dashboard</a>';
+          catalogAuthActions.innerHTML = '<a href="dashboard.html" class="btn btn-solid">Back to Dashboard</a>';
         }
       }
 
