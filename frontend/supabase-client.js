@@ -12,40 +12,10 @@
     return;
   }
 
-  // Create base Supabase client with timeout configuration
+  // Create Supabase client with minimal config - let Supabase library handle fetch natively
   window.bloomSupabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
     db: { schema: 'public' },
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-    global: { 
-      headers: {
-        'X-Client-Info': 'bloom-frontend'
-      },
-      fetch: (url, options = {}) => {
-        console.log('🔗 Supabase request:', url.toString().split('?')[0]);
-        
-        // Add timeout (10 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          console.warn('⏱️ Request timeout, aborting:', url);
-          controller.abort();
-        }, 10000);
-        
-        return fetch(url, {
-          ...options,
-          signal: controller.signal
-        })
-          .then(response => {
-            clearTimeout(timeoutId);
-            console.log('✓ Supabase response:', response.status, url.toString().split('?')[0]);
-            return response;
-          })
-          .catch(error => {
-            clearTimeout(timeoutId);
-            console.error('✗ Supabase request failed:', error.message, url.toString().split('?')[0]);
-            throw error;
-          });
-      }
-    }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
 
   console.log('✓ Supabase client initialized:', supabaseUrl);
