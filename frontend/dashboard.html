@@ -3532,24 +3532,40 @@
 
             // Try orchestrated loading: first attempt orchid_overview (original working approach),
             // then fallback to direct orchids + genus tables if view unavailable or fails
-            try {
-              console.log('Attempting orchid_overview query...');
-              const overviewResult = await retryQuery(
-                () => bloomSupabase
-                  .from('orchid_overview')
-                  .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
-                  .order('name', { ascending: true }),
-                'orchid_overview query',
-                2
-              );
-              if (overviewResult.data && overviewResult.data.length > 0) {
-                console.log('✓ orchid_overview succeeded with', overviewResult.data.length, 'rows');
-                loadedRows = overviewResult.data.map(normalizeOrchidRow);
-              } else {
-                throw new Error('No data from orchid_overview');
-              }
-            } catch (overviewErr) {
-              console.warn('orchid_overview failed, trying direct tables:', overviewErr.message);
+                try {
+                  console.log('Attempting orchid_overview query via REST fetch...');
+
+                  // Use direct REST fetch for orchid_overview to avoid SDK-specific connection issues
+                  const fetchOverview = async () => {
+                    try {
+                      const base = (window.BLOOM_SUPABASE_URL || '').replace(/\/$/, '');
+                      const select = encodeURIComponent('id,name,genus,common_name,endemicity,ethnobotanical,horticulture_value,cultural_importance,image_url,conservation_status_key,conservation_status');
+                      const url = `${base}/rest/v1/orchid_overview?select=${select}&order=name.asc`;
+                      const res = await fetch(url, {
+                        headers: {
+                          apikey: window.BLOOM_SUPABASE_ANON_KEY || '',
+                          Authorization: 'Bearer ' + (window.BLOOM_SUPABASE_ANON_KEY || '')
+                        }
+                      });
+                      if (!res.ok) {
+                        return { data: null, error: { message: `HTTP ${res.status}` } };
+                      }
+                      const data = await res.json();
+                      return { data, error: null };
+                    } catch (err) {
+                      return { data: null, error: { message: String(err && err.message ? err.message : err) } };
+                    }
+                  };
+
+                  const overviewResult = await retryQuery(fetchOverview, 'orchid_overview REST fetch', 2);
+                  if (overviewResult.data && overviewResult.data.length > 0) {
+                    console.log('✓ orchid_overview (REST) succeeded with', overviewResult.data.length, 'rows');
+                    loadedRows = overviewResult.data.map(normalizeOrchidRow);
+                  } else {
+                    throw new Error(overviewResult.error ? overviewResult.error.message : 'No data from orchid_overview');
+                  }
+                } catch (overviewErr) {
+                  console.warn('orchid_overview (REST) failed, trying direct tables:', overviewErr.message);
               // Fallback: direct orchids + genus tables
               const [orchidsResult, genusResult] = await Promise.all([
                 retryQuery(
