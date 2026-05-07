@@ -559,24 +559,33 @@
       async function openOrchidDetails(orchid) {
         const scientificKey = normalizeScientificKey(orchid.name);
         const publicSighting = approvedSightingsByScientificName.get(scientificKey) || null;
-        // For DENR / authenticated users, try to fetch the full approved sighting row
+        // For DENR / authenticated users, try to fetch the full approved sighting row with 2-second timeout
         let denrSighting = null;
         if (!isPublicVisitor && bloomSupabase) {
           try {
             const sciName = orchid.name || orchid.sci_name || '';
             if (sciName) {
-              const { data: denrData, error: denrErr } = await bloomSupabase
+              // Create a timeout promise that rejects after 2 seconds
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('DENR sighting query timeout')), 2000)
+              );
+              
+              // Race the query against the timeout
+              const queryPromise = bloomSupabase
                 .from('denr_approved_sightings')
                 .select('*')
                 .eq('scientific_name', sciName)
                 .order('observation_date', { ascending: false })
                 .limit(1);
+              
+              const { data: denrData, error: denrErr } = await Promise.race([queryPromise, timeoutPromise]);
               if (!denrErr && Array.isArray(denrData) && denrData.length > 0) {
                 denrSighting = denrData[0];
               }
             }
           } catch (e) {
-            console.error('Failed to fetch DENR sighting:', e);
+            console.error('Failed to fetch DENR sighting (using fallback):', e.message);
+            // Silently continue with public data if timeout or error
           }
         }
 
