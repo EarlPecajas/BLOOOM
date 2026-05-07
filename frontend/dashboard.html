@@ -1182,6 +1182,11 @@
         const normalizedView = String(viewName || '').trim().toLowerCase();
         const effectiveView = (isResearcherRole && ['conservation', 'report'].includes(normalizedView)) ? 'orchids' : normalizedView;
 
+        if (isResearcherRole && effectiveView === 'orchids') {
+          window.location.href = 'catalog.html';
+          return;
+        }
+
         if (typeof switchView === 'function') {
           try {
             switchView(effectiveView);
@@ -3971,6 +3976,11 @@
       function switchView(viewName) {
         if (isResearcherRole && ['conservation', 'report'].includes(viewName)) {
           viewName = 'orchids';
+        }
+
+        if (isResearcherRole && viewName === 'orchids') {
+          window.location.href = 'catalog.html';
+          return;
         }
 
         setActiveSidebarItem(viewName);
