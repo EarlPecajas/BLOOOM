@@ -3462,7 +3462,23 @@
       }
 
       async function loadOrchidCatalog() {
-        if (!catalogGrid || orchidCatalogLoaded) return;
+        if (!catalogGrid) return;
+
+        if (orchidCatalogLoaded) {
+          if (catalogLoadingMessage && catalogLoadingMessage.isConnected) {
+            catalogLoadingMessage.remove();
+          }
+
+          const hasRenderedCards = Boolean(catalogGrid.querySelector('[data-dashboard-orchid-id]'));
+          const hasRenderedEmptyState = catalogGrid.textContent && catalogGrid.textContent.toLowerCase().includes('no orchids found');
+          const hasRenderedErrorState = catalogGrid.textContent && catalogGrid.textContent.toLowerCase().includes('could not load orchids');
+
+          if (!hasRenderedCards && !hasRenderedEmptyState && !hasRenderedErrorState) {
+            renderOrchidCatalog(orchidRows || []);
+            updateDashboardCounts(orchidRows || []);
+          }
+          return;
+        }
 
         try {
           if (!bloomSupabase) {
