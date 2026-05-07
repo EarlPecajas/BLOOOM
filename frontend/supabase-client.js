@@ -7,7 +7,12 @@
     return;
   }
 
-  // Create base Supabase client with HTTP/1.1 and retry configuration
+  if (!window.supabase) {
+    console.error('Supabase JS library not loaded. Make sure @supabase/supabase-js is loaded from CDN.');
+    return;
+  }
+
+  // Create base Supabase client with timeout configuration
   window.bloomSupabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
     db: { schema: 'public' },
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
@@ -18,12 +23,19 @@
       fetch: (url, options = {}) => {
         console.log('🔗 Supabase request:', url.toString().split('?')[0]);
         
-          // Add timeout (10 seconds)
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => {
-            console.warn('⏱️ Request timeout, aborting:', url);
-            controller.abort();
-          }, 10000);
+        // Add timeout (10 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          console.warn('⏱️ Request timeout, aborting:', url);
+          controller.abort();
+        }, 10000);
+        
+        return fetch(url, {
+          ...options,
+          signal: controller.signal
+        })
+          .then(response => {
+            clearTimeout(timeoutId);
             console.log('✓ Supabase response:', response.status, url.toString().split('?')[0]);
             return response;
           })
