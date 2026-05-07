@@ -3487,68 +3487,42 @@
 
           let loadedRows = [];
 
-          // Primary catalog source: rich orchid_overview projection.
-          const { data: overviewData, error: overviewError } = await bloomSupabase
-            .from('orchid_overview')
-            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
-            .order('name', { ascending: true });
+          // Load orchid catalog directly from orchids + genus tables (bypassing problematic view).
+          const [{ data: orchidsData, error: orchidsError }, { data: genusData, error: genusError }] = await Promise.all([
+            bloomSupabase
+              .from('orchids')
+              .select('orchid_id, sci_name, common_name, endemicity, genus_id')
+              .order('sci_name', { ascending: true }),
+            bloomSupabase
+              .from('genus')
+              .select('genus_id, genus_name')
+          ]);
 
-          if (!overviewError) {
-            console.log('✓ orchid_overview rich query succeeded with', overviewData?.length || 0, 'rows');
-            loadedRows = (overviewData || []).map(normalizeOrchidRow);
-          } else {
-            console.warn('✗ orchid_overview rich query failed:', overviewError.message || overviewError);
-
-            // Fallback 1: minimal orchid_overview shape for older view definitions.
-            const { data: minimalOverviewData, error: minimalOverviewError } = await bloomSupabase
-              .from('orchid_overview')
-              .select('id, name, genus, common_name, endemicity, image_url')
-              .order('name', { ascending: true });
-
-            if (!minimalOverviewError) {
-              console.log('✓ orchid_overview minimal query succeeded with', minimalOverviewData?.length || 0, 'rows');
-              loadedRows = (minimalOverviewData || []).map(normalizeOrchidRow);
-            } else {
-              console.warn('✗ orchid_overview minimal query failed:', minimalOverviewError.message || minimalOverviewError, '— trying orchids table fallback');
-
-              // Fallback 2: direct orchids + genus lookup when the view does not exist yet.
-              const [{ data: orchidsData, error: orchidsError }, { data: genusData, error: genusError }] = await Promise.all([
-                bloomSupabase
-                  .from('orchids')
-                  .select('orchid_id, sci_name, common_name, endemicity, genus_id')
-                  .order('sci_name', { ascending: true }),
-                bloomSupabase
-                  .from('genus')
-                  .select('genus_id, genus_name')
-              ]);
-
-              if (orchidsError) {
-                throw new Error(`Failed to load orchids table: ${orchidsError.message || orchidsError}`);
-              }
-              if (genusError) {
-                throw new Error(`Failed to load genus table: ${genusError.message || genusError}`);
-              }
-
-              console.log('✓ orchids + genus fallback succeeded with', orchidsData?.length || 0, 'orchid rows and', genusData?.length || 0, 'genus rows');
-
-              const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
-              loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({
-                id: row.orchid_id,
-                name: row.sci_name,
-                genus: genusById.get(row.genus_id) || String(row.sci_name || '').split(' ')[0] || '',
-                common_name: row.common_name || '',
-                endemicity: row.endemicity || '',
-                ethnobotanical: '',
-                horticulture_value: '',
-                cultural_importance: '',
-                image_url: ''
-              }));
-            }
+          if (orchidsError) {
+            throw new Error(`Failed to load orchids table: ${orchidsError.message || orchidsError}`);
           }
+          if (genusError) {
+            throw new Error(`Failed to load genus table: ${genusError.message || genusError}`);
+          }
+
+          console.log('✓ Orchids catalog loaded: ', orchidsData?.length || 0, 'orchids,', genusData?.length || 0, 'genera');
+
+          const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
+          loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({
+            id: row.orchid_id,
+            name: row.sci_name,
+            genus: genusById.get(row.genus_id) || String(row.sci_name || '').split(' ')[0] || '',
+            common_name: row.common_name || '',
+            endemicity: row.endemicity || '',
+            ethnobotanical: '',
+            horticulture_value: '',
+            cultural_importance: '',
+            image_url: ''
+          }));
 
           orchidRows = loadedRows;
           orchidCatalogLoaded = true;
-          console.log('✓ Orchid catalog loaded successfully with', loadedRows.length, 'species');
+          console.log('✓ Orchid catalog ready with', loadedRows.length, 'species');
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
         } catch (error) {
