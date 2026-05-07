@@ -3494,9 +3494,10 @@
             .order('name', { ascending: true });
 
           if (!overviewError) {
+            console.log('✓ orchid_overview rich query succeeded with', overviewData?.length || 0, 'rows');
             loadedRows = (overviewData || []).map(normalizeOrchidRow);
           } else {
-            console.warn('orchid_overview rich query failed, trying minimal projection:', overviewError.message || overviewError);
+            console.warn('✗ orchid_overview rich query failed:', overviewError.message || overviewError);
 
             // Fallback 1: minimal orchid_overview shape for older view definitions.
             const { data: minimalOverviewData, error: minimalOverviewError } = await bloomSupabase
@@ -3505,9 +3506,10 @@
               .order('name', { ascending: true });
 
             if (!minimalOverviewError) {
+              console.log('✓ orchid_overview minimal query succeeded with', minimalOverviewData?.length || 0, 'rows');
               loadedRows = (minimalOverviewData || []).map(normalizeOrchidRow);
             } else {
-              console.warn('orchid_overview minimal query failed, trying orchids table fallback:', minimalOverviewError.message || minimalOverviewError);
+              console.warn('✗ orchid_overview minimal query failed:', minimalOverviewError.message || minimalOverviewError, '— trying orchids table fallback');
 
               // Fallback 2: direct orchids + genus lookup when the view does not exist yet.
               const [{ data: orchidsData, error: orchidsError }, { data: genusData, error: genusError }] = await Promise.all([
@@ -3521,11 +3523,13 @@
               ]);
 
               if (orchidsError) {
-                throw new Error(orchidsError.message || 'Failed to load orchids table');
+                throw new Error(`Failed to load orchids table: ${orchidsError.message || orchidsError}`);
               }
               if (genusError) {
-                throw new Error(genusError.message || 'Failed to load genus table');
+                throw new Error(`Failed to load genus table: ${genusError.message || genusError}`);
               }
+
+              console.log('✓ orchids + genus fallback succeeded with', orchidsData?.length || 0, 'orchid rows and', genusData?.length || 0, 'genus rows');
 
               const genusById = new Map((genusData || []).map((row) => [row.genus_id, row.genus_name]));
               loadedRows = (orchidsData || []).map((row) => normalizeOrchidRow({
@@ -3544,11 +3548,17 @@
 
           orchidRows = loadedRows;
           orchidCatalogLoaded = true;
+          console.log('✓ Orchid catalog loaded successfully with', loadedRows.length, 'species');
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
         } catch (error) {
           console.error('Dashboard orchid catalog load failed:', error);
-          catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
+          const errorMessage = String(error?.message || error || 'Unknown error').trim();
+          const debugInfo = `<details style="margin:1rem 0;padding:1rem;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;">
+            <summary style="cursor:pointer;font-weight:600;color:#333;">Could not load orchids from database. Click for details.</summary>
+            <pre style="margin:0.5rem 0 0 0;font-size:0.85rem;color:#666;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(errorMessage)}</pre>
+          </details>`;
+          catalogGrid.innerHTML = debugInfo;
         } finally {
           if (catalogLoadingMessage) {
             catalogLoadingMessage.remove();
