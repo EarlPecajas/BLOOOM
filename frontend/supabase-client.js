@@ -18,19 +18,12 @@
       fetch: (url, options = {}) => {
         console.log('🔗 Supabase request:', url.toString().split('?')[0]);
         
-        // Add timeout (30 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          console.warn('⏱️ Request timeout, aborting:', url);
-          controller.abort();
-        }, 30000);
-        
-        return fetch(url, {
-          ...options,
-          signal: controller.signal
-        })
-          .then(response => {
-            clearTimeout(timeoutId);
+          // Add timeout (10 seconds)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => {
+            console.warn('⏱️ Request timeout, aborting:', url);
+            controller.abort();
+          }, 10000);
             console.log('✓ Supabase response:', response.status, url.toString().split('?')[0]);
             return response;
           })
