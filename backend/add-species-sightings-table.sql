@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS species_sightings (
   researcher_name VARCHAR(255),
 
   scientific_name VARCHAR(255) NOT NULL,
+  common_name VARCHAR(255),
   common_names JSONB NOT NULL DEFAULT '[]'::jsonb,
   identification_confidence VARCHAR(30) NOT NULL DEFAULT 'Unidentified',
 
