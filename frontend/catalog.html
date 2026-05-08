@@ -283,6 +283,15 @@
         return [];
       }
 
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function normalizeObservationMonth(observationDate, fallbackMonth) {
         if (hasUsableValue(fallbackMonth)) {
           return String(fallbackMonth).trim();
@@ -503,47 +512,60 @@
           contributorsPanel.innerHTML = '<p class="text-muted">No contributor information available.</p>';
           return;
         }
+        // Build a team-style contributors block with date and roles.
+        const dateStr = submission.observation_date
+          ? (function(d) {
+              try {
+                const dt = new Date(d);
+                return dt.toLocaleString(undefined, { month: 'short', day: 'numeric' });
+              } catch (e) { return String(d); }
+            })(submission.observation_date)
+          : null;
 
-        const contributors = [];
-        
-        // Add researcher name
-        if (hasUsableValue(submission.researcher_name)) {
-          contributors.push({
-            name: String(submission.researcher_name).trim(),
-            role: 'Lead Researcher'
-          });
+        const teamLabel = hasUsableValue(submission.institution) ? String(submission.institution).trim() : 'Sighting Team';
+
+        // Parse team_members which might be JSON array of strings or objects
+        const rawTeam = parseJsonArrayValue(submission.team_members) || [];
+        const teamMembers = rawTeam.map((m) => {
+          if (!m) return null;
+          if (typeof m === 'object') {
+            return { name: String(m.name || m.fullName || '').trim(), role: String(m.role || m.title || 'Researcher').trim() };
+          }
+          // string entry -> name only
+          return { name: String(m).trim(), role: 'Researcher' };
+        }).filter(Boolean);
+
+        const leadName = hasUsableValue(submission.researcher_name) ? String(submission.researcher_name).trim() : null;
+
+        // Avoid duplicates: remove lead from members list if present
+        const filteredMembers = teamMembers.filter((m) => !(leadName && m.name === leadName));
+
+        // Compose HTML
+        let out = '';
+        out += `<div class="contributors-team-header">${dateStr ? dateStr + ' ' : ''}${escapeHtml(teamLabel)}</div>`;
+
+        if (leadName) {
+          out += `
+            <div class="contributor-item">
+              <p class="contributor-name">${escapeHtml(leadName)}</p>
+              <p class="contributor-date">Team Lead</p>
+            </div>`;
         }
 
-        // Add team members
-        const teamMembers = parseJsonArrayValue(submission.team_members);
-        teamMembers.forEach((member) => {
-          if (hasUsableValue(member)) {
-            contributors.push({
-              name: String(member).trim(),
-              role: 'Team Member'
-            });
-          }
+        filteredMembers.forEach((m) => {
+          out += `
+            <div class="contributor-item">
+              <p class="contributor-name">${escapeHtml(m.name)}</p>
+              <p class="contributor-date">${escapeHtml(m.role)}</p>
+            </div>`;
         });
 
-        // Add institution if available
-        if (hasUsableValue(submission.institution)) {
-          contributors.push({
-            name: String(submission.institution).trim(),
-            role: 'Institution'
-          });
-        }
-
-        if (contributors.length === 0) {
+        if (!leadName && filteredMembers.length === 0) {
           contributorsPanel.innerHTML = '<p class="text-muted">No contributor information available.</p>';
           return;
         }
 
-        contributorsPanel.innerHTML = contributors.map((contributor) => `
-          <div class="contributor-item">
-            <p class="contributor-name">${contributor.name}</p>
-            <p class="contributor-date">${contributor.role}</p>
-          </div>
-        `).join('');
+        contributorsPanel.innerHTML = out;
       }
 
       function openCatalogLightbox(imageSrc) {
