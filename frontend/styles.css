@@ -1265,7 +1265,7 @@ form {
 .contributors-toggle {
   border: 1px solid #2D5128;
   background: #2D5128;
-  color: #ffffff;
+  color: white !important;
   border-radius: 999px;
   padding: 0.38rem 1rem;
   margin: 0;
