@@ -1,0 +1,37 @@
+﻿{
+    "envs":  [
+                 {
+                     "type":  "encrypted",
+                     "value":  "eyJ2IjoidjIiLCJjIjoiNDNXQk5NM1IzWCtwVUhwM0ppODlUKzhRN0JPay9uaHA5d2t5Mjg1SnJIRmttTnMvSXBTOWpFcjBZQnFxVjNnUkhhbWM1S29XWHp1bWh5WUloTWlONG5mN2NBck5vaHJIRmh3Vk9RPT0iLCJrIjpbMTg0LDEsMiwzLDAsMTIwLDEwNywxMTksMTUzLDIzLDIyMywxMTcsMTgzLDEyMCw1NywxOTYsMTEsMjgsMjQ5LDExOSwxMDQsMjEzLDE2OSwxNjEsMTQxLDE0Miw5OSw2NSw0OSwyMTIsMzAsMTk5LDk3LDIwNCwyMTgsNzcsMTA1LDE3OSwxLDIxMiwxMTAsNjUsMjEsMTkzLDE3MCwxMzAsNjQsMTU1LDE4OSwxNDUsMTQxLDIyMiw1Miw3OSw3NCwwLDAsMCwxMjYsNDgsMTI0LDYsOSw0MiwxMzQsNzIsMTM0LDI0NywxMywxLDcsNiwxNjAsMTExLDQ4LDEwOSwyLDEsMCw0OCwxMDQsNiw5LDQyLDEzNCw3MiwxMzQsMjQ3LDEzLDEsNywxLDQ4LDMwLDYsOSw5NiwxMzQsNzIsMSwxMDEsMyw0LDEsNDYsNDgsMTcsNCwxMiw5LDY1LDQwLDk3LDE2MSwxMDAsMCw4OCwxOTcsMjIyLDUwLDkyLDIsMSwxNiwxMjgsNTksMzUsMTI2LDIyLDIxNiwyNDIsMjE4LDE5NywxMzYsNjMsMjksMTg2LDE1LDE0Nyw4Nyw5LDM2LDQ3LDEzMSwyMDgsMTM2LDE5MSwxNTIsMzEsNDMsMTE3LDE3MSwxMDksMTIsMTE0LDExMiw2LDEwOSwxODgsOTUsMTgsMTQ2LDIxLDY2LDMwLDIxMSwxMDYsMTEzLDgyLDI3LDExNSwxMjUsMjE3LDYyLDIzLDYsMjQxLDcsNDgsOSwxNDQsMTU5LDE5NSw0MSwxOV19",
+                     "target":  [
+                                    "production"
+                                ],
+                     "configurationId":  null,
+                     "id":  "CD1qCiBJoTHVL6Hx",
+                     "key":  "DATABASE_SSL",
+                     "createdAt":  1778201974647,
+                     "updatedAt":  1778201974647,
+                     "createdBy":  "UkHLHJm0zCdixhI3zpYYmZYW",
+                     "updatedBy":  null,
+                     "decrypted":  false,
+                     "lastEditedByDisplayName":  "earlpecajas"
+                 },
+                 {
+                     "type":  "encrypted",
+                     "value":  "eyJ2IjoidjIiLCJjIjoiUGlrN0NDN3ZrZUJEaHBCZ1V3QzZ2RUtmamY1Wk5PN0IwbFFHQ1M5R3NvUGhYTzF1V1BrdFJlUTNUNmlYZFZpTFI0OXNTcWJHckxwQWRIRzE2Qmdta3NJOWM4SzBXdFhyeWVBbDY2TVV4UEk4OGp3YkpCdVpOVjNISFlicjIvckJTeEdDS0pMNTd5ZzJyVzFJSGVKdlZyOGdiSVFIdXlWdElBSGVDRTdmRnlzT2lZWlBHemNOQlZZOHBTb05oQkxSaDkxZEtPd0l1YUROK0c3T1I4b0tKZTdZZGdmanlyWW16MDlSY1ltbW5MQzIwcVlVNnRKbkc5TVRTMVYva2tEeVY0YVMwclYrM3pFNTdFb05yTDVleGRsdTN2d0ZWMlFBYXBSQWh3MGtNOE1ZdVhYOVFZblV6THJMWk5Bc2JldTZRUG5ucFhqdzB2ODkvZithRVNGd0cycUtDb0RlWnZaOGYrVUR1Zz09IiwiayI6WzE4NCwxLDIsMywwLDEyMCwxMDcsMTE5LDE1MywyMywyMjMsMTE3LDE4MywxMjAsNTcsMTk2LDExLDI4LDI0OSwxMTksMTA0LDIxMywxNjksMTYxLDE0MSwxNDIsOTksNjUsNDksMjEyLDMwLDE5OSw5NywyMDQsMjE4LDc3LDEwNSwxNzksMSwyMTIsMTEwLDY1LDIxLDE5MywxNzAsMTMwLDY0LDE1NSwxODksMTQ1LDE0MSwyMjIsNTIsNzksNzQsMCwwLDAsMTI2LDQ4LDEyNCw2LDksNDIsMTM0LDcyLDEzNCwyNDcsMTMsMSw3LDYsMTYwLDExMSw0OCwxMDksMiwxLDAsNDgsMTA0LDYsOSw0MiwxMzQsNzIsMTM0LDI0NywxMywxLDcsMSw0OCwzMCw2LDksOTYsMTM0LDcyLDEsMTAxLDMsNCwxLDQ2LDQ4LDE3LDQsMTIsOSw2NSw0MCw5NywxNjEsMTAwLDAsODgsMTk3LDIyMiw1MCw5MiwyLDEsMTYsMTI4LDU5LDM1LDEyNiwyMiwyMTYsMjQyLDIxOCwxOTcsMTM2LDYzLDI5LDE4NiwxNSwxNDcsODcsOSwzNiw0NywxMzEsMjA4LDEzNiwxOTEsMTUyLDMxLDQzLDExNywxNzEsMTA5LDEyLDExNCwxMTIsNiwxMDksMTg4LDk1LDE4LDE0NiwyMSw2NiwzMCwyMTEsMTA2LDExMyw4MiwyNywxMTUsMTI1LDIxNyw2MiwyMyw2LDI0MSw3LDQ4LDksMTQ0LDE1OSwxOTUsNDEsMTldfQ==",
+                     "target":  [
+                                    "production"
+                                ],
+                     "configurationId":  null,
+                     "id":  "s9fixUNB76tk0zoc",
+                     "key":  "DATABASE_URL",
+                     "createdAt":  1778201974120,
+                     "updatedAt":  1778201974120,
+                     "createdBy":  "UkHLHJm0zCdixhI3zpYYmZYW",
+                     "updatedBy":  null,
+                     "decrypted":  false,
+                     "lastEditedByDisplayName":  "earlpecajas"
+                 }
+             ],
+    "hiddenProductionEnvCount":  0
+}

@@ -1,7 +1,5 @@
 BEGIN;
 
-DROP VIEW IF EXISTS public_approved_sightings;
-
 CREATE OR REPLACE VIEW public_approved_sightings AS
 SELECT
   s.sighting_id AS id,
