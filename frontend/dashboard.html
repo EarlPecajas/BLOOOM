@@ -631,12 +631,12 @@
               <input id="submission-family" type="text" value="Orchidaceae" readonly aria-readonly="true" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;color:#334155;" />
             </div>
             <div id="submission-genus-picker" style="display:grid;gap:0.35rem;position:relative;">
-              <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus <span style="color:#b42318;">*</span><span class="field-help" title="Start typing to search the genus list; selecting a genus helps generate the scientific name.">?</span></label>
+              <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus <span style="color:#b42318;">*</span><span class="field-help" title="Type the genus name (e.g., Paphiopedilum, Dendrobium). Required to identify the orchid species.">?</span></label>
               <input id="submission-genus" type="text" placeholder="Type to search and select a genus" required autocomplete="off" spellcheck="false" style="padding:0.72rem 0.8rem;border:1px solid #c9d7cf;border-radius:10px;font-family:Inter,Roboto,sans-serif;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,0.04);transition:border-color 160ms ease,box-shadow 160ms ease;" />
               <div id="submission-genus-results" hidden style="position:absolute;left:0;right:0;top:calc(100% + 0.4rem);z-index:30;max-height:260px;overflow-y:auto;background:#fff;border:1px solid #d7e1da;border-radius:12px;box-shadow:0 18px 40px rgba(15,23,42,0.12);padding:0.35rem;"></div>
             </div>
             <div style="display:grid;gap:0.35rem;">
-              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name <span class="field-help" title="Auto-generated from Family + Genus when you select a genus">?</span></label>
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name <span class="field-help" title="Automatically populated when genus is selected. Shows: Orchidaceae + [Genus]. Read-only field.">?</span></label>
               <input id="submission-scientific-name" type="text" readonly placeholder="Generated from Family + Genus" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-style:italic;background:#f7faf8;" />
             </div>
           </div>
@@ -647,7 +647,7 @@
           </div>
 
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" title="How confident are you about the identification? 'Confirmed' means verified by an expert.">?</span></label>
+            <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" title="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
             <select id="submission-identification-confidence" required class="submission-select"><option value="" disabled selected hidden>Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
           </div>
 
@@ -655,23 +655,23 @@
             <strong>Observation / Collection Details</strong>
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span style="color:#b42318;">*</span><span class="field-help" title="Date when the observation was made.">?</span></label>
+            <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span style="color:#b42318;">*</span><span class="field-help" title="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
             <input id="submission-observation-date" type="date" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-observation-time" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Time <span class="field-help" title="Optional: time of observation (if known)">?</span></label>
+            <label for="submission-observation-time" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Time <span class="field-help" title="Optional. Time of day observation was made (HH:MM format). Leave blank if unknown.">?</span></label>
             <input id="submission-observation-time" type="time" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-collection-method" style="font-size:0.88rem;font-weight:600;color:#334155;">Collection Method <span class="field-help" title="How was the specimen observed/collected? Optional for most reports.">?</span></label>
+            <label for="submission-collection-method" style="font-size:0.88rem;font-weight:600;color:#334155;">Collection Method <span class="field-help" title="Optional. How was the orchid located: Transect (survey line), Quadrat (defined area), Opportunistic (chance find), or Random Survey.">?</span></label>
             <select id="submission-collection-method" class="submission-select"><option value="" disabled selected hidden>Collection Method</option><option value="transect">Transect</option><option value="quadrat">Quadrat</option><option value="opportunistic">Opportunistic</option><option value="random survey">Random Survey</option></select>
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-observation-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Type <span class="field-help" title="General observation context, e.g., flowering, photographic only.">?</span></label>
+            <label for="submission-observation-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Type <span class="field-help" title="Optional. State of specimen: Live (healthy), Flowering, Fruiting, Dead, or Photographic Only.">?</span></label>
             <select id="submission-observation-type" class="submission-select"><option value="" disabled selected hidden>Observation Type</option><option value="live specimen">Live Specimen</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option><option value="dead specimen">Dead Specimen</option><option value="photographic only">Photographic Only</option></select>
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-voucher-collected" style="font-size:0.88rem;font-weight:600;color:#334155;">Voucher Specimen Collected <span class="field-help" title="If a physical voucher was taken; optional.">?</span></label>
+            <label for="submission-voucher-collected" style="font-size:0.88rem;font-weight:600;color:#334155;">Voucher Specimen Collected <span class="field-help" title="Optional. Select Yes if you collected a pressed/dried specimen for herbarium, No otherwise.">?</span></label>
             <select id="submission-voucher-collected" class="submission-select"><option value="" disabled selected hidden>Voucher Specimen Collected</option><option value="yes">Yes</option><option value="no">No</option></select>
           </div>
 
@@ -683,20 +683,20 @@
           </div>
           <input id="submission-mountain" type="text" value="Mt. Busa" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;" />
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" title="Optional: choose a predefined zone or leave blank if not applicable.">?</span></label>
+            <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" title="Optional. General area: Trail, Ridge, Streamside, or Others. Helps pinpoint location context.">?</span></label>
             <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Choose one</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
           </div>
           <input id="submission-specific-site-other" type="text" placeholder="Specific Site: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" title="Latitude in decimal degrees; required for mapping and location accuracy.">?</span></label>
+            <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" title="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
             <input id="submission-latitude" type="number" step="any" min="-90" max="90" placeholder="Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" title="Longitude in decimal degrees; required for mapping and location accuracy.">?</span></label>
+            <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" title="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
             <input id="submission-longitude" type="number" step="any" min="-180" max="180" placeholder="Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation (meters) <span class="field-help" title="Optional: elevation in meters above sea level.">?</span></label>
+            <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation (meters) <span class="field-help" title="Optional. Height above sea level in meters (e.g., 1200 m). Leave blank if not known.">?</span></label>
             <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
 
@@ -704,7 +704,7 @@
             <strong>Habitat Information</strong>
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" title="Where the plant is growing (tree, soil, rock). Optional but helpful for habitat records.">?</span></label>
+            <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" title="Optional. Surface orchid grows on: Tree, Soil, Rock, or Decaying Wood. Critical for habitat understanding.">?</span></label>
             <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Choose one</option><option value="tree">Tree</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option><option value="others">Others: Specify</option></select>
           </div>
           <input id="submission-growth-substrate-other" type="text" placeholder="Growth Substrate: Specify" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;display:none;" />
