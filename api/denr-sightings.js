@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+const { Pool } = require('pg');
 
 // Use DATABASE_URL from .env (Session Pooler - IPv4 compatible and FREE)
 const pool = new Pool({
@@ -7,7 +7,7 @@ const pool = new Pool({
   max: 2, // Limit connections for serverless
 });
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -47,4 +47,4 @@ export default async function handler(req, res) {
     console.error('Database error:', error);
     return res.status(500).json({ error: 'Failed to fetch DENR sightings', details: error.message });
   }
-}
+};
