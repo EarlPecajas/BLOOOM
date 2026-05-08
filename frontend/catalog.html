@@ -561,7 +561,7 @@
         const publicSighting = approvedSightingsByScientificName.get(scientificKey) || null;
         // For DENR / authenticated users, try to fetch the full approved sighting row with 2-second timeout
         let denrSighting = null;
-        if (!isPublicVisitor && bloomSupabase) {
+        if (!isPublicVisitor) {
           try {
             const sciName = orchid.name || orchid.sci_name || '';
             if (sciName) {
@@ -570,16 +570,17 @@
                 setTimeout(() => reject(new Error('DENR sighting query timeout')), 2000)
               );
               
-              // Race the query against the timeout
-              const queryPromise = bloomSupabase
-                .from('denr_approved_sightings')
-                .select('*')
-                .eq('scientific_name', sciName)
-                .order('observation_date', { ascending: false })
-                .limit(1);
+              // Race the backend API against the timeout
+              const queryPromise = fetch(`/api/denr-sightings?name=${encodeURIComponent(sciName)}`)
+                .then(async (response) => {
+                  if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                  }
+                  return response.json();
+                });
               
-              const { data: denrData, error: denrErr } = await Promise.race([queryPromise, timeoutPromise]);
-              if (!denrErr && Array.isArray(denrData) && denrData.length > 0) {
+              const denrData = await Promise.race([queryPromise, timeoutPromise]);
+              if (Array.isArray(denrData) && denrData.length > 0) {
                 denrSighting = denrData[0];
               }
             }
@@ -885,22 +886,13 @@
         const fallbackRendered = await loadStaticCatalogFallback();
 
         try {
-          if (!bloomSupabase) {
-            if (!fallbackRendered) {
-              throw new Error('Supabase is not configured and local fallback could not be loaded');
-            }
-            return;
+          // Try backend API first (uses free Session Pooler - IPv4 compatible)
+          const response = await fetch('/api/orchids');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
           }
 
-          const { data, error } = await bloomSupabase
-            .from('orchid_overview')
-            .select('id, name, genus, common_name, endemicity, image_url')
-            .order('name', { ascending: true });
-
-          if (error) {
-            throw new Error(error.message || 'Failed to load catalog');
-          }
-
+          const data = await response.json();
           const liveRows = (data || []).map(normalizeOrchidRow);
           if (liveRows.length > 0) {
             orchids = liveRows;
@@ -919,21 +911,14 @@
       }
 
       async function loadApprovedSightings() {
-        if (!bloomSupabase) {
-          approvedSightingsByScientificName = new Map();
-          return;
-        }
-
         try {
-          const { data, error } = await bloomSupabase
-            .from('public_approved_sightings')
-            .select('scientific_name, common_names, identification_confidence, observation_date, observation_month, mountain_name, specific_site_zone, elevation_meters, habitat_type, microhabitat, growth_substrate, nearby_water_source, plant_height_cm, leaf_shape, leaf_count, leaf_textures, leaf_arrangement, flower_color, flower_count, flower_diameter_cm, inflorescence_type, petal_characteristics, labellum_lip_description, fragrance, flowering_season, blooming_stage, fruit_present, fruit_type, population_status, threat_level_generalized, educational_notes, location_visibility_note, whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path, researcher_name, team_members, institution')
-            .order('observation_date', { ascending: false });
-
-          if (error) {
-            throw new Error(error.message || 'Failed to load public approved sightings');
+          // Use backend API (uses free Session Pooler - IPv4 compatible)
+          const response = await fetch('/api/sightings');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
           }
 
+          const data = await response.json();
           const sightingsMap = new Map();
           (data || []).map(normalizePublicSightingRow).forEach((row) => {
             const scientificKey = normalizeScientificKey(row.scientific_name);
@@ -944,7 +929,8 @@
           });
 
           approvedSightingsByScientificName = sightingsMap;
-        } catch {
+        } catch (error) {
+          console.warn('Failed to load public approved sightings:', error?.message || error);
           approvedSightingsByScientificName = new Map();
         }
       }

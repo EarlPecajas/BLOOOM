@@ -2556,15 +2556,20 @@
               review_status: 'pending'
             };
 
-            const { data, error } = await bloomSupabase
-              .from('species_sightings')
-              .insert(insertPayload)
-              .select('sighting_id, entry_id, scientific_name, review_status')
-              .single();
+            const submitResponse = await fetch('/api/sightings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(insertPayload)
+            });
 
-            if (error) {
-              throw new Error(error.message || 'Failed to submit record');
+            if (!submitResponse.ok) {
+              const errorText = await submitResponse.text();
+              throw new Error(errorText || `Failed to submit record (${submitResponse.status})`);
             }
+
+            const data = await submitResponse.json();
 
             clearSubmissionDraft();
             resetResearcherSubmissionForm();
