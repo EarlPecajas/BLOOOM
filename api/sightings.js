@@ -43,7 +43,7 @@ module.exports = async function handler(req, res) {
         'fruit_present', 'fruit_type', 'seed_capsule_condition',
         'life_stage', 'phenology', 'population_count', 'population_status', 'threat_level', 'threat_types',
         'whole_plant_photo_path', 'closeup_flower_photo_path', 'habitat_photo_path', 'photo_3d_path', 'video_path',
-        'institution', 'team_members', 'researcher_notes', 'unusual_observations', 'review_status'
+        'institution', 'team_members', 'researcher_notes', 'review_status'
       ]);
 
       const columns = [];

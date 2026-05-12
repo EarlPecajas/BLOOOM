@@ -825,8 +825,6 @@
           <input id="submission-team-members" type="text" placeholder="Team Members" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           <input id="submission-institution" type="text" placeholder="Institution / Organization" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
-          <textarea id="submission-unusual-observations" placeholder="Unusual Observations" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
-
           <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;">
             <button type="submit" class="dashboard-btn dashboard-btn-primary" style="padding:0.72rem 1rem;background-color:#2D5128 !important;border-color:#2D5128 !important;color:white !important;">Submit Sighting</button>
             <span id="researcher-submission-feedback" style="font-size:0.92rem;color:#4f5f56;"></span>
@@ -1573,7 +1571,6 @@
               institution: document.getElementById('submission-institution')?.value || null,
               team_members: document.getElementById('submission-team-members')?.value || null,
               researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
-              unusual_observations: document.getElementById('submission-unusual-observations')?.value || null,
               review_status: 'pending'
             };
 
@@ -1844,7 +1841,7 @@
           conservation_status: row.conservation_status || row.threat_level || 'Unassigned',
           ethnobotanical: row.ethnobotanical || row.researcher_notes || '-',
           horticulture_value: row.horticulture_value || row.institution || '-',
-          cultural_importance: row.cultural_importance || row.unusual_observations || '-',
+          cultural_importance: row.cultural_importance || '-',
           location,
           whole_plant_photos: wholePlantPhotos,
           closeup_flower_photos: closeupFlowerPhotos,
@@ -2719,7 +2716,6 @@ function refreshConservationHeatMap(summary) {
 
         const noteParts = [];
         if (submission.researcher_notes) noteParts.push(`Researcher Notes\n${submission.researcher_notes}`);
-        if (submission.unusual_observations) noteParts.push(`Unusual Observations\n${submission.unusual_observations}`);
 
         return {
           images,

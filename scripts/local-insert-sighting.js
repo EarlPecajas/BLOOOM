@@ -74,7 +74,6 @@ async function run() {
     institution: null,
     team_members: null,
     researcher_notes: null,
-    unusual_observations: null,
     review_status: 'pending'
   };
 

@@ -65,7 +65,7 @@ SELECT
   END AS threat_level_generalized,
   s.growth_substrate,
   s.nearby_water_source,
-  s.unusual_observations AS educational_notes,
+  NULL::text AS educational_notes,
   'Location hidden for conservation'::text AS location_visibility_note,
   s.researcher_name,
   s.team_members,

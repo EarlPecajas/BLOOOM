@@ -228,7 +228,6 @@ CREATE TABLE IF NOT EXISTS species_sightings (
   institution VARCHAR(255),
   team_members TEXT,
   researcher_notes TEXT,
-  unusual_observations TEXT,
 
   review_status VARCHAR(30) NOT NULL DEFAULT 'pending'
     CHECK (lower(review_status) IN ('approved', 'rejected', 'revision', 'pending')),
