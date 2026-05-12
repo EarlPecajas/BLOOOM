@@ -108,14 +108,8 @@ async function signOut() {
  * Initialize authentication and redirect if needed
  */
 async function initializeAuth(redirectCallback) {
-  // Check localStorage first
-  try {
-    const initialUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
-    if (initialUser) {
-      syncRoleState(JSON.parse(initialUser));
-    }
-  } catch {
-    localStorage.removeItem('bloomUser');
+  if (document?.body) {
+    document.body.style.visibility = 'hidden';
   }
 
   // Resolve async, then decide action

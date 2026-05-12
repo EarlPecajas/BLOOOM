@@ -60,7 +60,7 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   </head>
-  <body class="dashboard-page bg-light sidebar-hidden">
+  <body class="dashboard-page bg-light sidebar-hidden" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-item active" data-view="dashboard">
@@ -1309,6 +1309,7 @@
 
         // Expose role-dependent UI or initialize views after auth resolved.
         try { openDashboardView('dashboard'); } catch {}
+        document.body.style.visibility = 'visible';
       })();
 
       // Safe navigator: always prefer in-page navigation to avoid reload loops.

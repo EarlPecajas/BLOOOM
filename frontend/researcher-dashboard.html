@@ -60,7 +60,7 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   </head>
-  <body class="dashboard-page researcher-mode sidebar-hidden">
+  <body class="dashboard-page researcher-mode sidebar-hidden" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-item active" data-view="home">
@@ -128,7 +128,7 @@
         </div>
         <div class="user-menu">
           <button class="user-profile" id="user-profile" aria-haspopup="true" aria-expanded="false" type="button">
-            <img src="./DENR Logo.svg" alt="Researcher" class="denr-logo-button" id="role-profile-icon" />
+            <img src="./loo.png" alt="Researcher" class="denr-logo-button" id="role-profile-icon" />
           </button>
           <div class="user-dropdown" id="user-dropdown" hidden>
             <button type="button" class="user-dropdown-item" id="signout-button" onclick="signOut();">Sign out</button>
@@ -304,8 +304,11 @@
 
           // Setup sidebar
           setupSidebar();
+
+          document.body.style.visibility = 'visible';
         } catch (error) {
           console.error('Error initializing dashboard:', error);
+          document.body.style.visibility = 'visible';
         }
       });
 
