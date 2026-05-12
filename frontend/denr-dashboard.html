@@ -2821,6 +2821,8 @@
       const searchFilter = document.getElementById('search-filter');
       const dashboardCatalogViewToggle = document.getElementById('dashboard-catalog-view-toggle');
       const dashboardCatalogViewIcon = document.getElementById('dashboard-catalog-view-icon');
+      const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n              </svg>';
+      const LIST_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="5" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="11" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="17" width="18" height="2" fill="currentColor" rx="1" />\n              </svg>';
       const dashboardOrchidDetailModal = document.getElementById('dashboard-orchid-detail-modal');
       const dashboardOrchidDetailTitle = document.getElementById('dashboard-orchid-detail-title');
       const dashboardOrchidDetailGrid = document.getElementById('dashboard-orchid-detail-grid');
@@ -3497,7 +3499,7 @@
         catalogGrid.classList.toggle('list-view', dashboardCatalogListView);
 
         if (dashboardCatalogViewIcon) {
-          dashboardCatalogViewIcon.textContent = dashboardCatalogListView ? '☰' : '▦';
+          dashboardCatalogViewIcon.innerHTML = dashboardCatalogListView ? LIST_SVG : GRID_SVG;
         }
 
         if (dashboardCatalogViewToggle) {
