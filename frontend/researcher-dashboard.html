@@ -2543,8 +2543,8 @@ function refreshConservationHeatMap(summary) {
           selectedView.style.display = 'block';
           selectedView.style.pointerEvents = 'auto';
           // Ensure dashboard and researcher home are hidden when showing a specific view
-          if (dashboardContainer) { dashboardContainer.style.display = 'none'; dashboardContainer.style.pointerEvents = 'none'; }
-          if (researcherHome) researcherHome.style.display = 'none';
+          if (dashboardContainer) { dashboardContainer.style.setProperty('display','none','important'); dashboardContainer.style.pointerEvents = 'none'; }
+          if (researcherHome) researcherHome.style.setProperty('display','none','important');
           // Initialize map if showing map view
           if (viewName === 'map') {
             setTimeout(() => initializeLeafletMap(), 100);
@@ -2568,9 +2568,9 @@ function refreshConservationHeatMap(summary) {
             if (researcherHome) researcherHome.style.display = 'none';
           }
         } else {
-          if (dashboardGrid) dashboardGrid.style.display = 'grid';
-          if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'none';
-          if (researcherHome) researcherHome.style.display = 'none';
+          if (dashboardGrid) dashboardGrid.style.setProperty('display','grid','important');
+          if (dashboardAdminOverview) dashboardAdminOverview.style.setProperty('display','none','important');
+          if (researcherHome) researcherHome.style.setProperty('display','none','important');
         }
           if (viewName === 'orchids') {
             loadOrchidCatalog();
