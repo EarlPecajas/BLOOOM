@@ -2542,6 +2542,9 @@ function refreshConservationHeatMap(summary) {
         if (selectedView) {
           selectedView.style.display = 'block';
           selectedView.style.pointerEvents = 'auto';
+          // Ensure dashboard and researcher home are hidden when showing a specific view
+          if (dashboardContainer) { dashboardContainer.style.display = 'none'; dashboardContainer.style.pointerEvents = 'none'; }
+          if (researcherHome) researcherHome.style.display = 'none';
           // Initialize map if showing map view
           if (viewName === 'map') {
             setTimeout(() => initializeLeafletMap(), 100);
