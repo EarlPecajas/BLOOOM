@@ -977,164 +977,63 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
       const supabase = window.bloomSupabase;
-      const activeUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
-
       let parsedActiveUser = {};
-      try {
-        parsedActiveUser = JSON.parse(activeUser || '{}');
-      } catch {
-        localStorage.removeItem('bloomUser');
-        parsedActiveUser = {};
-      }
+      let activeRole = '';
+      let isAdminRole = false;
+      let isResearcherRole = false;
 
-      function hydrateUserFromSupabaseSession() {
-        if (parsedActiveUser && parsedActiveUser.role) {
-          return parsedActiveUser;
+      async function initializeResearcherAuth() {
+        let resolved = null;
+        if (typeof resolveActiveUser === 'function') {
+          try {
+            resolved = await resolveActiveUser();
+          } catch (e) {
+            console.error('resolveActiveUser error:', e);
+            resolved = null;
+          }
+        } else {
+          const raw = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
+          try {
+            resolved = raw ? JSON.parse(raw) : null;
+          } catch {
+            localStorage.removeItem('bloomUser');
+            resolved = null;
+          }
         }
 
-        const sessionKey = Object.keys(localStorage).find((key) => key.includes('auth-token') && key.includes('hvyrngjfcvazxaoujduo'));
-        if (!sessionKey) {
-          return null;
+        if (!resolved) {
+          window.location.href = 'signin.html';
+          return;
         }
+
+        parsedActiveUser = resolved;
+        activeRole = String(parsedActiveUser.role || '').trim().toLowerCase();
+        isAdminRole = activeRole === 'admin' || activeRole === 'denr';
+        isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+
+        if (isAdminRole && !isResearcherRole) {
+          window.location.href = 'denr-dashboard.html';
+          return;
+        }
+
+        document.body.style.visibility = 'visible';
+        document.body.classList.remove('researcher-mode', 'admin-mode');
+        document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
 
         try {
-          const sessionValue = JSON.parse(localStorage.getItem(sessionKey) || '{}');
-          const sessionUser = sessionValue?.currentSession?.user || sessionValue?.session?.user || sessionValue?.user || null;
-
-          if (!sessionUser) {
-            return null;
-          }
-
-          const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
-          parsedActiveUser = {
-            id: sessionUser.id,
-            email: sessionUser.email,
-            role,
-            first_name: sessionUser.user_metadata?.first_name || '',
-            last_name: sessionUser.user_metadata?.last_name || ''
-          };
-
-          localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
-          sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
-          return parsedActiveUser;
-        } catch {
-          return null;
+          if (typeof openDashboardView === 'function') openDashboardView('dashboard');
+          if (typeof loadSubmissions === 'function') loadSubmissions('');
+        } catch (e) {
+          console.error('Dashboard initialization error:', e);
         }
       }
 
-      const resolvedActiveUser = hydrateUserFromSupabaseSession();
-
-      if (!resolvedActiveUser) {
-        window.location.href = 'signin.html';
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeResearcherAuth);
+      } else {
+        initializeResearcherAuth();
       }
-
-      const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
-      const isAdminRole = activeRole === 'admin' || activeRole === 'denr';
-      const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
-
-      // Redirect DENR/admin users to denr dashboard
-      if (isAdminRole && !isResearcherRole) {
-        window.location.href = 'denr-dashboard.html';
-        return;
-      }
-
-      // Auth succeeded, show the page
-      document.body.style.visibility = 'visible';
-
-      document.body.classList.remove('researcher-mode', 'admin-mode');
-      document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
-
-      // Safe navigator: always prefer in-page navigation to avoid reload loops.
-      function openDashboardView(viewName) {
-        const normalizedView = String(viewName || '').trim().toLowerCase();
-        const effectiveView = (isResearcherRole && ['conservation', 'report'].includes(normalizedView)) ? 'orchids' : normalizedView;
-
-        if (typeof switchView === 'function') {
-          try {
-            switchView(effectiveView);
-            return;
-          } catch {
-            // Fall back to direct DOM switching below.
-          }
-        }
-
-        const dashboardContainerEl = document.querySelector('.dashboard-container');
-        const dashboardGridEl = document.querySelector('.dashboard-grid');
-        const dashboardAdminOverviewEl = document.getElementById('dashboard-admin-overview');
-        const researcherHomeEl = document.getElementById('researcher-home');
-
-        document.querySelectorAll('.view-section').forEach((section) => {
-          section.style.display = 'none';
-          section.style.pointerEvents = 'none';
-        });
-
-        if (dashboardContainerEl) {
-          dashboardContainerEl.style.display = 'none';
-          dashboardContainerEl.style.pointerEvents = 'none';
-        }
-
-        document.querySelectorAll('.sidebar-item').forEach((navItem) => {
-          navItem.classList.toggle('active', navItem.getAttribute('data-view') === effectiveView);
-        });
-
-        if (effectiveView === 'dashboard') {
-          if (dashboardContainerEl) {
-            dashboardContainerEl.style.display = 'block';
-            dashboardContainerEl.style.pointerEvents = 'auto';
-          }
-          if (isResearcherRole) {
-            if (dashboardGridEl) dashboardGridEl.style.display = 'none';
-            if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'none';
-            if (researcherHomeEl) researcherHomeEl.style.display = 'block';
-          } else {
-            if (dashboardGridEl) dashboardGridEl.style.display = 'grid';
-            if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'grid';
-            if (researcherHomeEl) researcherHomeEl.style.display = 'none';
-          }
-          return;
-        }
-
-        if (dashboardGridEl) dashboardGridEl.style.display = 'grid';
-        if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'none';
-        if (researcherHomeEl) researcherHomeEl.style.display = 'none';
-
-        const targetSection = document.getElementById(`${effectiveView}-view`);
-        if (targetSection) {
-          targetSection.style.display = 'block';
-          targetSection.style.pointerEvents = 'auto';
-          if (effectiveView === 'map' && typeof initializeLeafletMap === 'function') {
-            try {
-              setTimeout(() => initializeLeafletMap(), 100);
-            } catch {
-              // Ignore and keep navigation stable if map internals are not yet initialized.
-            }
-          }
-          if (effectiveView === 'orchids' && typeof loadOrchidCatalog === 'function') {
-            try {
-              loadOrchidCatalog();
-            } catch {
-              // Ignore and keep navigation stable if catalog internals are not yet initialized.
-            }
-          }
-          if (effectiveView === 'submissions' && typeof loadSubmissions === 'function') {
-            const searchInput = document.getElementById('submissions-search-input');
-            try {
-              loadSubmissions(searchInput ? searchInput.value.trim() : '');
-            } catch {
-              // Ignore and keep navigation stable if submissions internals are not yet initialized.
-            }
-          }
-          return;
-        }
-
-        window.location.href = `dashboard.html?view=${encodeURIComponent(effectiveView)}`;
-      }
-
-      document.title = isAdminRole ? 'DENR Dashboard - BLOOM' : 'Researcher Dashboard - BLOOM';
-
-      if (!isAdminRole && !isResearcherRole) {
-        window.location.href = 'catalog.html';
-      }
+    </script>
 
       const dashboardBrandLink = document.getElementById('dashboard-brand-link');
       const dashboardUserLabel = document.querySelector('.dashboard-user');
