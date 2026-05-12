@@ -978,9 +978,9 @@
     <script>
       const bloomSupabase = window.bloomSupabase || null;
       parsedActiveUser = window.parsedActiveUser || (typeof parsedActiveUser !== 'undefined' ? parsedActiveUser : {}) || {};
-      var activeRole = window.activeRole || '';
-      var isAdminRole = window.isAdminRole || false;
-      var isResearcherRole = window.isResearcherRole || false;
+      activeRole = window.activeRole || (typeof activeRole !== 'undefined' ? activeRole : '') || '';
+      isAdminRole = window.isAdminRole || (typeof isAdminRole !== 'undefined' ? isAdminRole : false) || false;
+      isResearcherRole = window.isResearcherRole || (typeof isResearcherRole !== 'undefined' ? isResearcherRole : false) || false;
 
       async function initializeResearcherAuth() {
         let resolved = null;
