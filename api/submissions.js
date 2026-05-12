@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
       SELECT *
       FROM species_sightings
       ${whereClause}
-      ORDER BY created_at DESC, id DESC
+      ORDER BY created_at DESC, sighting_id DESC
     `;
 
     const result = await pool.query(query, values);
