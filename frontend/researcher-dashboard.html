@@ -1029,8 +1029,13 @@
       }
 
       const activeRole = (parsedActiveUser.role || '').trim().toLowerCase();
-      const isAdminRole = activeRole === 'admin';
+      const isAdminRole = activeRole === 'admin' || activeRole === 'denr';
       const isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+
+      // Redirect DENR/admin users to denr dashboard
+      if (isAdminRole && !isResearcherRole) {
+        window.location.href = 'denr-dashboard.html';
+      }
 
       document.body.classList.remove('researcher-mode', 'admin-mode');
       document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
