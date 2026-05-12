@@ -120,7 +120,8 @@
           <div class="researcher-data-menu" id="researcher-data-menu">
             <button class="researcher-data-button" id="researcher-data-button" aria-haspopup="true" aria-expanded="false" type="button" onclick="const dd=document.getElementById('researcher-data-dropdown'); if(dd){ const shouldOpen=dd.hidden; dd.hidden=!shouldOpen; this.setAttribute('aria-expanded', String(shouldOpen)); }">DATA</button>
             <div class="researcher-data-dropdown" id="researcher-data-dropdown" hidden>
-              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openResearcherSubmissionModal();">Add Submission</button>
+              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');openResearcherSubmissionModal();">Add</button>
+              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-update" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('orchids');">Update</button>
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
             </div>
           </div>
@@ -214,69 +215,79 @@
       </div>
     </main>
 
-    <!-- Orchid Detail Modal -->
-    <div class="orchid-detail-modal" id="dashboard-orchid-detail-modal" hidden>
-      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="dashboard-orchid-detail-title">
-        <div class="orchid-showcase-row">
-          <h3 class="orchid-showcase-name" id="dashboard-orchid-showcase-name">Flower Name</h3>
-          <div class="orchid-sample-images" aria-label="Sample photos">
-            <img src="./orchid1.webp" alt="Sample orchid photo" class="orchid-sample-image" id="dashboard-sample-photo-1" />
-            <img src="./orchid2.jpg" alt="Sample orchid photo" class="orchid-sample-image" id="dashboard-sample-photo-2" />
-            <img src="./orchid3.webp" alt="Sample orchid photo" class="orchid-sample-image" id="dashboard-sample-photo-3" />
-          </div>
-          <a href="gallery.html" class="see-gallery-link" id="dashboard-see-gallery-link">See Gallery</a>
+    <!-- Researcher Submission Modal -->
+    <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
+      <div id="researcher-submission-panel" style="background:white;border-radius:12px;padding:1.4rem;border:1px solid #dfe7e2;box-shadow:0 12px 30px rgba(0,0,0,0.18);max-width:980px;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;">
+          <h2 style="margin:0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.3rem;">Add Species Sighting</h2>
+          <button type="button" aria-label="Close submission form" onclick="closeResearcherSubmissionModal()" style="background:#f8fafc;border:1px solid #d5dee8;color:#334155;border-radius:8px;width:34px;height:34px;font-size:1.1rem;line-height:1;cursor:pointer;">x</button>
         </div>
+        <form id="researcher-submission-form" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+          <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <strong>Basic Taxonomic Information</strong>
+          </div>
+          <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" />
+          <div style="display:flex;gap:0.5rem;">
+            <input id="submission-scientific-name" type="text" placeholder="Scientific Name" required style="flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+            <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;">IDK</button>
+          </div>
 
-        <div class="orchid-detail-header">
-          <h2 class="orchid-detail-title" id="dashboard-orchid-detail-title">INFORMATION</h2>
-        </div>
+          <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:0.65rem;align-items:start;">
+            <div id="submission-common-names-wrap" style="display:grid;gap:0.55rem;"></div>
+            <button type="button" id="submission-add-common-name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">+ Add name</button>
+          </div>
 
-        <div class="orchid-detail-grid" id="dashboard-orchid-detail-grid">
-          <div class="orchid-detail-row" id="dashboard-row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="dashboard-detail-scientific-name" class="scientific-name">-</span></div>
-          <div class="orchid-detail-row" id="dashboard-row-genus"><span class="orchid-detail-label">Genus</span><span id="dashboard-detail-genus">-</span></div>
-          <div class="orchid-detail-row" id="dashboard-row-common-name"><span class="orchid-detail-label">Common Name</span><span id="dashboard-detail-common-name">-</span></div>
-          <div class="orchid-detail-row" id="dashboard-row-endemicity"><span class="orchid-detail-label">Endemicity</span><span id="dashboard-detail-endemicity">-</span></div>
-        </div>
-      </div>
-    </div>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" title="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
+            <select id="submission-identification-confidence" required class="submission-select"><option value="" disabled selected hidden>Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
+          </div>
 
-    <!-- Submission Modal -->
-    <div class="modal fade" id="submission-modal" tabindex="-1" role="dialog" aria-labelledby="submission-modal-title" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="submission-modal-title">Add New Submission</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+          <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <strong>Observation / Collection Details</strong>
           </div>
-          <div class="modal-body">
-            <form id="submission-form">
-              <div class="form-group">
-                <label for="submission-orchid">Orchid Species</label>
-                <select class="form-control" id="submission-orchid" required>
-                  <option value="">Select an orchid species...</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="submission-location">Location</label>
-                <input type="text" class="form-control" id="submission-location" placeholder="e.g., Mt. Busa, Bukidnon" required />
-              </div>
-              <div class="form-group">
-                <label for="submission-date">Date Observed</label>
-                <input type="date" class="form-control" id="submission-date" required />
-              </div>
-              <div class="form-group">
-                <label for="submission-notes">Observations</label>
-                <textarea class="form-control" id="submission-notes" rows="3" placeholder="Describe what you observed..."></textarea>
-              </div>
-            </form>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span style="color:#b42318;">*</span><span class="field-help" title="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
+            <input id="submission-observation-date" type="date" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="submitResearcherSubmission()">Submit</button>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-observation-time" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Time <span class="field-help" title="Optional. Time of day observation was made (HH:MM format). Leave blank if unknown.">?</span></label>
+            <input id="submission-observation-time" type="time" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
           </div>
-        </div>
+
+          <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <strong>Geographical / Location Data</strong>
+          </div>
+          <input id="submission-mountain" type="text" value="Mt. Busa" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;" />
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" title="Optional. General area: Trail, Ridge, Streamside, or Others. Helps pinpoint location context.">?</span></label>
+            <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
+          </div>
+          <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" title="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+            <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" title="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+            <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
+
+          <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <strong>Habitat Information</strong>
+          </div>
+          <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Habitat Type</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option></select>
+          <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+
+          <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <strong>Notes, Remarks, and Researchers</strong>
+          </div>
+          <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
+          <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;">
+            <button type="submit" class="dashboard-btn dashboard-btn-primary" style="padding:0.72rem 1rem;background-color:#2D5128 !important;border-color:#2D5128 !important;color:white !important;">Submit Sighting</button>
+            <span id="researcher-submission-feedback" style="font-size:0.92rem;color:#4f5f56;"></span>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -284,6 +295,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
       let orchids = [];
+      const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
+      const researcherSubmissionFormEl = document.getElementById('researcher-submission-form');
 
       // Initialize dashboard
       if (typeof initializeAuth !== 'function') {
@@ -382,19 +395,22 @@
       }
 
       function openResearcherSubmissionModal() {
-        const modal = new bootstrap.Modal(document.getElementById('submission-modal'));
-        modal.show();
+        if (!researcherSubmissionModal) return;
+        researcherSubmissionModal.style.display = 'block';
+      }
+
+      function closeResearcherSubmissionModal() {
+        if (!researcherSubmissionModal) return;
+        researcherSubmissionModal.style.display = 'none';
       }
 
       async function submitResearcherSubmission() {
-        const form = document.getElementById('submission-form');
-        const formData = new FormData(form);
-
         const data = {
-          orchid_id: document.getElementById('submission-orchid').value,
-          location: document.getElementById('submission-location').value,
-          date_observed: document.getElementById('submission-date').value,
-          notes: document.getElementById('submission-notes').value
+          orchid_name: document.getElementById('submission-scientific-name')?.value || '',
+          observation_date: document.getElementById('submission-observation-date')?.value || '',
+          latitude: document.getElementById('submission-latitude')?.value || '',
+          longitude: document.getElementById('submission-longitude')?.value || '',
+          notes: document.getElementById('submission-researcher-notes')?.value || ''
         };
 
         try {
@@ -406,9 +422,8 @@
 
           if (response.ok) {
             alert('Submission created successfully!');
-            form.reset();
-            const modal = bootstrap.Modal.getInstance(document.getElementById('submission-modal'));
-            modal.hide();
+            researcherSubmissionFormEl?.reset();
+            closeResearcherSubmissionModal();
           } else {
             alert('Failed to submit. Please try again.');
           }
