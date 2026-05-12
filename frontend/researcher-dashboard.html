@@ -2026,15 +2026,16 @@
       async function loadOrchidCatalog() {
         if (!catalogGrid || orchidCatalogLoaded) return;
 
-        try {
-          if (!supabase) {
-            throw new Error('Supabase is not configured');
-          }
+            try {
+              const client = window.bloomSupabase || window.supabase;
+              if (!client || typeof client.from !== 'function') {
+                throw new Error('Supabase client not available');
+              }
 
-          const { data, error } = await supabase
-            .from('orchid_overview')
-            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
-            .order('name', { ascending: true });
+              const { data, error } = await client
+                .from('orchid_overview')
+                .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
+                .order('name', { ascending: true });
 
           if (error) {
             throw new Error(error.message || 'Failed to load orchids');
