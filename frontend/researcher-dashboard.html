@@ -977,10 +977,10 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
       const supabase = window.bloomSupabase;
-      let parsedActiveUser = {};
-      let activeRole = '';
-      let isAdminRole = false;
-      let isResearcherRole = false;
+      var parsedActiveUser = window.parsedActiveUser || {};
+      var activeRole = window.activeRole || '';
+      var isAdminRole = window.isAdminRole || false;
+      var isResearcherRole = window.isResearcherRole || false;
 
       async function initializeResearcherAuth() {
         let resolved = null;
