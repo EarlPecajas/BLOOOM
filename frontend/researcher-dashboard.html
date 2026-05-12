@@ -982,6 +982,18 @@
       isAdminRole = window.isAdminRole || (typeof isAdminRole !== 'undefined' ? isAdminRole : false) || false;
       isResearcherRole = window.isResearcherRole || (typeof isResearcherRole !== 'undefined' ? isResearcherRole : false) || false;
 
+      // Provide a safe global openDashboardView helper so inline onclicks work.
+      window.openDashboardView = function(viewName) {
+        try {
+          if (typeof switchView === 'function') {
+            return switchView(viewName);
+          }
+        } catch (e) {
+          console.error('openDashboardView fallback error:', e);
+        }
+        window.location.href = `dashboard.html?view=${encodeURIComponent(viewName || '')}`;
+      };
+
       async function initializeResearcherAuth() {
         let resolved = null;
         if (typeof resolveActiveUser === 'function') {
@@ -2398,22 +2410,26 @@ function refreshConservationHeatMap(summary) {
     }
 
     if (conservationHeatLayer) {
-      conservationHeatMap.removeLayer(conservationHeatLayer);
+      try { conservationHeatMap.removeLayer(conservationHeatLayer); } catch(e) { /* ignore */ }
     }
 
     const heatPoints = buildConservationHeatPoints(summary);
     if (typeof L.heatLayer === 'function' && heatPoints.length > 0) {
-      conservationHeatLayer = L.heatLayer(heatPoints, {
-        radius: 24,
-        blur: 18,
-        maxZoom: 15,
-        gradient: {
-          0.2: '#34d399',
-          0.45: '#facc15',
-          0.75: '#f97316',
-          1.0: '#dc2626'
-        }
-      }).addTo(conservationHeatMap);
+      try {
+        conservationHeatLayer = L.heatLayer(heatPoints, {
+          radius: 24,
+          blur: 18,
+          maxZoom: 15,
+          gradient: {
+            0.2: '#34d399',
+            0.45: '#facc15',
+            0.75: '#f97316',
+            1.0: '#dc2626'
+          }
+        }).addTo(conservationHeatMap);
+      } catch (err) {
+        console.error('Leaflet heat layer error:', err);
+      }
     }
   } catch (err) {
     console.error('Error in refreshConservationHeatMap:', err);
