@@ -2156,38 +2156,46 @@
         });
       }
 
-      catalogGrid.addEventListener('click', function(e) {
-        const card = e.target.closest('[data-dashboard-orchid-id]');
-        if (!card) {
-          return;
-        }
+      if (catalogGrid) {
+        catalogGrid.addEventListener('click', function(e) {
+          const card = e.target.closest('[data-dashboard-orchid-id]');
+          if (!card) {
+            return;
+          }
 
-        const orchidId = card.getAttribute('data-dashboard-orchid-id');
-        const selectedOrchid = orchidRows.find((orchid) => String(orchid.id) === String(orchidId));
+          const orchidId = card.getAttribute('data-dashboard-orchid-id');
+          const selectedOrchid = orchidRows.find((orchid) => String(orchid.id) === String(orchidId));
 
-        if (selectedOrchid) {
-          openDashboardOrchidDetails(selectedOrchid);
-        }
-      });
+          if (selectedOrchid) {
+            openDashboardOrchidDetails(selectedOrchid);
+          }
+        });
+      }
 
-      dashboardContributorsToggle.addEventListener('click', function() {
-        const shouldShowContributors = dashboardContributorsPanel.hidden;
-        setDashboardContributorsView(shouldShowContributors);
-      });
+      if (dashboardContributorsToggle) {
+        dashboardContributorsToggle.addEventListener('click', function() {
+          const shouldShowContributors = dashboardContributorsPanel.hidden;
+          setDashboardContributorsView(shouldShowContributors);
+        });
+      }
 
-      [dashboardSamplePhotoOne, dashboardSamplePhotoTwo, dashboardSamplePhotoThree].forEach(function(photoEl) {
+      [dashboardSamplePhotoOne, dashboardSamplePhotoTwo, dashboardSamplePhotoThree].filter(Boolean).forEach(function(photoEl) {
         photoEl.addEventListener('click', function() {
           openDashboardLightbox(photoEl.src);
         });
       });
 
-      dashboardImageLightbox.addEventListener('click', closeDashboardLightbox);
+      if (dashboardImageLightbox) {
+        dashboardImageLightbox.addEventListener('click', closeDashboardLightbox);
+      }
 
-      dashboardOrchidDetailModal.addEventListener('click', function(e) {
-        if (e.target === dashboardOrchidDetailModal) {
-          closeDashboardOrchidDetails();
-        }
-      });
+      if (dashboardOrchidDetailModal) {
+        dashboardOrchidDetailModal.addEventListener('click', function(e) {
+          if (e.target === dashboardOrchidDetailModal) {
+            closeDashboardOrchidDetails();
+          }
+        });
+      }
 
       syncDashboardCatalogViewState();
 

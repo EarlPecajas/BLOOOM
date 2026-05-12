@@ -153,7 +153,9 @@
         galleryGrid.innerHTML = '<p class="col-12 text-muted">No orchid specified.</p>';
       }
 
-      galleryImageLightbox.addEventListener('click', closeGalleryLightbox);
+      if (galleryImageLightbox) {
+        galleryImageLightbox.addEventListener('click', closeGalleryLightbox);
+      }
 
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && !galleryImageLightbox.hidden) {

@@ -993,41 +993,49 @@
         });
       }
 
-      catalogGrid.addEventListener('click', function(e) {
-        const card = e.target.closest('[data-orchid-id]');
-        if (!card) {
-          return;
-        }
+      if (catalogGrid) {
+        catalogGrid.addEventListener('click', function(e) {
+          const card = e.target.closest('[data-orchid-id]');
+          if (!card) {
+            return;
+          }
 
-        const orchidId = card.getAttribute('data-orchid-id');
-        const selectedOrchid = orchids.find((orchid) => String(orchid.id) === String(orchidId));
+          const orchidId = card.getAttribute('data-orchid-id');
+          const selectedOrchid = orchids.find((orchid) => String(orchid.id) === String(orchidId));
 
-        if (selectedOrchid) {
-          openOrchidDetails(selectedOrchid);
-        }
-      });
+          if (selectedOrchid) {
+            openOrchidDetails(selectedOrchid);
+          }
+        });
+      }
 
-      contributorsToggle.addEventListener('click', function() {
-        const shouldShowContributors = contributorsPanel.hidden;
-        if (shouldShowContributors) {
-          populateContributorsPanel(currentSubmission);
-        }
-        setContributorsView(shouldShowContributors);
-      });
+      if (contributorsToggle) {
+        contributorsToggle.addEventListener('click', function() {
+          const shouldShowContributors = contributorsPanel.hidden;
+          if (shouldShowContributors) {
+            populateContributorsPanel(currentSubmission);
+          }
+          setContributorsView(shouldShowContributors);
+        });
+      }
 
-      [samplePhotoOne, samplePhotoTwo, samplePhotoThree].forEach(function(photoEl) {
+      [samplePhotoOne, samplePhotoTwo, samplePhotoThree].filter(Boolean).forEach(function(photoEl) {
         photoEl.addEventListener('click', function() {
           openCatalogLightbox(photoEl.src);
         });
       });
 
-      catalogImageLightbox.addEventListener('click', closeCatalogLightbox);
+      if (catalogImageLightbox) {
+        catalogImageLightbox.addEventListener('click', closeCatalogLightbox);
+      }
 
-      orchidDetailModal.addEventListener('click', function(e) {
-        if (e.target === orchidDetailModal) {
-          closeOrchidDetails();
-        }
-      });
+      if (orchidDetailModal) {
+        orchidDetailModal.addEventListener('click', function(e) {
+          if (e.target === orchidDetailModal) {
+            closeOrchidDetails();
+          }
+        });
+      }
 
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && !catalogImageLightbox.hidden) {
