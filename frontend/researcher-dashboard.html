@@ -977,7 +977,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
       const bloomSupabase = window.bloomSupabase || null;
-      var parsedActiveUser = window.parsedActiveUser || {};
+      parsedActiveUser = window.parsedActiveUser || (typeof parsedActiveUser !== 'undefined' ? parsedActiveUser : {}) || {};
       var activeRole = window.activeRole || '';
       var isAdminRole = window.isAdminRole || false;
       var isResearcherRole = window.isResearcherRole || false;
@@ -3015,13 +3015,13 @@ function refreshConservationHeatMap(summary) {
       async function loadConservationSummary() {
         try {
           console.log('loadConservationSummary started');
-          if (!supabase) {
-            throw new Error('Supabase is not configured');
-          }
+          if (!bloomSupabase) {
+              throw new Error('Supabase is not configured');
+            }
 
-          const { data, error } = await supabase
-            .from('orchid_overview')
-            .select('conservation_status_key');
+            const { data, error } = await bloomSupabase
+              .from('orchid_overview')
+              .select('conservation_status_key');
 
           console.log('Supabase response - data:', data, 'error:', error);
           if (error) {
