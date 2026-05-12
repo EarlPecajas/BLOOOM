@@ -3412,25 +3412,28 @@
         }
 
         try {
-          if (!bloomSupabase) {
-            throw new Error('Supabase is not configured');
+          const currentEmail = String(parsedActiveUser.email || '').trim();
+          const submissionsUrl = currentEmail
+            ? `/api/submissions?email=${encodeURIComponent(currentEmail)}`
+            : '/api/submissions';
+
+          const response = await fetch(submissionsUrl, {
+            headers: {
+              Accept: 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Failed to load submissions (${response.status})`);
           }
 
-          const { data, error } = await bloomSupabase
-            .from('species_sightings')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-          if (error) {
-            throw new Error(error.message || 'Failed to load submissions');
-          }
-
+          const data = await response.json();
           const searchValue = String(searchTerm || '').trim().toLowerCase();
-          const currentEmail = String(parsedActiveUser.email || '').trim().toLowerCase();
-          const normalizedRows = (data || []).map(normalizeSubmissionRow);
+          const normalizedRows = (Array.isArray(data) ? data : []).map(normalizeSubmissionRow);
 
           submissionRows = normalizedRows.filter((submission) => {
-            const matchesResearcher = !isResearcherRole || !currentEmail || String(submission.researcher_email || '').trim().toLowerCase() === currentEmail;
+            const matchesResearcher = !isResearcherRole || !currentEmail || String(submission.researcher_email || '').trim().toLowerCase() === currentEmail.toLowerCase();
             if (!matchesResearcher) {
               return false;
             }
