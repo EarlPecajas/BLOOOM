@@ -23,9 +23,11 @@
       };
     </script>
     <script>
-      // Provide a backwards-compatible global `supabase` alias using the single shared client
-      if (!window.supabase && window.bloomSupabase) {
-        window.supabase = window.bloomSupabase;
+      // Force the global `supabase` identifier to point at the shared client instance
+      // (some pages/modules expose a library object at `window.supabase`; override it so
+      // existing page code that calls `supabase.from(...)` uses the client)
+      if (window.bloomSupabase) {
+        try { window.supabase = window.bloomSupabase; } catch (e) { /* ignore */ }
       }
     </script>
     <style>
