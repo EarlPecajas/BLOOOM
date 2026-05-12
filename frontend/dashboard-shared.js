@@ -9,16 +9,16 @@ let authResolved = false;
 // Initialize Supabase client from config
 const supabaseUrl = window.BLOOM_SUPABASE_URL;
 const supabaseKey = window.BLOOM_SUPABASE_ANON_KEY;
-const supabase = supabaseUrl && supabaseKey && window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+const supabaseClient = supabaseUrl && supabaseKey && window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
 
 /**
  * Resolve the active user from Supabase session and localStorage
  */
 async function resolveActiveUser() {
   // First, try Supabase session
-  if (supabase) {
+  if (supabaseClient) {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session?.user) {
         const role = String(session.user.user_metadata?.role || 'researcher').trim().toLowerCase();
         const parsedUser = {
@@ -51,7 +51,7 @@ async function resolveActiveUser() {
       if (k.includes('supabase') || k.includes('auth')) {
         try {
           const candidate = JSON.parse(localStorage.getItem(k) || '{}');
-          const sessionUser = candidate?.currentSession?.user || candidate?.session?.user || candidate?.user || null;
+            const sessionUser = candidate?.currentSession?.user || candidate?.session?.user || candidate?.user || null;
           if (sessionUser) {
             const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
             const parsedActiveUser = {
