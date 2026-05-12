@@ -22,6 +22,12 @@
         window.location.href = `dashboard.html?view=${encodeURIComponent(viewName || '')}`;
       };
     </script>
+    <script>
+      // Provide a backwards-compatible global `supabase` alias using the single shared client
+      if (!window.supabase && window.bloomSupabase) {
+        window.supabase = window.bloomSupabase;
+      }
+    </script>
     <style>
       .submission-select {
         padding: 0.72rem 0.8rem;
