@@ -1,6 +1,8 @@
 BEGIN;
 
 -- Public catalog view for frontend-only Supabase access.
+DROP VIEW IF EXISTS orchid_overview CASCADE;
+
 CREATE OR REPLACE VIEW orchid_overview AS
 SELECT
   o.orchid_id AS id,
