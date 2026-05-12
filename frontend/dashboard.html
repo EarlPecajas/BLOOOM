@@ -1261,11 +1261,15 @@
       function syncRoleState(user) {
         parsedActiveUser = user || {};
         activeRole = String(parsedActiveUser.role || '').trim().toLowerCase();
-        isAdminRole = activeRole === 'admin';
+        // Treat both 'admin' and 'denr' as admin (DENR) roles for dashboard purposes
+        isAdminRole = activeRole === 'admin' || activeRole === 'denr';
         isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
 
         document.body.classList.remove('researcher-mode', 'admin-mode');
         document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
+
+        // Keep the page title in sync with role immediately
+        document.title = isAdminRole ? 'DENR Dashboard - BLOOM' : 'Researcher Dashboard - BLOOM';
       }
 
       let parsedActiveUser = {};
