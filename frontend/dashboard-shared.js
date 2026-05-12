@@ -9,7 +9,7 @@ let authResolved = false;
 // Initialize Supabase client from config
 const supabaseUrl = window.BLOOM_SUPABASE_URL;
 const supabaseKey = window.BLOOM_SUPABASE_ANON_KEY;
-const supabaseClient = supabaseUrl && supabaseKey && window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+const supabaseClient = window.bloomSupabase || (supabaseUrl && supabaseKey && window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null);
 
 /**
  * Resolve the active user from Supabase session and localStorage
@@ -88,8 +88,8 @@ function syncRoleState(user) {
  * Sign out the current user
  */
 async function signOut() {
-  if (supabase) {
-    await supabase.auth.signOut();
+  if (supabaseClient) {
+    try { await supabaseClient.auth.signOut(); } catch (e) { /* ignore */ }
   }
   localStorage.removeItem('bloomUser');
   sessionStorage.removeItem('bloomUser');
