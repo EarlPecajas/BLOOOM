@@ -976,7 +976,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-      const supabase = window.bloomSupabase;
+      const bloomSupabase = window.bloomSupabase || null;
       var parsedActiveUser = window.parsedActiveUser || {};
       var activeRole = window.activeRole || '';
       var isAdminRole = window.isAdminRole || false;
@@ -1361,7 +1361,7 @@
           }
 
           try {
-            if (!supabase) {
+            if (!bloomSupabase) {
               throw new Error('Supabase is not configured');
             }
 
@@ -1390,7 +1390,7 @@
                 const token = Math.random().toString(16).slice(2, 10);
                 const storagePath = `submissions/${entryId}/${fieldName}-${Date.now()}-${token}${safeExt}`;
 
-                const { error } = await supabase.storage
+                const { error } = await bloomSupabase.storage
                   .from(uploadBucket)
                   .upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
 
@@ -1398,7 +1398,7 @@
                   throw new Error(error.message || `Failed to upload ${file.name}`);
                 }
 
-                const { data: publicUrlData } = supabase.storage.from(uploadBucket).getPublicUrl(storagePath);
+                const { data: publicUrlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(storagePath);
                 uploadedUrls.push(publicUrlData.publicUrl);
               }
 
@@ -1509,8 +1509,8 @@
 
       signOutButton.addEventListener('click', async function() {
         try {
-          if (supabase) {
-            await supabase.auth.signOut();
+            if (bloomSupabase) {
+              await bloomSupabase.auth.signOut();
           }
         } catch {
           // Ignore sign-out failures and clear local state anyway.
@@ -3170,10 +3170,10 @@ function refreshConservationHeatMap(summary) {
           throw new Error('Supabase is not configured');
         }
 
-        const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
-          supabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
-          supabase.from('species_sightings').select('*').order('created_at', { ascending: false }),
-          supabase.from('orchid_overview').select('conservation_status_key')
+          const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
+          bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
+          bloomSupabase.from('species_sightings').select('*').order('created_at', { ascending: false }),
+          bloomSupabase.from('orchid_overview').select('conservation_status_key')
         ]);
 
         if (orchidsResponse.error) {
