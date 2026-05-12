@@ -831,6 +831,14 @@
         }
       }
 
+      // Defensive fallback: direct handler for orchid card clicks
+      window.handleOrchidCardClick = function(orchidId) {
+        const orchid = orchids.find(o => o.id == orchidId);
+        if (orchid) {
+          openOrchidDetails(orchid);
+        }
+      };
+
       function renderCatalog(items) {
         if (!items || items.length === 0) {
           catalogGrid.innerHTML = '<p>No orchids found in the database.</p>';
@@ -856,7 +864,7 @@
           }
 
           return `
-            <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}">
+            <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">
               <img src="${thumbnailImage}" alt="${orchid.name}" class="orchid-card-image" />
               <div class="orchid-card-info">
                 <p class="orchid-card-name scientific-name">${orchid.name}</p>
