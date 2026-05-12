@@ -15,7 +15,7 @@
     <script src="config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js?v=1"></script>
-    <script src="dashboard-shared.js?v=1"></script>
+    <script src="dashboard-shared.js?v=2"></script>
     <style>
       .submission-select {
         padding: 0.72rem 0.8rem;
@@ -286,7 +286,11 @@
       let orchids = [];
 
       // Initialize dashboard
-      initializeAuth(async (user) => {
+      if (typeof initializeAuth !== 'function') {
+        document.body.style.visibility = 'visible';
+        console.error('dashboard-shared.js did not load');
+      } else {
+        initializeAuth(async (user) => {
         if (!isResearcherRole) {
           window.location.href = 'denr-dashboard.html';
           return;
@@ -310,7 +314,8 @@
           console.error('Error initializing dashboard:', error);
           document.body.style.visibility = 'visible';
         }
-      });
+        });
+      }
 
       async function loadOrchids() {
         try {
