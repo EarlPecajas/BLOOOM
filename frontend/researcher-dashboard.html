@@ -2043,6 +2043,7 @@
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
         } catch (error) {
+          console.error('loadOrchidCatalog error:', error);
           catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
         } finally {
           if (catalogLoadingMessage) {
