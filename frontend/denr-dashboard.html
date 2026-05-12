@@ -293,7 +293,7 @@
 
     <!-- Orchids View -->
     <div id="orchids-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <div class="catalog-header">
+      <div class="catalog-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
         <div class="catalog-title-row">
           <button
             type="button"
@@ -306,15 +306,13 @@
           </button>
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
-        <div class="catalog-search-wrapper">
-          <label for="search-filter" style="display:none;">Search filter</label>
-          <select id="search-filter" class="catalog-search-filter" aria-label="Search filter">
+        <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(520px,100%);">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
             <option value="all">All</option>
             <option value="family">Family</option>
             <option value="species">Species</option>
           </select>
-          <label for="search-input" style="display:none;">Search orchids</label>
-          <input type="text" placeholder="🔍 Search orchids..." class="catalog-search" id="search-input" />
+          <input type="text" placeholder="🔍 Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
       </div>
 
