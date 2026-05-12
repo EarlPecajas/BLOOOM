@@ -56,7 +56,7 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   </head>
-  <body class="dashboard-page bg-light sidebar-hidden">
+  <body class="dashboard-page bg-light sidebar-hidden" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-item active" data-view="dashboard">
@@ -1035,7 +1035,11 @@
       // Redirect DENR/admin users to denr dashboard
       if (isAdminRole && !isResearcherRole) {
         window.location.href = 'denr-dashboard.html';
+        return;
       }
+
+      // Auth succeeded, show the page
+      document.body.style.visibility = 'visible';
 
       document.body.classList.remove('researcher-mode', 'admin-mode');
       document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
