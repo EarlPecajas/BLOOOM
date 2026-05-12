@@ -13,6 +13,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="styles.css" />
     <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-client.js"></script><script src="dashboard-shared.js"></script><script>const USER_ROLE_REQUIRED = "researcher";</script>
+    <script>
+      // Ensure a safe global helper is available before any inline onclick handlers
+      window.openDashboardView = function(viewName) {
+        try {
+          if (typeof switchView === 'function') return switchView(viewName);
+        } catch (e) { /* ignore */ }
+        window.location.href = `dashboard.html?view=${encodeURIComponent(viewName || '')}`;
+      };
+    </script>
     <style>
       .submission-select {
         padding: 0.72rem 0.8rem;
@@ -3519,7 +3528,6 @@ function refreshConservationHeatMap(summary) {
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="researcher-scripts.js"></script>
   </body>
 </html>
 
