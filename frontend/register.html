@@ -123,8 +123,9 @@
               first_name: user.user_metadata?.first_name || firstName,
               last_name: user.user_metadata?.last_name || lastName
             }));
-            // Include 'denr' as a dashboard-capable role
-            window.location.href = (role === 'researcher' || role === 'admin' || role === 'denr' || role === 'user') ? 'dashboard.html' : 'catalog.html';
+            // Redirect to appropriate dashboard based on role
+            const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : (role === 'researcher' || role === 'user') ? 'researcher-dashboard.html' : 'catalog.html';
+            window.location.href = targetDashboard;
             return;
           }
 

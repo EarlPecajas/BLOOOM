@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Researcher Dashboard - BLOOM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css?v=1" />
+    <script src="config.js?v=1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js?v=1"></script>
+    <script src="dashboard-shared.js?v=1"></script>
+    <style>
+      .submission-select {
+        padding: 0.72rem 0.8rem;
+        border: 1px solid #d4ddd7;
+        border-radius: 8px;
+        font-family: Inter, Roboto, sans-serif;
+        color: #334155;
+      }
+
+      .submission-select:required:invalid {
+        color: #94a3b8;
+      }
+
+      .submission-select option {
+        color: #334155;
+      }
+
+      .submission-field-title {
+        font-family: Inter, Roboto, sans-serif;
+        font-size: 0.92rem;
+        font-weight: 400;
+        color: #94a3b8;
+        line-height: 1.2;
+      }
+      .field-help {
+        display:inline-block;
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        background:#eef6ef;
+        color:#274041;
+        font-size:12px;
+        line-height:18px;
+        text-align:center;
+        margin-left:6px;
+        cursor:help;
+        border:1px solid #d4e9df;
+      }
+      .field-help:hover{background:#e0f3e7}
+      .required-asterisk{color:#b42318 !important;margin-left:6px}
+    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  </head>
+  <body class="dashboard-page researcher-mode sidebar-hidden">
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-item active" data-view="home">
+          <span class="sidebar-icon">■</span>
+          <span>Home</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="orchids">
+          <span class="sidebar-icon">❖</span>
+          <span>Orchid Catalog</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="map">
+          <span class="sidebar-icon">⊕</span>
+          <span>Map</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="submissions">
+          <span class="sidebar-icon">▦</span>
+          <span>My Submissions</span>
+        </a>
+      </nav>
+    </aside>
+    <header class="dashboard-header navbar navbar-expand-lg px-3 px-md-4">
+      <div class="dashboard-header-left">
+        <button
+          type="button"
+          id="sidebar-toggle-button"
+          class="btn btn-outline-success btn-sm sidebar-toggle-icon-btn"
+          aria-label="Hide sidebar menu"
+          title="Hide sidebar menu"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <rect x="1.5" y="2" width="4" height="12" rx="1"></rect>
+            <rect x="7" y="3" width="7.5" height="2" rx="1"></rect>
+            <rect x="7" y="7" width="7.5" height="2" rx="1"></rect>
+            <rect x="7" y="11" width="7.5" height="2" rx="1"></rect>
+          </svg>
+          <span class="visually-hidden">Toggle sidebar menu</span>
+        </button>
+        <a href="index.html" class="brand-link" id="dashboard-brand-link">
+          <div class="brand-container">
+            <div class="brand-logo">
+              <img src="./loo.png" alt="Orchid logo" class="brand-logo-image" />
+            </div>
+            <div class="brand">
+              <span class="bloom-text">BLOOM</span>
+              <div class="brand-tagline">
+                <span>Botanical Locator</span>
+                <span>and Orchid Observation</span>
+                <span>Mapping System</span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="dashboard-header-right">
+        <div class="denr-section">
+          <div class="researcher-data-menu" id="researcher-data-menu">
+            <button class="researcher-data-button" id="researcher-data-button" aria-haspopup="true" aria-expanded="false" type="button" onclick="const dd=document.getElementById('researcher-data-dropdown'); if(dd){ const shouldOpen=dd.hidden; dd.hidden=!shouldOpen; this.setAttribute('aria-expanded', String(shouldOpen)); }">DATA</button>
+            <div class="researcher-data-dropdown" id="researcher-data-dropdown" hidden>
+              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openResearcherSubmissionModal();">Add Submission</button>
+              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
+            </div>
+          </div>
+          <span class="dashboard-user">Researcher Dashboard</span>
+        </div>
+        <div class="user-menu">
+          <button class="user-profile" id="user-profile" aria-haspopup="true" aria-expanded="false" type="button">
+            <img src="./DENR Logo.svg" alt="Researcher" class="denr-logo-button" id="role-profile-icon" />
+          </button>
+          <div class="user-dropdown" id="user-dropdown" hidden>
+            <button type="button" class="user-dropdown-item" id="signout-button" onclick="signOut();">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-container container-fluid py-4">
+      <!-- Researcher Home -->
+      <section id="researcher-home" class="researcher-home">
+        <h1 id="researcher-greeting" class="researcher-home-title">Hello, Researcher</h1>
+        <p class="researcher-home-subtitle">Choose where you want to explore next.</p>
+
+        <div class="researcher-home-cards">
+          <button type="button" class="researcher-home-card" data-researcher-view="orchids" onclick="openDashboardView('orchids')">
+            <span class="researcher-home-card-tag">Collection</span>
+            <h3 class="researcher-home-card-title">Orchid Catalog</h3>
+            <p class="researcher-home-card-copy">delve into our vast collection of orchid data with over 100 entries</p>
+          </button>
+
+          <button type="button" class="researcher-home-card" data-researcher-view="map" onclick="openDashboardView('map')">
+            <span class="researcher-home-card-tag">Explore</span>
+            <h3 class="researcher-home-card-title">Interactive Map</h3>
+            <p class="researcher-home-card-copy">discover orchids with our user friendly orchid data map</p>
+          </button>
+
+          <button type="button" class="researcher-home-card" data-researcher-view="submissions" onclick="openDashboardView('submissions')">
+            <span class="researcher-home-card-tag">Track</span>
+            <h3 class="researcher-home-card-title">My Submissions</h3>
+            <p class="researcher-home-card-copy">manage and track your research contributions</p>
+          </button>
+        </div>
+      </section>
+
+      <!-- Orchids View -->
+      <div id="orchids-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
+        <div class="catalog-header">
+          <div class="catalog-title-row">
+            <button
+              type="button"
+              class="catalog-view-toggle"
+              id="dashboard-catalog-view-toggle"
+              aria-label="Switch to list view"
+              title="Switch to list view"
+            >
+              <span id="dashboard-catalog-view-icon" aria-hidden="true">▦</span>
+            </button>
+            <h1 class="catalog-title">Orchid Catalog</h1>
+          </div>
+          <div class="catalog-search-wrapper">
+            <label for="search-filter" style="display:none;">Search filter</label>
+            <select id="search-filter" class="catalog-search-filter" aria-label="Search filter">
+              <option value="all">All</option>
+              <option value="family">Family</option>
+              <option value="species">Species</option>
+            </select>
+            <label for="search-input" style="display:none;">Search orchids</label>
+            <input type="text" placeholder="🔍 Search orchids..." class="catalog-search" id="search-input" />
+          </div>
+        </div>
+
+        <div class="catalog-grid" id="catalog-grid">
+          <p id="catalog-loading-message">Loading orchids from the database...</p>
+        </div>
+      </div>
+
+      <!-- Submissions View -->
+      <div id="submissions-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
+        <div class="submissions-header">
+          <h1 class="catalog-title">My Submissions</h1>
+          <button type="button" class="btn btn-success" onclick="openResearcherSubmissionModal()">+ Add New Submission</button>
+        </div>
+        <div id="submissions-list" class="submissions-list">
+          <p>Loading your submissions...</p>
+        </div>
+      </div>
+
+      <!-- Map View -->
+      <div id="map-view" class="view-section" style="display:none;padding:2rem;">
+        <h1 class="catalog-title">Orchid Distribution Map</h1>
+        <div id="researcher-map" style="width:100%;height:600px;border-radius:8px;background:#f5f5f5;"></div>
+      </div>
+    </main>
+
+    <!-- Orchid Detail Modal -->
+    <div class="orchid-detail-modal" id="dashboard-orchid-detail-modal" hidden>
+      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="dashboard-orchid-detail-title">
+        <div class="orchid-showcase-row">
+          <h3 class="orchid-showcase-name" id="dashboard-orchid-showcase-name">Flower Name</h3>
+          <div class="orchid-sample-images" aria-label="Sample photos">
+            <img src="./orchid1.webp" alt="Sample orchid photo" class="orchid-sample-image" id="dashboard-sample-photo-1" />
+            <img src="./orchid2.jpg" alt="Sample orchid photo" class="orchid-sample-image" id="dashboard-sample-photo-2" />
+            <img src="./orchid3.webp" alt="Sample orchid photo" class="orchid-sample-image" id="dashboard-sample-photo-3" />
+          </div>
+          <a href="gallery.html" class="see-gallery-link" id="dashboard-see-gallery-link">See Gallery</a>
+        </div>
+
+        <div class="orchid-detail-header">
+          <h2 class="orchid-detail-title" id="dashboard-orchid-detail-title">INFORMATION</h2>
+        </div>
+
+        <div class="orchid-detail-grid" id="dashboard-orchid-detail-grid">
+          <div class="orchid-detail-row" id="dashboard-row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="dashboard-detail-scientific-name" class="scientific-name">-</span></div>
+          <div class="orchid-detail-row" id="dashboard-row-genus"><span class="orchid-detail-label">Genus</span><span id="dashboard-detail-genus">-</span></div>
+          <div class="orchid-detail-row" id="dashboard-row-common-name"><span class="orchid-detail-label">Common Name</span><span id="dashboard-detail-common-name">-</span></div>
+          <div class="orchid-detail-row" id="dashboard-row-endemicity"><span class="orchid-detail-label">Endemicity</span><span id="dashboard-detail-endemicity">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submission Modal -->
+    <div class="modal fade" id="submission-modal" tabindex="-1" role="dialog" aria-labelledby="submission-modal-title" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="submission-modal-title">Add New Submission</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="submission-form">
+              <div class="form-group">
+                <label for="submission-orchid">Orchid Species</label>
+                <select class="form-control" id="submission-orchid" required>
+                  <option value="">Select an orchid species...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="submission-location">Location</label>
+                <input type="text" class="form-control" id="submission-location" placeholder="e.g., Mt. Busa, Bukidnon" required />
+              </div>
+              <div class="form-group">
+                <label for="submission-date">Date Observed</label>
+                <input type="date" class="form-control" id="submission-date" required />
+              </div>
+              <div class="form-group">
+                <label for="submission-notes">Observations</label>
+                <textarea class="form-control" id="submission-notes" rows="3" placeholder="Describe what you observed..."></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="submitResearcherSubmission()">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+      let orchids = [];
+
+      // Initialize dashboard
+      initializeAuth(async (user) => {
+        if (!isResearcherRole) {
+          window.location.href = 'denr-dashboard.html';
+          return;
+        }
+
+        try {
+          // Update greeting
+          const greeting = document.getElementById('researcher-greeting');
+          if (greeting && user.first_name) {
+            greeting.textContent = `Hello, ${user.first_name}!`;
+          }
+
+          // Load orchids
+          await loadOrchids();
+
+          // Setup sidebar
+          setupSidebar();
+        } catch (error) {
+          console.error('Error initializing dashboard:', error);
+        }
+      });
+
+      async function loadOrchids() {
+        try {
+          const response = await fetch('/api/orchids');
+          if (response.ok) {
+            orchids = await response.json();
+            renderOrchidSelect();
+          } else {
+            console.error('Failed to load orchids:', response.status);
+          }
+        } catch (error) {
+          console.error('Error loading orchids:', error);
+        }
+      }
+
+      function renderOrchidSelect() {
+        const select = document.getElementById('submission-orchid');
+        select.innerHTML = '<option value="">Select an orchid species...</option>';
+        orchids.forEach(orchid => {
+          const option = document.createElement('option');
+          option.value = orchid.id;
+          option.textContent = orchid.name;
+          select.appendChild(option);
+        });
+      }
+
+      function openDashboardView(viewName) {
+        const views = ['home', 'orchids', 'map', 'submissions'];
+        views.forEach(view => {
+          const el = document.getElementById(`${view}-view`);
+          if (el) el.style.display = view === viewName ? 'block' : 'none';
+        });
+
+        const homeSection = document.getElementById('researcher-home');
+        if (homeSection) homeSection.style.display = viewName === 'home' ? 'block' : 'none';
+
+        updateSidebarActive(viewName);
+      }
+
+      function updateSidebarActive(viewName) {
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+          item.classList.remove('active');
+          if (item.getAttribute('data-view') === viewName) {
+            item.classList.add('active');
+          }
+        });
+      }
+
+      function setupSidebar() {
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = item.getAttribute('data-view');
+            openDashboardView(view);
+          });
+        });
+
+        const toggleBtn = document.getElementById('sidebar-toggle-button');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-hidden');
+          });
+        }
+      }
+
+      function openResearcherSubmissionModal() {
+        const modal = new bootstrap.Modal(document.getElementById('submission-modal'));
+        modal.show();
+      }
+
+      async function submitResearcherSubmission() {
+        const form = document.getElementById('submission-form');
+        const formData = new FormData(form);
+
+        const data = {
+          orchid_id: document.getElementById('submission-orchid').value,
+          location: document.getElementById('submission-location').value,
+          date_observed: document.getElementById('submission-date').value,
+          notes: document.getElementById('submission-notes').value
+        };
+
+        try {
+          const response = await fetch('/api/sightings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (response.ok) {
+            alert('Submission created successfully!');
+            form.reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('submission-modal'));
+            modal.hide();
+          } else {
+            alert('Failed to submit. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error submitting:', error);
+          alert('Error: ' + error.message);
+        }
+      }
+
+      // Setup user profile dropdown
+      document.getElementById('user-profile')?.addEventListener('click', () => {
+        const dropdown = document.getElementById('user-dropdown');
+        if (dropdown) dropdown.hidden = !dropdown.hidden;
+      });
+    </script>
+  </body>
+</html>

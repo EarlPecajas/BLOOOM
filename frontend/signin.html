@@ -108,8 +108,9 @@
 
           localStorage.setItem('bloomUser', JSON.stringify(userRecord));
           sessionStorage.setItem('bloomUser', JSON.stringify(userRecord));
-          // Treat 'denr' same as admin for dashboard access
-          window.location.href = (role === 'admin' || role === 'denr' || role === 'researcher' || role === 'user') ? 'dashboard.html' : 'catalog.html';
+          // Redirect to appropriate dashboard based on role
+          const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : (role === 'researcher' || role === 'user') ? 'researcher-dashboard.html' : 'catalog.html';
+          window.location.href = targetDashboard;
         } catch (error) {
           alert(error.message || 'Could not connect to Supabase. Please try again.');
         }
