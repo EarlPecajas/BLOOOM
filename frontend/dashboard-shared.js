@@ -7,9 +7,9 @@ let isResearcherRole = false;
 let authResolved = false;
 
 // Initialize Supabase client from config
-const supabaseUrl = window.bloomConfig?.supabaseUrl;
-const supabaseKey = window.bloomConfig?.supabaseAnonKey;
-const supabase = supabaseUrl && supabaseKey ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+const supabaseUrl = window.BLOOM_SUPABASE_URL;
+const supabaseKey = window.BLOOM_SUPABASE_ANON_KEY;
+const supabase = supabaseUrl && supabaseKey && window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
 
 /**
  * Resolve the active user from Supabase session and localStorage
@@ -37,17 +37,9 @@ async function resolveActiveUser() {
     }
   }
 
-  // Fallback to localStorage
+  // Fallback to local/session storage only if no Supabase session exists yet.
   try {
-    const stored = localStorage.getItem('bloomUser');
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch {}
-
-  // Fallback to sessionStorage
-  try {
-    const stored = sessionStorage.getItem('bloomUser');
+    const stored = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
     if (stored) {
       return JSON.parse(stored);
     }
@@ -112,7 +104,7 @@ async function initializeAuth(redirectCallback) {
     document.body.style.visibility = 'hidden';
   }
 
-  // Resolve async, then decide action
+  // Resolve async, then decide action. Supabase session is authoritative.
   const resolved = await resolveActiveUser();
   if (!resolved) {
     authResolved = true;
