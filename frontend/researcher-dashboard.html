@@ -762,9 +762,12 @@
             <strong>Basic Taxonomic Information</strong>
           </div>
           <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" />
-          <div style="display:flex;gap:0.5rem;">
-            <input id="submission-scientific-name" type="text" placeholder="Scientific Name" required style="flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
-            <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;">IDK</button>
+          <input id="submission-family" type="text" value="Orchidaceae" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" placeholder="Family" />
+          <input id="submission-genus" type="text" placeholder="Genus" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+          <input id="submission-species-epithet" type="text" placeholder="Species Epithet" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+          <div style="display:flex;gap:0.5rem;grid-column:1/-1;">
+            <input id="submission-scientific-name" type="text" placeholder="Scientific Name (auto-filled from Genus + Species, or type manually)" required style="flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+            <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">IDK</button>
           </div>
 
           <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:0.65rem;align-items:start;">
@@ -773,11 +776,8 @@
           </div>
 
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" title="How confident are you about the identification? 'Confirmed' means verified by an expert.">?</span></label>
-            <div style="display:grid;gap:0.35rem;">
             <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" title="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
             <select id="submission-identification-confidence" required class="submission-select"><option value="" disabled selected hidden>Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
-          </div>
           </div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
@@ -813,6 +813,10 @@
             <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
           </div>
           <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            <button type="button" id="submission-use-gps" style="padding:0.55rem 1rem;border:1px solid #2D5128;border-radius:8px;background:#eaf3ea;color:#2D5128;font-weight:600;cursor:pointer;white-space:nowrap;">&#x1F4CD; Use My GPS Location</button>
+            <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
+          </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" title="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
             <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
@@ -822,25 +826,34 @@
             <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" required style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation (meters) <span class="field-help" title="Optional. Height above sea level in meters (e.g., 1200 m). Leave blank if not known.">?</span></label>
+            <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation / Altitude (meters) <span class="field-help" title="Auto-filled from GPS if available, or enter manually.">?</span></label>
             <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation (meters)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           </div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Habitat Information</strong>
           </div>
-          <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Habitat Type</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option></select>
+          <div style="display:grid;gap:0.35rem;">
+            <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Habitat Type</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option><option value="others">Others</option></select>
+            <input id="submission-habitat-type-other" type="text" placeholder="Specify habitat type" style="display:none;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
           <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
           <div style="display:grid;gap:0.35rem;">
-            <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" title="Optional. Surface orchid grows on: Tree, Soil, Rock, or Decaying Wood. Critical for habitat understanding.">?</span></label>
-            <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Growth Substrate</option><option value="tree bark">Tree Bark</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option></select>
+            <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" title="Optional. Surface orchid grows on: Tree Bark, Soil, Rock, or Decaying Wood.">?</span></label>
+            <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Growth Substrate</option><option value="tree bark">Tree Bark (on Tree)</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option></select>
           </div>
-          <input id="submission-host-tree-species" type="text" placeholder="Host Tree Species (optional)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Host Tree Diameter / DBH (optional)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-canopy-cover" type="number" min="0" max="100" step="0.01" placeholder="Canopy Cover (%)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <div id="submission-tree-fields" style="display:none;grid-column:1/-1;display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <input id="submission-host-tree-species" type="text" placeholder="Tree Species" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Tree Diameter / DBH (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          </div>
+          <input id="submission-canopy-cover" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Canopy Cover (%)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
           <select id="submission-soil-type" class="submission-select"><option value="" disabled selected hidden>Soil Type</option><option value="loamy">Loamy</option><option value="clay">Clay</option><option value="sandy">Sandy</option><option value="silty">Silty</option><option value="peaty">Peaty</option><option value="rocky">Rocky</option></select>
           <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
+          <div style="display:grid;gap:0.35rem;">
+            <label for="submission-flowering-season" style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" title="Optional. When does this orchid typically flower?">?</span></label>
+            <select id="submission-flowering-season" class="submission-select"><option value="" disabled selected hidden>Flowering Season</option><option value="Spring">Spring</option><option value="Summer">Summer</option><option value="Autumn">Autumn</option><option value="Winter">Winter</option><option value="Year-round">Year-round</option><option value="Dry Season">Dry Season</option><option value="Wet Season">Wet Season</option><option value="Unknown">Unknown</option></select>
+          </div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Morphological Characteristics</strong>
@@ -917,14 +930,21 @@
           <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Whole Plant Photo</label><input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
           <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Close-up Flower Photo</label><input id="submission-closeup-flower-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
           <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Habitat Photo</label><input id="submission-habitat-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
+          <div><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">3D Photo <span style="font-weight:400;color:#64748b;">(optional)</span></label><input id="submission-photo-3d" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
           <div style="grid-column:1/-1;"><label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Video Documentation</label><input id="submission-video" type="file" accept="video/*" style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" /></div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
             <strong>Notes, Remarks, and Researchers</strong>
           </div>
           <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-          <input id="submission-team-members" type="text" placeholder="Team Members" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
           <input id="submission-institution" type="text" placeholder="Institution / Organization" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+          <div style="grid-column:1/-1;display:grid;gap:0.55rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+              <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members</span>
+              <button type="button" id="submission-add-team-member" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add Member</button>
+            </div>
+            <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
+          </div>
           <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
           <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;">
             <button type="submit" class="dashboard-btn dashboard-btn-primary" style="padding:0.72rem 1rem;background-color:#2D5128 !important;border-color:#2D5128 !important;color:white !important;">Submit Sighting</button>
@@ -1198,12 +1218,43 @@
         return input;
       }
 
+      function createTeamMemberInput(index) {
+        const wrap = document.createElement('div');
+        wrap.className = 'submission-team-member-item';
+        wrap.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;align-items:center;';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'submission-team-member-name';
+        nameInput.placeholder = `Member ${index} Name`;
+        nameInput.style.cssText = 'padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
+
+        const roleSelect = document.createElement('select');
+        roleSelect.className = 'submission-team-member-role submission-select';
+        roleSelect.innerHTML = '<option value="" disabled selected hidden>Role</option>' +
+          ['Lead Researcher','Field Assistant','Data Recorder','Photographer','Botanist','Student','Observer','Other']
+            .map(r => `<option value="${r}">${r}</option>`).join('');
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '×';
+        removeBtn.style.cssText = 'padding:0.5rem 0.75rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1.1rem;line-height:1;';
+        removeBtn.addEventListener('click', function() { wrap.remove(); });
+
+        wrap.appendChild(nameInput);
+        wrap.appendChild(roleSelect);
+        wrap.appendChild(removeBtn);
+        return wrap;
+      }
+
       function initializeResearcherSightingForm() {
         const entryIdEl = document.getElementById('submission-entry-id');
         const observationDateEl = document.getElementById('submission-observation-date');
         const observationTimeEl = document.getElementById('submission-observation-time');
         const commonNamesWrap = document.getElementById('submission-common-names-wrap');
         const addCommonNameBtn = document.getElementById('submission-add-common-name');
+        const teamMembersWrap = document.getElementById('submission-team-members-wrap');
+        const addTeamMemberBtn = document.getElementById('submission-add-team-member');
 
         if (entryIdEl) {
           const generatedPreviewId = `PENDING-${Date.now().toString().slice(-8)}`;
@@ -1227,10 +1278,94 @@
           addCommonNameBtn.addEventListener('click', function() {
             if (!commonNamesWrap) return;
             const currentInputs = commonNamesWrap.querySelectorAll('.submission-common-name-item').length;
-            if (currentInputs >= 5) {
+            if (currentInputs >= 5) return;
+            commonNamesWrap.appendChild(createCommonNameInput(currentInputs + 1));
+          });
+        }
+
+        if (teamMembersWrap && teamMembersWrap.children.length === 0) {
+          teamMembersWrap.appendChild(createTeamMemberInput(1));
+        }
+
+        if (addTeamMemberBtn && !addTeamMemberBtn.dataset.bound) {
+          addTeamMemberBtn.dataset.bound = '1';
+          addTeamMemberBtn.addEventListener('click', function() {
+            if (!teamMembersWrap) return;
+            teamMembersWrap.appendChild(createTeamMemberInput(teamMembersWrap.children.length + 1));
+          });
+        }
+
+        // Genus + Species → auto-fill Scientific Name
+        const genusEl = document.getElementById('submission-genus');
+        const speciesEl = document.getElementById('submission-species-epithet');
+        const scientificEl = document.getElementById('submission-scientific-name');
+        function syncScientificName() {
+          const g = (genusEl?.value || '').trim();
+          const s = (speciesEl?.value || '').trim();
+          if (g || s) scientificEl.value = [g, s].filter(Boolean).join(' ');
+        }
+        if (genusEl && !genusEl.dataset.bound) {
+          genusEl.dataset.bound = '1';
+          genusEl.addEventListener('input', syncScientificName);
+        }
+        if (speciesEl && !speciesEl.dataset.bound) {
+          speciesEl.dataset.bound = '1';
+          speciesEl.addEventListener('input', syncScientificName);
+        }
+
+        // Growth Substrate → show/hide tree fields
+        const growthSubstrateEl = document.getElementById('submission-growth-substrate');
+        const treeFieldsEl = document.getElementById('submission-tree-fields');
+        function toggleTreeFields() {
+          if (!treeFieldsEl) return;
+          const isTree = growthSubstrateEl?.value === 'tree bark';
+          treeFieldsEl.style.display = isTree ? 'grid' : 'none';
+        }
+        if (growthSubstrateEl && !growthSubstrateEl.dataset.bound) {
+          growthSubstrateEl.dataset.bound = '1';
+          growthSubstrateEl.addEventListener('change', toggleTreeFields);
+        }
+        toggleTreeFields();
+
+        // Habitat Type → show/hide Others input
+        const habitatTypeEl = document.getElementById('submission-habitat-type');
+        const habitatTypeOtherEl = document.getElementById('submission-habitat-type-other');
+        function toggleHabitatOther() {
+          if (!habitatTypeOtherEl) return;
+          habitatTypeOtherEl.style.display = habitatTypeEl?.value === 'others' ? 'block' : 'none';
+        }
+        if (habitatTypeEl && !habitatTypeEl.dataset.bound) {
+          habitatTypeEl.dataset.bound = '1';
+          habitatTypeEl.addEventListener('change', toggleHabitatOther);
+        }
+        toggleHabitatOther();
+
+        // GPS button
+        const gpsBtn = document.getElementById('submission-use-gps');
+        const gpsStatus = document.getElementById('submission-gps-status');
+        if (gpsBtn && !gpsBtn.dataset.bound) {
+          gpsBtn.dataset.bound = '1';
+          gpsBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+              if (gpsStatus) gpsStatus.textContent = 'Geolocation is not supported by this browser.';
               return;
             }
-            commonNamesWrap.appendChild(createCommonNameInput(currentInputs + 1));
+            if (gpsStatus) gpsStatus.textContent = 'Getting location…';
+            navigator.geolocation.getCurrentPosition(
+              function(pos) {
+                const lat = document.getElementById('submission-latitude');
+                const lng = document.getElementById('submission-longitude');
+                const elev = document.getElementById('submission-elevation');
+                if (lat) lat.value = pos.coords.latitude.toFixed(6);
+                if (lng) lng.value = pos.coords.longitude.toFixed(6);
+                if (elev && pos.coords.altitude !== null) elev.value = pos.coords.altitude.toFixed(1);
+                if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+              },
+              function(err) {
+                if (gpsStatus) gpsStatus.textContent = `GPS error: ${err.message}`;
+              },
+              { enableHighAccuracy: true, timeout: 15000 }
+            );
           });
         }
       }
@@ -1505,6 +1640,11 @@
               .slice(0, 5);
             const leafTextures = Array.from(document.querySelectorAll('.submission-leaf-texture-option:checked')).map((opt) => opt.value);
             const threatTypes = Array.from(document.querySelectorAll('.submission-threat-type-option:checked')).map((opt) => opt.value);
+            const teamMembers = Array.from(document.querySelectorAll('.submission-team-member-item')).map((item) => {
+              const name = (item.querySelector('.submission-team-member-name')?.value || '').trim();
+              const role = item.querySelector('.submission-team-member-role')?.value || '';
+              return name ? { name, role } : null;
+            }).filter(Boolean);
 
             async function uploadFilesFromInput(inputEl, fieldName) {
               const files = Array.from(inputEl?.files || []);
@@ -1534,10 +1674,11 @@
               return uploadedUrls;
             }
 
-            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, videoUrls] = await Promise.all([
+            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls] = await Promise.all([
               uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
               uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
               uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-photo-3d'), 'photo3d'),
               uploadFilesFromInput(document.getElementById('submission-video'), 'video')
             ]);
 
@@ -1547,6 +1688,7 @@
               researcher_email: currentEmail,
               researcher_name: currentName,
               scientific_name: submissionScientificNameEl ? submissionScientificNameEl.value.trim() : '',
+              genus: document.getElementById('submission-genus')?.value.trim() || null,
               common_names: commonNames,
               identification_confidence: document.getElementById('submission-identification-confidence')?.value || 'Unidentified',
               observation_date: document.getElementById('submission-observation-date')?.value || null,
@@ -1560,7 +1702,15 @@
               latitude: Number(document.getElementById('submission-latitude')?.value || 0),
               longitude: Number(document.getElementById('submission-longitude')?.value || 0),
               elevation_meters: Number(document.getElementById('submission-elevation')?.value || 0),
-              habitat_type: document.getElementById('submission-habitat-type')?.value || null,
+              habitat_type: (function() {
+                const v = document.getElementById('submission-habitat-type')?.value;
+                if (v === 'others') {
+                  const other = (document.getElementById('submission-habitat-type-other')?.value || '').trim();
+                  return other ? `Others: ${other}` : 'Others';
+                }
+                return v || null;
+              })(),
+              flowering_season: document.getElementById('submission-flowering-season')?.value || null,
               microhabitat: document.getElementById('submission-microhabitat')?.value || null,
               growth_substrate: document.getElementById('submission-growth-substrate')?.value || null,
               host_tree_species: document.getElementById('submission-host-tree-species')?.value || null,
@@ -1601,10 +1751,10 @@
               whole_plant_photo_path: JSON.stringify(wholePlantPhotoUrls),
               closeup_flower_photo_path: JSON.stringify(closeupFlowerPhotoUrls),
               habitat_photo_path: JSON.stringify(habitatPhotoUrls),
-              photo_3d_path: JSON.stringify([]),
+              photo_3d_path: JSON.stringify(photo3dUrls),
               video_path: JSON.stringify(videoUrls),
               institution: document.getElementById('submission-institution')?.value || null,
-              team_members: document.getElementById('submission-team-members')?.value || null,
+              team_members: teamMembers.length ? JSON.stringify(teamMembers) : null,
               researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
               review_status: 'pending'
             };
