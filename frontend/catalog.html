@@ -225,7 +225,7 @@
       let currentSubmission = null;
       const bloomSupabase = window.bloomSupabase;
 
-      const activeUserRaw = localStorage.getItem('bloomUser');
+      const activeUserRaw = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
       let viewer = null;
       try {
         viewer = activeUserRaw ? JSON.parse(activeUserRaw) : null;
@@ -722,7 +722,7 @@
 
       async function openOrchidDetails(orchid) {
         // Re-check viewer on each modal open to catch recent logins/logouts
-        const currentUserRaw = localStorage.getItem('bloomUser');
+        const currentUserRaw = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
         let currentViewer = null;
         try {
           currentViewer = currentUserRaw ? JSON.parse(currentUserRaw) : null;
@@ -792,7 +792,7 @@
               renderDetailsFromSource(denrSighting, orchid, false);
               refreshSectionVisibility();
 
-              if (addInstanceButton && isResearcherViewer) {
+              if (addInstanceButton && currentIsResearcherViewer) {
                 addInstanceButton.onclick = function() {
                   window.location.href = buildAddInstanceUrl(orchid, denrSighting);
                 };
