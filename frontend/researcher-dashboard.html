@@ -31,10 +31,13 @@
       }
     </script>
     <style>
-      .detail-step-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ccc;transition:background .2s;}
-      .detail-step-dot.active{background:#2d5a27;}
-      .orchid-detail-page .orchid-detail-row{display:flex;justify-content:space-between;padding:.45rem 1rem;border-bottom:1px solid #f0f0f0;font-size:.85rem;gap:.5rem;}
+      .detail-step-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8d9b2;transition:all .2s;}
+      .detail-step-dot.active{background:#2d5a27;transform:scale(1.35);}
+      .orchid-detail-page .orchid-detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.78rem 1.3rem;border-bottom:1px solid #ecf3eb;gap:1.5rem;}
+      .orchid-detail-page .orchid-detail-row:nth-child(even){background:#f6fbf4;}
       .orchid-detail-page .orchid-detail-row[hidden]{display:none;}
+      .orchid-detail-page .orchid-detail-label{color:#3e6639;font-weight:700;font-size:.76rem;min-width:150px;flex-shrink:0;text-transform:uppercase;letter-spacing:.06em;line-height:1.35;padding-top:.1rem;}
+      .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label){color:#162b14;font-weight:500;font-size:.97rem;text-align:right;line-height:1.5;}
 
       .submission-select {
         padding: 0.72rem 0.8rem;
@@ -351,27 +354,30 @@
 
         <!-- STAGE 1: MAP -->
         <div id="dashboard-orchid-map-stage">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.1rem;background:#2d5a27;color:#fff;gap:.5rem;">
-            <h3 id="dashboard-orchid-map-name" class="scientific-name" style="margin:0;font-size:1rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">–</h3>
-            <button type="button" id="dashboard-orchid-map-close-btn" aria-label="Close" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;padding:.1rem .3rem;">✕</button>
+          <div class="orchid-modal-header">
+            <div class="orchid-modal-title-group">
+              <p class="orchid-modal-subtitle">Mt. Busa · Orchid Location</p>
+              <h3 id="dashboard-orchid-map-name" class="orchid-modal-name scientific-name">–</h3>
+            </div>
+            <button type="button" id="dashboard-orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
           </div>
           <div id="dashboard-orchid-leaflet-map" style="height:480px;width:100%;"></div>
-          <p style="margin:0;text-align:center;font-size:.78rem;color:#666;padding:.45rem 1rem;background:#f5f5f5;border-top:1px solid #e0e0e0;">🌺 Click the orchid icon on the map to view details</p>
+          <p class="orchid-modal-hint">🌺 Click the orchid icon on the map to view details</p>
         </div>
 
         <!-- STAGE 2: PAGED DETAILS -->
         <div id="dashboard-orchid-detail-stage" hidden>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;background:#2d5a27;color:#fff;gap:.5rem;">
-            <button type="button" id="dashboard-detail-to-map-btn" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:4px;padding:.2rem .6rem;font-size:.76rem;cursor:pointer;white-space:nowrap;">← Map</button>
-            <h3 id="dashboard-orchid-detail-stage-name" class="scientific-name" style="margin:0;font-size:.9rem;font-weight:600;flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">–</h3>
+          <div class="orchid-detail-header-bar">
+            <button type="button" id="dashboard-detail-to-map-btn" class="orchid-detail-back-btn">← Map</button>
+            <h3 id="dashboard-orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">–</h3>
             <div style="display:flex;gap:.4rem;align-items:center;">
-              <button type="button" id="dashboard-add-instance-button" hidden style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:4px;padding:.2rem .55rem;font-size:.75rem;cursor:pointer;white-space:nowrap;">+ Add Instance</button>
-              <button type="button" id="dashboard-orchid-detail-close-btn" aria-label="Close" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;padding:.1rem .3rem;">✕</button>
+              <button type="button" id="dashboard-add-instance-button" hidden style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.78rem;cursor:pointer;white-space:nowrap;font-weight:600;">+ Add Instance</button>
+              <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
             </div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#f0f5ef;border-bottom:1px solid #d0e8cc;">
-            <span id="dashboard-orchid-step-label" style="font-size:.82rem;font-weight:600;color:#2d5a27;">Basic Taxonomic Information</span>
-            <span id="dashboard-orchid-step-count" style="font-size:.78rem;color:#666;white-space:nowrap;">1 / 7</span>
+          <div class="orchid-step-bar">
+            <span id="dashboard-orchid-step-label" class="orchid-step-label-text">Basic Taxonomic Information</span>
+            <span id="dashboard-orchid-step-count" class="orchid-step-badge">1 / 7</span>
           </div>
 
           <div style="overflow-y:auto;max-height:460px;">
@@ -458,10 +464,10 @@
 
           </div>
 
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border-top:1px solid #e0e0e0;background:#fafafa;gap:.75rem;">
-            <button type="button" id="dashboard-orchid-detail-prev-btn" hidden style="padding:.35rem .9rem;border-radius:4px;border:1px solid #2d5a27;color:#2d5a27;background:#fff;font-size:.82rem;cursor:pointer;">← Back</button>
-            <div id="dashboard-orchid-detail-step-dots" style="display:flex;align-items:center;gap:5px;flex:1;justify-content:center;"></div>
-            <button type="button" id="dashboard-orchid-detail-next-btn" style="padding:.35rem .9rem;border-radius:4px;border:1px solid #2d5a27;color:#fff;background:#2d5a27;font-size:.82rem;cursor:pointer;">Next →</button>
+          <div class="orchid-nav-bar">
+            <button type="button" id="dashboard-orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">← Back</button>
+            <div id="dashboard-orchid-detail-step-dots" style="display:flex;align-items:center;gap:7px;flex:1;justify-content:center;"></div>
+            <button type="button" id="dashboard-orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next →</button>
           </div>
         </div>
 
@@ -2635,8 +2641,8 @@
         dashboardOrchidBindDetailNav();
 
         // Fetch sighting data from Supabase
-        let sightingLat = 6.3048;
-        let sightingLng = 124.9200;
+        let sightingLat = 6.2333;
+        let sightingLng = 124.7000;
         if (orchid.name) {
           try {
             const client = window.bloomSupabase || window.supabase;

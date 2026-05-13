@@ -1141,13 +1141,159 @@ form {
   max-height: min(92vh, 920px);
   background: #ffffff;
   border-radius: 14px;
-  border: 2px solid #d7e5dc;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
-  padding: 1rem;
+  border: 2px solid #c8dfc4;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+  padding: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+
+/* Map-stage modal header */
+.orchid-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.3rem;
+  background: linear-gradient(135deg, #163313 0%, #2d5a27 100%);
+  color: #fff;
+  gap: .75rem;
+  flex-shrink: 0;
+}
+.orchid-modal-title-group { flex: 1; min-width: 0; }
+.orchid-modal-subtitle {
+  margin: 0 0 .25rem 0;
+  font-size: .67rem;
+  color: rgba(255,255,255,.55);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.orchid-modal-name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+  font-style: italic;
+}
+.orchid-modal-close-btn {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
+  color: #fff;
+  font-size: .95rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: .45rem .6rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.orchid-modal-close-btn:hover { background: rgba(255,255,255,.25); }
+.orchid-modal-hint {
+  margin: 0;
+  text-align: center;
+  font-size: .82rem;
+  color: #3a6635;
+  padding: .55rem 1rem;
+  background: #eef7ea;
+  border-top: 1px solid #c5dfc0;
+  font-weight: 600;
+  letter-spacing: .01em;
+  flex-shrink: 0;
+}
+
+/* Detail-stage header bar */
+.orchid-detail-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .8rem 1rem;
+  background: linear-gradient(135deg, #163313 0%, #2d5a27 100%);
+  color: #fff;
+  gap: .5rem;
+  flex-shrink: 0;
+}
+.orchid-detail-header-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: italic;
+}
+.orchid-detail-back-btn {
+  background: rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.3);
+  color: #fff;
+  border-radius: 6px;
+  padding: .35rem .8rem;
+  font-size: .8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.orchid-detail-back-btn:hover { background: rgba(255,255,255,.27); }
+
+/* Step / page label bar */
+.orchid-step-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .7rem 1.3rem;
+  background: #eef7ea;
+  border-bottom: 2px solid #c5dfc0;
+  flex-shrink: 0;
+}
+.orchid-step-label-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #163313;
+  letter-spacing: .01em;
+}
+.orchid-step-badge {
+  font-size: .76rem;
+  color: #2d5a27;
+  font-weight: 700;
+  background: #cfe9c7;
+  padding: .2rem .65rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: .04em;
+}
+
+/* Navigation bar */
+.orchid-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .8rem 1.3rem;
+  border-top: 2px solid #e2ede0;
+  background: #f5faf3;
+  gap: .75rem;
+  flex-shrink: 0;
+}
+.orchid-nav-btn {
+  padding: .55rem 1.4rem;
+  border-radius: 7px;
+  font-size: .92rem;
+  cursor: pointer;
+  font-weight: 700;
+  border: 2px solid #2d5a27;
+  transition: all .15s;
+  letter-spacing: .01em;
+}
+.orchid-nav-btn-outline { color: #2d5a27; background: #fff; }
+.orchid-nav-btn-outline:hover { background: #eef7ea; }
+.orchid-nav-btn-fill { color: #fff; background: #2d5a27; }
+.orchid-nav-btn-fill:hover { background: #245221; }
 
 .orchid-showcase-row {
   display: flex;
