@@ -721,6 +721,18 @@
       }
 
       async function openOrchidDetails(orchid) {
+        // Re-check viewer on each modal open to catch recent logins/logouts
+        const currentUserRaw = localStorage.getItem('bloomUser');
+        let currentViewer = null;
+        try {
+          currentViewer = currentUserRaw ? JSON.parse(currentUserRaw) : null;
+        } catch {
+          currentViewer = null;
+        }
+        const currentViewerRole = (currentViewer && currentViewer.role) ? String(currentViewer.role).trim().toLowerCase() : 'visitor';
+        const currentIsPublicVisitor = !currentViewer || currentViewerRole === 'visitor';
+        const currentIsResearcherViewer = currentViewerRole === 'researcher' || currentViewerRole === 'user';
+
         const scientificKey = normalizeScientificKey(orchid.name);
         const publicSighting = approvedSightingsByScientificName.get(scientificKey) || null;
 
@@ -739,9 +751,9 @@
         samplePhotoThree.src = showcaseSet[2];
 
         if (addInstanceButton) {
-          addInstanceButton.hidden = !isResearcherViewer;
+          addInstanceButton.hidden = !currentIsResearcherViewer;
           addInstanceButton.onclick = null;
-          if (isResearcherViewer) {
+          if (currentIsResearcherViewer) {
             addInstanceButton.onclick = function() {
               window.location.href = buildAddInstanceUrl(orchid, initialSource);
             };
@@ -751,13 +763,13 @@
         setContributorsView(false);
         resetDetailRows();
 
-        // Render details immediately (public or researcher view)
-        renderDetailsFromSource(initialSource, orchid, isPublicVisitor);
+        // Render details immediately (public or researcher view) using current viewer role
+        renderDetailsFromSource(initialSource, orchid, currentIsPublicVisitor);
         refreshSectionVisibility();
         orchidDetailModal.hidden = false;
 
         // For authenticated users, fetch DENR sighting in background and update UI when available
-        if (!isPublicVisitor) {
+        if (!currentIsPublicVisitor) {
           (async () => {
             try {
               const sciName = orchid.name || orchid.sci_name || '';

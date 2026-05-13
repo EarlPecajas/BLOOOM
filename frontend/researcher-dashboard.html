@@ -1171,10 +1171,16 @@
         dashboardUserLabel.textContent = isAdminRole ? 'DENR Dashboard' : 'Researcher Dashboard';
       }
 
-      if (roleProfileIcon && isResearcherRole) {
-        roleProfileIcon.src = './loo.png';
-        roleProfileIcon.alt = 'Researcher';
-        roleProfileIcon.classList.add('researcher-role-icon');
+      if (roleProfileIcon) {
+        if (isResearcherRole) {
+          roleProfileIcon.src = './loo.png';
+          roleProfileIcon.alt = 'Researcher';
+          roleProfileIcon.classList.add('researcher-role-icon');
+        } else if (isAdminRole) {
+          roleProfileIcon.src = './DENR Logo.svg';
+          roleProfileIcon.alt = 'DENR';
+          roleProfileIcon.classList.remove('researcher-role-icon');
+        }
       }
 
       if (researcherDataMenu) {
