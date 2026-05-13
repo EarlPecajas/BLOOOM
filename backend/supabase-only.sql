@@ -33,7 +33,9 @@ CREATE OR REPLACE VIEW public_approved_sightings AS
 SELECT
   s.sighting_id AS id,
   s.scientific_name,
+  s.genus,
   s.common_names,
+  s.local_names,
   s.identification_confidence,
   s.observation_type,
   s.observation_date,
