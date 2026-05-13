@@ -1137,8 +1137,8 @@ form {
 
 .orchid-detail-card {
   position: relative;
-  width: min(620px, 100%);
-  max-height: min(88vh, 820px);
+  width: min(860px, 100%);
+  max-height: min(92vh, 920px);
   background: #ffffff;
   border-radius: 14px;
   border: 2px solid #d7e5dc;

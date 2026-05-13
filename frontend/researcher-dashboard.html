@@ -355,7 +355,7 @@
             <h3 id="dashboard-orchid-map-name" class="scientific-name" style="margin:0;font-size:1rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">–</h3>
             <button type="button" id="dashboard-orchid-map-close-btn" aria-label="Close" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;padding:.1rem .3rem;">✕</button>
           </div>
-          <div id="dashboard-orchid-leaflet-map" style="height:380px;width:100%;"></div>
+          <div id="dashboard-orchid-leaflet-map" style="height:480px;width:100%;"></div>
           <p style="margin:0;text-align:center;font-size:.78rem;color:#666;padding:.45rem 1rem;background:#f5f5f5;border-top:1px solid #e0e0e0;">🌺 Click the orchid icon on the map to view details</p>
         </div>
 
@@ -374,7 +374,7 @@
             <span id="dashboard-orchid-step-count" style="font-size:.78rem;color:#666;white-space:nowrap;">1 / 7</span>
           </div>
 
-          <div style="overflow-y:auto;max-height:340px;">
+          <div style="overflow-y:auto;max-height:460px;">
 
             <div id="dashboard-orchid-detail-page-1" class="orchid-detail-page">
               <div class="orchid-detail-row" id="dashboard-row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="dashboard-detail-scientific-name" class="scientific-name">-</span></div>
@@ -2538,9 +2538,9 @@
 
       function dashboardOrchidInitMap(lat, lng) {
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
-        dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([lat, lng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors', maxZoom: 18
+        dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([lat, lng], 13);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles © Esri', maxZoom: 19
         }).addTo(dashboardOrchidLeafletMap);
         const icon = L.divIcon({
           html: '<div style="font-size:30px;line-height:1;cursor:pointer;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.45));">🌺</div>',
