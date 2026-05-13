@@ -371,7 +371,7 @@
             <button type="button" id="dashboard-detail-to-map-btn" class="orchid-detail-back-btn">← Map</button>
             <h3 id="dashboard-orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">–</h3>
             <div style="display:flex;gap:.4rem;align-items:center;">
-              <button type="button" id="dashboard-add-instance-button" hidden style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:.3rem .7rem;font-size:.78rem;cursor:pointer;white-space:nowrap;font-weight:600;">+ Add Instance</button>
+              <button type="button" id="dashboard-add-instance-button" hidden style="background:#2d5a27;border:2px solid #2d5a27;color:#fff;border-radius:6px;padding:.35rem .8rem;font-size:.8rem;cursor:pointer;white-space:nowrap;font-weight:700;transition:background .15s;" onmouseover="this.style.background='#245221'" onmouseout="this.style.background='#2d5a27'">+ Add Instance</button>
               <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
             </div>
           </div>
@@ -2544,7 +2544,7 @@
 
       function dashboardOrchidInitMap(lat, lng) {
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
-        dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([lat, lng], 13);
+        dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([lat, lng], 11);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles © Esri', maxZoom: 19
         }).addTo(dashboardOrchidLeafletMap);

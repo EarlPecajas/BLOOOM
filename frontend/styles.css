@@ -1155,19 +1155,19 @@ form {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.3rem;
-  background: linear-gradient(135deg, #163313 0%, #2d5a27 100%);
-  color: #fff;
+  background: #fff;
+  border-bottom: 2px solid #deeeda;
   gap: .75rem;
   flex-shrink: 0;
 }
 .orchid-modal-title-group { flex: 1; min-width: 0; }
 .orchid-modal-subtitle {
-  margin: 0 0 .25rem 0;
+  margin: 0 0 .2rem 0;
   font-size: .67rem;
-  color: rgba(255,255,255,.55);
+  color: #7aaa72;
   letter-spacing: .12em;
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 600;
 }
 .orchid-modal-name {
   margin: 0;
@@ -1178,11 +1178,12 @@ form {
   white-space: nowrap;
   line-height: 1.2;
   font-style: italic;
+  color: #163313;
 }
 .orchid-modal-close-btn {
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.22);
-  color: #fff;
+  background: #f2f4f2;
+  border: 1px solid #d0d9ce;
+  color: #3a4a38;
   font-size: .95rem;
   cursor: pointer;
   line-height: 1;
@@ -1191,7 +1192,7 @@ form {
   flex-shrink: 0;
   transition: background .15s;
 }
-.orchid-modal-close-btn:hover { background: rgba(255,255,255,.25); }
+.orchid-modal-close-btn:hover { background: #e2e8e1; }
 .orchid-modal-hint {
   margin: 0;
   text-align: center;
@@ -1210,15 +1211,15 @@ form {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: .8rem 1rem;
-  background: linear-gradient(135deg, #163313 0%, #2d5a27 100%);
-  color: #fff;
+  padding: .85rem 1rem;
+  background: #fff;
+  border-bottom: 2px solid #deeeda;
   gap: .5rem;
   flex-shrink: 0;
 }
 .orchid-detail-header-name {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
   flex: 1;
   text-align: center;
@@ -1226,21 +1227,22 @@ form {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-style: italic;
+  color: #163313;
 }
 .orchid-detail-back-btn {
-  background: rgba(255,255,255,.16);
-  border: 1px solid rgba(255,255,255,.3);
+  background: #2d5a27;
+  border: 2px solid #2d5a27;
   color: #fff;
   border-radius: 6px;
-  padding: .35rem .8rem;
-  font-size: .8rem;
+  padding: .38rem .85rem;
+  font-size: .82rem;
   cursor: pointer;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 700;
   flex-shrink: 0;
   transition: background .15s;
 }
-.orchid-detail-back-btn:hover { background: rgba(255,255,255,.27); }
+.orchid-detail-back-btn:hover { background: #245221; border-color: #245221; }
 
 /* Step / page label bar */
 .orchid-step-bar {
