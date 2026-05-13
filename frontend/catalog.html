@@ -225,6 +225,17 @@
       let currentSubmission = null;
       const bloomSupabase = window.bloomSupabase;
 
+      // Detect researcher login so catalog shows full details and Add Instance button.
+      let isCatalogResearcher = false;
+      try {
+        const raw = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
+        if (raw) {
+          const viewer = JSON.parse(raw);
+          const role = String(viewer?.role || '').trim().toLowerCase();
+          isCatalogResearcher = role === 'researcher' || role === 'user';
+        }
+      } catch {}
+
       // Public catalog stays visitor-only; role-specific catalogs live in the dashboards.
 
       function hasUsableValue(value) {
@@ -404,7 +415,7 @@
           params.set('commonName', String(commonName).trim());
         }
 
-        return `dashboard.html?${params.toString()}`;
+        return `researcher-dashboard.html?${params.toString()}`;
       }
 
       function formatSimplifiedConfidence(value) {
@@ -722,17 +733,38 @@
         samplePhotoThree.src = showcaseSet[2];
 
         if (addInstanceButton) {
-          addInstanceButton.hidden = true;
-          addInstanceButton.onclick = null;
+          if (isCatalogResearcher) {
+            const instanceUrl = buildAddInstanceUrl(orchid, initialSource);
+            addInstanceButton.hidden = false;
+            addInstanceButton.onclick = function() { window.location.href = instanceUrl; };
+          } else {
+            addInstanceButton.hidden = true;
+            addInstanceButton.onclick = null;
+          }
         }
 
         setContributorsView(false);
         resetDetailRows();
 
-        // Render only the public visitor view in this page.
-        renderDetailsFromSource(initialSource, orchid, true);
+        renderDetailsFromSource(initialSource, orchid, !isCatalogResearcher);
         refreshSectionVisibility();
         orchidDetailModal.hidden = false;
+
+        // For researchers, fetch full DENR sightings data and re-render with complete fields.
+        if (isCatalogResearcher && orchid.name) {
+          try {
+            const resp = await fetch(`/api/denr-sightings?name=${encodeURIComponent(orchid.name)}`);
+            if (resp.ok) {
+              const rows = await resp.json();
+              if (rows && rows.length > 0) {
+                renderDetailsFromSource(rows[0], orchid, false);
+                refreshSectionVisibility();
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to load DENR sightings for orchid detail:', e);
+          }
+        }
       }
 
       function closeOrchidDetails() {
