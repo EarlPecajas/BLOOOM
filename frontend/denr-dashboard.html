@@ -1278,12 +1278,6 @@
         document.title = isAdminRole ? 'DENR Dashboard - BLOOM' : 'Researcher Dashboard - BLOOM';
       }
 
-      let parsedActiveUser = {};
-      let activeRole = '';
-      let isAdminRole = false;
-      let isResearcherRole = false;
-      let authResolved = false;
-
       try {
         const initialUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
         if (initialUser) {
