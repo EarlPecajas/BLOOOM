@@ -361,9 +361,9 @@
         }
 
         return [
-          ...publicSighting.whole_plant_photo_path,
-          ...publicSighting.closeup_flower_photo_path,
-          ...publicSighting.habitat_photo_path
+          ...(Array.isArray(publicSighting.whole_plant_photo_path) ? publicSighting.whole_plant_photo_path : []),
+          ...(Array.isArray(publicSighting.closeup_flower_photo_path) ? publicSighting.closeup_flower_photo_path : []),
+          ...(Array.isArray(publicSighting.habitat_photo_path) ? publicSighting.habitat_photo_path : [])
         ].filter(Boolean);
       }
 
