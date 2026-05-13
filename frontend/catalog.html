@@ -12,6 +12,14 @@
     />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+      .detail-step-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ccc;transition:background .2s;}
+      .detail-step-dot.active{background:#2d5a27;}
+      .orchid-detail-page .orchid-detail-row{display:flex;justify-content:space-between;padding:.45rem 1rem;border-bottom:1px solid #f0f0f0;font-size:.85rem;gap:.5rem;}
+      .orchid-detail-page .orchid-detail-row[hidden]{display:none;}
+      .orchid-detail-label{color:#555;font-weight:500;flex-shrink:0;min-width:130px;}
+    </style>
     <script src="config.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js?v=3"></script>
@@ -67,131 +75,122 @@
     </main>
 
     <div class="orchid-detail-modal" id="orchid-detail-modal" hidden>
-      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="orchid-detail-title">
-        <div class="orchid-showcase-row">
-          <h3 class="orchid-showcase-name" id="orchid-showcase-name">Flower Name</h3>
-          <div class="orchid-sample-images" aria-label="Sample photos">
-            <img src="./catalogicon.png" alt="Sample orchid photo" class="orchid-sample-image" id="sample-photo-1" />
-            <img src="./catalogicon.png" alt="Sample orchid photo" class="orchid-sample-image" id="sample-photo-2" />
-            <img src="./catalogicon.png" alt="Sample orchid photo" class="orchid-sample-image" id="sample-photo-3" />
+      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="orchid-map-name">
+
+        <!-- STAGE 1: MAP -->
+        <div id="orchid-map-stage">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.1rem;background:#2d5a27;color:#fff;gap:.5rem;">
+            <h3 id="orchid-map-name" class="scientific-name" style="margin:0;font-size:1rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">–</h3>
+            <button type="button" id="orchid-map-close-btn" aria-label="Close" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;padding:.1rem .3rem;">✕</button>
           </div>
-          <div class="orchid-showcase-actions">
-            <a href="gallery.html" class="see-gallery-link" id="see-gallery-link">See Gallery</a>
-            <button type="button" class="add-instance-button" id="add-instance-button" hidden>Add Instance</button>
+          <div id="orchid-leaflet-map" style="height:380px;width:100%;"></div>
+          <p style="margin:0;text-align:center;font-size:.78rem;color:#666;padding:.45rem 1rem;background:#f5f5f5;border-top:1px solid #e0e0e0;">🌺 Click the orchid icon on the map to view details</p>
+        </div>
+
+        <!-- STAGE 2: PAGED DETAILS -->
+        <div id="orchid-detail-stage" hidden>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;background:#2d5a27;color:#fff;gap:.5rem;">
+            <button type="button" id="detail-to-map-btn" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:4px;padding:.2rem .6rem;font-size:.76rem;cursor:pointer;white-space:nowrap;">← Map</button>
+            <h3 id="orchid-detail-stage-name" class="scientific-name" style="margin:0;font-size:.9rem;font-weight:600;flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">–</h3>
+            <button type="button" id="orchid-detail-close-btn" aria-label="Close" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;line-height:1;padding:.1rem .3rem;">✕</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#f0f5ef;border-bottom:1px solid #d0e8cc;">
+            <span id="orchid-step-label" style="font-size:.82rem;font-weight:600;color:#2d5a27;">Basic Taxonomic Information</span>
+            <span id="orchid-step-count" style="font-size:.78rem;color:#666;white-space:nowrap;">1 / 7</span>
+          </div>
+
+          <div style="overflow-y:auto;max-height:340px;">
+
+            <div id="orchid-detail-page-1" class="orchid-detail-page">
+              <div class="orchid-detail-row" id="row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="detail-scientific-name" class="scientific-name">-</span></div>
+              <div class="orchid-detail-row" id="row-genus"><span class="orchid-detail-label">Genus</span><span id="detail-genus">-</span></div>
+              <div class="orchid-detail-row" id="row-common-name"><span class="orchid-detail-label">Common Name</span><span id="detail-common-name">-</span></div>
+              <div class="orchid-detail-row" id="row-endemicity"><span class="orchid-detail-label">Endemicity</span><span id="detail-endemicity">-</span></div>
+              <div class="orchid-detail-row" id="row-identification-status"><span class="orchid-detail-label">Identification</span><span id="detail-identification-status">-</span></div>
+              <div class="orchid-detail-row" id="row-identification-confidence"><span class="orchid-detail-label">Confidence Level</span><span id="detail-identification-confidence">-</span></div>
+            </div>
+
+            <div id="orchid-detail-page-2" class="orchid-detail-page" hidden>
+              <div class="orchid-detail-row" id="row-observation-summary"><span class="orchid-detail-label">Summary</span><span id="detail-observation-summary">-</span></div>
+              <div class="orchid-detail-row" id="row-observation-type"><span class="orchid-detail-label">Observation Type</span><span id="detail-observation-type">-</span></div>
+              <div class="orchid-detail-row" id="row-observation-month"><span class="orchid-detail-label">Observation Month</span><span id="detail-observation-month">-</span></div>
+              <div class="orchid-detail-row" id="row-observation-date"><span class="orchid-detail-label">Observation Date</span><span id="detail-observation-date">-</span></div>
+              <div class="orchid-detail-row" id="row-observation-time"><span class="orchid-detail-label">Observation Time</span><span id="detail-observation-time">-</span></div>
+              <div class="orchid-detail-row" id="row-collection-method"><span class="orchid-detail-label">Collection Method</span><span id="detail-collection-method">-</span></div>
+              <div class="orchid-detail-row" id="row-voucher"><span class="orchid-detail-label">Voucher Collected</span><span id="detail-voucher">-</span></div>
+            </div>
+
+            <div id="orchid-detail-page-3" class="orchid-detail-page" hidden>
+              <div class="orchid-detail-row" id="row-mountain"><span class="orchid-detail-label">Mountain</span><span id="detail-mountain">-</span></div>
+              <div class="orchid-detail-row" id="row-specific-site"><span class="orchid-detail-label">Specific Site / Zone</span><span id="detail-specific-site">-</span></div>
+              <div class="orchid-detail-row" id="row-latitude"><span class="orchid-detail-label">Latitude</span><span id="detail-latitude">-</span></div>
+              <div class="orchid-detail-row" id="row-longitude"><span class="orchid-detail-label">Longitude</span><span id="detail-longitude">-</span></div>
+              <div class="orchid-detail-row" id="row-elevation"><span class="orchid-detail-label">Elevation (m)</span><span id="detail-elevation">-</span></div>
+              <div class="orchid-detail-row" id="row-location-visibility"><span class="orchid-detail-label">Location Note</span><span id="detail-location-visibility">-</span></div>
+            </div>
+
+            <div id="orchid-detail-page-4" class="orchid-detail-page" hidden>
+              <div class="orchid-detail-row" id="row-habitat-type"><span class="orchid-detail-label">Habitat Type</span><span id="detail-habitat-type">-</span></div>
+              <div class="orchid-detail-row" id="row-microhabitat"><span class="orchid-detail-label">Microhabitat</span><span id="detail-microhabitat">-</span></div>
+              <div class="orchid-detail-row" id="row-growth-substrate"><span class="orchid-detail-label">Growth Substrate</span><span id="detail-growth-substrate">-</span></div>
+              <div class="orchid-detail-row" id="row-host-tree"><span class="orchid-detail-label">Host Tree Species</span><span id="detail-host-tree">-</span></div>
+              <div class="orchid-detail-row" id="row-canopy-cover"><span class="orchid-detail-label">Canopy Cover (%)</span><span id="detail-canopy-cover">-</span></div>
+              <div class="orchid-detail-row" id="row-light-exposure"><span class="orchid-detail-label">Light Exposure</span><span id="detail-light-exposure">-</span></div>
+              <div class="orchid-detail-row" id="row-soil-type"><span class="orchid-detail-label">Soil Type</span><span id="detail-soil-type">-</span></div>
+              <div class="orchid-detail-row" id="row-nearby-water"><span class="orchid-detail-label">Nearby Water Source</span><span id="detail-nearby-water">-</span></div>
+            </div>
+
+            <div id="orchid-detail-page-5" class="orchid-detail-page" hidden>
+              <div class="orchid-detail-row" id="row-plant-height"><span class="orchid-detail-label">Plant Height (cm)</span><span id="detail-plant-height">-</span></div>
+              <div class="orchid-detail-row" id="row-pseudobulb"><span class="orchid-detail-label">Pseudobulb Present</span><span id="detail-pseudobulb">-</span></div>
+              <div class="orchid-detail-row" id="row-stem-length"><span class="orchid-detail-label">Stem Length (cm)</span><span id="detail-stem-length">-</span></div>
+              <div class="orchid-detail-row" id="row-root-length"><span class="orchid-detail-label">Root Length (cm)</span><span id="detail-root-length">-</span></div>
+              <div class="orchid-detail-row" id="row-leaf-count"><span class="orchid-detail-label">Leaf Count</span><span id="detail-leaf-count">-</span></div>
+              <div class="orchid-detail-row" id="row-leaf-shape"><span class="orchid-detail-label">Leaf Shape</span><span id="detail-leaf-shape">-</span></div>
+              <div class="orchid-detail-row" id="row-leaf-textures"><span class="orchid-detail-label">Leaf Textures</span><span id="detail-leaf-textures">-</span></div>
+              <div class="orchid-detail-row" id="row-leaf-arrangement"><span class="orchid-detail-label">Leaf Arrangement</span><span id="detail-leaf-arrangement">-</span></div>
+              <div class="orchid-detail-row" id="row-flower-color"><span class="orchid-detail-label">Flower Color</span><span id="detail-flower-color">-</span></div>
+              <div class="orchid-detail-row" id="row-flower-count"><span class="orchid-detail-label">Flower Count</span><span id="detail-flower-count">-</span></div>
+              <div class="orchid-detail-row" id="row-flower-diameter"><span class="orchid-detail-label">Flower Size (cm)</span><span id="detail-flower-diameter">-</span></div>
+              <div class="orchid-detail-row" id="row-inflorescence-type"><span class="orchid-detail-label">Inflorescence Type</span><span id="detail-inflorescence-type">-</span></div>
+              <div class="orchid-detail-row" id="row-petal-characteristics"><span class="orchid-detail-label">Petal Characteristics</span><span id="detail-petal-characteristics">-</span></div>
+              <div class="orchid-detail-row" id="row-sepal-characteristics"><span class="orchid-detail-label">Sepal Characteristics</span><span id="detail-sepal-characteristics">-</span></div>
+              <div class="orchid-detail-row" id="row-labellum"><span class="orchid-detail-label">Labellum / Lip</span><span id="detail-labellum">-</span></div>
+              <div class="orchid-detail-row" id="row-fragrance"><span class="orchid-detail-label">Fragrance</span><span id="detail-fragrance">-</span></div>
+              <div class="orchid-detail-row" id="row-flowering-stage"><span class="orchid-detail-label">Flowering Stage</span><span id="detail-flowering-stage">-</span></div>
+              <div class="orchid-detail-row" id="row-flowering-season"><span class="orchid-detail-label">Flowering Season</span><span id="detail-flowering-season">-</span></div>
+              <div class="orchid-detail-row" id="row-fruit-present"><span class="orchid-detail-label">Fruit Present</span><span id="detail-fruit-present">-</span></div>
+              <div class="orchid-detail-row" id="row-fruit-type"><span class="orchid-detail-label">Fruit Type</span><span id="detail-fruit-type">-</span></div>
+              <div class="orchid-detail-row" id="row-seed-capsule"><span class="orchid-detail-label">Seed Capsule</span><span id="detail-seed-capsule">-</span></div>
+            </div>
+
+            <div id="orchid-detail-page-6" class="orchid-detail-page" hidden>
+              <div class="orchid-detail-row" id="row-life-stage"><span class="orchid-detail-label">Life Stage</span><span id="detail-life-stage">-</span></div>
+              <div class="orchid-detail-row" id="row-phenology"><span class="orchid-detail-label">Phenology</span><span id="detail-phenology">-</span></div>
+              <div class="orchid-detail-row" id="row-population-count"><span class="orchid-detail-label">Population Count</span><span id="detail-population-count">-</span></div>
+              <div class="orchid-detail-row" id="row-population-status"><span class="orchid-detail-label">Population Status</span><span id="detail-population-status">-</span></div>
+              <div class="orchid-detail-row" id="row-threat-level"><span class="orchid-detail-label">Threat Level</span><span id="detail-threat-level">-</span></div>
+              <div class="orchid-detail-row" id="row-threat-types"><span class="orchid-detail-label">Threat Types</span><span id="detail-threat-types">-</span></div>
+              <div class="orchid-detail-row" id="row-institution"><span class="orchid-detail-label">Institution</span><span id="detail-institution">-</span></div>
+            </div>
+
+            <div id="orchid-detail-page-7" class="orchid-detail-page" hidden>
+              <div class="orchid-detail-row" id="row-ethnobotanical"><span class="orchid-detail-label">Ethnobotanical Info</span><span id="detail-ethnobotanical">-</span></div>
+              <div class="orchid-detail-row" id="row-cultural"><span class="orchid-detail-label">Educational Notes</span><span id="detail-cultural">-</span></div>
+              <div class="orchid-detail-row" id="row-researcher"><span class="orchid-detail-label">Researcher</span><span id="detail-researcher">-</span></div>
+              <div class="orchid-detail-row" id="row-team-members"><span class="orchid-detail-label">Team Members</span><span id="detail-team-members">-</span></div>
+            </div>
+
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;border-top:1px solid #e0e0e0;background:#fafafa;gap:.75rem;">
+            <button type="button" id="orchid-detail-prev-btn" hidden style="padding:.35rem .9rem;border-radius:4px;border:1px solid #2d5a27;color:#2d5a27;background:#fff;font-size:.82rem;cursor:pointer;">← Back</button>
+            <div id="orchid-detail-step-dots" style="display:flex;align-items:center;gap:5px;flex:1;justify-content:center;"></div>
+            <button type="button" id="orchid-detail-next-btn" style="padding:.35rem .9rem;border-radius:4px;border:1px solid #2d5a27;color:#fff;background:#2d5a27;font-size:.82rem;cursor:pointer;">Next →</button>
           </div>
         </div>
 
-        <div class="orchid-detail-header">
-          <h2 class="orchid-detail-title" id="orchid-detail-title">INFORMATION</h2>
-          <button type="button" class="contributors-toggle" id="contributors-toggle" aria-expanded="false" style="color: white !important;">CONTRIBUTORS</button>
-        </div>
-        <div class="contributors-panel" id="contributors-panel" hidden>
-          <div class="contributor-item">
-            <p class="contributor-name">Aljohn Jay L. Saavedra</p>
-            <p class="contributor-date">Contributed: March 14, 2024</p>
-          </div>
-          <div class="contributor-item">
-            <p class="contributor-name">Kier Mitchel E. Pitogo</p>
-            <p class="contributor-date">Contributed: October 22, 2024</p>
-          </div>
-        </div>
-        <div class="orchid-detail-grid" id="orchid-detail-grid">
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Basic Taxonomic Information</h4>
-            <div class="orchid-detail-row" id="row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="detail-scientific-name" class="scientific-name">-</span></div>
-            <div class="orchid-detail-row" id="row-genus"><span class="orchid-detail-label">Genus</span><span id="detail-genus">-</span></div>
-            <div class="orchid-detail-row" id="row-common-name"><span class="orchid-detail-label">Common Name</span><span id="detail-common-name">-</span></div>
-            <div class="orchid-detail-row" id="row-endemicity"><span class="orchid-detail-label">Endemicity</span><span id="detail-endemicity">-</span></div>
-            <div class="orchid-detail-row" id="row-identification-status"><span class="orchid-detail-label">Identification Confidence</span><span id="detail-identification-status">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Observation / Collection Details</h4>
-            <div class="orchid-detail-row" id="row-observation-summary"><span class="orchid-detail-label">Observation Summary</span><span id="detail-observation-summary">-</span></div>
-            <div class="orchid-detail-row" id="row-observation-type"><span class="orchid-detail-label">Observation Type</span><span id="detail-observation-type">-</span></div>
-            <div class="orchid-detail-row" id="row-observation-month"><span class="orchid-detail-label">Observation Month</span><span id="detail-observation-month">-</span></div>
-            <div class="orchid-detail-row" id="row-observation-date"><span class="orchid-detail-label">Observation Date</span><span id="detail-observation-date">-</span></div>
-            <div class="orchid-detail-row" id="row-observation-time"><span class="orchid-detail-label">Observation Time</span><span id="detail-observation-time">-</span></div>
-            <div class="orchid-detail-row" id="row-collection-method"><span class="orchid-detail-label">Collection Method</span><span id="detail-collection-method">-</span></div>
-            <div class="orchid-detail-row" id="row-voucher"><span class="orchid-detail-label">Voucher Collected</span><span id="detail-voucher">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Geographical / Location Data</h4>
-            <div class="orchid-detail-row" id="row-mountain"><span class="orchid-detail-label">Mountain</span><span id="detail-mountain">-</span></div>
-            <div class="orchid-detail-row" id="row-specific-site"><span class="orchid-detail-label">Specific Site / Zone</span><span id="detail-specific-site">-</span></div>
-            <div class="orchid-detail-row" id="row-latitude"><span class="orchid-detail-label">Latitude</span><span id="detail-latitude">-</span></div>
-            <div class="orchid-detail-row" id="row-longitude"><span class="orchid-detail-label">Longitude</span><span id="detail-longitude">-</span></div>
-            <div class="orchid-detail-row" id="row-elevation"><span class="orchid-detail-label">Elevation (m)</span><span id="detail-elevation">-</span></div>
-            <div class="orchid-detail-row" id="row-location-visibility"><span class="orchid-detail-label">Location</span><span id="detail-location-visibility">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Habitat Information</h4>
-            <div class="orchid-detail-row" id="row-habitat-type"><span class="orchid-detail-label">Habitat Type</span><span id="detail-habitat-type">-</span></div>
-            <div class="orchid-detail-row" id="row-microhabitat"><span class="orchid-detail-label">Microhabitat</span><span id="detail-microhabitat">-</span></div>
-            <div class="orchid-detail-row" id="row-flower-color"><span class="orchid-detail-label">Flower Color</span><span id="detail-flower-color">-</span></div>
-            <div class="orchid-detail-row" id="row-flowering-stage"><span class="orchid-detail-label">Flowering Stage</span><span id="detail-flowering-stage">-</span></div>
-            <div class="orchid-detail-row" id="row-growth-substrate"><span class="orchid-detail-label">Growth Substrate</span><span id="detail-growth-substrate">-</span></div>
-            <div class="orchid-detail-row" id="row-host-tree"><span class="orchid-detail-label">Host Tree Species</span><span id="detail-host-tree">-</span></div>
-            <div class="orchid-detail-row" id="row-canopy-cover"><span class="orchid-detail-label">Canopy Cover (%)</span><span id="detail-canopy-cover">-</span></div>
-            <div class="orchid-detail-row" id="row-light-exposure"><span class="orchid-detail-label">Light Exposure</span><span id="detail-light-exposure">-</span></div>
-            <div class="orchid-detail-row" id="row-soil-type"><span class="orchid-detail-label">Soil Type</span><span id="detail-soil-type">-</span></div>
-            <div class="orchid-detail-row" id="row-nearby-water"><span class="orchid-detail-label">Nearby Water Source</span><span id="detail-nearby-water">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Morphological Characteristics</h4>
-            <div class="orchid-detail-row" id="row-plant-height"><span class="orchid-detail-label">Plant Height (cm)</span><span id="detail-plant-height">-</span></div>
-            <div class="orchid-detail-row" id="row-pseudobulb"><span class="orchid-detail-label">Pseudobulb Present</span><span id="detail-pseudobulb">-</span></div>
-            <div class="orchid-detail-row" id="row-stem-length"><span class="orchid-detail-label">Stem Length (cm)</span><span id="detail-stem-length">-</span></div>
-            <div class="orchid-detail-row" id="row-root-length"><span class="orchid-detail-label">Root Length (cm)</span><span id="detail-root-length">-</span></div>
-            <div class="orchid-detail-row" id="row-leaf-count"><span class="orchid-detail-label">Leaf Count</span><span id="detail-leaf-count">-</span></div>
-            <div class="orchid-detail-row" id="row-leaf-shape"><span class="orchid-detail-label">Leaf Shape</span><span id="detail-leaf-shape">-</span></div>
-            <div class="orchid-detail-row" id="row-leaf-textures"><span class="orchid-detail-label">Leaf Textures</span><span id="detail-leaf-textures">-</span></div>
-            <div class="orchid-detail-row" id="row-leaf-arrangement"><span class="orchid-detail-label">Leaf Arrangement</span><span id="detail-leaf-arrangement">-</span></div>
-            <div class="orchid-detail-row" id="row-flower-count"><span class="orchid-detail-label">Flower Count</span><span id="detail-flower-count">-</span></div>
-            <div class="orchid-detail-row" id="row-flower-diameter"><span class="orchid-detail-label">Flower Size (cm)</span><span id="detail-flower-diameter">-</span></div>
-            <div class="orchid-detail-row" id="row-inflorescence-type"><span class="orchid-detail-label">Inflorescence Type</span><span id="detail-inflorescence-type">-</span></div>
-            <div class="orchid-detail-row" id="row-petal-characteristics"><span class="orchid-detail-label">Petal Characteristics</span><span id="detail-petal-characteristics">-</span></div>
-            <div class="orchid-detail-row" id="row-sepal-characteristics"><span class="orchid-detail-label">Sepal Characteristics</span><span id="detail-sepal-characteristics">-</span></div>
-            <div class="orchid-detail-row" id="row-labellum"><span class="orchid-detail-label">Labellum / Lip</span><span id="detail-labellum">-</span></div>
-            <div class="orchid-detail-row" id="row-fragrance"><span class="orchid-detail-label">Fragrance</span><span id="detail-fragrance">-</span></div>
-            <div class="orchid-detail-row" id="row-flowering-season"><span class="orchid-detail-label">Flowering Season</span><span id="detail-flowering-season">-</span></div>
-            <div class="orchid-detail-row" id="row-fruit-present"><span class="orchid-detail-label">Fruit Present</span><span id="detail-fruit-present">-</span></div>
-            <div class="orchid-detail-row" id="row-fruit-type"><span class="orchid-detail-label">Fruit Type</span><span id="detail-fruit-type">-</span></div>
-            <div class="orchid-detail-row" id="row-seed-capsule"><span class="orchid-detail-label">Seed Capsule Condition</span><span id="detail-seed-capsule">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Conservation & Threat Data</h4>
-            <div class="orchid-detail-row" id="row-life-stage"><span class="orchid-detail-label">Life Stage</span><span id="detail-life-stage">-</span></div>
-            <div class="orchid-detail-row" id="row-phenology"><span class="orchid-detail-label">Phenology</span><span id="detail-phenology">-</span></div>
-            <div class="orchid-detail-row" id="row-population-count"><span class="orchid-detail-label">Population Count</span><span id="detail-population-count">-</span></div>
-            <div class="orchid-detail-row" id="row-population-status"><span class="orchid-detail-label">Population Status</span><span id="detail-population-status">-</span></div>
-            <div class="orchid-detail-row" id="row-threat-level"><span class="orchid-detail-label">Threat Level</span><span id="detail-threat-level">-</span></div>
-            <div class="orchid-detail-row" id="row-threat-types"><span class="orchid-detail-label">Threat Types</span><span id="detail-threat-types">-</span></div>
-            <div class="orchid-detail-row" id="row-institution"><span class="orchid-detail-label">Institution</span><span id="detail-institution">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Notes</h4>
-            <div class="orchid-detail-row" id="row-ethnobotanical"><span class="orchid-detail-label">Ethnobotanical / Cultural Info</span><span id="detail-ethnobotanical">-</span></div>
-            <div class="orchid-detail-row" id="row-cultural"><span class="orchid-detail-label">Educational Notes</span><span id="detail-cultural">-</span></div>
-          </section>
-
-          <section class="orchid-detail-section">
-            <h4 class="orchid-detail-section-title">Researchers</h4>
-            <div class="orchid-detail-row" id="row-researcher"><span class="orchid-detail-label">Researcher</span><span id="detail-researcher">-</span></div>
-            <div class="orchid-detail-row" id="row-team-members"><span class="orchid-detail-label">Team Members</span><span id="detail-team-members">-</span></div>
-            <div class="orchid-detail-row" id="row-identification-confidence"><span class="orchid-detail-label">Identification Confidence</span><span id="detail-identification-confidence">-</span></div>
-          </section>
-        </div>
       </div>
-    </div>
-
-    <div class="image-lightbox" id="catalog-image-lightbox" hidden>
-      <img src="" alt="Full orchid view" id="catalog-lightbox-image" class="image-lightbox-photo" />
     </div>
 
     <script>
@@ -200,23 +199,22 @@
       const searchFilter = document.getElementById('search-filter');
       const catalogViewToggle = document.getElementById('catalog-view-toggle');
       const catalogViewIcon = document.getElementById('catalog-view-icon');
-      const catalogBrandLink = document.getElementById('catalog-brand-link');
-      const catalogAuthActions = document.querySelector('.auth-actions');
       const orchidDetailModal = document.getElementById('orchid-detail-modal');
-      const orchidDetailTitle = document.getElementById('orchid-detail-title');
-      const orchidDetailGrid = document.getElementById('orchid-detail-grid');
-      const contributorsToggle = document.getElementById('contributors-toggle');
-      const contributorsPanel = document.getElementById('contributors-panel');
-      const orchidShowcaseName = document.getElementById('orchid-showcase-name');
-      const seeGalleryLink = document.getElementById('see-gallery-link');
-      const addInstanceButton = document.getElementById('add-instance-button');
-      const samplePhotoOne = document.getElementById('sample-photo-1');
-      const samplePhotoTwo = document.getElementById('sample-photo-2');
-      const samplePhotoThree = document.getElementById('sample-photo-3');
-      const catalogImageLightbox = document.getElementById('catalog-image-lightbox');
-      const catalogLightboxImage = document.getElementById('catalog-lightbox-image');
       const catalogImage = encodeURI('./catalogicon.png');
-      const showcaseImages = ['./orchid1.webp', './orchid2.jpg', './orchid3.webp'];
+
+      // Map + paging state
+      let orchidLeafletMap = null;
+      let orchidDetailPage = 1;
+      const ORCHID_DETAIL_PAGES = 7;
+      const ORCHID_PAGE_LABELS = [
+        'Basic Taxonomic Information',
+        'Observation / Collection Details',
+        'Geographical / Location Data',
+        'Habitat Information',
+        'Morphological Characteristics',
+        'Conservation & Threat Data',
+        'Notes and Remarks'
+      ];
       const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n              </svg>';
       const LIST_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="5" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="11" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="17" width="18" height="2" fill="currentColor" rx="1" />\n              </svg>';
       let orchids = [];
@@ -450,21 +448,70 @@
         return String(value);
       }
 
-      function refreshSectionVisibility() {
-        document.querySelectorAll('.orchid-detail-section').forEach((sectionEl) => {
-          const rows = sectionEl.querySelectorAll('.orchid-detail-row');
-          const hasVisibleRow = Array.from(rows).some((row) => !row.hidden);
-          sectionEl.hidden = !hasVisibleRow;
+      function orchidGoToDetailPage(n) {
+        orchidDetailPage = n;
+        for (let i = 1; i <= ORCHID_DETAIL_PAGES; i++) {
+          const p = document.getElementById('orchid-detail-page-' + i);
+          if (p) p.hidden = (i !== n);
+        }
+        const labelEl = document.getElementById('orchid-step-label');
+        const countEl = document.getElementById('orchid-step-count');
+        if (labelEl) labelEl.textContent = ORCHID_PAGE_LABELS[n - 1] || '';
+        if (countEl) countEl.textContent = n + ' / ' + ORCHID_DETAIL_PAGES;
+        const prevBtn = document.getElementById('orchid-detail-prev-btn');
+        const nextBtn = document.getElementById('orchid-detail-next-btn');
+        if (prevBtn) prevBtn.hidden = (n === 1);
+        if (nextBtn) nextBtn.textContent = n === ORCHID_DETAIL_PAGES ? '✓ Done' : 'Next →';
+        const dotsEl = document.getElementById('orchid-detail-step-dots');
+        if (dotsEl) {
+          dotsEl.innerHTML = Array.from({length: ORCHID_DETAIL_PAGES}, (_, i) =>
+            '<span class="detail-step-dot' + (i + 1 === n ? ' active' : '') + '"></span>'
+          ).join('');
+        }
+        // Show "no data" if page is empty
+        const pageEl = document.getElementById('orchid-detail-page-' + n);
+        if (pageEl) {
+          const visible = pageEl.querySelectorAll('.orchid-detail-row:not([hidden])').length;
+          let msg = pageEl.querySelector('.detail-empty-msg');
+          if (visible === 0) {
+            if (!msg) {
+              msg = document.createElement('p');
+              msg.className = 'detail-empty-msg';
+              msg.style.cssText = 'text-align:center;color:#888;font-style:italic;padding:2rem 1rem;font-size:.85rem;';
+              msg.textContent = 'No data available for this section.';
+              pageEl.appendChild(msg);
+            }
+            msg.hidden = false;
+          } else if (msg) {
+            msg.hidden = true;
+          }
+        }
+      }
+
+      function orchidInitMap(lat, lng) {
+        if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
+        orchidLeafletMap = L.map('orchid-leaflet-map').setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors', maxZoom: 18
+        }).addTo(orchidLeafletMap);
+        const icon = L.divIcon({
+          html: '<div style="font-size:30px;line-height:1;cursor:pointer;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.45));">🌺</div>',
+          className: '', iconSize: [32, 32], iconAnchor: [16, 16]
+        });
+        const marker = L.marker([lat, lng], {icon}).addTo(orchidLeafletMap);
+        marker.bindTooltip('Click to view details', {permanent: false, direction: 'top'});
+        marker.on('click', function() {
+          document.getElementById('orchid-map-stage').hidden = true;
+          document.getElementById('orchid-detail-stage').hidden = false;
+          orchidGoToDetailPage(1);
         });
       }
 
       function resetDetailRows() {
-        document.querySelectorAll('.orchid-detail-row').forEach((rowEl) => {
+        document.querySelectorAll('.orchid-detail-page .orchid-detail-row').forEach((rowEl) => {
           rowEl.hidden = true;
           const valueEl = rowEl.querySelector('[id^="detail-"]');
-          if (valueEl) {
-            valueEl.textContent = '';
-          }
+          if (valueEl) valueEl.textContent = '';
         });
       }
 
@@ -485,86 +532,7 @@
         }
       }
 
-      function setContributorsView(showContributors) {
-        contributorsPanel.hidden = !showContributors;
-        orchidDetailGrid.hidden = showContributors;
-        orchidDetailGrid.style.display = showContributors ? 'none' : 'grid';
-        orchidDetailTitle.textContent = showContributors ? 'CONTRIBUTORS' : 'INFORMATION';
-        contributorsToggle.setAttribute('aria-expanded', String(showContributors));
-      }
-
-      function populateContributorsPanel(submission) {
-        if (!submission) {
-          contributorsPanel.innerHTML = '<p class="text-muted">No contributor information available.</p>';
-          return;
-        }
-        // Build a team-style contributors block with date and roles.
-        const dateStr = submission.observation_date
-          ? (function(d) {
-              try {
-                const dt = new Date(d);
-                return dt.toLocaleString(undefined, { month: 'short', day: 'numeric' });
-              } catch (e) { return String(d); }
-            })(submission.observation_date)
-          : null;
-
-        const teamLabel = hasUsableValue(submission.institution) ? String(submission.institution).trim() : 'Sighting Team';
-
-        // Parse team_members which might be JSON array of strings or objects
-        const rawTeam = parseJsonArrayValue(submission.team_members) || [];
-        const teamMembers = rawTeam.map((m) => {
-          if (!m) return null;
-          if (typeof m === 'object') {
-            return { name: String(m.name || m.fullName || '').trim(), role: String(m.role || m.title || 'Researcher').trim() };
-          }
-          // string entry -> name only
-          return { name: String(m).trim(), role: 'Researcher' };
-        }).filter(Boolean);
-
-        const leadName = hasUsableValue(submission.researcher_name) ? String(submission.researcher_name).trim() : null;
-
-        // Avoid duplicates: remove lead from members list if present
-        const filteredMembers = teamMembers.filter((m) => !(leadName && m.name === leadName));
-
-        // Compose HTML
-        let out = '';
-        out += `<div class="contributors-team-header">${dateStr ? dateStr + ' ' : ''}${escapeHtml(teamLabel)}</div>`;
-
-        if (leadName) {
-          out += `
-            <div class="contributor-item">
-              <p class="contributor-name">${escapeHtml(leadName)}</p>
-              <p class="contributor-date">Team Lead</p>
-            </div>`;
-        }
-
-        filteredMembers.forEach((m) => {
-          out += `
-            <div class="contributor-item">
-              <p class="contributor-name">${escapeHtml(m.name)}</p>
-              <p class="contributor-date">${escapeHtml(m.role)}</p>
-            </div>`;
-        });
-
-        if (!leadName && filteredMembers.length === 0) {
-          contributorsPanel.innerHTML = '<p class="text-muted">No contributor information available.</p>';
-          return;
-        }
-
-        contributorsPanel.innerHTML = out;
-      }
-
-      function openCatalogLightbox(imageSrc) {
-        catalogLightboxImage.src = imageSrc;
-        catalogImageLightbox.hidden = false;
-      }
-
-      function closeCatalogLightbox() {
-        catalogLightboxImage.src = '';
-        catalogImageLightbox.hidden = true;
-      }
-
-      // Helper: render detail rows and contributors from a source object
+      // Helper: render detail rows from a source object
       function renderDetailsFromSource(source, orchid, forPublicVisitor) {
         const src = source || {};
 
@@ -703,44 +671,67 @@
         }
       }
 
+      function orchidBindDetailNav() {
+        const prevBtn = document.getElementById('orchid-detail-prev-btn');
+        const nextBtn = document.getElementById('orchid-detail-next-btn');
+        const toMapBtn = document.getElementById('detail-to-map-btn');
+        const mapCloseBtn = document.getElementById('orchid-map-close-btn');
+        const detailCloseBtn = document.getElementById('orchid-detail-close-btn');
+        if (prevBtn && !prevBtn._bound) {
+          prevBtn._bound = true;
+          prevBtn.addEventListener('click', function() { if (orchidDetailPage > 1) orchidGoToDetailPage(orchidDetailPage - 1); });
+        }
+        if (nextBtn && !nextBtn._bound) {
+          nextBtn._bound = true;
+          nextBtn.addEventListener('click', function() {
+            if (orchidDetailPage < ORCHID_DETAIL_PAGES) orchidGoToDetailPage(orchidDetailPage + 1);
+            else closeOrchidDetails();
+          });
+        }
+        if (toMapBtn && !toMapBtn._bound) {
+          toMapBtn._bound = true;
+          toMapBtn.addEventListener('click', function() {
+            document.getElementById('orchid-map-stage').hidden = false;
+            document.getElementById('orchid-detail-stage').hidden = true;
+            if (orchidLeafletMap) setTimeout(() => orchidLeafletMap.invalidateSize(), 60);
+          });
+        }
+        if (mapCloseBtn && !mapCloseBtn._bound) { mapCloseBtn._bound = true; mapCloseBtn.addEventListener('click', closeOrchidDetails); }
+        if (detailCloseBtn && !detailCloseBtn._bound) { detailCloseBtn._bound = true; detailCloseBtn.addEventListener('click', closeOrchidDetails); }
+      }
+
       async function openOrchidDetails(orchid) {
         const scientificKey = normalizeScientificKey(orchid.name);
         const publicSighting = approvedSightingsByScientificName.get(scientificKey) || null;
+        const src = publicSighting || {};
+        const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
 
-        // Immediately render UI using public sighting or orchid data so modal opens fast
-        const initialSource = publicSighting || orchid;
-        const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Flower';
-        const initialImages = getPublicSightingImages(initialSource);
-        const showcaseSet = initialImages.length
-          ? [initialImages[0], initialImages[1] || initialImages[0], initialImages[2] || initialImages[0]]
-          : showcaseImages;
+        // Set orchid name in both stages
+        const mapNameEl = document.getElementById('orchid-map-name');
+        const stageNameEl = document.getElementById('orchid-detail-stage-name');
+        if (mapNameEl) mapNameEl.textContent = orchidName;
+        if (stageNameEl) stageNameEl.textContent = orchidName;
 
-        orchidShowcaseName.textContent = orchidName;
-        seeGalleryLink.href = `gallery.html?name=${encodeURIComponent(orchidName)}`;
-        samplePhotoOne.src = showcaseSet[0];
-        samplePhotoTwo.src = showcaseSet[1];
-        samplePhotoThree.src = showcaseSet[2];
-
-        if (addInstanceButton) {
-          addInstanceButton.hidden = true;
-          addInstanceButton.onclick = null;
-        }
-
-        setContributorsView(false);
+        // Populate all detail rows
         resetDetailRows();
+        renderDetailsFromSource(src, orchid, true);
 
-        // Render only the public visitor view in this page.
-        renderDetailsFromSource(initialSource, orchid, true);
-        refreshSectionVisibility();
+        // Show modal → map stage first
         orchidDetailModal.hidden = false;
+        document.getElementById('orchid-map-stage').hidden = false;
+        document.getElementById('orchid-detail-stage').hidden = true;
+        orchidBindDetailNav();
+
+        // Get coordinates from sighting or default to Mt. Busa centre
+        const lat = (src && src.latitude != null) ? Number(src.latitude) : 6.3048;
+        const lng = (src && src.longitude != null) ? Number(src.longitude) : 124.9200;
+
+        setTimeout(() => orchidInitMap(lat, lng), 60);
       }
 
       function closeOrchidDetails() {
-        orchidShowcaseName.textContent = 'Flower Name';
-        seeGalleryLink.href = 'gallery.html';
-        setContributorsView(false);
-        closeCatalogLightbox();
         orchidDetailModal.hidden = true;
+        if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
       }
 
       function normalizeOrchidRow(row) {
@@ -948,26 +939,6 @@
         });
       }
 
-      if (contributorsToggle) {
-        contributorsToggle.addEventListener('click', function() {
-          const shouldShowContributors = contributorsPanel.hidden;
-          if (shouldShowContributors) {
-            populateContributorsPanel(currentSubmission);
-          }
-          setContributorsView(shouldShowContributors);
-        });
-      }
-
-      [samplePhotoOne, samplePhotoTwo, samplePhotoThree].filter(Boolean).forEach(function(photoEl) {
-        photoEl.addEventListener('click', function() {
-          openCatalogLightbox(photoEl.src);
-        });
-      });
-
-      if (catalogImageLightbox) {
-        catalogImageLightbox.addEventListener('click', closeCatalogLightbox);
-      }
-
       if (orchidDetailModal) {
         orchidDetailModal.addEventListener('click', function(e) {
           if (e.target === orchidDetailModal) {
@@ -977,11 +948,6 @@
       }
 
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !catalogImageLightbox.hidden) {
-          closeCatalogLightbox();
-          return;
-        }
-
         if (e.key === 'Escape' && !orchidDetailModal.hidden) {
           closeOrchidDetails();
         }
@@ -997,6 +963,7 @@
         });
       })();
     </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
