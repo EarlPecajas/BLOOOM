@@ -124,7 +124,7 @@
               last_name: user.user_metadata?.last_name || lastName
             }));
             // Redirect to appropriate dashboard based on role
-            const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : (role === 'researcher' || role === 'user') ? 'researcher-dashboard.html' : 'catalog.html';
+            const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : (role === 'researcher' || role === 'user') ? 'researcher-dashboard.html' : 'catalog.html?split=1';
             window.location.href = targetDashboard;
             return;
           }

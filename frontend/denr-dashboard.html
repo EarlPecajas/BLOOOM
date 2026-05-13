@@ -1317,7 +1317,7 @@
         const effectiveView = (isResearcherRole && ['conservation', 'report'].includes(normalizedView)) ? 'orchids' : normalizedView;
 
         if (isResearcherRole && effectiveView === 'orchids') {
-          window.location.href = 'catalog.html';
+          window.location.href = 'catalog.html?split=1';
           return;
         }
 
@@ -1405,7 +1405,7 @@
       document.title = isAdminRole ? 'DENR Dashboard - BLOOM' : 'Researcher Dashboard - BLOOM';
 
       if (authResolved && !isAdminRole && !isResearcherRole) {
-        window.location.href = 'catalog.html';
+        window.location.href = 'catalog.html?split=1';
       }
 
       const dashboardBrandLink = document.getElementById('dashboard-brand-link');
@@ -4120,7 +4120,7 @@
         }
 
         if (isResearcherRole && viewName === 'orchids') {
-          window.location.href = 'catalog.html';
+          window.location.href = 'catalog.html?split=1';
           return;
         }
 
