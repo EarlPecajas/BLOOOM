@@ -12,7 +12,7 @@
     />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="styles.css?v=2" />
-    <script src="config.js?v=2"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-client.js?v=2"></script><script src="dashboard-shared.js?v=3"></script><script>const USER_ROLE_REQUIRED = "researcher";</script>
+    <script src="config.js?v=3"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-client.js?v=3"></script><script src="dashboard-shared.js?v=4"></script><script>const USER_ROLE_REQUIRED = "researcher";</script>
     <script>
       // Ensure a safe global helper is available before any inline onclick handlers
       window.openDashboardView = function(viewName) {
@@ -1052,6 +1052,30 @@
           return;
         }
 
+        // Update UI elements that depend on role
+        const dashboardUserLabel = document.querySelector('.dashboard-user');
+        if (dashboardUserLabel) {
+          dashboardUserLabel.textContent = isAdminRole ? 'DENR Dashboard' : 'Researcher Dashboard';
+        }
+
+        const roleProfileIcon = document.getElementById('role-profile-icon');
+        if (roleProfileIcon) {
+          if (isResearcherRole) {
+            roleProfileIcon.src = './logo.png';
+            roleProfileIcon.alt = 'Researcher';
+            roleProfileIcon.classList.add('researcher-role-icon');
+          } else if (isAdminRole) {
+            roleProfileIcon.src = './DENR Logo.svg';
+            roleProfileIcon.alt = 'DENR';
+            roleProfileIcon.classList.remove('researcher-role-icon');
+          }
+        }
+
+        const researcherDataMenu = document.getElementById('researcher-data-menu');
+        if (researcherDataMenu) {
+          researcherDataMenu.hidden = !isResearcherRole;
+        }
+
         document.body.style.visibility = 'visible';
         document.body.classList.remove('researcher-mode', 'admin-mode');
         document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
@@ -1166,26 +1190,6 @@
       dashboardBrandLink.setAttribute('aria-disabled', 'true');
       dashboardBrandLink.style.pointerEvents = 'none';
       dashboardBrandLink.style.cursor = 'default';
-
-      if (dashboardUserLabel) {
-        dashboardUserLabel.textContent = isAdminRole ? 'DENR Dashboard' : 'Researcher Dashboard';
-      }
-
-      if (roleProfileIcon) {
-        if (isResearcherRole) {
-          roleProfileIcon.src = './logo.png';
-          roleProfileIcon.alt = 'Researcher';
-          roleProfileIcon.classList.add('researcher-role-icon');
-        } else if (isAdminRole) {
-          roleProfileIcon.src = './DENR Logo.svg';
-          roleProfileIcon.alt = 'DENR';
-          roleProfileIcon.classList.remove('researcher-role-icon');
-        }
-      }
-
-      if (researcherDataMenu) {
-        researcherDataMenu.hidden = !isResearcherRole;
-      }
 
       if (isResearcherRole) {
         const initialSubmissionsAdminPanel = document.getElementById('submissions-admin-panel');
