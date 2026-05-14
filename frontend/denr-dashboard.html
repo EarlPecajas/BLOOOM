@@ -810,10 +810,66 @@
     </div>
 
     <!-- Map View -->
-    <div id="map-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <h1 class="catalog-title">Trail - Mt. Busa</h1>
-      <div id="researcher-map-controls" style="margin-bottom:1rem;"></div>
-      <div id="map" style="width:100%;height:450px;border-radius:12px;border:2px solid #e0e0e0;background:#f5f5f5;"></div>
+    <div id="map-view" class="view-section" style="display:none;padding:0;overflow:hidden;">
+
+      <!-- Header bar -->
+      <div class="bg-white border-b flex justify-between items-center gap-4 px-6 py-3.5 flex-shrink-0" style="border-color:#d8e8d4;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+        <div class="flex items-center gap-3">
+          <div class="w-0.5 h-10 rounded-full flex-shrink-0" style="background:linear-gradient(180deg,#6fcf4a,#34a853);"></div>
+          <div>
+            <h1 class="text-xl font-black text-gray-900 leading-tight tracking-tight m-0" style="font-family:Inter,Roboto,sans-serif;">Mt. Busa Trail &amp; Orchid Distribution</h1>
+            <p class="text-xs font-bold uppercase tracking-widest mt-0.5 mb-0" style="color:#4a7a42;">Interactive ecological survey map</p>
+          </div>
+        </div>
+        <div class="flex gap-2 flex-wrap justify-end items-center">
+          <button onclick="document.getElementById('map-legend').style.display=document.getElementById('map-legend').style.display==='none'?'block':'none'"
+            class="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-white border cursor-pointer transition-all duration-200 hover:bg-green-50 whitespace-nowrap"
+            style="color:#2D5128;border-color:rgba(45,81,40,0.32);">Legend</button>
+          <button onclick="if(leafletMap){leafletMap.setView(MT_BUSA_COORDS,MT_BUSA_ZOOM_MAIN);}"
+            class="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-white border cursor-pointer transition-all duration-200 hover:bg-green-50 whitespace-nowrap"
+            style="color:#2D5128;border-color:rgba(45,81,40,0.32);">Reset View</button>
+        </div>
+      </div>
+
+      <!-- Trail selector bar -->
+      <div class="flex items-center gap-2 px-5 py-2 border-b overflow-x-auto flex-shrink-0" style="-webkit-overflow-scrolling:touch;background:#f5faf3;border-color:#d8e8d4;">
+        <span class="text-xs font-bold uppercase tracking-widest flex-shrink-0 mr-1" style="color:#2D5128;">Trails</span>
+        <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Canopy Loop 1</button>
+        <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Moss Corridor 2</button>
+        <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Valley Way 3</button>
+        <button id="trail-btn-trail4" onclick="toggleTrail('trail4')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Forest Spur 4</button>
+        <button id="trail-btn-trail5" onclick="toggleTrail('trail5')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Busa Loop 5</button>
+      </div>
+
+      <!-- Map + legend overlay -->
+      <div class="relative" style="width:100%;min-height:calc(100vh - 190px);">
+        <div id="map" style="width:100%;height:calc(100vh - 190px);background:#0a1a09;"></div>
+
+        <!-- Legend overlay -->
+        <div id="map-legend" class="absolute bottom-5 left-3.5 bg-white rounded-xl border border-gray-200 p-4 z-50 text-xs" style="min-width:215px;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.18);">
+          <h4 class="font-bold uppercase tracking-wider text-xs m-0 mb-3" style="color:#2D5128;letter-spacing:0.05em;">Map Legend</h4>
+          <div class="flex flex-col gap-2">
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 m-0">Orchid Density</p>
+            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#dc2626;"></div><span class="text-gray-700">High (≥80%)</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#f97316;"></div><span class="text-gray-700">Medium-High (60–79%)</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#facc15;"></div><span class="text-gray-700">Medium (40–59%)</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#34d399;"></div><span class="text-gray-700">Low (&lt;40%)</span></div>
+            <div class="h-px bg-gray-100 my-1"></div>
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 m-0">Conservation Status</p>
+            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#ff3b3b;border:1.5px solid #ff7070;"></div><span class="text-gray-700">Critically Endangered</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#ff8c00;border:1.5px solid #ffa040;"></div><span class="text-gray-700">Endangered</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#f5c518;border:1.5px solid #f5d845;"></div><span class="text-gray-700">Vulnerable</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#4caf50;border:1.5px solid #7ccc7e;"></div><span class="text-gray-700">Least Concern</span></div>
+            <div class="h-px bg-gray-100 my-1"></div>
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 m-0">Trails</p>
+            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Canopy Loop 1</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Moss Corridor 2</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Valley Way 3</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Forest Spur 4</span></div>
+            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Busa Loop 5</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 3D Collection View -->
@@ -3099,20 +3155,27 @@
       const researcherHome = document.getElementById('researcher-home');
       const orchidImage = encodeURI('./catalogicon.png');
       const dashboardShowcaseImages = ['./orchid1.webp', './orchid2.jpg', './orchid3.webp'];
-      const MT_BUSA_COORDS = [6.1092, 124.6858];
-      const MT_BUSA_ZOOM_MAIN = 13;
-      const MT_BUSA_ZOOM_DASHBOARD = 12;
-      const MT_BUSA_ZOOM_HOTSPOTS = 14;
-      const MT_BUSA_ZOOM_CONSERVATION = 14;
+      const MT_BUSA_COORDS = [6.106381, 124.669889];
+      const MT_BUSA_ZOOM_MAIN = 11;
+      const MT_BUSA_ZOOM_DASHBOARD = 11;
+      const MT_BUSA_ZOOM_HOTSPOTS = 13;
+      const MT_BUSA_ZOOM_CONSERVATION = 13;
       const MT_BUSA_DISTRIBUTION_POINTS = [
-        [6.1092, 124.6858, 1.0],
-        [6.11, 124.69, 0.95],
-        [6.10895, 124.68377, 0.9],
-        [6.1140, 124.6890, 0.72],
-        [6.1070, 124.6920, 0.7],
-        [6.1062, 124.6845, 0.62],
-        [6.1118, 124.6827, 0.6],
-        [6.1049, 124.6873, 0.55]
+        [6.1064, 124.6699, 1.0],
+        [6.1264, 124.6849, 0.95],
+        [6.0964, 124.6899, 0.9],
+        [6.1364, 124.6549, 0.72],
+        [6.1164, 124.7249, 0.7],
+        [6.0864, 124.7049, 0.62],
+        [6.1464, 124.6949, 0.6],
+        [6.0764, 124.6599, 0.55],
+        [6.1564, 124.6749, 0.5],
+        [6.0964, 124.7149, 0.45],
+        [6.1264, 124.7049, 0.42],
+        [6.0664, 124.6849, 0.38],
+        [6.1064, 124.6499, 0.35],
+        [6.1364, 124.7349, 0.3],
+        [6.0764, 124.7249, 0.28]
       ];
       const CONSERVATION_STATUS_ORDER = ['critically_endangered', 'endangered', 'vulnerable', 'least_concern', 'unassigned'];
       const CONSERVATION_STATUS_LABELS = {
@@ -3133,74 +3196,142 @@
       let orchidCatalogLoaded = false;
       let dashboardCatalogListView = false;
       let submissionRows = [];
-      const RANDOM_TRAIL_COUNT = 5;
-      const TRAIL_DIFFICULTY_OPTIONS = ['Easy', 'Moderate', 'Hard'];
-      const TRAIL_NAME_PREFIXES = ['Ridge', 'Canopy', 'Summit', 'Forest', 'Valley', 'Riverbend', 'Moss', 'Cloud', 'Busa', 'Eagle'];
-      const TRAIL_NAME_SUFFIXES = ['Path', 'Pass', 'Traverse', 'Route', 'Loop', 'Spur', 'Way', 'Track', 'Corridor', 'Climb'];
 
-      function getRandomBetween(min, max) {
-        return min + (Math.random() * (max - min));
-      }
-
-      function clampNumber(value, min, max) {
-        return Math.min(max, Math.max(min, value));
-      }
-
-      function getRandomTrailName(index) {
-        const prefix = TRAIL_NAME_PREFIXES[Math.floor(Math.random() * TRAIL_NAME_PREFIXES.length)];
-        const suffix = TRAIL_NAME_SUFFIXES[Math.floor(Math.random() * TRAIL_NAME_SUFFIXES.length)];
-        return `${prefix} ${suffix} ${index + 1}`;
-      }
-
-      function generateRandomTrailFeature(index) {
-        const [baseLat, baseLng] = MT_BUSA_COORDS;
-        const latMin = baseLat - 0.025;
-        const latMax = baseLat + 0.025;
-        const lngMin = baseLng - 0.03;
-        const lngMax = baseLng + 0.03;
-        const pointCount = 7;
-
-        let currentLat = clampNumber(baseLat + getRandomBetween(-0.012, 0.012), latMin, latMax);
-        let currentLng = clampNumber(baseLng + getRandomBetween(-0.015, 0.015), lngMin, lngMax);
-        const coordinates = [];
-
-        for (let pointIndex = 0; pointIndex < pointCount; pointIndex += 1) {
-          const angle = getRandomBetween(0, Math.PI * 2);
-          const step = getRandomBetween(0.0018, 0.0042);
-
-          currentLat = clampNumber(currentLat + Math.sin(angle) * step, latMin, latMax);
-          currentLng = clampNumber(currentLng + Math.cos(angle) * step, lngMin, lngMax);
-
-          coordinates.push([
-            Number(currentLng.toFixed(6)),
-            Number(currentLat.toFixed(6))
-          ]);
+      // Neon GPS-track trail definitions (same as researcher dashboard)
+      const NEON_BLUE = '#00e5ff';
+      const MAP_TRAIL_DEFS = {
+        trail1: {
+          name: 'Canopy Loop 1', color: NEON_BLUE, weight: 3,
+          desc: 'Upper canopy trail on the NW slope. Difficult. ~4.8 km.',
+          coords: [
+            [6.1064,124.6699],[6.1072,124.6690],[6.1080,124.6681],[6.1089,124.6673],[6.1097,124.6664],[6.1106,124.6656],
+            [6.1114,124.6648],[6.1123,124.6640],[6.1131,124.6631],[6.1139,124.6623],[6.1148,124.6615],[6.1156,124.6607],
+            [6.1165,124.6599],[6.1173,124.6591],[6.1181,124.6583],[6.1190,124.6575],[6.1198,124.6567],[6.1206,124.6560],
+            [6.1214,124.6552],[6.1222,124.6545],[6.1230,124.6537],[6.1238,124.6529],[6.1246,124.6521],[6.1254,124.6514],
+            [6.1262,124.6506],[6.1270,124.6498],[6.1278,124.6490],[6.1286,124.6482],[6.1294,124.6474],[6.1302,124.6466],
+            [6.1310,124.6459],[6.1318,124.6451],[6.1326,124.6443],[6.1334,124.6435],[6.1342,124.6427],[6.1350,124.6420],
+            [6.1358,124.6412],[6.1366,124.6404],[6.1374,124.6396],[6.1382,124.6388]
+          ]
+        },
+        trail2: {
+          name: 'Moss Corridor 2', color: NEON_BLUE, weight: 3,
+          desc: 'Mossy forest corridor heading east. Moderate. ~4.4 km.',
+          coords: [
+            [6.1064,124.6699],[6.1068,124.6710],[6.1073,124.6721],[6.1077,124.6732],[6.1081,124.6743],[6.1085,124.6754],
+            [6.1089,124.6764],[6.1093,124.6775],[6.1097,124.6785],[6.1101,124.6796],[6.1105,124.6806],[6.1109,124.6817],
+            [6.1113,124.6828],[6.1117,124.6838],[6.1121,124.6849],[6.1125,124.6859],[6.1129,124.6870],[6.1133,124.6880],
+            [6.1137,124.6891],[6.1141,124.6901],[6.1145,124.6912],[6.1149,124.6923],[6.1153,124.6933],[6.1157,124.6944],
+            [6.1161,124.6954],[6.1165,124.6965],[6.1169,124.6975],[6.1173,124.6986],[6.1177,124.6996],[6.1181,124.7007],
+            [6.1185,124.7017],[6.1189,124.7028],[6.1193,124.7038],[6.1197,124.7049],[6.1201,124.7059],[6.1205,124.7070],
+            [6.1209,124.7080],[6.1213,124.7091],[6.1217,124.7101],[6.1221,124.7112]
+          ]
+        },
+        trail3: {
+          name: 'Valley Way 3', color: NEON_BLUE, weight: 3,
+          desc: 'Southern valley descent. Moderate. ~4.8 km.',
+          coords: [
+            [6.1064,124.6699],[6.1055,124.6707],[6.1046,124.6715],[6.1037,124.6723],[6.1028,124.6731],[6.1019,124.6738],
+            [6.1010,124.6746],[6.1001,124.6754],[6.0992,124.6762],[6.0983,124.6770],[6.0974,124.6778],[6.0965,124.6786],
+            [6.0956,124.6793],[6.0947,124.6801],[6.0938,124.6809],[6.0929,124.6817],[6.0920,124.6825],[6.0911,124.6833],
+            [6.0902,124.6841],[6.0893,124.6849],[6.0884,124.6857],[6.0875,124.6865],[6.0866,124.6873],[6.0857,124.6881],
+            [6.0848,124.6889],[6.0839,124.6897],[6.0830,124.6905],[6.0821,124.6913],[6.0812,124.6921],[6.0803,124.6929],
+            [6.0794,124.6937],[6.0785,124.6945],[6.0776,124.6953],[6.0767,124.6961],[6.0758,124.6969],[6.0749,124.6977],
+            [6.0740,124.6985],[6.0731,124.6993],[6.0722,124.7001],[6.0713,124.7009]
+          ]
+        },
+        trail4: {
+          name: 'Forest Spur 4', color: NEON_BLUE, weight: 3,
+          desc: 'NE forest ridge spur. Moderate. ~5.0 km.',
+          coords: [
+            [6.1064,124.6699],[6.1073,124.6708],[6.1082,124.6717],[6.1090,124.6727],[6.1099,124.6736],[6.1108,124.6745],
+            [6.1116,124.6755],[6.1125,124.6764],[6.1133,124.6773],[6.1142,124.6782],[6.1150,124.6792],[6.1159,124.6801],
+            [6.1167,124.6810],[6.1176,124.6819],[6.1184,124.6829],[6.1193,124.6838],[6.1201,124.6847],[6.1210,124.6857],
+            [6.1218,124.6866],[6.1226,124.6876],[6.1235,124.6885],[6.1244,124.6894],[6.1253,124.6903],[6.1262,124.6912],
+            [6.1271,124.6921],[6.1280,124.6930],[6.1289,124.6939],[6.1298,124.6948],[6.1307,124.6957],[6.1316,124.6966],
+            [6.1325,124.6975],[6.1334,124.6984],[6.1343,124.6993],[6.1352,124.7002],[6.1361,124.7011],[6.1370,124.7020],
+            [6.1379,124.7029],[6.1388,124.7038],[6.1397,124.7047],[6.1406,124.7056]
+          ]
+        },
+        trail5: {
+          name: 'Busa Loop 5', color: NEON_BLUE, weight: 3,
+          desc: 'Main summit trail curving north then east. Strenuous. ~6.4 km.',
+          coords: [
+            [6.1064,124.6699],[6.1075,124.6700],[6.1086,124.6702],[6.1097,124.6705],[6.1108,124.6708],[6.1119,124.6712],
+            [6.1130,124.6717],[6.1141,124.6722],[6.1152,124.6728],[6.1163,124.6735],[6.1174,124.6742],[6.1184,124.6750],
+            [6.1194,124.6759],[6.1203,124.6768],[6.1212,124.6778],[6.1220,124.6789],[6.1228,124.6800],[6.1235,124.6812],
+            [6.1241,124.6824],[6.1247,124.6837],[6.1252,124.6850],[6.1256,124.6863],[6.1260,124.6877],[6.1263,124.6891],
+            [6.1265,124.6905],[6.1267,124.6919],[6.1268,124.6933],[6.1269,124.6947],[6.1270,124.6961],[6.1270,124.6975],
+            [6.1271,124.6989],[6.1272,124.7003],[6.1273,124.7017],[6.1274,124.7031],[6.1275,124.7045],[6.1276,124.7059],
+            [6.1277,124.7073],[6.1278,124.7087],[6.1279,124.7101],[6.1280,124.7115],[6.1281,124.7129],[6.1282,124.7143],
+            [6.1283,124.7157],[6.1284,124.7171],[6.1285,124.7185],[6.1286,124.7199],[6.1287,124.7213],[6.1288,124.7227],
+            [6.1289,124.7241],[6.1290,124.7255]
+          ]
         }
+      };
 
-        return {
-          type: 'Feature',
-          properties: {
-            name: getRandomTrailName(index),
-            type: 'generated',
-            difficulty: TRAIL_DIFFICULTY_OPTIONS[Math.floor(Math.random() * TRAIL_DIFFICULTY_OPTIONS.length)]
-          },
-          geometry: {
-            type: 'LineString',
-            coordinates
-          }
-        };
+      const mapTrailLayers = {};
+
+      window.toggleTrail = function(trailId) {
+        if (!leafletMap) return;
+        const def = MAP_TRAIL_DEFS[trailId];
+        if (!def) return;
+        const btn = document.getElementById('trail-btn-' + trailId);
+        if (mapTrailLayers[trailId]) {
+          leafletMap.removeLayer(mapTrailLayers[trailId]);
+          delete mapTrailLayers[trailId];
+          if (btn) { btn.style.background = 'transparent'; btn.style.color = NEON_BLUE; btn.style.borderColor = NEON_BLUE; }
+        } else {
+          const opts = { lineCap: 'square', lineJoin: 'miter' };
+          const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
+          const halo = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 18, opacity: 0.08 });
+          const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
+          const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
+          mapTrailLayers[trailId] = L.layerGroup([halo, mid, core]).addTo(leafletMap);
+          if (btn) { btn.style.background = NEON_BLUE; btn.style.color = '#001a1f'; btn.style.borderColor = NEON_BLUE; }
+        }
+      };
+
+      function orchidSvg(c, s) {
+        s = s || 22;
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24">` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(0 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(72 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(144 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(216 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(288 12 12)"/>` +
+          `<circle cx="12" cy="12" r="3.5" fill="#fff" opacity="0.95"/>` +
+          `<circle cx="12" cy="12" r="1.8" fill="${c}"/></svg>`;
       }
 
-      const MT_BUSA_TRAIL_FEATURES = Array.from({ length: RANDOM_TRAIL_COUNT }, (_, index) => generateRandomTrailFeature(index));
-      const trailSelectionState = {
-        mode: 'trail',
-        selectedTrailNames: new Set(MT_BUSA_TRAIL_FEATURES.map((feature) => String(feature.properties?.name || '').trim()).filter(Boolean))
-      };
+      function densityColor(v) {
+        if (v >= 0.8) return '#dc2626';
+        if (v >= 0.6) return '#f97316';
+        if (v >= 0.4) return '#facc15';
+        return '#34d399';
+      }
+
+      const MAP_ORCHID_HOTSPOTS = [
+        { c:[6.1264,124.6849], sp:'Vanda sanderiana', st:'Critically Endangered', col:'#ff3b3b' },
+        { c:[6.0964,124.6899], sp:'Paphiopedilum hennisianum', st:'Endangered', col:'#ff8c00' },
+        { c:[6.1364,124.6549], sp:'Bulbophyllum lobbii', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1164,124.7249], sp:'Dendrobium crumenatum', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.0864,124.7049], sp:'Aerides quinquevulnera', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1464,124.6949], sp:'Coelogyne rumphii', st:'Least Concern', col:'#4caf50' },
+        { c:[6.0764,124.6599], sp:'Cymbidium bicolor', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1564,124.6749], sp:'Grammatophyllum speciosum', st:'Endangered', col:'#ff8c00' },
+        { c:[6.0964,124.7149], sp:'Liparis nervosa', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1264,124.7049], sp:'Thrixspermum merguense', st:'Least Concern', col:'#4caf50' },
+        { c:[6.0664,124.6849], sp:'Oberonia iridifolia', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1064,124.6499], sp:'Eria ornata', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1364,124.7349], sp:'Trichoglottis philippinensis', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.0764,124.7249], sp:'Appendicula cornuta', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1464,124.7049], sp:'Spathoglottis plicata', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1164,124.6649], sp:'Calanthe triplicata', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.0964,124.6649], sp:'Coelogyne cristata', st:'Endangered', col:'#ff8c00' }
+      ];
+
       let conservationDonutChart = null;
       let conservationBarChart = null;
-      let researcherMap = null;
-      let researcherHeatLayer = null;
-      let researcherTrailLayerGroup = null;
       let conservationHeatMap = null;
       let conservationHeatLayer = null;
 
@@ -3270,315 +3401,6 @@
           .filter((item) => item.src);
       }
 
-      function getTrailFeatureName(feature) {
-        return String(feature?.properties?.name || '').trim();
-      }
-
-      function getTrailFeatureDifficulty(feature) {
-        return String(feature?.properties?.difficulty || '').trim();
-      }
-
-      function getTrailFeatureColor(feature) {
-        const difficulty = getTrailFeatureDifficulty(feature).toLowerCase();
-        if (difficulty === 'easy') return '#22c55e';
-        if (difficulty === 'hard') return '#ef4444';
-        return '#f59e0b';
-      }
-
-      function getTrailDifficultyStyle(feature) {
-        const difficulty = getTrailFeatureDifficulty(feature).toLowerCase();
-        if (difficulty === 'easy') {
-          return {
-            dashArray: null,
-            coreWeight: 4,
-            casingWeight: 8,
-            coreOpacity: 0.95,
-            casingOpacity: 0.36
-          };
-        }
-        if (difficulty === 'hard') {
-          return {
-            dashArray: '10 6',
-            coreWeight: 4,
-            casingWeight: 8,
-            coreOpacity: 0.98,
-            casingOpacity: 0.42
-          };
-        }
-        return {
-          dashArray: '14 7',
-          coreWeight: 4,
-          casingWeight: 8,
-          coreOpacity: 0.96,
-          casingOpacity: 0.38
-        };
-      }
-
-      function createTrailGeoJsonLayer(feature) {
-        const trailName = getTrailFeatureName(feature);
-        const trailDifficulty = getTrailFeatureDifficulty(feature) || 'Unspecified';
-
-        const styleProfile = getTrailDifficultyStyle(feature);
-        const trailColor = getTrailFeatureColor(feature);
-
-        const casingLayer = L.geoJSON(feature, {
-          pane: 'trail-pane',
-          interactive: false,
-          style: {
-            color: '#0f172a',
-            weight: styleProfile.casingWeight,
-            opacity: styleProfile.casingOpacity,
-            lineCap: 'round',
-            lineJoin: 'round'
-          }
-        });
-
-        const coreLayer = L.geoJSON(feature, {
-          pane: 'trail-pane',
-          style: {
-            color: trailColor,
-            weight: styleProfile.coreWeight,
-            opacity: styleProfile.coreOpacity,
-            dashArray: styleProfile.dashArray,
-            lineCap: 'round',
-            lineJoin: 'round'
-          },
-          onEachFeature: function(trailFeature, trailLayer) {
-            trailLayer.bindPopup(`<strong>${escapeHtml(trailName)}</strong><br>Difficulty: ${escapeHtml(trailDifficulty)}`);
-          }
-        });
-
-        return L.featureGroup([casingLayer, coreLayer]);
-      }
-
-      function buildTrailControlPanel(panelKey, title, subtitle) {
-        const panel = document.createElement('div');
-        panel.className = 'map-trail-controls';
-        panel.dataset.trailPanel = panelKey;
-
-        const header = document.createElement('div');
-        header.className = 'map-trail-controls-header';
-
-        const headingWrap = document.createElement('div');
-        const heading = document.createElement('h3');
-        heading.className = 'map-trail-controls-title';
-        heading.textContent = title;
-        const body = document.createElement('p');
-        body.className = 'map-trail-controls-subtitle';
-        body.textContent = subtitle;
-        headingWrap.append(heading, body);
-
-        const modeGroup = document.createElement('div');
-        modeGroup.className = 'map-trail-mode-group';
-        const modeButton = document.createElement('button');
-        modeButton.type = 'button';
-        modeButton.className = 'map-trail-mode-btn';
-        modeButton.dataset.trailMode = 'toggle';
-        modeButton.addEventListener('click', function() {
-          setTrailViewMode(trailSelectionState.mode === 'trail' ? 'heatmap' : 'trail');
-        });
-        modeGroup.appendChild(modeButton);
-
-        header.append(headingWrap, modeGroup);
-
-        const selectAllLabel = document.createElement('label');
-        selectAllLabel.className = 'map-trail-select-all';
-        const selectAllInput = document.createElement('input');
-        selectAllInput.type = 'checkbox';
-        selectAllInput.dataset.trailSelectAll = panelKey;
-        selectAllInput.addEventListener('change', function() {
-          setAllTrailSelections(selectAllInput.checked);
-        });
-        const selectAllText = document.createElement('span');
-        selectAllText.textContent = 'Select all trails';
-        selectAllLabel.append(selectAllInput, selectAllText);
-
-        const quickActions = document.createElement('div');
-        quickActions.className = 'map-trail-quick-actions';
-
-        const showAllButton = document.createElement('button');
-        showAllButton.type = 'button';
-        showAllButton.className = 'map-trail-mode-btn';
-        showAllButton.textContent = 'Show All Trails';
-        showAllButton.addEventListener('click', function() {
-          setAllTrailSelections(true);
-          setTrailViewMode('trail');
-        });
-
-        const showSelectedButton = document.createElement('button');
-        showSelectedButton.type = 'button';
-        showSelectedButton.className = 'map-trail-mode-btn';
-        showSelectedButton.textContent = 'Show Selected Trails';
-        showSelectedButton.addEventListener('click', function() {
-          setTrailViewMode('trail');
-        });
-
-        quickActions.append(showAllButton, showSelectedButton);
-
-        const trailList = document.createElement('div');
-        trailList.className = 'map-trail-list';
-
-        MT_BUSA_TRAIL_FEATURES.forEach((feature) => {
-          const trailName = getTrailFeatureName(feature);
-          const trailDifficulty = getTrailFeatureDifficulty(feature) || 'Unspecified';
-
-          const item = document.createElement('label');
-          item.className = 'map-trail-item';
-
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.dataset.trailName = trailName;
-          checkbox.checked = true;
-          checkbox.addEventListener('change', function() {
-            setTrailSelection(trailName, checkbox.checked);
-          });
-
-          const labelBlock = document.createElement('span');
-          labelBlock.className = 'map-trail-item-label';
-          const nameLine = document.createElement('span');
-          nameLine.className = 'map-trail-item-name';
-          nameLine.textContent = trailName;
-          const metaLine = document.createElement('span');
-          metaLine.className = 'map-trail-item-meta';
-          metaLine.textContent = `Difficulty: ${trailDifficulty}`;
-          labelBlock.append(nameLine, metaLine);
-
-          const badge = document.createElement('span');
-          badge.className = 'map-trail-item-badge';
-          badge.textContent = 'Trail';
-
-          item.append(checkbox, labelBlock, badge);
-          trailList.appendChild(item);
-        });
-
-        panel.append(header, selectAllLabel, quickActions, trailList);
-        return panel;
-      }
-
-      function renderTrailControlPanels() {
-        const panelMounts = [
-          { mountId: 'researcher-map-controls', key: 'researcher', title: 'Trail - Mt. Busa', subtitle: 'Choose which trail lines appear on the researcher map.' }
-        ];
-
-        panelMounts.forEach((panelConfig) => {
-          const mountEl = document.getElementById(panelConfig.mountId);
-          if (!mountEl || mountEl.dataset.rendered === '1') {
-            return;
-          }
-
-          mountEl.innerHTML = '';
-          mountEl.appendChild(buildTrailControlPanel(panelConfig.key, panelConfig.title, panelConfig.subtitle));
-          mountEl.dataset.rendered = '1';
-        });
-
-        syncTrailControlPanels();
-      }
-
-      function getSelectedTrailFeatures() {
-        return MT_BUSA_TRAIL_FEATURES.filter((feature) => trailSelectionState.selectedTrailNames.has(getTrailFeatureName(feature)));
-      }
-
-      function setTrailViewMode(mode) {
-        trailSelectionState.mode = ['trail', 'heatmap'].includes(mode) ? mode : 'heatmap';
-        syncTrailControlPanels();
-        syncTrailMapOverlays();
-      }
-
-      function setTrailSelection(trailName, isSelected) {
-        const normalizedName = String(trailName || '').trim();
-        if (!normalizedName) {
-          return;
-        }
-
-        if (isSelected) {
-          trailSelectionState.selectedTrailNames.add(normalizedName);
-        } else {
-          trailSelectionState.selectedTrailNames.delete(normalizedName);
-        }
-
-        syncTrailControlPanels();
-        syncTrailMapOverlays();
-      }
-
-      function setAllTrailSelections(isSelected) {
-        trailSelectionState.selectedTrailNames = new Set(
-          isSelected ? MT_BUSA_TRAIL_FEATURES.map((feature) => getTrailFeatureName(feature)).filter(Boolean) : []
-        );
-
-        syncTrailControlPanels();
-        syncTrailMapOverlays();
-      }
-
-      function syncTrailControlPanels() {
-        const isTrailMode = trailSelectionState.mode === 'trail';
-        const isHeatMode = trailSelectionState.mode === 'heatmap';
-
-        document.querySelectorAll('.map-trail-controls').forEach((panelEl) => {
-          const modeButton = panelEl.querySelector('[data-trail-mode="toggle"]');
-          if (modeButton) {
-            modeButton.classList.toggle('is-active', true);
-            modeButton.setAttribute('aria-pressed', 'true');
-            modeButton.textContent = isTrailMode ? 'Switch to Heatmap View' : 'Switch to Trail View';
-          }
-
-          const selectAllEl = panelEl.querySelector('[data-trail-select-all]');
-          const trailCheckBoxes = Array.from(panelEl.querySelectorAll('[data-trail-name]'));
-          const selectedCount = trailCheckBoxes.filter((checkboxEl) => checkboxEl.checked).length;
-          const totalCount = trailCheckBoxes.length;
-
-          if (selectAllEl) {
-            selectAllEl.checked = totalCount > 0 && selectedCount === totalCount;
-            selectAllEl.indeterminate = selectedCount > 0 && selectedCount < totalCount;
-          }
-        });
-
-        document.querySelectorAll('.map-trail-controls [data-trail-name]').forEach((checkboxEl) => {
-          const trailName = String(checkboxEl.getAttribute('data-trail-name') || '').trim();
-          checkboxEl.checked = trailSelectionState.selectedTrailNames.has(trailName);
-        });
-      }
-
-      function refreshTrailLayerGroup(mapInstance, trailLayerGroup) {
-        if (!mapInstance || !trailLayerGroup) {
-          return;
-        }
-
-        trailLayerGroup.clearLayers();
-        getSelectedTrailFeatures().forEach((feature) => {
-          trailLayerGroup.addLayer(createTrailGeoJsonLayer(feature));
-        });
-
-        const shouldShowTrails = trailSelectionState.mode === 'trail';
-        if (shouldShowTrails && trailLayerGroup.getLayers().length > 0) {
-          if (!mapInstance.hasLayer(trailLayerGroup)) {
-            trailLayerGroup.addTo(mapInstance);
-          }
-          trailLayerGroup.eachLayer((trailLayer) => {
-            if (typeof trailLayer.bringToFront === 'function') {
-              trailLayer.bringToFront();
-            }
-          });
-        } else if (mapInstance.hasLayer(trailLayerGroup)) {
-          mapInstance.removeLayer(trailLayerGroup);
-        }
-      }
-
-      function syncTrailMapOverlays() {
-        refreshTrailLayerGroup(researcherMap, researcherTrailLayerGroup);
-
-        const shouldShowHeat = trailSelectionState.mode === 'heatmap';
-
-        if (researcherMap && researcherHeatLayer) {
-          if (shouldShowHeat) {
-            if (!researcherMap.hasLayer(researcherHeatLayer)) {
-              researcherHeatLayer.addTo(researcherMap);
-            }
-          } else if (researcherMap.hasLayer(researcherHeatLayer)) {
-            researcherMap.removeLayer(researcherHeatLayer);
-          }
-        }
-
-      }
 
       function parseCoordinateValue(inputId, label, min, max) {
         const rawValue = String(document.getElementById(inputId)?.value || '').trim();
@@ -4268,48 +4090,70 @@
         if (leafletMap !== null) {
           leafletMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
           leafletMap.invalidateSize();
-          syncTrailMapOverlays();
           return;
         }
 
-        renderTrailControlPanels();
+        leafletMap = L.map('map', { zoomControl: true }).setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
 
-        // Initialize map
-        leafletMap = L.map('map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
-        researcherMap = leafletMap;
-        researcherTrailLayerGroup = researcherTrailLayerGroup || L.layerGroup();
-        if (!leafletMap.getPane('trail-pane')) {
-          leafletMap.createPane('trail-pane');
-          leafletMap.getPane('trail-pane').style.zIndex = '650';
-          leafletMap.getPane('trail-pane').style.pointerEvents = 'auto';
-        }
-        
-        // Add satellite imagery base layer
+        // Satellite base layer (ESRI World Imagery)
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles © Esri',
+          attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
           maxZoom: 19
         }).addTo(leafletMap);
-        
-        // Add marker for Mt. Busa
-        L.marker(MT_BUSA_COORDS)
-          .bindPopup('<b>Mt. Busa</b><br>Kiamba, Sarangani Province<br>Distribution center')
-          .addTo(leafletMap);
 
-        if (typeof L.heatLayer === 'function') {
-          researcherHeatLayer = L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
-            radius: 30,
-            blur: 22,
-            maxZoom: 16,
-            gradient: {
-              0.2: '#34d399',
-              0.45: '#facc15',
-              0.75: '#f97316',
-              1.0: '#dc2626'
-            }
-          });
-        }
+        // Satellite label overlay for place names
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19, opacity: 0.7
+        }).addTo(leafletMap);
 
-        syncTrailMapOverlays();
+        // Show all 5 trails by default
+        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
+
+        // Orchid hotspot markers (conservation-status-colored orchid icons)
+        MAP_ORCHID_HOTSPOTS.forEach(function(h) {
+          L.marker(h.c, {
+            icon: L.divIcon({
+              className: '',
+              html: `<div style="filter:drop-shadow(0 1px 4px rgba(0,0,0,0.55));">${orchidSvg(h.col, 22)}</div>`,
+              iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-13]
+            })
+          }).bindPopup(
+            `<div style="min-width:170px;"><b style="color:${h.col};font-size:0.95rem;">&#127800; ${h.sp}</b><br>` +
+            `<span style="color:#555;font-size:0.82rem;">Conservation: <b style="color:${h.col};">${h.st}</b></span><br>` +
+            `<span style="color:#777;font-size:0.78rem;">Mt. Busa, Sarangani</span></div>`
+          ).addTo(leafletMap);
+        });
+
+        // Orchid density markers (density-colored orchid icons)
+        MT_BUSA_DISTRIBUTION_POINTS.forEach(function(pt) {
+          const col = densityColor(pt[2]);
+          L.marker([pt[0],pt[1]], {
+            icon: L.divIcon({
+              className: '',
+              html: `<div style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4));opacity:0.82;">${orchidSvg(col, 17)}</div>`,
+              iconSize: [17,17], iconAnchor: [8,8], popupAnchor: [0,-10]
+            })
+          }).bindPopup(
+            `<div style="min-width:150px;"><b style="color:${col};font-size:0.9rem;">Orchid Density Zone</b><br>` +
+            `<span style="color:#555;font-size:0.82rem;">Intensity: <b>${Math.round(pt[2]*100)}%</b></span><br>` +
+            `<span style="color:#777;font-size:0.78rem;">Mt. Busa Survey Area</span></div>`
+          ).addTo(leafletMap);
+        });
+
+        // Summit marker
+        L.marker(MT_BUSA_COORDS, {
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="width:34px;height:34px;background:radial-gradient(circle at 40% 35%,#5de05d,#2D5128);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.55);"></div>',
+            iconSize: [34,34], iconAnchor: [17,34], popupAnchor: [0,-36]
+          })
+        }).bindPopup(
+          '<div style="text-align:center;min-width:180px;">' +
+          '<b style="font-size:1.05rem;color:#2D5128;">&#9968; Mt. Busa</b><br>' +
+          '<span style="color:#66786e;font-size:0.85rem;">Kiamba, Sarangani Province</span><br>' +
+          '<span style="color:#555;font-size:0.82rem;">6.1064°N, 124.6699°E</span><br>' +
+          '<span style="color:#34a853;font-size:0.82rem;margin-top:4px;display:block;">&#127808; Primary orchid survey area</span></div>'
+        ).openPopup().addTo(leafletMap);
       }
 
       function getConservationSummarySnapshot(rawData) {
@@ -4482,7 +4326,6 @@
         }
 
         conservationHeatMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
-        syncTrailMapOverlays();
         setTimeout(() => conservationHeatMap.invalidateSize(), 50);
         setTimeout(() => conservationHeatMap.invalidateSize(), 220);
       }
@@ -4559,7 +4402,6 @@
           selectedView.style.pointerEvents = 'auto';
           // Initialize map if showing map view
           if (viewName === 'map') {
-            renderTrailControlPanels();
             setTimeout(() => initializeLeafletMap(), 100);
           }
           if (viewName === 'conservation') {
