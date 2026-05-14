@@ -435,7 +435,10 @@
               <p class="orchid-modal-subtitle">Mt. Busa · Orchid Location</p>
               <h3 id="dashboard-orchid-map-name" class="orchid-modal-name scientific-name">–</h3>
             </div>
-            <button type="button" id="dashboard-orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
+            <div style="display:flex;gap:.4rem;align-items:center;">
+              <button type="button" id="dashboard-gallery-btn-map" style="background:#fff;border:1px solid rgba(45,81,40,0.32);color:#2D5128;border-radius:10px;padding:.42rem .85rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(45,81,40,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(45,81,40,0.32)'">🖼 Gallery</button>
+              <button type="button" id="dashboard-orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
+            </div>
           </div>
           <div id="dashboard-orchid-leaflet-map" style="height:480px;width:100%;"></div>
           <p class="orchid-modal-hint">🌺 Click the orchid icon on the map to view details</p>
@@ -448,6 +451,7 @@
             <h3 id="dashboard-orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">–</h3>
             <div style="display:flex;gap:.4rem;align-items:center;">
               <button type="button" id="dashboard-add-instance-button" hidden style="background:#fff;border:1px solid rgba(45,81,40,0.32);color:#2D5128;border-radius:10px;padding:.42rem .9rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease,transform 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(45,81,40,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(45,81,40,0.32)'">+ Add Instance</button>
+              <button type="button" id="dashboard-gallery-btn-detail" style="background:#fff;border:1px solid rgba(45,81,40,0.32);color:#2D5128;border-radius:10px;padding:.42rem .85rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(45,81,40,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(45,81,40,0.32)'">🖼 Gallery</button>
               <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
             </div>
           </div>
@@ -552,6 +556,33 @@
 
     <div class="image-lightbox" id="dashboard-image-lightbox" hidden>
       <img src="" alt="Full orchid view" id="dashboard-lightbox-image" class="image-lightbox-photo" />
+    </div>
+
+    <!-- Orchid Gallery Modal -->
+    <div id="dashboard-orchid-gallery-overlay" hidden style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10010;display:flex;align-items:center;justify-content:center;padding:1rem;">
+      <div style="background:#fff;border-radius:18px;max-width:900px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
+          <div>
+            <p style="margin:0;font-size:0.72rem;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Photo Gallery</p>
+            <h2 id="gallery-overlay-title" style="margin:0.15rem 0 0 0;font-size:1rem;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-weight:700;font-style:italic;">–</h2>
+          </div>
+          <button id="dashboard-gallery-overlay-close" style="width:32px;height:32px;border:none;background:#f1f5f9;border-radius:50%;font-size:1rem;cursor:pointer;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+        </div>
+        <div style="overflow-y:auto;flex:1;padding:1.25rem;">
+          <div id="gallery-overlay-loading" style="text-align:center;padding:3rem 1rem;color:#888;font-size:0.92rem;">Loading photos…</div>
+          <div id="gallery-overlay-empty" hidden style="text-align:center;padding:3rem 1rem;color:#999;font-size:0.92rem;">🌸 No photos available for this orchid yet.</div>
+          <div id="gallery-overlay-grid" hidden style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:0.75rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gallery Full-screen Lightbox -->
+    <div id="gallery-lightbox-overlay" hidden style="position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:10020;display:flex;align-items:center;justify-content:center;">
+      <button id="gallery-lightbox-prev" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">‹</button>
+      <img id="gallery-lightbox-img" src="" alt="" style="max-width:90vw;max-height:88vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.7);" />
+      <button id="gallery-lightbox-next" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">›</button>
+      <button id="gallery-lightbox-close" style="position:absolute;top:1rem;right:1rem;width:38px;height:38px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <div id="gallery-lightbox-caption" style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.65);font-size:0.82rem;text-align:center;pointer-events:none;white-space:nowrap;"></div>
     </div>
 
     <!-- Conservation Status View -->
@@ -3731,6 +3762,12 @@
           };
         }
 
+        const galleryHandler = function() { openOrchidGallery(orchidName, orchid.image_url || ''); };
+        const galleryBtnMap = document.getElementById('dashboard-gallery-btn-map');
+        const galleryBtnDetail = document.getElementById('dashboard-gallery-btn-detail');
+        if (galleryBtnMap) galleryBtnMap.onclick = galleryHandler;
+        if (galleryBtnDetail) galleryBtnDetail.onclick = galleryHandler;
+
         // Reset all detail rows
         document.querySelectorAll('#dashboard-orchid-detail-stage .orchid-detail-row').forEach(function(row) {
           row.hidden = true;
@@ -3839,6 +3876,120 @@
         dashboardOrchidDetailModal.hidden = true;
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
       }
+
+      // ── Orchid Photo Gallery ─────────────────────────────────────
+      let galleryImages = [];
+      let galleryCurrentIndex = 0;
+
+      async function openOrchidGallery(orchidName, catalogImageUrl) {
+        const overlay = document.getElementById('dashboard-orchid-gallery-overlay');
+        const titleEl = document.getElementById('gallery-overlay-title');
+        const loadingEl = document.getElementById('gallery-overlay-loading');
+        const emptyEl = document.getElementById('gallery-overlay-empty');
+        const gridEl = document.getElementById('gallery-overlay-grid');
+        if (!overlay) return;
+
+        titleEl.textContent = orchidName || 'Orchid';
+        loadingEl.hidden = false;
+        emptyEl.hidden = true;
+        gridEl.hidden = true;
+        gridEl.innerHTML = '';
+        overlay.hidden = false;
+        galleryImages = [];
+
+        if (catalogImageUrl && !catalogImageUrl.includes('catalogicon')) {
+          galleryImages.push({ src: catalogImageUrl, caption: 'Catalog Photo' });
+        }
+
+        try {
+          const client = window.bloomSupabase || window.supabase;
+          if (client) {
+            const { data } = await client
+              .from('species_sightings')
+              .select('whole_plant_photos, closeup_flower_photos, habitat_photos, observation_date')
+              .ilike('scientific_name', (orchidName || '').trim())
+              .eq('review_status', 'approved')
+              .order('observation_date', { ascending: false })
+              .limit(10);
+
+            if (Array.isArray(data)) {
+              data.forEach(function(row) {
+                const addPhotos = function(arr, label) {
+                  if (!Array.isArray(arr)) return;
+                  arr.forEach(function(src, i) {
+                    if (src && typeof src === 'string' && src.startsWith('http')) {
+                      galleryImages.push({ src, caption: label + (arr.length > 1 ? ' ' + (i + 1) : '') });
+                    }
+                  });
+                };
+                addPhotos(row.whole_plant_photos, 'Whole Plant');
+                addPhotos(row.closeup_flower_photos, 'Close-up Flower');
+                addPhotos(row.habitat_photos, 'Habitat');
+              });
+            }
+          }
+        } catch (e) {
+          console.warn('Gallery fetch failed:', e);
+        }
+
+        loadingEl.hidden = true;
+
+        if (galleryImages.length === 0) {
+          emptyEl.hidden = false;
+          return;
+        }
+
+        gridEl.innerHTML = galleryImages.map(function(img, idx) {
+          const safe = escapeHtml(img.caption);
+          return '<div onclick="window.__orchidGalleryOpen(' + idx + ')" style="cursor:pointer;border-radius:10px;overflow:hidden;aspect-ratio:1/1;background:#f0f4f0;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.08);">' +
+            '<img src="' + img.src + '" alt="' + safe + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:transform 220ms ease;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" onerror="this.style.display=\'none\'" />' +
+            '<div style="position:absolute;bottom:0;left:0;right:0;padding:0.3rem 0.5rem;background:linear-gradient(transparent,rgba(0,0,0,0.52));color:#fff;font-size:0.68rem;font-weight:600;">' + safe + '</div>' +
+            '</div>';
+        }).join('');
+        gridEl.hidden = false;
+      }
+
+      window.__orchidGalleryOpen = function(index) {
+        galleryCurrentIndex = index;
+        const lb = document.getElementById('gallery-lightbox-overlay');
+        const img = document.getElementById('gallery-lightbox-img');
+        const caption = document.getElementById('gallery-lightbox-caption');
+        const prev = document.getElementById('gallery-lightbox-prev');
+        const next = document.getElementById('gallery-lightbox-next');
+        if (!lb || !img) return;
+        img.src = galleryImages[index].src;
+        if (caption) caption.textContent = galleryImages[index].caption + ' · ' + (index + 1) + ' / ' + galleryImages.length;
+        if (prev) prev.style.display = galleryImages.length > 1 ? 'flex' : 'none';
+        if (next) next.style.display = galleryImages.length > 1 ? 'flex' : 'none';
+        lb.hidden = false;
+      };
+
+      (function() {
+        const prev = document.getElementById('gallery-lightbox-prev');
+        const next = document.getElementById('gallery-lightbox-next');
+        const lbClose = document.getElementById('gallery-lightbox-close');
+        const lbOverlay = document.getElementById('gallery-lightbox-overlay');
+        const galleryClose = document.getElementById('dashboard-gallery-overlay-close');
+        const galleryOverlay = document.getElementById('dashboard-orchid-gallery-overlay');
+        if (prev) prev.addEventListener('click', function() {
+          galleryCurrentIndex = (galleryCurrentIndex - 1 + galleryImages.length) % galleryImages.length;
+          window.__orchidGalleryOpen(galleryCurrentIndex);
+        });
+        if (next) next.addEventListener('click', function() {
+          galleryCurrentIndex = (galleryCurrentIndex + 1) % galleryImages.length;
+          window.__orchidGalleryOpen(galleryCurrentIndex);
+        });
+        if (lbClose) lbClose.addEventListener('click', function() { lbOverlay.hidden = true; });
+        if (lbOverlay) lbOverlay.addEventListener('click', function(e) { if (e.target === this) this.hidden = true; });
+        if (galleryClose) galleryClose.addEventListener('click', function() {
+          galleryOverlay.hidden = true;
+          if (lbOverlay) lbOverlay.hidden = true;
+        });
+        if (galleryOverlay) galleryOverlay.addEventListener('click', function(e) {
+          if (e.target === this) { this.hidden = true; if (lbOverlay) lbOverlay.hidden = true; }
+        });
+      })();
+      // ────────────────────────────────────────────────────────────
 
       function renderOrchidCatalog(items) {
         if (!catalogGrid) return;
