@@ -1260,6 +1260,14 @@
           researcherDataMenu.hidden = !isResearcherRole;
         }
 
+        // Hide DENR-only sidebar items for researchers (runs after auth resolves so isResearcherRole is correct)
+        if (isResearcherRole) {
+          ['conservation', 'report'].forEach((viewName) => {
+            const navItem = document.querySelector(`.sidebar-item[data-view="${viewName}"]`);
+            if (navItem) navItem.style.display = 'none';
+          });
+        }
+
         document.body.style.visibility = 'visible';
         document.body.classList.remove('researcher-mode', 'admin-mode');
         document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
@@ -1520,7 +1528,12 @@
             if (feedback) { feedback.style.color = '#4f5f56'; feedback.textContent = 'Saving draft…'; }
             try {
               if (!bloomSupabase) throw new Error('Supabase not configured');
-              const entryId = `DRAFT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+              const form = document.getElementById('researcher-submission-form');
+              const editDraftId = form?.dataset?.editDraftId || '';
+              const editDraftEntryId = form?.dataset?.editDraftEntryId || '';
+              const entryId = (editDraftId && editDraftEntryId)
+                ? editDraftEntryId
+                : `DRAFT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
               const currentEmail = String(parsedActiveUser.email || '').trim() || null;
               const currentName = [parsedActiveUser.first_name, parsedActiveUser.last_name].filter(Boolean).join(' ').trim() || null;
               const commonNames = Array.from(document.querySelectorAll('.submission-common-name-item')).map(el => (el.value || '').trim()).filter(Boolean);
@@ -1533,8 +1546,15 @@
                 return name ? { name, role } : null;
               }).filter(Boolean);
               const draftPayload = buildSubmissionPayload({ entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers, reviewStatus: 'draft' });
-              const { error } = await supabase.from('species_sightings').insert(draftPayload);
-              if (error) throw new Error(error.message || 'Failed to save draft');
+              let saveError;
+              if (editDraftId) {
+                const { error } = await supabase.from('species_sightings').update(draftPayload).eq('sighting_id', editDraftId);
+                saveError = error;
+              } else {
+                const { error } = await supabase.from('species_sightings').insert(draftPayload);
+                saveError = error;
+              }
+              if (saveError) throw new Error(saveError.message || 'Failed to save draft');
               if (feedback) { feedback.style.color = '#2D5128'; feedback.textContent = 'Draft saved. View it in My Submissions.'; }
               await loadSubmissions('');
             } catch (err) {
@@ -1654,6 +1674,11 @@
       function closeResearcherSubmissionModal() {
         if (!researcherSubmissionModal) return;
         researcherSubmissionModal.style.display = 'none';
+        const form = document.getElementById('researcher-submission-form');
+        if (form) {
+          delete form.dataset.editDraftId;
+          delete form.dataset.editDraftEntryId;
+        }
       }
 
       function syncSidebarToggleState() {
@@ -1727,14 +1752,6 @@
       }
 
       if (isResearcherRole) {
-        const restrictedViews = ['conservation', 'report', 'submissions'];
-        restrictedViews.forEach((viewName) => {
-          const navItem = document.querySelector(`.sidebar-item[data-view="${viewName}"]`);
-          if (navItem) {
-            navItem.style.display = 'none';
-          }
-        });
-
         const notificationsCardTitle = document.querySelector('.notifications-card .card-title');
         if (notificationsCardTitle) {
           notificationsCardTitle.textContent = 'Research Updates';
@@ -1995,7 +2012,11 @@
             }
 
             const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
-            const entryId = `SIGHT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+            const editDraftId = researcherSubmissionFormEl.dataset?.editDraftId || '';
+            const editDraftEntryId = researcherSubmissionFormEl.dataset?.editDraftEntryId || '';
+            const entryId = (editDraftId && editDraftEntryId)
+              ? editDraftEntryId
+              : `SIGHT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
             const currentEmail = String(parsedActiveUser.email || '').trim() || null;
             const currentName = [parsedActiveUser.first_name, parsedActiveUser.last_name].filter(Boolean).join(' ').trim() || null;
 
@@ -2058,16 +2079,33 @@
               reviewStatus: 'pending'
             });
 
-            const { data, error } = await supabase
-              .from('species_sightings')
-              .insert(insertPayload)
-              .select('sighting_id, entry_id, scientific_name, review_status')
-              .single();
+            let data, submitError;
+            if (editDraftId) {
+              const result = await supabase
+                .from('species_sightings')
+                .update(insertPayload)
+                .eq('sighting_id', editDraftId)
+                .select('sighting_id, entry_id, scientific_name, review_status')
+                .single();
+              data = result.data;
+              submitError = result.error;
+            } else {
+              const result = await supabase
+                .from('species_sightings')
+                .insert(insertPayload)
+                .select('sighting_id, entry_id, scientific_name, review_status')
+                .single();
+              data = result.data;
+              submitError = result.error;
+            }
+            const error = submitError;
 
             if (error) {
               throw new Error(error.message || 'Failed to submit record');
             }
 
+            delete researcherSubmissionFormEl.dataset.editDraftId;
+            delete researcherSubmissionFormEl.dataset.editDraftEntryId;
             researcherSubmissionFormEl.reset();
             initializeResearcherSightingForm();
             const feedback = document.getElementById('researcher-submission-feedback');
@@ -2266,15 +2304,10 @@
 
       function getSubmissionStatusBadgeClass(statusValue) {
         const normalized = String(statusValue || '').trim().toLowerCase();
-        if (normalized === 'approved') {
-          return 'status-approved';
-        }
-        if (normalized === 'rejected') {
-          return 'status-rejected';
-        }
-        if (normalized === 'revision') {
-          return 'status-revision';
-        }
+        if (normalized === 'approved') return 'status-approved';
+        if (normalized === 'rejected') return 'status-rejected';
+        if (normalized === 'revision') return 'status-revision';
+        if (normalized === 'draft') return 'status-draft';
         return 'status-pending';
       }
 
@@ -2378,6 +2411,7 @@
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
+          const isDraft = String(submission.review_status || '').toLowerCase() === 'draft';
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">${safeResearcher}</td>
@@ -2385,7 +2419,10 @@
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
               <td class="submission-action-cell">
-                <button type="button" class="submission-action-btn" data-submission-id="${submission.id}">View</button>
+                ${isDraft
+                  ? `<button type="button" class="submission-action-btn submission-edit-btn" data-submission-id="${submission.id}" data-action="edit">Edit</button>`
+                  : `<button type="button" class="submission-action-btn" data-submission-id="${submission.id}" data-action="view">View</button>`
+                }
               </td>
             </tr>
           `;
@@ -2818,16 +2855,49 @@
       if (submissionsTableBody) {
         submissionsTableBody.addEventListener('click', function(e) {
           const actionButton = e.target.closest('[data-submission-id]');
-          if (!actionButton) {
-            return;
-          }
+          if (!actionButton) return;
 
           const submissionId = actionButton.getAttribute('data-submission-id');
+          const action = actionButton.getAttribute('data-action');
           const selectedSubmission = submissionRows.find((item) => String(item.id) === String(submissionId));
-          if (selectedSubmission) {
+          if (!selectedSubmission) return;
+
+          if (action === 'edit') {
+            openDraftForEditing(selectedSubmission);
+          } else {
             showDetailModal(selectedSubmission);
           }
         });
+      }
+
+      function openDraftForEditing(draft) {
+        openResearcherSubmissionModal();
+        const form = document.getElementById('researcher-submission-form');
+        if (form) {
+          form.dataset.editDraftId = String(draft.id || '');
+          form.dataset.editDraftEntryId = String(draft.entry_id || '');
+        }
+        const setVal = (id, val) => {
+          if (val == null || val === '') return;
+          const el = document.getElementById(id);
+          if (el) el.value = String(val);
+        };
+        setVal('submission-scientific-name', draft.scientific_name || draft.species);
+        setVal('submission-genus', draft.genus || '');
+        setVal('submission-observation-date', draft.observation_date || '');
+        setVal('submission-microhabitat', draft.microhabitat || '');
+        setVal('submission-growth-substrate', draft.growth_substrate || '');
+        setVal('submission-flower-color', draft.flower_color || '');
+        setVal('submission-flower-count', draft.flower_count || '');
+        setVal('submission-leaf-count', draft.leaf_count || '');
+        setVal('submission-population-status', draft.population_status || '');
+        setVal('submission-threat-level', draft.threat_level || '');
+        setVal('submission-head-observer', draft.researcher_name || '');
+        setVal('submission-institution', draft.institution || '');
+        setVal('submission-researcher-notes', draft.researcher_notes || '');
+        // habitat-type and microhabitat are selects — set via direct property
+        const habitatEl = document.getElementById('submission-habitat-type');
+        if (habitatEl && draft.habitat_type) habitatEl.value = draft.habitat_type;
       }
 
       if (catalogGrid) {
@@ -3568,7 +3638,8 @@ function refreshConservationHeatMap(summary) {
           approved: 'Approved',
           rejected: 'Rejected',
           revision: 'Need Revision',
-          pending: 'Pending Review'
+          pending: 'Pending Review',
+          draft: 'Draft'
         };
         return labels[String(status || '').toLowerCase()] || 'Pending Review';
       }

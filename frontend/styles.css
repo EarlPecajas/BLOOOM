@@ -2375,6 +2375,12 @@ table tbody tr:hover {
   border-color: #cbd5e1;
 }
 
+.submission-status-badge.status-draft {
+  background: #fef9ec;
+  color: #7c5a00;
+  border-color: #fde68a;
+}
+
 .submission-action-btn {
   background: linear-gradient(180deg, #2fd31f 0%, #15a10c 45%, #088f08 100%);
   color: #ffffff;
@@ -2401,6 +2407,17 @@ table tbody tr:hover {
 .submission-action-btn:focus-visible {
   outline: 2px solid rgba(21, 161, 12, 0.35);
   outline-offset: 2px;
+}
+
+.submission-edit-btn {
+  background: linear-gradient(180deg, #f0a500 0%, #c87800 100%);
+  border-color: #a06000;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 0 1px #b87000;
+}
+
+.submission-edit-btn:hover {
+  background: linear-gradient(180deg, #f5b020 0%, #d48500 100%);
+  border-color: #8a5200;
 }
 
 .dashboard-btn {
