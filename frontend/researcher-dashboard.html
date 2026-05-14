@@ -1040,6 +1040,22 @@
               <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
             </div>
             <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
+
+            <!-- Related Study -->
+            <div style="grid-column:1/-1;border:1px solid #d4ddd7;border-radius:10px;padding:1rem;background:#f9fcfa;">
+              <div style="font-size:0.88rem;font-weight:700;color:#2D5128;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2D5128" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                Related Study
+              </div>
+              <div style="display:grid;gap:0.65rem;">
+                <input id="submission-related-study-title" type="text" placeholder="Title of Information" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;width:100%;box-sizing:border-box;font-family:inherit;font-size:0.92rem;" />
+                <input id="submission-related-study-link" type="url" placeholder="Link (https://...)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;width:100%;box-sizing:border-box;font-family:inherit;font-size:0.92rem;" />
+                <div>
+                  <label style="display:block;font-size:0.83rem;color:#52655b;margin-bottom:0.3rem;font-weight:600;">Upload Study (PDF)</label>
+                  <input id="submission-related-study-file" type="file" accept=".pdf,application/pdf" style="padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;width:100%;box-sizing:border-box;background:#fff;font-size:0.88rem;" />
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Navigation Row -->
@@ -1914,7 +1930,7 @@
         });
       }
 
-      function buildSubmissionPayload({ entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers, wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [], photo3dUrls = [], videoUrls = [], reviewStatus = 'pending' }) {
+      function buildSubmissionPayload({ entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers, wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [], photo3dUrls = [], videoUrls = [], relatedStudyFileUrls = [], reviewStatus = 'pending' }) {
         return {
           entry_id: entryId,
           user_id: null,
@@ -1990,6 +2006,12 @@
           institution: document.getElementById('submission-institution')?.value || null,
           team_members: teamMembers.length ? JSON.stringify(teamMembers) : null,
           researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
+          related_study: (function() {
+            const title = document.getElementById('submission-related-study-title')?.value || '';
+            const link = document.getElementById('submission-related-study-link')?.value || '';
+            const fileUrl = relatedStudyFileUrls?.[0] || '';
+            return (title || link || fileUrl) ? JSON.stringify({ title, link, file_url: fileUrl }) : null;
+          })(),
           review_status: reviewStatus
         };
       }
@@ -2085,18 +2107,20 @@
               return uploadedUrls;
             }
 
-            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls] = await Promise.all([
+            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls, relatedStudyFileUrls] = await Promise.all([
               uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
               uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
               uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
               uploadFilesFromInput(document.getElementById('submission-photo-3d'), 'photo3d'),
-              uploadFilesFromInput(document.getElementById('submission-video'), 'video')
+              uploadFilesFromInput(document.getElementById('submission-video'), 'video'),
+              uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
             ]);
 
             const insertPayload = buildSubmissionPayload({
               entryId, currentEmail, currentName,
               commonNames, localNames, leafTextures, threatTypes, teamMembers,
               wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls,
+              relatedStudyFileUrls,
               reviewStatus: 'pending'
             });
 
@@ -2923,6 +2947,14 @@
         setVal('submission-head-observer', draft.researcher_name || '');
         setVal('submission-institution', draft.institution || '');
         setVal('submission-researcher-notes', draft.researcher_notes || '');
+        // Restore related study fields from draft
+        try {
+          const rs = draft.related_study ? JSON.parse(draft.related_study) : null;
+          if (rs) {
+            setVal('submission-related-study-title', rs.title || '');
+            setVal('submission-related-study-link', rs.link || '');
+          }
+        } catch (e) { /* ignore parse errors */ }
         // habitat-type and microhabitat are selects — set via direct property
         const habitatEl = document.getElementById('submission-habitat-type');
         if (habitatEl && draft.habitat_type) habitatEl.value = draft.habitat_type;
