@@ -672,7 +672,7 @@
     </div>
 
     <!-- Map View -->
-    <div id="map-view" class="view-section" style="display:none;padding:0;background:#0d1a0c;border-radius:0;overflow:hidden;height:calc(100vh - 84px);margin:-2rem clamp(-3rem,-4vw,-1.5rem);flex-direction:column;">
+    <div id="map-view" class="view-section" style="display:none;padding:0;background:#0d1a0c;border-radius:0;overflow:hidden;flex-direction:column;">
       <!-- Map Header -->
       <div style="background:#ffffff;padding:0.9rem 1.5rem;border-bottom:1px solid #d8e8d4;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -3377,19 +3377,42 @@ function refreshConservationHeatMap(summary) {
 
         setActiveSidebarItem(viewName);
 
-        // Hide all views
+        // Hide all views — also clear any map fixed-position styling
         document.querySelectorAll('.view-section').forEach(section => {
           section.style.display = 'none';
           section.style.pointerEvents = 'none';
+          section.style.position = '';
+          section.style.top = '';
+          section.style.left = '';
+          section.style.right = '';
+          section.style.bottom = '';
+          section.style.zIndex = '';
+          section.style.height = '';
+          section.style.margin = '';
         });
         dashboardContainer.style.display = 'none';
         dashboardContainer.style.pointerEvents = 'none';
-        
+
         // Show selected view
         const selectedView = document.getElementById(viewName + '-view');
         if (selectedView) {
-          selectedView.style.display = viewName === 'map' ? 'flex' : 'block';
           selectedView.style.pointerEvents = 'auto';
+          if (viewName === 'map') {
+            // Fixed-position map: sits directly below the sticky header, full viewport width/height
+            const headerEl = document.querySelector('.dashboard-header');
+            const headerH = headerEl ? headerEl.getBoundingClientRect().height : 84;
+            selectedView.style.display = 'flex';
+            selectedView.style.position = 'fixed';
+            selectedView.style.top = headerH + 'px';
+            selectedView.style.left = '0';
+            selectedView.style.right = '0';
+            selectedView.style.bottom = '0';
+            selectedView.style.height = '';
+            selectedView.style.zIndex = '500';
+            selectedView.style.margin = '0';
+          } else {
+            selectedView.style.display = 'block';
+          }
           // Ensure dashboard and researcher home are hidden when showing a specific view
           if (dashboardContainer) { dashboardContainer.style.setProperty('display','none','important'); dashboardContainer.style.pointerEvents = 'none'; }
           if (researcherHome) researcherHome.style.setProperty('display','none','important');
