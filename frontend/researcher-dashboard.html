@@ -674,23 +674,23 @@
     <!-- Map View -->
     <div id="map-view" class="view-section" style="display:none;padding:0;background:#0d1a0c;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.18);height:calc(100vh - 120px);margin:0;flex-direction:column;">
       <!-- Map Header -->
-      <div style="background:linear-gradient(135deg,#0d1f0b 0%,#1a3318 55%,#243d1e 100%);padding:0.9rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.35);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-shrink:0;">
+      <div style="background:#ffffff;padding:0.9rem 1.5rem;border-bottom:1px solid #d8e8d4;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:0.75rem;">
           <div style="width:3px;height:38px;background:linear-gradient(180deg,#6fcf4a,#34a853);border-radius:2px;flex-shrink:0;"></div>
           <div>
-            <h1 style="margin:0;color:#ffffff;font-size:1.25rem;font-weight:800;letter-spacing:0.01em;text-shadow:0 1px 4px rgba(0,0,0,0.7);line-height:1.2;font-family:Inter,Roboto,sans-serif;">Mt. Busa Trail &amp; Orchid Distribution</h1>
-            <p style="margin:0.2rem 0 0 0;color:rgba(255,255,255,0.8);font-size:0.8rem;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;">Interactive ecological survey map</p>
+            <h1 style="margin:0;color:#162b14;font-size:1.25rem;font-weight:800;letter-spacing:0.01em;line-height:1.2;font-family:Inter,Roboto,sans-serif;">Mt. Busa Trail &amp; Orchid Distribution</h1>
+            <p style="margin:0.2rem 0 0 0;color:#4a7a42;font-size:0.8rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Interactive ecological survey map</p>
           </div>
         </div>
         <div style="display:flex;gap:0.45rem;flex-wrap:wrap;justify-content:flex-end;align-items:center;">
-          <button onclick="document.getElementById('map-legend').style.display=document.getElementById('map-legend').style.display==='none'?'block':'none'" style="padding:0.42rem 0.9rem;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.22);border-radius:7px;color:#e0f0da;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.2s;white-space:nowrap;">Legend</button>
-          <button onclick="if(leafletMap){leafletMap.setView(MT_BUSA_COORDS,MT_BUSA_ZOOM_MAIN);}" style="padding:0.42rem 0.9rem;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.22);border-radius:7px;color:#e0f0da;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.2s;white-space:nowrap;">Reset View</button>
+          <button onclick="document.getElementById('map-legend').style.display=document.getElementById('map-legend').style.display==='none'?'block':'none'" style="padding:0.42rem 0.9rem;background:#fff;border:1px solid rgba(45,81,40,0.32);border-radius:10px;color:#2D5128;cursor:pointer;font-size:0.8rem;font-weight:700;transition:all 0.2s;white-space:nowrap;">Legend</button>
+          <button onclick="if(leafletMap){leafletMap.setView(MT_BUSA_COORDS,MT_BUSA_ZOOM_MAIN);}" style="padding:0.42rem 0.9rem;background:#fff;border:1px solid rgba(45,81,40,0.32);border-radius:10px;color:#2D5128;cursor:pointer;font-size:0.8rem;font-weight:700;transition:all 0.2s;white-space:nowrap;">Reset View</button>
         </div>
       </div>
 
       <!-- Trail Selector Bar -->
-      <div style="background:#1a2e18;border-bottom:1px solid rgba(255,255,255,0.08);padding:0.45rem 1.2rem;overflow-x:auto;overflow-y:hidden;flex-shrink:0;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
-        <span style="color:#ffffff;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.3rem;flex-shrink:0;">Trails</span>
+      <div style="background:#f5faf3;border-bottom:1px solid #d8e8d4;padding:0.45rem 1.2rem;overflow-x:auto;overflow-y:hidden;flex-shrink:0;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
+        <span style="color:#2D5128;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.3rem;flex-shrink:0;">Trails</span>
         <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#4caf50;border:1.5px solid #4caf50;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Canopy Loop 1</button>
         <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00bcd4;border:1.5px solid #00bcd4;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Moss Corridor 2</button>
         <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ff7043;border:1.5px solid #ff7043;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Valley Way 3</button>
