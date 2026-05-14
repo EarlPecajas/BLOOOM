@@ -446,7 +446,10 @@
           <div class="orchid-detail-header-bar">
             <button type="button" id="dashboard-detail-to-map-btn" class="orchid-detail-back-btn">← Map</button>
             <h3 id="dashboard-orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">–</h3>
-            <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
+            <div style="display:flex;gap:.4rem;align-items:center;">
+              <button type="button" id="dashboard-add-instance-button" hidden style="background:#fff;border:1px solid rgba(45,81,40,0.32);color:#2D5128;border-radius:10px;padding:.42rem .9rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease,transform 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(45,81,40,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(45,81,40,0.32)'">+ Add Instance</button>
+              <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
+            </div>
           </div>
           <div class="orchid-step-bar">
             <span id="dashboard-orchid-step-label" class="orchid-step-label-text">Basic Taxonomic Information</span>
@@ -3719,6 +3722,15 @@
         if (mapNameEl) mapNameEl.textContent = orchidName;
         if (stageNameEl) stageNameEl.textContent = orchidName;
 
+        const dashboardAddInstanceBtn = document.getElementById('dashboard-add-instance-button');
+        if (dashboardAddInstanceBtn) {
+          dashboardAddInstanceBtn.hidden = false;
+          dashboardAddInstanceBtn.onclick = function() {
+            closeDashboardOrchidDetails();
+            openResearcherSubmissionModal(orchidName);
+          };
+        }
+
         // Reset all detail rows
         document.querySelectorAll('#dashboard-orchid-detail-stage .orchid-detail-row').forEach(function(row) {
           row.hidden = true;
@@ -3904,7 +3916,7 @@
 
           const overviewResult = await bloomSupabase
             .from('orchid_overview')
-            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url')
+            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
             .order('name', { ascending: true });
 
           if (overviewResult.error) {
@@ -4010,7 +4022,7 @@
         });
       }
 
-      catalogGrid.addEventListener('click', async function(e) {
+      catalogGrid.addEventListener('click', function(e) {
         const card = e.target.closest('[data-dashboard-orchid-id]');
         if (!card) {
           return;
@@ -4019,33 +4031,9 @@
         const orchidId = card.getAttribute('data-dashboard-orchid-id');
         const selectedOrchid = orchidRows.find((orchid) => String(orchid.id) === String(orchidId));
 
-        if (!selectedOrchid) return;
-
-        // If authenticated, try to load the latest approved submission for this species
-        if (bloomSupabase && parsedActiveUser && (isAdminRole || isResearcherRole)) {
-          try {
-            const sciName = String(selectedOrchid.name || '').trim();
-            const { data, error } = await bloomSupabase
-              .from('denr_approved_sightings')
-              .select('*')
-              .eq('scientific_name', sciName)
-              .order('observation_date', { ascending: false })
-              .limit(1);
-
-            if (!error && Array.isArray(data) && data.length > 0) {
-              // Normalize and show the submission detail modal used for DENR review
-              const normalized = normalizeSubmissionRow(data[0]);
-              showDetailModal(normalized);
-              return;
-            }
-          } catch (err) {
-            // fallback to showing orchid overview details below
-            console.warn('Failed to load denr sighting for detail view:', err?.message || err);
-          }
+        if (selectedOrchid) {
+          openDashboardOrchidDetails(selectedOrchid);
         }
-
-        // Fallback: show the orchid overview details
-        openDashboardOrchidDetails(selectedOrchid);
       });
 
       dashboardImageLightbox.addEventListener('click', closeDashboardLightbox);
