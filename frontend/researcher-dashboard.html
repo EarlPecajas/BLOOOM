@@ -691,11 +691,11 @@
       <!-- Trail Selector Bar -->
       <div style="background:#f5faf3;border-bottom:1px solid #d8e8d4;padding:0.45rem 1.2rem;overflow-x:auto;overflow-y:hidden;flex-shrink:0;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
         <span style="color:#2D5128;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.3rem;flex-shrink:0;">Trails</span>
-        <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#4caf50;border:1.5px solid #4caf50;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Canopy Loop 1</button>
-        <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00bcd4;border:1.5px solid #00bcd4;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Moss Corridor 2</button>
-        <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ff7043;border:1.5px solid #ff7043;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Valley Way 3</button>
-        <button id="trail-btn-trail4" onclick="toggleTrail('trail4')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ab47bc;border:1.5px solid #ab47bc;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Forest Spur 4</button>
-        <button id="trail-btn-trail5" onclick="toggleTrail('trail5')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ffb300;border:1.5px solid #ffb300;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Busa Loop 5</button>
+        <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00e5ff;border:1.5px solid #00e5ff;border-radius:20px;cursor:pointer;font-weight:700;color:#001a1f;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Canopy Loop 1</button>
+        <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00e5ff;border:1.5px solid #00e5ff;border-radius:20px;cursor:pointer;font-weight:700;color:#001a1f;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Moss Corridor 2</button>
+        <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00e5ff;border:1.5px solid #00e5ff;border-radius:20px;cursor:pointer;font-weight:700;color:#001a1f;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Valley Way 3</button>
+        <button id="trail-btn-trail4" onclick="toggleTrail('trail4')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00e5ff;border:1.5px solid #00e5ff;border-radius:20px;cursor:pointer;font-weight:700;color:#001a1f;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Forest Spur 4</button>
+        <button id="trail-btn-trail5" onclick="toggleTrail('trail5')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00e5ff;border:1.5px solid #00e5ff;border-radius:20px;cursor:pointer;font-weight:700;color:#001a1f;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Busa Loop 5</button>
       </div>
 
       <!-- Map Container -->
@@ -2979,53 +2979,49 @@
       }
 
       // Trail definitions — all coordinates around Mt. Busa (6.2333°N, 124.7000°E)
+      const NEON_BLUE = '#00e5ff';
       const MAP_TRAIL_DEFS = {
         trail1: {
-          name: 'Canopy Loop 1', color: '#4caf50', weight: 4.5, dashArray: null,
+          name: 'Canopy Loop 1', color: NEON_BLUE, weight: 3,
           desc: 'Upper canopy loop on the NW slope. Difficult. ~12 km.',
           coords: [
-            [6.2333,124.7000],[6.2450,124.6870],[6.2600,124.6720],
-            [6.2780,124.6580],[6.2950,124.6480],[6.3080,124.6540],
-            [6.3150,124.6680],[6.3100,124.6840],[6.2950,124.6930],
-            [6.2750,124.6980],[6.2580,124.7010],[6.2420,124.7020],
-            [6.2333,124.7000]
+            [6.2333,124.7000],[6.3000,124.7000],
+            [6.3000,124.6400],[6.3400,124.6400],
+            [6.3400,124.6800]
           ]
         },
         trail2: {
-          name: 'Moss Corridor 2', color: '#00bcd4', weight: 4, dashArray: '8,4',
+          name: 'Moss Corridor 2', color: NEON_BLUE, weight: 3,
           desc: 'Mossy forest corridor heading east. Moderate. ~10 km.',
           coords: [
-            [6.2333,124.7000],[6.2290,124.7150],[6.2250,124.7300],
-            [6.2180,124.7450],[6.2100,124.7600],[6.2020,124.7730],
-            [6.1950,124.7850]
+            [6.2333,124.7000],[6.2333,124.7500],
+            [6.1950,124.7500],[6.1950,124.7950]
           ]
         },
         trail3: {
-          name: 'Valley Way 3', color: '#ff7043', weight: 4, dashArray: null,
+          name: 'Valley Way 3', color: NEON_BLUE, weight: 3,
           desc: 'Descends into the southern valley. Moderate. ~11 km.',
           coords: [
-            [6.2333,124.7000],[6.2150,124.6950],[6.1950,124.6900],
-            [6.1750,124.6820],[6.1600,124.6730],[6.1480,124.6680],
-            [6.1380,124.6700]
+            [6.2333,124.7000],[6.1750,124.7000],
+            [6.1750,124.6500],[6.1350,124.6500]
           ]
         },
         trail4: {
-          name: 'Forest Spur 4', color: '#ab47bc', weight: 3.5, dashArray: '6,3',
+          name: 'Forest Spur 4', color: NEON_BLUE, weight: 3,
           desc: 'Spur into dense NE forest ridge. Moderate. ~9 km.',
           coords: [
-            [6.2333,124.7000],[6.2480,124.7180],[6.2650,124.7350],
-            [6.2830,124.7520],[6.2980,124.7680],[6.3120,124.7820]
+            [6.2333,124.7000],[6.2333,124.7450],
+            [6.2850,124.7450],[6.2850,124.7900]
           ]
         },
         trail5: {
-          name: 'Busa Loop 5', color: '#ffb300', weight: 5, dashArray: null,
+          name: 'Busa Loop 5', color: NEON_BLUE, weight: 3,
           desc: 'Main summit circuit around Mt. Busa. Strenuous. ~22 km.',
           coords: [
-            [6.2333,124.7000],[6.2550,124.6780],[6.2820,124.6600],
-            [6.3100,124.6650],[6.3300,124.6900],[6.3350,124.7200],
-            [6.3200,124.7500],[6.2950,124.7700],[6.2650,124.7800],
-            [6.2380,124.7750],[6.2150,124.7600],[6.2050,124.7300],
-            [6.2100,124.7000],[6.2150,124.6780],[6.2333,124.7000]
+            [6.2333,124.7000],[6.3350,124.7000],
+            [6.3350,124.7750],[6.1900,124.7750],
+            [6.1900,124.6350],[6.3100,124.6350],
+            [6.3100,124.7000],[6.2333,124.7000]
           ]
         }
       };
@@ -3040,14 +3036,16 @@
         if (mapTrailLayers[trailId]) {
           leafletMap.removeLayer(mapTrailLayers[trailId]);
           delete mapTrailLayers[trailId];
-          if (btn) { btn.style.background = 'transparent'; btn.style.color = def.color; btn.style.borderColor = def.color; }
+          if (btn) { btn.style.background = 'transparent'; btn.style.color = NEON_BLUE; btn.style.borderColor = NEON_BLUE; }
         } else {
-          const popup = `<div style="min-width:180px;"><b style="color:${def.color};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
-          mapTrailLayers[trailId] = L.polyline(def.coords, {
-            color: def.color, weight: def.weight, opacity: 0.92,
-            lineCap: 'round', lineJoin: 'round', dashArray: def.dashArray
-          }).bindPopup(popup).addTo(leafletMap);
-          if (btn) { btn.style.background = def.color; btn.style.color = '#fff'; btn.style.borderColor = def.color; }
+          const opts = { lineCap: 'square', lineJoin: 'miter' };
+          const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
+          // Three-layer neon glow: outer halo → mid glow → bright core
+          const halo = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 18, opacity: 0.08 });
+          const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
+          const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
+          mapTrailLayers[trailId] = L.layerGroup([halo, mid, core]).addTo(leafletMap);
+          if (btn) { btn.style.background = NEON_BLUE; btn.style.color = '#001a1f'; btn.style.borderColor = NEON_BLUE; }
         }
       };
 
