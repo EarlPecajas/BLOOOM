@@ -4961,7 +4961,18 @@
         }
       };
 
+      function normalizeConservationKey(statusText) {
+        const s = String(statusText || '').trim().toLowerCase().replace(/[\s_-]+/g, '_');
+        if (s.includes('critically')) return 'critically_endangered';
+        if (s.includes('endangered')) return 'endangered';
+        if (s.includes('vulnerable')) return 'vulnerable';
+        if (s.includes('least') || s.includes('concern')) return 'least_concern';
+        return 'unassigned';
+      }
+
       async function loadConservationSummary() {
+        const blankSummary = () => ({ critically_endangered: 0, endangered: 0, vulnerable: 0, least_concern: 0, unassigned: 0 });
+
         function getFallbackConservationSummary() {
           return {
             critically_endangered: (conservationData.critically_endangered?.species || []).length,
@@ -4978,49 +4989,65 @@
           const vu = document.getElementById('count-vulnerable');
           const lc = document.getElementById('count-least-concern');
           const ua = document.getElementById('count-unassigned');
-
           if (ce) ce.textContent = `${summary.critically_endangered || 0} species recorded`;
           if (en) en.textContent = `${summary.endangered || 0} species recorded`;
           if (vu) vu.textContent = `${summary.vulnerable || 0} species recorded`;
           if (lc) lc.textContent = `${summary.least_concern || 0} species recorded`;
           if (ua) ua.textContent = `${summary.unassigned || 0} species recorded`;
-
           refreshConservationAnalytics(summary);
         }
 
+        if (!bloomSupabase) { applyConservationSummary(getFallbackConservationSummary()); return; }
+
+        // --- Try 1: orchid_overview.conservation_status_key ---
         try {
-          if (!bloomSupabase) {
-            throw new Error('Supabase is not configured');
+          const { data, error } = await bloomSupabase.from('orchid_overview').select('conservation_status_key');
+          if (!error && data?.length) {
+            const s = blankSummary();
+            data.forEach(r => { const k = r.conservation_status_key || 'unassigned'; if (k in s) s[k]++; });
+            if (Object.values(s).some(c => c > 0)) { applyConservationSummary(s); return; }
           }
+        } catch {}
 
+        // --- Try 2: orchid_overview.conservation_status text field ---
+        try {
+          const { data, error } = await bloomSupabase.from('orchid_overview').select('conservation_status');
+          if (!error && data?.length) {
+            const s = blankSummary();
+            data.forEach(r => { const k = normalizeConservationKey(r.conservation_status); s[k]++; });
+            if (Object.values(s).some(c => c > 0)) { applyConservationSummary(s); return; }
+          }
+        } catch {}
+
+        // --- Try 3: biogeography + conservation_status tables directly ---
+        try {
+          const [bioRes, csRes] = await Promise.all([
+            bloomSupabase.from('biogeography').select('orchid_id, conservation_id'),
+            bloomSupabase.from('conservation_status').select('conservation_id, conservation_status')
+          ]);
+          if (!bioRes.error && !csRes.error && bioRes.data?.length) {
+            const csMap = new Map((csRes.data || []).map(r => [r.conservation_id, r.conservation_status]));
+            const s = blankSummary();
+            (bioRes.data || []).forEach(r => {
+              const k = normalizeConservationKey(csMap.get(r.conservation_id));
+              s[k]++;
+            });
+            if (Object.values(s).some(c => c > 0)) { applyConservationSummary(s); return; }
+          }
+        } catch {}
+
+        // --- Try 4: species_sightings approved records ---
+        try {
           const { data, error } = await bloomSupabase
-            .from('orchid_overview')
-            .select('conservation_status_key');
-
-          if (error) {
-            throw new Error(error.message || 'Failed to load conservation summary');
+            .from('species_sightings').select('threat_level').eq('review_status', 'approved');
+          if (!error && data?.length) {
+            const s = blankSummary();
+            data.forEach(r => { const k = normalizeConservationKey(r.threat_level); s[k]++; });
+            if (Object.values(s).some(c => c > 0)) { applyConservationSummary(s); return; }
           }
+        } catch {}
 
-          const summary = {
-            critically_endangered: 0,
-            endangered: 0,
-            vulnerable: 0,
-            least_concern: 0,
-            unassigned: 0
-          };
-
-          (data || []).forEach((row) => {
-            const key = row.conservation_status_key || 'unassigned';
-            if (summary[key] !== undefined) {
-              summary[key] += 1;
-            }
-          });
-
-          const hasAnyData = Object.values(summary).some((count) => count > 0);
-          applyConservationSummary(hasAnyData ? summary : getFallbackConservationSummary());
-        } catch {
-          applyConservationSummary(getFallbackConservationSummary());
-        }
+        applyConservationSummary(getFallbackConservationSummary());
       }
 
       async function showConservationList(status, statusName) {
@@ -5036,46 +5063,103 @@
         document.getElementById('conservationTitle').textContent = `${statusName} Species`;
         const content = document.getElementById('conservationListContent');
         content.innerHTML = '<p style="margin:0;color:#666;">Loading conservation records...</p>';
+        document.getElementById('conservationModal').style.display = 'flex';
 
-        try {
-          if (!bloomSupabase) {
-            throw new Error('Supabase is not configured');
+        function renderSpeciesCards(rows) {
+          content.innerHTML = '';
+          if (!rows.length) {
+            content.innerHTML = '<p style="margin:0;color:#666;">No species recorded under this status yet.</p>';
+            return;
           }
+          rows.forEach(sp => {
+            const card = document.createElement('div');
+            card.style.cssText = `background:linear-gradient(135deg,rgba(${getRGB(style.color)},0.05),rgba(${getRGB(style.color)},0.1));border-left:4px solid ${style.color};padding:1rem;border-radius:8px;transition:all 200ms ease;cursor:default;`;
+            card.onmouseover = function() { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; };
+            card.onmouseout  = function() { this.style.transform='translateY(0)'; this.style.boxShadow='none'; };
+            card.innerHTML = `
+              <div style="font-weight:600;color:${style.color};margin-bottom:0.4rem;font-size:0.95rem;font-style:italic;">${sp.name}</div>
+              ${sp.genus ? `<div style="font-size:0.8rem;color:#666;margin-bottom:0.2rem;">Genus: ${sp.genus}</div>` : ''}
+              <div style="font-size:0.75rem;color:#999;">Status: ${sp.status || statusName}</div>
+            `;
+            content.appendChild(card);
+          });
+        }
 
+        if (!bloomSupabase) {
+          const fb = (conservationData[status]?.species || []).map(s => ({ name: s.name, genus: '', status: statusName }));
+          renderSpeciesCards(fb); return;
+        }
+
+        // --- Try 1: orchid_overview with conservation_status_key ---
+        try {
           const { data, error } = await bloomSupabase
             .from('orchid_overview')
             .select('name, genus, conservation_status, conservation_status_key')
             .eq('conservation_status_key', status)
             .order('name', { ascending: true });
-
-          if (error) {
-            throw new Error(error.message || 'Failed to load conservation list');
+          if (!error && data?.length) {
+            renderSpeciesCards(data.map(r => ({ name: r.name, genus: r.genus, status: r.conservation_status || statusName })));
+            return;
           }
+        } catch {}
 
-          const rows = data || [];
-
-          content.innerHTML = '';
-          if (rows.length === 0) {
-            content.innerHTML = '<p style="margin:0;color:#666;">No species in this status yet.</p>';
-          } else {
-            rows.forEach((species) => {
-              const card = document.createElement('div');
-              card.style.cssText = `background:linear-gradient(135deg,rgba(${getRGB(style.color)}, 0.05),rgba(${getRGB(style.color)}, 0.1));border-left:4px solid ${style.color};padding:1rem;border-radius:8px;transition:all 200ms ease;cursor:default;`;
-              card.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; };
-              card.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; };
-              card.innerHTML = `
-                <div style="font-weight:600;color:${style.color};margin-bottom:0.5rem;font-size:0.95rem;font-style:italic;">${species.name}</div>
-                <div style="font-size:0.8rem;color:#666;margin-bottom:0.25rem;">Genus: ${species.genus}</div>
-                <div style="font-size:0.75rem;color:#999;">Status: ${species.conservation_status}</div>
-              `;
-              content.appendChild(card);
-            });
+        // --- Try 2: orchid_overview with conservation_status text matching ---
+        try {
+          const { data, error } = await bloomSupabase
+            .from('orchid_overview')
+            .select('name, genus, conservation_status')
+            .order('name', { ascending: true });
+          if (!error && data?.length) {
+            const filtered = data.filter(r => normalizeConservationKey(r.conservation_status) === status);
+            if (filtered.length) {
+              renderSpeciesCards(filtered.map(r => ({ name: r.name, genus: r.genus, status: r.conservation_status || statusName })));
+              return;
+            }
           }
-        } catch {
-          content.innerHTML = '<p style="margin:0;color:#666;">Could not load conservation data from the database.</p>';
-        }
+        } catch {}
 
-        document.getElementById('conservationModal').style.display = 'flex';
+        // --- Try 3: orchids + genus + biogeography + conservation_status ---
+        try {
+          const [orchRes, genRes, bioRes, csRes] = await Promise.all([
+            bloomSupabase.from('orchids').select('orchid_id, sci_name, genus_id'),
+            bloomSupabase.from('genus').select('genus_id, genus_name'),
+            bloomSupabase.from('biogeography').select('orchid_id, conservation_id'),
+            bloomSupabase.from('conservation_status').select('conservation_id, conservation_status')
+          ]);
+          if (!orchRes.error && !genRes.error && !bioRes.error && !csRes.error) {
+            const genMap = new Map((genRes.data || []).map(r => [r.genus_id, r.genus_name]));
+            const csMap  = new Map((csRes.data  || []).map(r => [r.conservation_id, r.conservation_status]));
+            const bioMap = new Map((bioRes.data  || []).map(r => [r.orchid_id, r.conservation_id]));
+            const rows = (orchRes.data || [])
+              .filter(o => normalizeConservationKey(csMap.get(bioMap.get(o.orchid_id))) === status)
+              .sort((a, b) => (a.sci_name || '').localeCompare(b.sci_name || ''))
+              .map(o => ({
+                name: o.sci_name,
+                genus: genMap.get(o.genus_id) || '',
+                status: csMap.get(bioMap.get(o.orchid_id)) || statusName
+              }));
+            renderSpeciesCards(rows); return;
+          }
+        } catch {}
+
+        // --- Try 4: species_sightings approved ---
+        try {
+          const { data, error } = await bloomSupabase
+            .from('species_sightings')
+            .select('scientific_name, genus, threat_level')
+            .eq('review_status', 'approved')
+            .order('scientific_name', { ascending: true });
+          if (!error && data?.length) {
+            const rows = data
+              .filter(r => normalizeConservationKey(r.threat_level) === status)
+              .map(r => ({ name: r.scientific_name, genus: r.genus, status: r.threat_level || statusName }));
+            renderSpeciesCards(rows); return;
+          }
+        } catch {}
+
+        // --- Fallback: hardcoded data ---
+        const fb = (conservationData[status]?.species || []).map(s => ({ name: s.name, genus: '', status: statusName }));
+        renderSpeciesCards(fb);
       }
 
       function getRGB(hex) {
