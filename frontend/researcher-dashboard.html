@@ -1260,11 +1260,15 @@
           researcherDataMenu.hidden = !isResearcherRole;
         }
 
-        // Hide DENR-only sidebar items for researchers (runs after auth resolves so isResearcherRole is correct)
+        // Set researcher sidebar: always show Dashboard, Orchids, Map, Submissions; hide DENR-only items
         if (isResearcherRole) {
           ['conservation', 'report'].forEach((viewName) => {
             const navItem = document.querySelector(`.sidebar-item[data-view="${viewName}"]`);
             if (navItem) navItem.style.display = 'none';
+          });
+          ['dashboard', 'orchids', 'map', 'submissions'].forEach((viewName) => {
+            const navItem = document.querySelector(`.sidebar-item[data-view="${viewName}"]`);
+            if (navItem) navItem.style.removeProperty('display');
           });
         }
 
