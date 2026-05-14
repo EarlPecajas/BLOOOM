@@ -75,27 +75,39 @@
     <aside class="sidebar" id="sidebar">
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-item active" data-view="dashboard">
-          <span class="sidebar-icon">■</span>
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
           <span>Dashboard</span>
         </a>
         <a href="#" class="sidebar-item" data-view="orchids">
-          <span class="sidebar-icon">❖</span>
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+          </span>
           <span>Orchids</span>
         </a>
         <a href="#" class="sidebar-item" data-view="conservation">
-          <span class="sidebar-icon">◐</span>
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
           <span>Conservation Status</span>
         </a>
         <a href="#" class="sidebar-item" data-view="report">
-          <span class="sidebar-icon">☐</span>
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          </span>
           <span>Generate Report</span>
         </a>
         <a href="#" class="sidebar-item" data-view="map">
-          <span class="sidebar-icon">⊕</span>
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          </span>
           <span>Map</span>
         </a>
         <a href="#" class="sidebar-item" data-view="submissions">
-          <span class="sidebar-icon">▦</span>
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </span>
           <span>Submissions</span>
         </a>
       </nav>
@@ -158,145 +170,219 @@
     </header>
 
     <main class="dashboard-container container-fluid py-4">
-      <div class="dashboard-grid">
-        <!-- Notifications Panel -->
-        <div class="dashboard-card notifications-card card shadow-sm border-0">
-          <h3 class="card-title">Notifications</h3>
-          <div class="notification-item">
-            <div class="notification-icon">●</div>
-            <div class="notification-content">
-              <p class="notification-text">2 new submissions are awaiting DENR review.</p>
-              <span class="notification-time">Updated just now</span>
+
+      <!-- ── DENR HOME ───────────────────────────────────────────── -->
+      <div id="dashboard-admin-overview">
+
+        <!-- Stat Strip -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-1">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Total Uploads</p>
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#f0fdf4;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </span>
             </div>
+            <p id="total-orchids-count" class="text-3xl font-black text-gray-900 leading-none" style="font-family:Inter,Roboto,sans-serif;">0</p>
+            <p class="text-xs text-gray-400">records in database</p>
           </div>
-          <div class="notification-item">
-            <div class="notification-icon">▲</div>
-            <div class="notification-content">
-              <p class="notification-text">Orchid records increased by 12% this month.</p>
-              <span class="notification-time">Monthly analytics</span>
+
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-1">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Species</p>
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#eff6ff;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              </span>
             </div>
+            <p id="total-genus-count" class="text-3xl font-black text-gray-900 leading-none" style="font-family:Inter,Roboto,sans-serif;">0</p>
+            <p class="text-xs text-gray-400">species confirmed</p>
           </div>
-          <div class="notification-item">
-            <div class="notification-icon">■</div>
-            <div class="notification-content">
-              <p class="notification-text">Map hotspots were refreshed with latest field data.</p>
-              <span class="notification-time">Today, 09:40 AM</span>
+
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-1">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Recorded</p>
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#fefce8;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+              </span>
+            </div>
+            <p id="orchid-records-count" class="text-3xl font-black text-gray-900 leading-none" style="font-family:Inter,Roboto,sans-serif;">0</p>
+            <p class="text-xs text-gray-400">species recorded</p>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-1">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Pending</p>
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#fff7ed;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+            </div>
+            <p class="text-3xl font-black text-gray-900 leading-none" style="font-family:Inter,Roboto,sans-serif;">14</p>
+            <p class="text-xs text-gray-400">awaiting review</p>
+          </div>
+
+        </div>
+
+        <!-- Chart + Notifications row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+
+          <!-- Chart (2/3 width) -->
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 lg:col-span-2">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#2D5128;"></div>
+              <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Orchids Uploaded per Month (2024)</h3>
+            </div>
+            <canvas id="orchidChart" height="120"></canvas>
+          </div>
+
+          <!-- Notifications (1/3 width) -->
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#2D5128;"></div>
+              <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Notifications</h3>
+              <span class="ml-auto text-xs font-bold text-white px-2 py-0.5 rounded-full" style="background:#dc2626;">3</span>
+            </div>
+            <div class="space-y-0">
+
+              <div class="flex gap-3 py-3 border-b border-gray-50">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#fee2e2;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">2 new submissions awaiting DENR review.</p>
+                  <span class="text-xs text-gray-400">Updated just now</span>
+                </div>
+              </div>
+
+              <div class="flex gap-3 py-3 border-b border-gray-50">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#dcfce7;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">Orchid records increased by 12% this month.</p>
+                  <span class="text-xs text-gray-400">Monthly analytics</span>
+                </div>
+              </div>
+
+              <div class="flex gap-3 py-3">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#eff6ff;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">Map hotspots refreshed with latest field data.</p>
+                  <span class="text-xs text-gray-400">Today, 09:40 AM</span>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
-        <!-- Researchers Panel -->
-        <div class="dashboard-card researchers-card card shadow-sm border-0">
-          <h3 class="card-title">Researchers</h3>
-          <div class="researchers-stats">
-            <div class="stat-box">
-              <span class="stat-number" id="total-orchids-count" style="font-size:1.5rem;">0</span>
-              <span class="stat-label">Total Uploaded</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-number" id="total-genus-count" style="font-size:1.5rem;">0</span>
-              <span class="stat-label">Species Confirmed</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-number" style="font-size:1.5rem;">1</span>
-              <span class="stat-label">Active Users</span>
-            </div>
+        <!-- Map full width -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#2D5128;"></div>
+            <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Mt. Busa Hotspots</h3>
           </div>
+          <div id="dashboard-map" class="rounded-xl overflow-hidden" style="width:100%;height:260px;background:#f5f5f5;"></div>
         </div>
 
-        <!-- Chart Panel -->
-        <div class="dashboard-card chart-card card shadow-sm border-0">
-          <h3 class="card-title">Orchids Uploaded per Month (2024)</h3>
-          <canvas id="orchidChart" width="300" height="120"></canvas>
-        </div>
+        <!-- Bottom row: Executive Snapshot / Queue / Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        <!-- Orchids Statistics -->
-        <div class="dashboard-card orchids-stats-card card shadow-sm border-0">
-          <h3 class="card-title">Orchids</h3>
-          <div class="orchid-stat">
-            <div class="stat-badge" id="orchid-records-count" style="width:50px;height:50px;font-size:1.3rem;">0</div>
-            <span class="stat-desc">Species Recorded</span>
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#2D5128;"></div>
+              <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Executive Snapshot</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-xl p-3 text-center" style="background:#f0fdf4;border:1px solid #dcfce7;">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Reviewed</p>
+                <p class="text-xl font-black leading-none" style="color:#2D5128;font-family:Inter,Roboto,sans-serif;">86%</p>
+              </div>
+              <div class="rounded-xl p-3 text-center" style="background:#fff7ed;border:1px solid #fed7aa;">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Pending</p>
+                <p class="text-xl font-black text-orange-600 leading-none" style="font-family:Inter,Roboto,sans-serif;">14</p>
+              </div>
+              <div class="rounded-xl p-3 text-center" style="background:#eff6ff;border:1px solid #bfdbfe;">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Verified</p>
+                <p class="text-xl font-black text-blue-600 leading-none" style="font-family:Inter,Roboto,sans-serif;">58</p>
+              </div>
+              <div class="rounded-xl p-3 text-center" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Last 7d</p>
+                <p class="text-xl font-black text-gray-700 leading-none" style="font-family:Inter,Roboto,sans-serif;">27</p>
+              </div>
+            </div>
           </div>
-          <div class="orchid-stat">
-            <div class="stat-badge" style="width:50px;height:50px;font-size:1.3rem;">58</div>
-            <span class="stat-desc">Species Endemic</span>
-          </div>
-          <div class="orchid-stat">
-            <div class="stat-badge" style="width:50px;height:50px;font-size:1.3rem;">15</div>
-            <span class="stat-desc">Species Endangered</span>
-          </div>
-        </div>
 
-        <!-- Map Panel -->
-        <div class="dashboard-card map-card card shadow-sm border-0">
-          <h3 class="card-title">Mt. Busa Hotspots</h3>
-          <div id="dashboard-map" style="width:100%;height:250px;border-radius:8px;background:#f5f5f5;"></div>
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#2D5128;"></div>
+              <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Operational Queue</h3>
+            </div>
+            <ul class="space-y-2.5 m-0 p-0 list-none">
+              <li class="flex items-start gap-2.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></span>
+                <span class="text-sm text-gray-600 leading-snug">Review high-priority submissions tagged as threatened species.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>
+                <span class="text-sm text-gray-600 leading-snug">Validate location metadata for recently added records.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
+                <span class="text-sm text-gray-600 leading-snug">Finalize this month’s conservation summary report.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#2D5128;"></div>
+              <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Quick Actions</h3>
+            </div>
+            <div class="flex flex-col gap-2.5">
+              <button type="button" onclick="openDashboardView(‘submissions’)"
+                class="w-full text-sm font-semibold text-white rounded-xl py-2.5 px-4 transition-all duration-150 hover:opacity-90 active:scale-95 text-left"
+                style="background:#2D5128;">
+                Open Submissions
+              </button>
+              <button type="button" onclick="openDashboardView(‘report’)"
+                class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 hover:bg-gray-100 active:scale-95 text-left border border-gray-200 text-gray-700 bg-white">
+                Generate Report
+              </button>
+              <button type="button" onclick="openDashboardView(‘conservation’)"
+                class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 hover:bg-gray-100 active:scale-95 text-left border border-gray-200 text-gray-700 bg-white">
+                View Conservation
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      <section id="dashboard-admin-overview" class="dashboard-admin-overview">
-        <article class="dashboard-overview-card">
-          <h3 class="dashboard-overview-title">Executive Snapshot</h3>
-          <div class="overview-chip-grid">
-            <div class="overview-chip">
-              <p class="overview-chip-label">Records Reviewed</p>
-              <p class="overview-chip-value">86%</p>
-            </div>
-            <div class="overview-chip">
-              <p class="overview-chip-label">Pending Review</p>
-              <p class="overview-chip-value">14</p>
-            </div>
-            <div class="overview-chip">
-              <p class="overview-chip-label">Verified Species</p>
-              <p class="overview-chip-value">58</p>
-            </div>
-            <div class="overview-chip">
-              <p class="overview-chip-label">Recent Uploads (7d)</p>
-              <p class="overview-chip-value">27</p>
-            </div>
-          </div>
-        </article>
-
-        <article class="dashboard-overview-card">
-          <h3 class="dashboard-overview-title">Operational Queue</h3>
-          <ul class="overview-list">
-            <li>Review high-priority submissions tagged as threatened species.</li>
-            <li>Validate location metadata for recently added records.</li>
-            <li>Finalize this month’s conservation summary report.</li>
-          </ul>
-        </article>
-
-        <article class="dashboard-overview-card">
-          <h3 class="dashboard-overview-title">Quick Actions</h3>
-          <div class="overview-actions">
-            <button type="button" class="dashboard-btn dashboard-btn-primary" onclick="openDashboardView('submissions')">Open Submissions</button>
-            <button type="button" class="dashboard-btn dashboard-btn-secondary" onclick="openDashboardView('report')">Generate Report</button>
-            <button type="button" class="dashboard-btn dashboard-btn-secondary" onclick="openDashboardView('conservation')">View Conservation</button>
-          </div>
-        </article>
-      </section>
+      <!-- ── END DENR HOME ─────────────────────────────────────── -->
 
       <section id="researcher-home" class="researcher-home" style="display:none;">
         <h1 id="researcher-greeting" class="researcher-home-title">Hello, Researcher</h1>
         <p class="researcher-home-subtitle">Choose where you want to explore next.</p>
 
         <div class="researcher-home-cards">
-          <button type="button" class="researcher-home-card" data-researcher-view="orchids" onclick="openDashboardView('orchids')">
+          <button type="button" class="researcher-home-card" data-researcher-view="orchids" onclick="openDashboardView(‘orchids’)">
             <span class="researcher-home-card-tag">Collection</span>
             <h3 class="researcher-home-card-title">Orchid Catalog</h3>
             <p class="researcher-home-card-copy">delve into our vast collection of orchid data with over 100 entries</p>
           </button>
 
-          <button type="button" class="researcher-home-card" data-researcher-view="map" onclick="openDashboardView('map')">
+          <button type="button" class="researcher-home-card" data-researcher-view="map" onclick="openDashboardView(‘map’)">
             <span class="researcher-home-card-tag">Explore</span>
             <h3 class="researcher-home-card-title">Interactive Map</h3>
             <p class="researcher-home-card-copy">discover orchids with our user friendly orchid data map</p>
           </button>
 
-          <button type="button" class="researcher-home-card" data-researcher-view="collection3d" onclick="openDashboardView('collection3d')">
+          <button type="button" class="researcher-home-card" data-researcher-view="collection3d" onclick="openDashboardView(‘collection3d’)">
             <span class="researcher-home-card-tag">Learn</span>
             <h3 class="researcher-home-card-title"><span class="researcher-card-fixed-number">3D</span> Collection</h3>
-            <p class="researcher-home-card-copy">learn orchid anatomy with our three- dimentional models</p>
+            <p class="researcher-home-card-copy">learn orchid anatomy with our three-dimensional models</p>
           </button>
         </div>
       </section>
