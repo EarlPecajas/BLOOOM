@@ -672,54 +672,51 @@
     </div>
 
     <!-- Map View -->
-    <div id="map-view" class="view-section" style="display:none;padding:0;background:white;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1);height:calc(100vh - 120px);margin:0;display:flex;flex-direction:column;">
+    <div id="map-view" class="view-section" style="display:none;padding:0;background:#0d1a0c;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.18);height:calc(100vh - 120px);margin:0;display:flex;flex-direction:column;">
       <!-- Map Header -->
-      <div style="background:linear-gradient(135deg,#2D5128 0%,#3a6b34 100%);padding:1rem 1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.12);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-shrink:0;">
-        <div>
-          <h1 class="catalog-title" style="margin:0;color:white;font-size:1.4rem;">Mt. Busa Trail & Orchid Distribution</h1>
-          <p style="margin:0.25rem 0 0 0;color:rgba(255,255,255,0.85);font-size:0.9rem;">Interactive ecological survey map</p>
+      <div style="background:linear-gradient(135deg,#0d1f0b 0%,#1a3318 55%,#243d1e 100%);padding:0.9rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.35);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:3px;height:38px;background:linear-gradient(180deg,#6fcf4a,#34a853);border-radius:2px;flex-shrink:0;"></div>
+          <div>
+            <h1 style="margin:0;color:#f0faf0;font-size:1.25rem;font-weight:800;letter-spacing:0.01em;text-shadow:0 1px 4px rgba(0,0,0,0.7);line-height:1.2;font-family:Inter,Roboto,sans-serif;">Mt. Busa Trail &amp; Orchid Distribution</h1>
+            <p style="margin:0.2rem 0 0 0;color:#a8d4a0;font-size:0.8rem;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;">Interactive ecological survey map</p>
+          </div>
         </div>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end;">
-          <button onclick="document.getElementById('map-legend').style.display = document.getElementById('map-legend').style.display === 'none' ? 'block' : 'none'" style="padding:0.5rem 1rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s;">Legend</button>
-          <button onclick="leafletMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN)" style="padding:0.5rem 1rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s;">Reset View</button>
+        <div style="display:flex;gap:0.45rem;flex-wrap:wrap;justify-content:flex-end;align-items:center;">
+          <button onclick="document.getElementById('map-legend').style.display=document.getElementById('map-legend').style.display==='none'?'block':'none'" style="padding:0.42rem 0.9rem;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.22);border-radius:7px;color:#e0f0da;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.2s;white-space:nowrap;">Legend</button>
+          <button onclick="if(leafletMap){leafletMap.setView(MT_BUSA_COORDS,MT_BUSA_ZOOM_MAIN);}" style="padding:0.42rem 0.9rem;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.22);border-radius:7px;color:#e0f0da;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.2s;white-space:nowrap;">Reset View</button>
         </div>
       </div>
 
-      <!-- Horizontal Trail Selector -->
-      <div style="background:#f8faf9;border-bottom:1px solid #e0e5e2;padding:0.3rem 1.5rem;overflow-x:auto;overflow-y:hidden;flex-shrink:0;-webkit-overflow-scrolling:touch;height:32px;display:flex;align-items:center;">
-        <div style="display:flex;gap:0.3rem;min-width:min-content;align-items:center;height:100%;">
-          <div onclick="this.style.background='#34a853';this.style.color='white'" style="flex-shrink:0;padding:0.25rem 0.5rem;background:#e8f0ed;border:none;border-radius:12px;cursor:pointer;transition:all 0.2s;font-weight:600;color:#2D5128;font-size:0.75rem;white-space:nowrap;height:24px;display:flex;align-items:center;">Canopy Loop 1</div>
-          <div onclick="this.style.background='#34a853';this.style.color='white'" style="flex-shrink:0;padding:0.25rem 0.5rem;background:#e8f0ed;border:none;border-radius:12px;cursor:pointer;transition:all 0.2s;font-weight:600;color:#2D5128;font-size:0.75rem;white-space:nowrap;height:24px;display:flex;align-items:center;">Moss Corridor 2</div>
-          <div onclick="this.style.background='#34a853';this.style.color='white'" style="flex-shrink:0;padding:0.25rem 0.5rem;background:#e8f0ed;border:none;border-radius:12px;cursor:pointer;transition:all 0.2s;font-weight:600;color:#2D5128;font-size:0.75rem;white-space:nowrap;height:24px;display:flex;align-items:center;">Valley Way 3</div>
-          <div onclick="this.style.background='#34a853';this.style.color='white'" style="flex-shrink:0;padding:0.25rem 0.5rem;background:#e8f0ed;border:none;border-radius:12px;cursor:pointer;transition:all 0.2s;font-weight:600;color:#2D5128;font-size:0.75rem;white-space:nowrap;height:24px;display:flex;align-items:center;">Forest Spur 4</div>
-          <div onclick="this.style.background='#34a853';this.style.color='white'" style="flex-shrink:0;padding:0.25rem 0.5rem;background:#e8f0ed;border:none;border-radius:12px;cursor:pointer;transition:all 0.2s;font-weight:600;color:#2D5128;font-size:0.75rem;white-space:nowrap;height:24px;display:flex;align-items:center;">Busa Loop 5</div>
-        </div>
+      <!-- Trail Selector Bar -->
+      <div style="background:#1a2e18;border-bottom:1px solid rgba(255,255,255,0.08);padding:0.45rem 1.2rem;overflow-x:auto;overflow-y:hidden;flex-shrink:0;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
+        <span style="color:#7aab6e;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.3rem;flex-shrink:0;">Trails</span>
+        <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#4caf50;border:1.5px solid #4caf50;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Canopy Loop 1</button>
+        <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#00bcd4;border:1.5px solid #00bcd4;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Moss Corridor 2</button>
+        <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ff7043;border:1.5px solid #ff7043;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Valley Way 3</button>
+        <button id="trail-btn-trail4" onclick="toggleTrail('trail4')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ab47bc;border:1.5px solid #ab47bc;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Forest Spur 4</button>
+        <button id="trail-btn-trail5" onclick="toggleTrail('trail5')" style="flex-shrink:0;padding:0.3rem 0.75rem;background:#ffb300;border:1.5px solid #ffb300;border-radius:20px;cursor:pointer;font-weight:700;color:#fff;font-size:0.76rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Busa Loop 5</button>
       </div>
-      
+
       <!-- Map Container -->
       <div style="position:relative;width:100%;flex:1;display:flex;overflow:hidden;">
-        <div id="map" style="flex:1;width:100%;height:100%;border-radius:0;border:none;background:#f0f4f1;"></div>
-        
+        <div id="map" style="flex:1;width:100%;height:100%;border-radius:0;border:none;background:#0a1a09;"></div>
+
         <!-- Legend Overlay -->
-        <div id="map-legend" style="position:absolute;bottom:20px;left:20px;background:white;border-radius:8px;padding:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:400;max-width:240px;display:none;font-size:0.85rem;">
-          <h4 style="margin:0 0 0.8rem 0;color:#2D5128;font-weight:600;font-size:0.95rem;">Map Legend</h4>
-          <div style="display:flex;flex-direction:column;gap:0.6rem;">
-            <div style="display:flex;align-items:center;gap:0.6rem;">
-              <div style="width:20px;height:12px;background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);border-radius:2px;"></div>
-              <span style="color:#52655b;">Orchid Distribution Heat</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.6rem;">
-              <div style="width:8px;height:8px;background:#2D5128;border-radius:50%;border:2px solid #4a7c4e;"></div>
-              <span style="color:#52655b;">Mt. Busa Center</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.6rem;">
-              <div style="width:16px;height:2px;background:#34a853;"></div>
-              <span style="color:#52655b;">Main Trail</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.6rem;">
-              <div style="width:16px;height:2px;background:#fbbc04;border-top:2px dashed #fbbc04;margin-top:1px;"></div>
-              <span style="color:#52655b;">Secondary Trail</span>
-            </div>
+        <div id="map-legend" style="position:absolute;bottom:22px;left:14px;background:rgba(10,20,8,0.92);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:1rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,0.4);z-index:400;min-width:200px;display:none;font-size:0.82rem;">
+          <h4 style="margin:0 0 0.75rem 0;color:#c8e6c0;font-weight:700;font-size:0.88rem;letter-spacing:0.05em;text-transform:uppercase;">Map Legend</h4>
+          <div style="display:flex;flex-direction:column;gap:0.55rem;">
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:10px;background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);border-radius:3px;flex-shrink:0;"></div><span style="color:#aacfa4;">Orchid Density Heat</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff3b3b;border-radius:50%;border:2px solid #ff7070;flex-shrink:0;"></div><span style="color:#aacfa4;">Critically Endangered</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff8c00;border-radius:50%;border:2px solid #ffa040;flex-shrink:0;"></div><span style="color:#aacfa4;">Endangered</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#f5c518;border-radius:50%;border:2px solid #f5d845;flex-shrink:0;"></div><span style="color:#aacfa4;">Vulnerable</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#4caf50;border-radius:50%;border:2px solid #7ccc7e;flex-shrink:0;"></div><span style="color:#aacfa4;">Least Concern</span></div>
+            <div style="height:1px;background:rgba(255,255,255,0.1);margin:0.25rem 0;"></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4caf50;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Canopy Loop 1</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00bcd4;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Moss Corridor 2</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#ff7043;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Valley Way 3</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#ab47bc;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Forest Spur 4</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#ffb300;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Busa Loop 5</span></div>
           </div>
         </div>
       </div>
@@ -2265,20 +2262,27 @@
       const researcherHome = document.getElementById('researcher-home');
       const orchidImage = encodeURI('./catalogicon.png');
       const dashboardShowcaseImages = ['./orchid1.webp', './orchid2.jpg', './orchid3.webp'];
-      const MT_BUSA_COORDS = [6.1092, 124.6858];
-      const MT_BUSA_ZOOM_MAIN = 13;
-      const MT_BUSA_ZOOM_DASHBOARD = 12;
+      const MT_BUSA_COORDS = [6.2333, 124.7000];
+      const MT_BUSA_ZOOM_MAIN = 14;
+      const MT_BUSA_ZOOM_DASHBOARD = 13;
       const MT_BUSA_ZOOM_HOTSPOTS = 14;
       const MT_BUSA_ZOOM_CONSERVATION = 14;
       const MT_BUSA_DISTRIBUTION_POINTS = [
-        [6.1092, 124.6858, 1.0],
-        [6.11, 124.69, 0.95],
-        [6.10895, 124.68377, 0.9],
-        [6.1140, 124.6890, 0.72],
-        [6.1070, 124.6920, 0.7],
-        [6.1062, 124.6845, 0.62],
-        [6.1118, 124.6827, 0.6],
-        [6.1049, 124.6873, 0.55]
+        [6.2333, 124.7000, 1.0],
+        [6.2400, 124.6960, 0.9],
+        [6.2370, 124.7020, 0.88],
+        [6.2305, 124.7065, 0.82],
+        [6.2255, 124.7150, 0.72],
+        [6.2210, 124.7000, 0.68],
+        [6.2418, 124.7080, 0.75],
+        [6.2350, 124.7050, 0.72],
+        [6.2295, 124.7010, 0.64],
+        [6.2362, 124.6948, 0.66],
+        [6.2438, 124.6988, 0.52],
+        [6.2282, 124.7028, 0.56],
+        [6.2318, 124.7082, 0.60],
+        [6.2248, 124.6992, 0.44],
+        [6.2408, 124.7098, 0.48]
       ];
       const CONSERVATION_STATUS_ORDER = ['critically_endangered', 'endangered', 'vulnerable', 'least_concern', 'unassigned'];
       const CONSERVATION_STATUS_LABELS = {
@@ -2974,6 +2978,98 @@
         renderOrchidCatalog(filtered);
       }
 
+      // Trail definitions — all coordinates around Mt. Busa (6.2333°N, 124.7000°E)
+      const MAP_TRAIL_DEFS = {
+        trail1: {
+          name: 'Canopy Loop 1', color: '#4caf50', weight: 4.5, dashArray: null,
+          desc: 'Upper canopy loop on the NW slope. Difficult. ~3.2 km.',
+          coords: [
+            [6.2333,124.7000],[6.2358,124.6972],[6.2385,124.6948],
+            [6.2415,124.6930],[6.2442,124.6948],[6.2450,124.6980],
+            [6.2445,124.7010],[6.2428,124.7032],[6.2405,124.7028],
+            [6.2382,124.7018],[6.2360,124.7005],[6.2333,124.7000]
+          ]
+        },
+        trail2: {
+          name: 'Moss Corridor 2', color: '#00bcd4', weight: 4, dashArray: '8,4',
+          desc: 'Mossy forest corridor heading east. Moderate. ~2.8 km.',
+          coords: [
+            [6.2333,124.7000],[6.2322,124.7032],[6.2315,124.7065],
+            [6.2308,124.7098],[6.2295,124.7128],[6.2278,124.7152],
+            [6.2258,124.7170],[6.2242,124.7188]
+          ]
+        },
+        trail3: {
+          name: 'Valley Way 3', color: '#ff7043', weight: 4, dashArray: null,
+          desc: 'Descends into the southern valley. Moderate. ~3.5 km.',
+          coords: [
+            [6.2333,124.7000],[6.2305,124.7018],[6.2275,124.7030],
+            [6.2248,124.7022],[6.2220,124.7010],[6.2195,124.6995],
+            [6.2172,124.6978],[6.2152,124.6962]
+          ]
+        },
+        trail4: {
+          name: 'Forest Spur 4', color: '#ab47bc', weight: 3.5, dashArray: '6,3',
+          desc: 'Short spur into dense NE forest. Easy. ~1.6 km.',
+          coords: [
+            [6.2382,124.7018],[6.2395,124.7048],[6.2410,124.7075],
+            [6.2422,124.7098],[6.2432,124.7118]
+          ]
+        },
+        trail5: {
+          name: 'Busa Loop 5', color: '#ffb300', weight: 5, dashArray: null,
+          desc: 'Main summit circuit. Strenuous. ~4.8 km.',
+          coords: [
+            [6.2333,124.7000],[6.2358,124.6998],[6.2372,124.7022],
+            [6.2368,124.7050],[6.2348,124.7065],[6.2322,124.7062],
+            [6.2298,124.7048],[6.2285,124.7022],[6.2292,124.6998],
+            [6.2308,124.6980],[6.2325,124.6972],[6.2333,124.7000]
+          ]
+        }
+      };
+
+      const mapTrailLayers = {};
+
+      window.toggleTrail = function(trailId) {
+        if (!leafletMap) return;
+        const def = MAP_TRAIL_DEFS[trailId];
+        if (!def) return;
+        const btn = document.getElementById('trail-btn-' + trailId);
+        if (mapTrailLayers[trailId]) {
+          leafletMap.removeLayer(mapTrailLayers[trailId]);
+          delete mapTrailLayers[trailId];
+          if (btn) { btn.style.background = 'transparent'; btn.style.color = def.color; btn.style.borderColor = def.color; }
+        } else {
+          const popup = `<div style="min-width:180px;"><b style="color:${def.color};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
+          mapTrailLayers[trailId] = L.polyline(def.coords, {
+            color: def.color, weight: def.weight, opacity: 0.92,
+            lineCap: 'round', lineJoin: 'round', dashArray: def.dashArray
+          }).bindPopup(popup).addTo(leafletMap);
+          if (btn) { btn.style.background = def.color; btn.style.color = '#fff'; btn.style.borderColor = def.color; }
+        }
+      };
+
+      // Orchid hotspot data for map markers
+      const MAP_ORCHID_HOTSPOTS = [
+        { c:[6.2442,124.6948], sp:'Vanda sanderiana', st:'Critically Endangered', col:'#ff3b3b' },
+        { c:[6.2408,124.7098], sp:'Paphiopedilum hennisianum', st:'Endangered', col:'#ff8c00' },
+        { c:[6.2382,124.7018], sp:'Bulbophyllum lobbii', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2315,124.7065], sp:'Dendrobium crumenatum', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2258,124.7170], sp:'Aerides quinquevulnera', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2248,124.7022], sp:'Coelogyne rumphii', st:'Least Concern', col:'#4caf50' },
+        { c:[6.2195,124.6995], sp:'Cymbidium bicolor', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2422,124.7098], sp:'Grammatophyllum speciosum', st:'Endangered', col:'#ff8c00' },
+        { c:[6.2348,124.7065], sp:'Liparis nervosa', st:'Least Concern', col:'#4caf50' },
+        { c:[6.2292,124.6998], sp:'Thrixspermum merguense', st:'Least Concern', col:'#4caf50' },
+        { c:[6.2358,124.6972], sp:'Oberonia iridifolia', st:'Least Concern', col:'#4caf50' },
+        { c:[6.2450,124.6980], sp:'Eria ornata', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2285,124.7022], sp:'Trichoglottis philippinensis', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2308,124.7098], sp:'Appendicula cornuta', st:'Least Concern', col:'#4caf50' },
+        { c:[6.2172,124.6978], sp:'Spathoglottis plicata', st:'Least Concern', col:'#4caf50' },
+        { c:[6.2395,124.7048], sp:'Calanthe triplicata', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.2325,124.6972], sp:'Coelogyne cristata', st:'Endangered', col:'#ff8c00' }
+      ];
+
       function initializeLeafletMap() {
         if (leafletMap !== null) {
           leafletMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
@@ -2981,112 +3077,56 @@
           return;
         }
 
-        // Initialize map
-        leafletMap = L.map('map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
-        
-        // Add satellite imagery base layer
+        leafletMap = L.map('map', { zoomControl: true }).setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
+
+        // Satellite base layer (ESRI World Imagery)
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles � Esri',
+          attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
           maxZoom: 19
         }).addTo(leafletMap);
 
-        // Define main trail route
-        const mainTrail = [
-          [5.3521, 125.2521],
-          [5.3525, 125.2520],
-          [5.3530, 125.2515],
-          [5.3535, 125.2510],
-          [5.3540, 125.2505],
-          [5.3545, 125.2500]
-        ];
+        // Satellite label overlay for place names
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19, opacity: 0.7
+        }).addTo(leafletMap);
 
-        // Define secondary trails
-        const secondaryTrail1 = [
-          [5.3521, 125.2521],
-          [5.3515, 125.2525],
-          [5.3510, 125.2530]
-        ];
+        // Show all 5 trails by default
+        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
 
-        const secondaryTrail2 = [
-          [5.3535, 125.2510],
-          [5.3540, 125.2515],
-          [5.3545, 125.2520]
-        ];
+        // Orchid hotspot markers
+        MAP_ORCHID_HOTSPOTS.forEach(function(h) {
+          L.circleMarker(h.c, {
+            radius: 7, fillColor: h.col, color: '#fff',
+            weight: 2, opacity: 1, fillOpacity: 0.88
+          }).bindPopup(
+            `<div style="min-width:170px;"><b style="color:${h.col};font-size:0.95rem;">&#127808; ${h.sp}</b><br>` +
+            `<span style="color:#555;font-size:0.82rem;">Conservation: <b style="color:${h.col};">${h.st}</b></span><br>` +
+            `<span style="color:#777;font-size:0.78rem;">Mt. Busa, Sarangani</span></div>`
+          ).addTo(leafletMap);
+        });
 
-        // Draw main trail with professional styling
-        L.polyline(mainTrail, {
-          color: '#34a853',
-          weight: 4,
-          opacity: 0.9,
-          lineCap: 'round',
-          lineJoin: 'round',
-          dashArray: null,
-          className: 'main-trail'
-        }).bindPopup('<b>Main Trail</b><br>Primary trekking route<br>Moderate difficulty').addTo(leafletMap);
-
-        // Draw secondary trails
-        L.polyline(secondaryTrail1, {
-          color: '#fbbc04',
-          weight: 2.5,
-          opacity: 0.75,
-          lineCap: 'round',
-          lineJoin: 'round',
-          dashArray: '5, 5',
-          className: 'secondary-trail'
-        }).bindPopup('<b>Secondary Trail</b><br>Alternative route').addTo(leafletMap);
-
-        L.polyline(secondaryTrail2, {
-          color: '#fbbc04',
-          weight: 2.5,
-          opacity: 0.75,
-          lineCap: 'round',
-          lineJoin: 'round',
-          dashArray: '5, 5',
-          className: 'secondary-trail'
-        }).bindPopup('<b>Secondary Trail</b><br>Alternative route').addTo(leafletMap);
-
-        // Add professional Mt. Busa marker
-        L.marker(MT_BUSA_COORDS, {
-          icon: L.icon({
-            iconUrl: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" fill="%232D5128"><path d="M16 0C9.4 0 4 5.4 4 12c0 10 12 28 12 28s12-18 12-28c0-6.6-5.4-12-12-12z"/><circle cx="16" cy="12" r="5" fill="%23fff"/></svg>',
-            iconSize: [32, 40],
-            iconAnchor: [16, 40],
-            popupAnchor: [0, -40]
-          })
-        }).bindPopup('<div style="text-align:center;"><b style="font-size:1.1rem;color:#2D5128;">Mt. Busa Summit</b><br><span style="color:#66786e;font-size:0.9rem;">Kiamba, Sarangani Province<br>Ecological Survey Center</span><br><span style="color:#34a853;font-size:0.85rem;margin-top:0.3rem;display:block;">Primary distribution point</span></div>').openPopup().addTo(leafletMap);
-
-        // Add distribution heat layer
+        // Heat layer for orchid density
         if (typeof L.heatLayer === 'function') {
           L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
-            radius: 30,
-            blur: 22,
-            maxZoom: 16,
-            gradient: {
-              0.2: '#34d399',
-              0.45: '#facc15',
-              0.75: '#f97316',
-              1.0: '#dc2626'
-            }
+            radius: 32, blur: 24, maxZoom: 16,
+            gradient: { 0.2:'#34d399', 0.5:'#facc15', 0.78:'#f97316', 1.0:'#dc2626' }
           }).addTo(leafletMap);
         }
 
-        // Add trail waypoints
-        const trailWaypoints = [
-          { coords: [5.3521, 125.2521], label: 'Start Point', icon: '??' },
-          { coords: [5.3530, 125.2515], label: 'Mid Point', icon: '??' },
-          { coords: [5.3545, 125.2500], label: 'Summit', icon: '???' }
-        ];
-
-        trailWaypoints.forEach((waypoint) => {
-          L.circleMarker(waypoint.coords, {
-            radius: 5,
-            fillColor: '#34a853',
-            color: '#2D5128',
-            weight: 2,
-            opacity: 0.8,
-            fillOpacity: 0.7
-          }).bindPopup(`<b>${waypoint.label}</b><br>${waypoint.icon}`).addTo(leafletMap);
-        });
+        // Summit marker
+        L.marker(MT_BUSA_COORDS, {
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="width:34px;height:34px;background:radial-gradient(circle at 40% 35%,#5de05d,#2D5128);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.55);"></div>',
+            iconSize: [34,34], iconAnchor: [17,34], popupAnchor: [0,-36]
+          })
+        }).bindPopup(
+          '<div style="text-align:center;min-width:180px;">' +
+          '<b style="font-size:1.05rem;color:#2D5128;">&#9968; Mt. Busa</b><br>' +
+          '<span style="color:#66786e;font-size:0.85rem;">Kiamba, Sarangani Province</span><br>' +
+          '<span style="color:#555;font-size:0.82rem;">6.2333°N, 124.7000°E</span><br>' +
+          '<span style="color:#34a853;font-size:0.82rem;margin-top:4px;display:block;">&#127808; Primary orchid survey area</span></div>'
+        ).openPopup().addTo(leafletMap);
       }
 
       function getConservationSummarySnapshot(rawData) {
