@@ -464,95 +464,170 @@
     </div>
 
     <!-- Conservation Status View -->
-    <div id="conservation-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);background:linear-gradient(180deg,#f7faf8 0%,#eef4f0 100%);border-radius:16px;">
-      <h1 class="catalog-title">Conservation Status</h1>
-      <div style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 26px rgba(32,66,48,0.08);">
-        <h2 style="color:#2D5128;font-family:Inter,Roboto,sans-serif;margin:0 0 1rem 0;">Endangered Species</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.9rem;">
-          <div onclick="showConservationList('critically_endangered', 'Critically Endangered')" style="background:linear-gradient(140deg,#fff5f5 0%,#fff 70%);border:1px solid #f3cece;border-left:4px solid #d32f2f;padding:1rem 1.1rem;border-radius:10px;cursor:pointer;transition:all 220ms ease;box-shadow:0 3px 9px rgba(0,0,0,0.04);">
-            <div onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" style="transition:transform 180ms ease;">
-              <h3 style="color:#d32f2f;margin:0 0 0.35rem 0;font-size:1rem;line-height:1.25;">Critically Endangered</h3>
-              <p id="count-critically-endangered" style="margin:0;color:#666;font-weight:500;font-size:0.9rem;line-height:1.35;">0 species recorded</p>
-            </div>
+    <div id="conservation-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem,4vw,3rem);">
+
+      <!-- Page Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:0.75rem;">
+        <div>
+          <h1 style="font-family:Inter,Roboto,sans-serif;font-size:1.7rem;font-weight:800;color:#111827;margin:0 0 0.3rem 0;letter-spacing:-0.02em;">Conservation Status</h1>
+          <p style="margin:0;color:#6b7280;font-size:0.9rem;">IUCN-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:0.4rem;background:#f0fdf4;color:#16a34a;font-size:0.75rem;font-weight:700;padding:0.35rem 0.85rem;border-radius:20px;border:1px solid #bbf7d0;white-space:nowrap;flex-shrink:0;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;"></span>Live Database
+        </span>
+      </div>
+      <div style="height:1px;background:linear-gradient(90deg,#d1fae5,#e5e7eb,transparent);margin-bottom:1.75rem;"></div>
+
+      <!-- IUCN Category Cards -->
+      <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin:0 0 0.8rem 0;">IUCN Conservation Categories</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-bottom:1.75rem;">
+
+        <div onclick="showConservationList('critically_endangered','Critically Endangered')"
+             style="background:#fff;border:1px solid #fecaca;border-radius:12px;padding:1.2rem 1.1rem 1rem;cursor:pointer;transition:box-shadow 180ms,transform 180ms;box-shadow:0 1px 3px rgba(0,0,0,0.06);position:relative;overflow:hidden;"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 22px rgba(211,47,47,0.15)';"
+             onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#d32f2f;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;">
+            <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.08em;color:#d32f2f;background:#fff0f0;padding:0.2rem 0.45rem;border-radius:4px;">CR</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#fca5a5" stroke="#d32f2f" stroke-width="1.5"/></svg>
           </div>
-          <div onclick="showConservationList('endangered', 'Endangered')" style="background:linear-gradient(140deg,#fff3e0 0%,#fff 70%);border:1px solid #f2dcc2;border-left:4px solid #f57c00;padding:1rem 1.1rem;border-radius:10px;cursor:pointer;transition:all 220ms ease;box-shadow:0 3px 9px rgba(0,0,0,0.04);">
-            <div onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" style="transition:transform 180ms ease;">
-              <h3 style="color:#f57c00;margin:0 0 0.35rem 0;font-size:1rem;line-height:1.25;">Endangered</h3>
-              <p id="count-endangered" style="margin:0;color:#666;font-weight:500;font-size:0.9rem;line-height:1.35;">0 species recorded</p>
-            </div>
+          <p id="count-critically-endangered" style="margin:0 0 0.3rem 0;font-size:2.2rem;font-weight:800;color:#111827;line-height:1;font-family:Inter,Roboto,sans-serif;">0</p>
+          <p style="margin:0 0 0.6rem 0;font-size:0.78rem;color:#6b7280;font-weight:500;">Critically Endangered</p>
+          <p style="margin:0;font-size:0.72rem;color:#d32f2f;font-weight:600;">View species →</p>
+        </div>
+
+        <div onclick="showConservationList('endangered','Endangered')"
+             style="background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:1.2rem 1.1rem 1rem;cursor:pointer;transition:box-shadow 180ms,transform 180ms;box-shadow:0 1px 3px rgba(0,0,0,0.06);position:relative;overflow:hidden;"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 22px rgba(245,124,0,0.15)';"
+             onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#f57c00;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;">
+            <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.08em;color:#f57c00;background:#fff8f0;padding:0.2rem 0.45rem;border-radius:4px;">EN</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" fill="#fdba74" stroke="#f57c00" stroke-width="1.5"/><line x1="12" y1="9" x2="12" y2="13" stroke="#f57c00" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17" r="0.8" fill="#f57c00"/></svg>
           </div>
-          <div onclick="showConservationList('vulnerable', 'Vulnerable')" style="background:linear-gradient(140deg,#fffde7 0%,#fff 70%);border:1px solid #f3e8bf;border-left:4px solid #fbc02d;padding:1rem 1.1rem;border-radius:10px;cursor:pointer;transition:all 220ms ease;box-shadow:0 3px 9px rgba(0,0,0,0.04);">
-            <div onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" style="transition:transform 180ms ease;">
-              <h3 style="color:#fbc02d;margin:0 0 0.35rem 0;font-size:1rem;line-height:1.25;">Vulnerable</h3>
-              <p id="count-vulnerable" style="margin:0;color:#666;font-weight:500;font-size:0.9rem;line-height:1.35;">0 species recorded</p>
-            </div>
+          <p id="count-endangered" style="margin:0 0 0.3rem 0;font-size:2.2rem;font-weight:800;color:#111827;line-height:1;font-family:Inter,Roboto,sans-serif;">0</p>
+          <p style="margin:0 0 0.6rem 0;font-size:0.78rem;color:#6b7280;font-weight:500;">Endangered</p>
+          <p style="margin:0;font-size:0.72rem;color:#f57c00;font-weight:600;">View species →</p>
+        </div>
+
+        <div onclick="showConservationList('vulnerable','Vulnerable')"
+             style="background:#fff;border:1px solid #fde68a;border-radius:12px;padding:1.2rem 1.1rem 1rem;cursor:pointer;transition:box-shadow 180ms,transform 180ms;box-shadow:0 1px 3px rgba(0,0,0,0.06);position:relative;overflow:hidden;"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 22px rgba(251,192,45,0.18)';"
+             onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#fbc02d;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;">
+            <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.08em;color:#92680a;background:#fffde7;padding:0.2rem 0.45rem;border-radius:4px;">VU</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#fef08a" stroke="#fbc02d" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="12" stroke="#92680a" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="0.8" fill="#92680a"/></svg>
           </div>
-          <div onclick="showConservationList('least_concern', 'Least Concern')" style="background:linear-gradient(140deg,#e8f5e9 0%,#fff 70%);border:1px solid #cde2cf;border-left:4px solid #388e3c;padding:1rem 1.1rem;border-radius:10px;cursor:pointer;transition:all 220ms ease;box-shadow:0 3px 9px rgba(0,0,0,0.04);">
-            <div onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" style="transition:transform 180ms ease;">
-              <h3 style="color:#388e3c;margin:0 0 0.35rem 0;font-size:1rem;line-height:1.25;">Least Concern</h3>
-              <p id="count-least-concern" style="margin:0;color:#666;font-weight:500;font-size:0.9rem;line-height:1.35;">0 species recorded</p>
-            </div>
+          <p id="count-vulnerable" style="margin:0 0 0.3rem 0;font-size:2.2rem;font-weight:800;color:#111827;line-height:1;font-family:Inter,Roboto,sans-serif;">0</p>
+          <p style="margin:0 0 0.6rem 0;font-size:0.78rem;color:#6b7280;font-weight:500;">Vulnerable</p>
+          <p style="margin:0;font-size:0.72rem;color:#92680a;font-weight:600;">View species →</p>
+        </div>
+
+        <div onclick="showConservationList('least_concern','Least Concern')"
+             style="background:#fff;border:1px solid #bbf7d0;border-radius:12px;padding:1.2rem 1.1rem 1rem;cursor:pointer;transition:box-shadow 180ms,transform 180ms;box-shadow:0 1px 3px rgba(0,0,0,0.06);position:relative;overflow:hidden;"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 22px rgba(56,142,60,0.14)';"
+             onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#388e3c;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;">
+            <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.08em;color:#388e3c;background:#f0fdf4;padding:0.2rem 0.45rem;border-radius:4px;">LC</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#bbf7d0" stroke="#388e3c" stroke-width="1.5"/><polyline points="8 12 11 15 16 9" stroke="#388e3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div onclick="showConservationList('unassigned', 'Unassigned')" style="background:linear-gradient(140deg,#f5f5f5 0%,#fff 70%);border:1px solid #e1e1e1;border-left:4px solid #616161;padding:1rem 1.1rem;border-radius:10px;cursor:pointer;transition:all 220ms ease;box-shadow:0 3px 9px rgba(0,0,0,0.04);">
-            <div onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" style="transition:transform 180ms ease;">
-              <h3 style="color:#616161;margin:0 0 0.35rem 0;font-size:1rem;line-height:1.25;">Unassigned</h3>
-              <p id="count-unassigned" style="margin:0;color:#666;font-weight:500;font-size:0.9rem;line-height:1.35;">0 species recorded</p>
-            </div>
+          <p id="count-least-concern" style="margin:0 0 0.3rem 0;font-size:2.2rem;font-weight:800;color:#111827;line-height:1;font-family:Inter,Roboto,sans-serif;">0</p>
+          <p style="margin:0 0 0.6rem 0;font-size:0.78rem;color:#6b7280;font-weight:500;">Least Concern</p>
+          <p style="margin:0;font-size:0.72rem;color:#388e3c;font-weight:600;">View species →</p>
+        </div>
+
+        <div onclick="showConservationList('unassigned','Unassigned')"
+             style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1.2rem 1.1rem 1rem;cursor:pointer;transition:box-shadow 180ms,transform 180ms;box-shadow:0 1px 3px rgba(0,0,0,0.06);position:relative;overflow:hidden;"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 22px rgba(107,114,128,0.12)';"
+             onmouseout="this.style.transform='';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)';">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#9ca3af;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;">
+            <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.08em;color:#6b7280;background:#f9fafb;padding:0.2rem 0.45rem;border-radius:4px;">N/A</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/><line x1="9" y1="9" x2="15" y2="15" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="9" x2="9" y2="15" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
+          <p id="count-unassigned" style="margin:0 0 0.3rem 0;font-size:2.2rem;font-weight:800;color:#111827;line-height:1;font-family:Inter,Roboto,sans-serif;">0</p>
+          <p style="margin:0 0 0.6rem 0;font-size:0.78rem;color:#6b7280;font-weight:500;">Unassigned</p>
+          <p style="margin:0;font-size:0.72rem;color:#6b7280;font-weight:600;">View species →</p>
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1.5rem;margin-top:1.5rem;align-items:start;">
-        <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);">
-          <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Estimated Conservation Breakdown of Orchids in Mt. Busa</h2>
-          <p id="conservation-estimate-text" style="margin:0 0 1rem 0;color:#555;line-height:1.5;">Loading conservation estimate...</p>
-          <div style="display:grid;grid-template-columns:repeat(3,minmax(110px,1fr));gap:0.65rem;">
-            <div style="padding:0.75rem;border-radius:8px;background:#f4f8f3;border:1px solid #dfe8dd;">
-              <p style="margin:0;color:#666;font-size:0.75rem;">Total Assessed</p>
-              <p id="conservation-total-assessed" style="margin:0.25rem 0 0 0;font-weight:700;color:#2D5128;">0</p>
+      <!-- Analytics Grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem;align-items:start;">
+
+        <!-- Summary Overview -->
+        <section style="background:#fff;border-radius:12px;padding:1.4rem 1.5rem;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:0.55rem;margin-bottom:1rem;">
+            <div style="width:3px;height:18px;background:#2D5128;border-radius:2px;flex-shrink:0;"></div>
+            <h2 style="margin:0;color:#111827;font-family:Inter,Roboto,sans-serif;font-size:0.95rem;font-weight:700;">Conservation Overview</h2>
+          </div>
+          <p id="conservation-estimate-text" style="margin:0 0 1.1rem 0;color:#6b7280;line-height:1.65;font-size:0.86rem;">Loading conservation estimate...</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;">
+            <div style="padding:0.85rem 0.7rem;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center;">
+              <p style="margin:0 0 0.15rem 0;color:#6b7280;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">Total</p>
+              <p id="conservation-total-assessed" style="margin:0;font-weight:800;color:#2D5128;font-size:1.5rem;font-family:Inter,Roboto,sans-serif;line-height:1;">0</p>
             </div>
-            <div style="padding:0.75rem;border-radius:8px;background:#fff8ef;border:1px solid #f3dfc4;">
-              <p style="margin:0;color:#666;font-size:0.75rem;">Threatened Ratio</p>
-              <p id="conservation-threatened-ratio" style="margin:0.25rem 0 0 0;font-weight:700;color:#a55a00;">0%</p>
+            <div style="padding:0.85rem 0.7rem;border-radius:10px;background:#fff8ef;border:1px solid #fed7aa;text-align:center;">
+              <p style="margin:0 0 0.15rem 0;color:#6b7280;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">Threatened</p>
+              <p id="conservation-threatened-ratio" style="margin:0;font-weight:800;color:#b45309;font-size:1.5rem;font-family:Inter,Roboto,sans-serif;line-height:1;">0%</p>
             </div>
-            <div style="padding:0.75rem;border-radius:8px;background:#f7f7f7;border:1px solid #e3e3e3;">
-              <p style="margin:0;color:#666;font-size:0.75rem;">Dominant Status</p>
-              <p id="conservation-dominant-status" style="margin:0.25rem 0 0 0;font-weight:700;color:#2D5128;">-</p>
+            <div style="padding:0.85rem 0.7rem;border-radius:10px;background:#f9fafb;border:1px solid #e5e7eb;text-align:center;">
+              <p style="margin:0 0 0.15rem 0;color:#6b7280;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">Dominant</p>
+              <p id="conservation-dominant-status" style="margin:0;font-weight:700;color:#111827;font-size:0.8rem;font-family:Inter,Roboto,sans-serif;line-height:1.2;">—</p>
             </div>
           </div>
         </section>
 
-        <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);">
-          <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Conservation Breakdown of Orchids (Donut Chart)</h2>
-          <div style="position:relative;min-height:320px;">
+        <!-- Donut Chart -->
+        <section style="background:#fff;border-radius:12px;padding:1.4rem 1.5rem;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:0.55rem;margin-bottom:1rem;">
+            <div style="width:3px;height:18px;background:#2D5128;border-radius:2px;flex-shrink:0;"></div>
+            <h2 style="margin:0;color:#111827;font-family:Inter,Roboto,sans-serif;font-size:0.95rem;font-weight:700;">Status Distribution</h2>
+          </div>
+          <div style="position:relative;min-height:280px;">
             <canvas id="conservation-donut-chart" height="220"></canvas>
           </div>
         </section>
 
-        <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);">
-          <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Conservation Breakdown of Orchids (Bar Graph)</h2>
-          <div style="position:relative;min-height:320px;">
+        <!-- Bar Chart -->
+        <section style="background:#fff;border-radius:12px;padding:1.4rem 1.5rem;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:0.55rem;margin-bottom:1rem;">
+            <div style="width:3px;height:18px;background:#2D5128;border-radius:2px;flex-shrink:0;"></div>
+            <h2 style="margin:0;color:#111827;font-family:Inter,Roboto,sans-serif;font-size:0.95rem;font-weight:700;">Species Count by Category</h2>
+          </div>
+          <div style="position:relative;min-height:280px;">
             <canvas id="conservation-bar-chart" height="220"></canvas>
           </div>
-          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e3ece5;">
-            <h3 style="margin:0 0 0.65rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.02rem;">Insights from the Bar Graph</h3>
-            <ul id="conservation-bar-insights" style="margin:0;padding-left:1.1rem;color:#555;line-height:1.75;list-style:disc;"></ul>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f3f4f6;">
+            <p style="margin:0 0 0.5rem 0;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;">Key Insights</p>
+            <ul id="conservation-bar-insights" style="margin:0;padding-left:1.1rem;color:#6b7280;line-height:1.8;font-size:0.84rem;list-style:disc;"></ul>
           </div>
         </section>
 
-        <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);grid-column:1/-1;">
-          <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Conservation Risk Heat Map (Mt. Busa)</h2>
-          <div id="conservation-heat-map" style="width:100%;height:460px;border-radius:12px;border:1px solid #dcdcdc;background:#f5f5f5;"></div>
-          <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;font-size:0.8rem;color:#666;">
-            <span>Lower risk</span>
-            <span style="display:inline-block;width:120px;height:10px;border-radius:999px;background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);"></span>
-            <span>Higher risk</span>
+        <!-- Heat Map — full width -->
+        <section style="background:#fff;border-radius:12px;padding:1.4rem 1.5rem;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.06);grid-column:1/-1;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:0.55rem;">
+              <div style="width:3px;height:18px;background:#2D5128;border-radius:2px;flex-shrink:0;"></div>
+              <h2 style="margin:0;color:#111827;font-family:Inter,Roboto,sans-serif;font-size:0.95rem;font-weight:700;">Conservation Risk Heat Map — Mt. Busa</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.55rem;font-size:0.75rem;color:#9ca3af;">
+              <span>Lower risk</span>
+              <span style="display:inline-block;width:90px;height:7px;border-radius:999px;background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);"></span>
+              <span>Higher risk</span>
+            </div>
           </div>
+          <div id="conservation-heat-map" style="width:100%;height:440px;border-radius:10px;border:1px solid #e5e7eb;background:#f5f5f5;overflow:hidden;"></div>
         </section>
 
-        <section style="background:white;border-radius:16px;padding:1.5rem;border:1px solid #d7e3db;box-shadow:0 10px 22px rgba(32,66,48,0.08);">
-          <h2 style="margin:0 0 0.85rem 0;color:#2D5128;font-family:Inter,Roboto,sans-serif;font-size:1.2rem;">Insights from the Heat Map</h2>
-          <ul id="conservation-heat-insights" style="margin:0;padding-left:1.1rem;color:#555;line-height:1.75;list-style:disc;"></ul>
+        <!-- Heat Map Insights -->
+        <section style="background:#fff;border-radius:12px;padding:1.4rem 1.5rem;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:0.55rem;margin-bottom:1rem;">
+            <div style="width:3px;height:18px;background:#2D5128;border-radius:2px;flex-shrink:0;"></div>
+            <h2 style="margin:0;color:#111827;font-family:Inter,Roboto,sans-serif;font-size:0.95rem;font-weight:700;">Heat Map Insights</h2>
+          </div>
+          <ul id="conservation-heat-insights" style="margin:0;padding-left:1.1rem;color:#6b7280;line-height:1.8;font-size:0.84rem;list-style:disc;"></ul>
         </section>
       </div>
     </div>
@@ -4989,11 +5064,11 @@
           const vu = document.getElementById('count-vulnerable');
           const lc = document.getElementById('count-least-concern');
           const ua = document.getElementById('count-unassigned');
-          if (ce) ce.textContent = `${summary.critically_endangered || 0} species recorded`;
-          if (en) en.textContent = `${summary.endangered || 0} species recorded`;
-          if (vu) vu.textContent = `${summary.vulnerable || 0} species recorded`;
-          if (lc) lc.textContent = `${summary.least_concern || 0} species recorded`;
-          if (ua) ua.textContent = `${summary.unassigned || 0} species recorded`;
+          if (ce) ce.textContent = String(summary.critically_endangered || 0);
+          if (en) en.textContent = String(summary.endangered || 0);
+          if (vu) vu.textContent = String(summary.vulnerable || 0);
+          if (lc) lc.textContent = String(summary.least_concern || 0);
+          if (ua) ua.textContent = String(summary.unassigned || 0);
           refreshConservationAnalytics(summary);
         }
 
