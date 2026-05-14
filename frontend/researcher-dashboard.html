@@ -703,20 +703,27 @@
         <div id="map" style="flex:1;width:100%;height:100%;border-radius:0;border:none;background:#0a1a09;"></div>
 
         <!-- Legend Overlay -->
-        <div id="map-legend" style="position:absolute;bottom:22px;left:14px;background:rgba(10,20,8,0.92);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:1rem 1.1rem;box-shadow:0 6px 20px rgba(0,0,0,0.4);z-index:400;min-width:200px;display:none;font-size:0.82rem;">
-          <h4 style="margin:0 0 0.75rem 0;color:#c8e6c0;font-weight:700;font-size:0.88rem;letter-spacing:0.05em;text-transform:uppercase;">Map Legend</h4>
+        <div id="map-legend" style="position:absolute;bottom:22px;left:14px;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:1rem 1.1rem;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:400;min-width:210px;display:none;font-size:0.82rem;">
+          <h4 style="margin:0 0 0.75rem 0;color:#2D5128;font-weight:700;font-size:0.88rem;letter-spacing:0.05em;text-transform:uppercase;">Map Legend</h4>
           <div style="display:flex;flex-direction:column;gap:0.55rem;">
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:10px;background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);border-radius:3px;flex-shrink:0;"></div><span style="color:#aacfa4;">Orchid Density Heat</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff3b3b;border-radius:50%;border:2px solid #ff7070;flex-shrink:0;"></div><span style="color:#aacfa4;">Critically Endangered</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff8c00;border-radius:50%;border:2px solid #ffa040;flex-shrink:0;"></div><span style="color:#aacfa4;">Endangered</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#f5c518;border-radius:50%;border:2px solid #f5d845;flex-shrink:0;"></div><span style="color:#aacfa4;">Vulnerable</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#4caf50;border-radius:50%;border:2px solid #7ccc7e;flex-shrink:0;"></div><span style="color:#aacfa4;">Least Concern</span></div>
-            <div style="height:1px;background:rgba(255,255,255,0.1);margin:0.25rem 0;"></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4caf50;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Canopy Loop 1</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00bcd4;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Moss Corridor 2</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#ff7043;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Valley Way 3</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#ab47bc;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Forest Spur 4</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#ffb300;border-radius:2px;flex-shrink:0;"></div><span style="color:#aacfa4;">Busa Loop 5</span></div>
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Orchid Density</div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#dc2626;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">High (≥80%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#f97316;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium-High (60–79%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#facc15;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium (40–59%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#34d399;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Low (&lt;40%)</span></div>
+            <div style="height:1px;background:#e5e7eb;margin:0.3rem 0;"></div>
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Conservation Status</div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff3b3b;border-radius:50%;border:1.5px solid #ff7070;flex-shrink:0;"></div><span style="color:#374151;">Critically Endangered</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff8c00;border-radius:50%;border:1.5px solid #ffa040;flex-shrink:0;"></div><span style="color:#374151;">Endangered</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#f5c518;border-radius:50%;border:1.5px solid #f5d845;flex-shrink:0;"></div><span style="color:#374151;">Vulnerable</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#4caf50;border-radius:50%;border:1.5px solid #7ccc7e;flex-shrink:0;"></div><span style="color:#374151;">Least Concern</span></div>
+            <div style="height:1px;background:#e5e7eb;margin:0.3rem 0;"></div>
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Trails</div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00e5ff;border-radius:2px;flex-shrink:0;box-shadow:0 0 5px #00e5ff;"></div><span style="color:#374151;">Canopy Loop 1</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00e5ff;border-radius:2px;flex-shrink:0;box-shadow:0 0 5px #00e5ff;"></div><span style="color:#374151;">Moss Corridor 2</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00e5ff;border-radius:2px;flex-shrink:0;box-shadow:0 0 5px #00e5ff;"></div><span style="color:#374151;">Valley Way 3</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00e5ff;border-radius:2px;flex-shrink:0;box-shadow:0 0 5px #00e5ff;"></div><span style="color:#374151;">Forest Spur 4</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#00e5ff;border-radius:2px;flex-shrink:0;box-shadow:0 0 5px #00e5ff;"></div><span style="color:#374151;">Busa Loop 5</span></div>
           </div>
         </div>
       </div>
@@ -2262,27 +2269,27 @@
       const researcherHome = document.getElementById('researcher-home');
       const orchidImage = encodeURI('./catalogicon.png');
       const dashboardShowcaseImages = ['./orchid1.webp', './orchid2.jpg', './orchid3.webp'];
-      const MT_BUSA_COORDS = [6.2333, 124.7000];
+      const MT_BUSA_COORDS = [6.106381, 124.669889];
       const MT_BUSA_ZOOM_MAIN = 11;
       const MT_BUSA_ZOOM_DASHBOARD = 11;
       const MT_BUSA_ZOOM_HOTSPOTS = 11;
       const MT_BUSA_ZOOM_CONSERVATION = 13;
       const MT_BUSA_DISTRIBUTION_POINTS = [
-        [6.2333, 124.7000, 1.0],
-        [6.2850, 124.6600, 0.85],
-        [6.2200, 124.7800, 0.80],
-        [6.1700, 124.7100, 0.75],
-        [6.2900, 124.7000, 0.72],
-        [6.1100, 124.7000, 0.65],
-        [6.3100, 124.7700, 0.60],
-        [6.2100, 124.8100, 0.68],
-        [6.2600, 124.6700, 0.70],
-        [6.1400, 124.7050, 0.55],
-        [6.2700, 124.7200, 0.78],
-        [6.3000, 124.6800, 0.62],
-        [6.2000, 124.7050, 0.58],
-        [6.2500, 124.7500, 0.50],
-        [6.1900, 124.7300, 0.45]
+        [6.1064, 124.6699, 1.0],
+        [6.1264, 124.6849, 0.85],
+        [6.0964, 124.6899, 0.80],
+        [6.1364, 124.6549, 0.75],
+        [6.0864, 124.7049, 0.72],
+        [6.1164, 124.7249, 0.65],
+        [6.1564, 124.6749, 0.60],
+        [6.0764, 124.6599, 0.68],
+        [6.1264, 124.7049, 0.70],
+        [6.0664, 124.6849, 0.55],
+        [6.1464, 124.6949, 0.78],
+        [6.0964, 124.7149, 0.62],
+        [6.1064, 124.6499, 0.58],
+        [6.1364, 124.7349, 0.50],
+        [6.0764, 124.7249, 0.45]
       ];
       const CONSERVATION_STATUS_ORDER = ['critically_endangered', 'endangered', 'vulnerable', 'least_concern', 'unassigned'];
       const CONSERVATION_STATUS_LABELS = {
@@ -2983,45 +2990,46 @@
       const MAP_TRAIL_DEFS = {
         trail1: {
           name: 'Canopy Loop 1', color: NEON_BLUE, weight: 3,
-          desc: 'Upper canopy loop on the NW slope. Difficult. ~12 km.',
+          desc: 'Upper canopy switchback loop on the NW slope. Difficult. ~18 km.',
           coords: [
-            [6.2333,124.7000],[6.3000,124.7000],
-            [6.3000,124.6400],[6.3400,124.6400],
-            [6.3400,124.6800]
+            [6.1064,124.6699],[6.1464,124.6299],[6.1864,124.6699],
+            [6.2264,124.6299],[6.2664,124.6699],[6.3064,124.6299]
           ]
         },
         trail2: {
           name: 'Moss Corridor 2', color: NEON_BLUE, weight: 3,
-          desc: 'Mossy forest corridor heading east. Moderate. ~10 km.',
+          desc: 'Mossy forest zigzag heading east. Moderate. ~16 km.',
           coords: [
-            [6.2333,124.7000],[6.2333,124.7500],
-            [6.1950,124.7500],[6.1950,124.7950]
+            [6.1064,124.6699],[6.0764,124.7099],[6.1164,124.7499],
+            [6.0864,124.7899],[6.1264,124.8299],[6.0964,124.8699]
           ]
         },
         trail3: {
           name: 'Valley Way 3', color: NEON_BLUE, weight: 3,
-          desc: 'Descends into the southern valley. Moderate. ~11 km.',
+          desc: 'Southern valley descent with switchbacks. Moderate. ~17 km.',
           coords: [
-            [6.2333,124.7000],[6.1750,124.7000],
-            [6.1750,124.6500],[6.1350,124.6500]
+            [6.1064,124.6699],[6.0664,124.7099],[6.0264,124.6699],
+            [5.9864,124.7099],[5.9464,124.6699],[5.9064,124.7099]
           ]
         },
         trail4: {
           name: 'Forest Spur 4', color: NEON_BLUE, weight: 3,
-          desc: 'Spur into dense NE forest ridge. Moderate. ~9 km.',
+          desc: 'NE forest ridge zigzag spur. Moderate. ~16 km.',
           coords: [
-            [6.2333,124.7000],[6.2333,124.7450],
-            [6.2850,124.7450],[6.2850,124.7900]
+            [6.1064,124.6699],[6.1464,124.7099],[6.1064,124.7499],
+            [6.1464,124.7899],[6.1064,124.8299],[6.1464,124.8699]
           ]
         },
         trail5: {
           name: 'Busa Loop 5', color: NEON_BLUE, weight: 3,
-          desc: 'Main summit circuit around Mt. Busa. Strenuous. ~22 km.',
+          desc: 'Full summit zigzag circuit around Mt. Busa. Strenuous. ~40 km.',
           coords: [
-            [6.2333,124.7000],[6.3350,124.7000],
-            [6.3350,124.7750],[6.1900,124.7750],
-            [6.1900,124.6350],[6.3100,124.6350],
-            [6.3100,124.7000],[6.2333,124.7000]
+            [6.1064,124.6699],[6.1564,124.6199],[6.2064,124.6699],
+            [6.2564,124.6199],[6.3064,124.6699],[6.2764,124.7299],
+            [6.3164,124.7899],[6.2764,124.8399],[6.2264,124.7999],
+            [6.1864,124.8499],[6.1464,124.7999],[6.1064,124.8499],
+            [6.0664,124.7999],[6.0264,124.7499],[5.9864,124.6999],
+            [6.0264,124.6499],[6.0664,124.6999],[6.1064,124.6699]
           ]
         }
       };
@@ -3049,25 +3057,44 @@
         }
       };
 
+      function orchidSvg(c, s) {
+        s = s || 22;
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24">` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(0 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(72 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(144 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(216 12 12)"/>` +
+          `<ellipse cx="12" cy="6" rx="3" ry="6" fill="${c}" opacity="0.88" transform="rotate(288 12 12)"/>` +
+          `<circle cx="12" cy="12" r="3.5" fill="#fff" opacity="0.95"/>` +
+          `<circle cx="12" cy="12" r="1.8" fill="${c}"/>` +
+          `</svg>`;
+      }
+      function densityColor(v) {
+        if (v >= 0.8) return '#dc2626';
+        if (v >= 0.6) return '#f97316';
+        if (v >= 0.4) return '#facc15';
+        return '#34d399';
+      }
+
       // Orchid hotspot data for map markers
       const MAP_ORCHID_HOTSPOTS = [
-        { c:[6.2442,124.6948], sp:'Vanda sanderiana', st:'Critically Endangered', col:'#ff3b3b' },
-        { c:[6.2408,124.7098], sp:'Paphiopedilum hennisianum', st:'Endangered', col:'#ff8c00' },
-        { c:[6.2382,124.7018], sp:'Bulbophyllum lobbii', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2315,124.7065], sp:'Dendrobium crumenatum', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2258,124.7170], sp:'Aerides quinquevulnera', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2248,124.7022], sp:'Coelogyne rumphii', st:'Least Concern', col:'#4caf50' },
-        { c:[6.2195,124.6995], sp:'Cymbidium bicolor', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2422,124.7098], sp:'Grammatophyllum speciosum', st:'Endangered', col:'#ff8c00' },
-        { c:[6.2348,124.7065], sp:'Liparis nervosa', st:'Least Concern', col:'#4caf50' },
-        { c:[6.2292,124.6998], sp:'Thrixspermum merguense', st:'Least Concern', col:'#4caf50' },
-        { c:[6.2358,124.6972], sp:'Oberonia iridifolia', st:'Least Concern', col:'#4caf50' },
-        { c:[6.2450,124.6980], sp:'Eria ornata', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2285,124.7022], sp:'Trichoglottis philippinensis', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2308,124.7098], sp:'Appendicula cornuta', st:'Least Concern', col:'#4caf50' },
-        { c:[6.2172,124.6978], sp:'Spathoglottis plicata', st:'Least Concern', col:'#4caf50' },
-        { c:[6.2395,124.7048], sp:'Calanthe triplicata', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.2325,124.6972], sp:'Coelogyne cristata', st:'Endangered', col:'#ff8c00' }
+        { c:[6.1264,124.6849], sp:'Vanda sanderiana', st:'Critically Endangered', col:'#ff3b3b' },
+        { c:[6.0964,124.6899], sp:'Paphiopedilum hennisianum', st:'Endangered', col:'#ff8c00' },
+        { c:[6.1364,124.6549], sp:'Bulbophyllum lobbii', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1164,124.7249], sp:'Dendrobium crumenatum', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.0864,124.7049], sp:'Aerides quinquevulnera', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1464,124.6949], sp:'Coelogyne rumphii', st:'Least Concern', col:'#4caf50' },
+        { c:[6.0764,124.6599], sp:'Cymbidium bicolor', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1564,124.6749], sp:'Grammatophyllum speciosum', st:'Endangered', col:'#ff8c00' },
+        { c:[6.0964,124.7149], sp:'Liparis nervosa', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1264,124.7049], sp:'Thrixspermum merguense', st:'Least Concern', col:'#4caf50' },
+        { c:[6.0664,124.6849], sp:'Oberonia iridifolia', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1064,124.6499], sp:'Eria ornata', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.1364,124.7349], sp:'Trichoglottis philippinensis', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.0764,124.7249], sp:'Appendicula cornuta', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1464,124.7049], sp:'Spathoglottis plicata', st:'Least Concern', col:'#4caf50' },
+        { c:[6.1164,124.6649], sp:'Calanthe triplicata', st:'Vulnerable', col:'#f5c518' },
+        { c:[6.0964,124.6649], sp:'Coelogyne cristata', st:'Endangered', col:'#ff8c00' }
       ];
 
       function initializeLeafletMap() {
@@ -3093,25 +3120,36 @@
         // Show all 5 trails by default
         Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
 
-        // Orchid hotspot markers
+        // Orchid hotspot markers (conservation-status-colored orchid icons)
         MAP_ORCHID_HOTSPOTS.forEach(function(h) {
-          L.circleMarker(h.c, {
-            radius: 7, fillColor: h.col, color: '#fff',
-            weight: 2, opacity: 1, fillOpacity: 0.88
+          L.marker(h.c, {
+            icon: L.divIcon({
+              className: '',
+              html: `<div style="filter:drop-shadow(0 1px 4px rgba(0,0,0,0.55));">${orchidSvg(h.col, 22)}</div>`,
+              iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-13]
+            })
           }).bindPopup(
-            `<div style="min-width:170px;"><b style="color:${h.col};font-size:0.95rem;">&#127808; ${h.sp}</b><br>` +
+            `<div style="min-width:170px;"><b style="color:${h.col};font-size:0.95rem;">&#127800; ${h.sp}</b><br>` +
             `<span style="color:#555;font-size:0.82rem;">Conservation: <b style="color:${h.col};">${h.st}</b></span><br>` +
             `<span style="color:#777;font-size:0.78rem;">Mt. Busa, Sarangani</span></div>`
           ).addTo(leafletMap);
         });
 
-        // Heat layer for orchid density
-        if (typeof L.heatLayer === 'function') {
-          L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
-            radius: 32, blur: 24, maxZoom: 16,
-            gradient: { 0.2:'#34d399', 0.5:'#facc15', 0.78:'#f97316', 1.0:'#dc2626' }
-          }).addTo(leafletMap);
-        }
+        // Orchid density markers (density-colored orchid icons replace heat layer)
+        MT_BUSA_DISTRIBUTION_POINTS.forEach(function(pt) {
+          const col = densityColor(pt[2]);
+          L.marker([pt[0],pt[1]], {
+            icon: L.divIcon({
+              className: '',
+              html: `<div style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4));opacity:0.82;">${orchidSvg(col, 17)}</div>`,
+              iconSize: [17,17], iconAnchor: [8,8], popupAnchor: [0,-10]
+            })
+          }).bindPopup(
+            `<div style="min-width:150px;"><b style="color:${col};font-size:0.9rem;">Orchid Density Zone</b><br>` +
+            `<span style="color:#555;font-size:0.82rem;">Intensity: <b>${Math.round(pt[2]*100)}%</b></span><br>` +
+            `<span style="color:#777;font-size:0.78rem;">Mt. Busa Survey Area</span></div>`
+          ).addTo(leafletMap);
+        });
 
         // Summit marker
         L.marker(MT_BUSA_COORDS, {
@@ -3124,7 +3162,7 @@
           '<div style="text-align:center;min-width:180px;">' +
           '<b style="font-size:1.05rem;color:#2D5128;">&#9968; Mt. Busa</b><br>' +
           '<span style="color:#66786e;font-size:0.85rem;">Kiamba, Sarangani Province</span><br>' +
-          '<span style="color:#555;font-size:0.82rem;">6.2333°N, 124.7000°E</span><br>' +
+          '<span style="color:#555;font-size:0.82rem;">6.1064°N, 124.6699°E</span><br>' +
           '<span style="color:#34a853;font-size:0.82rem;margin-top:4px;display:block;">&#127808; Primary orchid survey area</span></div>'
         ).openPopup().addTo(leafletMap);
       }
