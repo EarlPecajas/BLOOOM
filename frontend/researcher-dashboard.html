@@ -186,21 +186,21 @@
         <div class="dashboard-card notifications-card card shadow-sm border-0">
           <h3 class="card-title">Notifications</h3>
           <div class="notification-item">
-            <div class="notification-icon">Gï¿½ï¿½</div>
+            <div class="notification-icon">G��</div>
             <div class="notification-content">
               <p class="notification-text">2 new submissions are awaiting DENR review.</p>
               <span class="notification-time">Updated just now</span>
             </div>
           </div>
           <div class="notification-item">
-            <div class="notification-icon">Gï¿½ï¿½</div>
+            <div class="notification-icon">G��</div>
             <div class="notification-content">
               <p class="notification-text">Orchid records increased by 12% this month.</p>
               <span class="notification-time">Monthly analytics</span>
             </div>
           </div>
           <div class="notification-item">
-            <div class="notification-icon">Gï¿½ï¿½</div>
+            <div class="notification-icon">G��</div>
             <div class="notification-content">
               <p class="notification-text">Map hotspots were refreshed with latest field data.</p>
               <span class="notification-time">Today, 09:40 AM</span>
@@ -285,7 +285,7 @@
           <ul class="overview-list">
             <li>Review high-priority submissions tagged as threatened species.</li>
             <li>Validate location metadata for recently added records.</li>
-            <li>Finalize this monthGï¿½ï¿½s conservation summary report.</li>
+            <li>Finalize this monthG��s conservation summary report.</li>
           </ul>
         </article>
 
@@ -353,7 +353,7 @@
             <option value="family">Family</option>
             <option value="species">Species</option>
           </select>
-          <input type="text" placeholder="ðŸ” Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
+          <input type="text" placeholder="🔍 Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
       </div>
 
@@ -369,27 +369,27 @@
         <div id="dashboard-orchid-map-stage">
           <div class="orchid-modal-header">
             <div class="orchid-modal-title-group">
-              <p class="orchid-modal-subtitle">Mt. Busa Â· Orchid Location</p>
-              <h3 id="dashboard-orchid-map-name" class="orchid-modal-name scientific-name">â€“</h3>
+              <p class="orchid-modal-subtitle">Mt. Busa · Orchid Location</p>
+              <h3 id="dashboard-orchid-map-name" class="orchid-modal-name scientific-name">–</h3>
             </div>
             <div style="display:flex;gap:.4rem;align-items:center;">
-              <button type="button" id="dashboard-gallery-btn-map" style="background:#fff;border:1px solid rgba(30,79,112,0.32);color:#1E4F70;border-radius:10px;padding:.42rem .85rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(30,79,112,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(30,79,112,0.32)'">ðŸ–¼ Gallery</button>
-              <button type="button" id="dashboard-orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">âœ•</button>
+              <button type="button" id="dashboard-gallery-btn-map" style="background:#fff;border:1px solid rgba(30,79,112,0.32);color:#1E4F70;border-radius:10px;padding:.42rem .85rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(30,79,112,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(30,79,112,0.32)'">🖼 Gallery</button>
+              <button type="button" id="dashboard-orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
             </div>
           </div>
           <div id="dashboard-orchid-leaflet-map" style="height:480px;width:100%;"></div>
-          <p class="orchid-modal-hint">ðŸŒº Click the orchid icon on the map to view details</p>
+          <p class="orchid-modal-hint">🌺 Click the orchid icon on the map to view details</p>
         </div>
 
         <!-- STAGE 2: PAGED DETAILS -->
         <div id="dashboard-orchid-detail-stage" hidden>
           <div class="orchid-detail-header-bar">
-            <button type="button" id="dashboard-detail-to-map-btn" class="orchid-detail-back-btn">â† Map</button>
-            <h3 id="dashboard-orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">â€“</h3>
+            <button type="button" id="dashboard-detail-to-map-btn" class="orchid-detail-back-btn">← Map</button>
+            <h3 id="dashboard-orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">–</h3>
             <div style="display:flex;gap:.4rem;align-items:center;">
               <button type="button" id="dashboard-add-instance-button" hidden style="background:#fff;border:1px solid rgba(30,79,112,0.32);color:#1E4F70;border-radius:10px;padding:.42rem .9rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease,transform 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(30,79,112,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(30,79,112,0.32)'">+ Add Instance</button>
-              <button type="button" id="dashboard-gallery-btn-detail" style="background:#fff;border:1px solid rgba(30,79,112,0.32);color:#1E4F70;border-radius:10px;padding:.42rem .85rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(30,79,112,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(30,79,112,0.32)'">ðŸ–¼ Gallery</button>
-              <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">âœ•</button>
+              <button type="button" id="dashboard-gallery-btn-detail" style="background:#fff;border:1px solid rgba(30,79,112,0.32);color:#1E4F70;border-radius:10px;padding:.42rem .85rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700;letter-spacing:0.3px;transition:background 200ms ease,border-color 200ms ease;" onmouseover="this.style.background='#f3f7f5';this.style.borderColor='rgba(30,79,112,0.45)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(30,79,112,0.32)'">🖼 Gallery</button>
+              <button type="button" id="dashboard-orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">✕</button>
             </div>
           </div>
           <div class="orchid-step-bar">
@@ -482,9 +482,9 @@
           </div>
 
           <div class="orchid-nav-bar">
-            <button type="button" id="dashboard-orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">â† Back</button>
+            <button type="button" id="dashboard-orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">← Back</button>
             <div id="dashboard-orchid-detail-step-dots" style="display:flex;align-items:center;gap:7px;flex:1;justify-content:center;"></div>
-            <button type="button" id="dashboard-orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next â†’</button>
+            <button type="button" id="dashboard-orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next →</button>
           </div>
         </div>
 
@@ -501,13 +501,13 @@
         <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
           <div>
             <p style="margin:0;font-size:0.72rem;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Photo Gallery</p>
-            <h2 id="gallery-overlay-title" style="margin:0.15rem 0 0 0;font-size:1rem;color:#1E4F70;font-family:Inter,Roboto,sans-serif;font-weight:700;font-style:italic;">â€“</h2>
+            <h2 id="gallery-overlay-title" style="margin:0.15rem 0 0 0;font-size:1rem;color:#1E4F70;font-family:Inter,Roboto,sans-serif;font-weight:700;font-style:italic;">–</h2>
           </div>
-          <button id="dashboard-gallery-overlay-close" style="width:32px;height:32px;border:none;background:#f1f5f9;border-radius:50%;font-size:1rem;cursor:pointer;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;">âœ•</button>
+          <button id="dashboard-gallery-overlay-close" style="width:32px;height:32px;border:none;background:#f1f5f9;border-radius:50%;font-size:1rem;cursor:pointer;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
         </div>
         <div style="overflow-y:auto;flex:1;padding:1.25rem;">
-          <div id="gallery-overlay-loading" style="text-align:center;padding:3rem 1rem;color:#888;font-size:0.92rem;">Loading photosâ€¦</div>
-          <div id="gallery-overlay-empty" hidden style="text-align:center;padding:3rem 1rem;color:#999;font-size:0.92rem;">ðŸŒ¸ No photos available for this orchid yet.</div>
+          <div id="gallery-overlay-loading" style="text-align:center;padding:3rem 1rem;color:#888;font-size:0.92rem;">Loading photos…</div>
+          <div id="gallery-overlay-empty" hidden style="text-align:center;padding:3rem 1rem;color:#999;font-size:0.92rem;">🌸 No photos available for this orchid yet.</div>
           <div id="gallery-overlay-grid" hidden style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:0.75rem;"></div>
         </div>
       </div>
@@ -515,10 +515,10 @@
 
     <!-- Gallery Full-screen Lightbox -->
     <div id="gallery-lightbox-overlay" hidden style="position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:10020;display:flex;align-items:center;justify-content:center;">
-      <button id="gallery-lightbox-prev" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">â€¹</button>
+      <button id="gallery-lightbox-prev" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">‹</button>
       <img id="gallery-lightbox-img" src="" alt="" style="max-width:90vw;max-height:88vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.7);" />
-      <button id="gallery-lightbox-next" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">â€º</button>
-      <button id="gallery-lightbox-close" style="position:absolute;top:1rem;right:1rem;width:38px;height:38px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">âœ•</button>
+      <button id="gallery-lightbox-next" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">›</button>
+      <button id="gallery-lightbox-close" style="position:absolute;top:1rem;right:1rem;width:38px;height:38px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       <div id="gallery-lightbox-caption" style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.65);font-size:0.82rem;text-align:center;pointer-events:none;white-space:nowrap;"></div>
     </div>
 
@@ -660,7 +660,7 @@
 
               <!-- Include Options -->
               <div>
-                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#1E4F70;font-size:0.95rem;">Gï¿½ï¿½ Include in Report</label>
+                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#1E4F70;font-size:0.95rem;">G�� Include in Report</label>
                 <div style="display:flex;flex-direction:column;gap:0.6rem;">
                   <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.95rem;color:#333;">
                     <input type="checkbox" checked data-section="summary" style="width:18px;height:18px;cursor:pointer;accent-color:#1E4F70;"> Summary Statistics
@@ -693,7 +693,7 @@
               <!-- Action Buttons -->
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem;">
                 <button type="button" onclick="resetReportForm()" class="dashboard-btn dashboard-btn-secondary">Clear</button>
-                <button type="button" onclick="generateReport()" class="dashboard-btn dashboard-btn-primary" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;">=ï¿½ï¿½ï¿½ Generate Report</button>
+                <button type="button" onclick="generateReport()" class="dashboard-btn dashboard-btn-primary" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;">=��� Generate Report</button>
               </div>
             </form>
           </div>
@@ -739,9 +739,9 @@
           <h4 style="margin:0 0 0.75rem 0;color:#1E4F70;font-weight:700;font-size:0.88rem;letter-spacing:0.05em;text-transform:uppercase;">Map Legend</h4>
           <div style="display:flex;flex-direction:column;gap:0.55rem;">
             <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Orchid Density</div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#dc2626;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">High (â‰¥80%)</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#f97316;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium-High (60â€“79%)</span></div>
-            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#facc15;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium (40â€“59%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#dc2626;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">High (≥80%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#f97316;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium-High (60–79%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#facc15;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium (40–59%)</span></div>
             <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#34d399;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Low (&lt;40%)</span></div>
             <div style="height:1px;background:#e5e7eb;margin:0.3rem 0;"></div>
             <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Conservation Status</div>
@@ -1223,7 +1223,7 @@
     <div id="imageLightbox" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:2001;align-items:center;justify-content:center;padding:2rem;">
       <div style="position:relative;max-width:90vw;max-height:90vh;">
         <img id="lightboxImage" src="" alt="Full size image" style="max-width:100%;max-height:100%;border-radius:8px;">
-        <button onclick="closeLightbox()" style="position:absolute;top:-40px;right:0;background:white;border:none;font-size:2rem;cursor:pointer;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;">+ï¿½</button>
+        <button onclick="closeLightbox()" style="position:absolute;top:-40px;right:0;background:white;border:none;font-size:2rem;cursor:pointer;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;">+�</button>
       </div>
     </div>
 
@@ -1232,7 +1232,7 @@
       <div style="background:white;border-radius:12px;max-width:700px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
         <div style="background:linear-gradient(135deg,#1E4F70,#3d6c36);padding:1.5rem;color:white;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;">
           <h2 id="conservationTitle" style="margin:0;font-size:1.3rem;font-family:Inter,Roboto,sans-serif;">Species List</h2>
-          <button onclick="closeModal('conservationModal')" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:1.5rem;cursor:pointer;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 200ms ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">+ï¿½</button>
+          <button onclick="closeModal('conservationModal')" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:1.5rem;cursor:pointer;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 200ms ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">+�</button>
         </div>
         <div style="padding:1.5rem;">
           <div id="conservationListContent" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
@@ -1450,7 +1450,7 @@
         input.style.cssText = 'flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.textContent = 'Ã—';
+        removeBtn.textContent = '×';
         removeBtn.style.cssText = 'padding:0.4rem 0.65rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;';
         removeBtn.addEventListener('click', () => wrap.remove());
         wrap.appendChild(input);
@@ -1468,7 +1468,7 @@
         input.style.cssText = 'flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.textContent = 'Ã—';
+        removeBtn.textContent = '×';
         removeBtn.style.cssText = 'padding:0.4rem 0.65rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;';
         removeBtn.addEventListener('click', () => wrap.remove());
         wrap.appendChild(input);
@@ -1495,7 +1495,7 @@
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.textContent = 'Ã—';
+        removeBtn.textContent = '×';
         removeBtn.style.cssText = 'padding:0.5rem 0.75rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1.1rem;line-height:1;';
         removeBtn.addEventListener('click', function() { wrap.remove(); });
 
@@ -1593,7 +1593,7 @@
           draftBtn.dataset.bound = '1';
           draftBtn.addEventListener('click', async function() {
             const feedback = document.getElementById('researcher-submission-feedback');
-            if (feedback) { feedback.style.color = '#4f5f56'; feedback.textContent = 'Saving draftâ€¦'; }
+            if (feedback) { feedback.style.color = '#4f5f56'; feedback.textContent = 'Saving draft…'; }
             try {
               if (!bloomSupabase) throw new Error('Supabase not configured');
               const form = document.getElementById('researcher-submission-form');
@@ -1654,7 +1654,7 @@
           }
         });
 
-        // Genus + Species â†’ auto-fill Scientific Name
+        // Genus + Species → auto-fill Scientific Name
         const genusEl = document.getElementById('submission-genus');
         const speciesEl = document.getElementById('submission-species-epithet');
         const scientificEl = document.getElementById('submission-scientific-name');
@@ -1672,7 +1672,7 @@
           speciesEl.addEventListener('input', syncScientificName);
         }
 
-        // Growth Substrate â†’ show/hide tree fields
+        // Growth Substrate → show/hide tree fields
         const growthSubstrateEl = document.getElementById('submission-growth-substrate');
         const treeFieldsEl = document.getElementById('submission-tree-fields');
         function toggleTreeFields() {
@@ -1686,7 +1686,7 @@
         }
         toggleTreeFields();
 
-        // Habitat Type â†’ show/hide Others input
+        // Habitat Type → show/hide Others input
         const habitatTypeEl = document.getElementById('submission-habitat-type');
         const habitatTypeOtherEl = document.getElementById('submission-habitat-type-other');
         function toggleHabitatOther() {
@@ -1709,7 +1709,7 @@
               if (gpsStatus) gpsStatus.textContent = 'Geolocation is not supported by this browser.';
               return;
             }
-            if (gpsStatus) gpsStatus.textContent = 'Getting locationâ€¦';
+            if (gpsStatus) gpsStatus.textContent = 'Getting location…';
             navigator.geolocation.getCurrentPosition(
               function(pos) {
                 const lat = document.getElementById('submission-latitude');
@@ -1718,7 +1718,7 @@
                 if (lat) lat.value = pos.coords.latitude.toFixed(6);
                 if (lng) lng.value = pos.coords.longitude.toFixed(6);
                 if (elev && pos.coords.altitude !== null) elev.value = pos.coords.altitude.toFixed(1);
-                if (gpsStatus) gpsStatus.textContent = `Location set (Â±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
               },
               function(err) {
                 if (gpsStatus) gpsStatus.textContent = `GPS error: ${err.message}`;
@@ -2636,7 +2636,7 @@
         const prevBtn = document.getElementById('dashboard-orchid-detail-prev-btn');
         const nextBtn = document.getElementById('dashboard-orchid-detail-next-btn');
         if (prevBtn) prevBtn.hidden = (n === 1);
-        if (nextBtn) nextBtn.textContent = n === DASHBOARD_ORCHID_DETAIL_PAGES ? 'âœ“ Done' : 'Next â†’';
+        if (nextBtn) nextBtn.textContent = n === DASHBOARD_ORCHID_DETAIL_PAGES ? '✓ Done' : 'Next →';
         const dotsEl = document.getElementById('dashboard-orchid-detail-step-dots');
         if (dotsEl) {
           dotsEl.innerHTML = Array.from({length: DASHBOARD_ORCHID_DETAIL_PAGES}, (_, i) =>
@@ -2666,10 +2666,10 @@
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
         dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([lat, lng], 11);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles Â© Esri', maxZoom: 19
+          attribution: 'Tiles © Esri', maxZoom: 19
         }).addTo(dashboardOrchidLeafletMap);
         const icon = L.divIcon({
-          html: '<div style="font-size:30px;line-height:1;cursor:pointer;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.45));">ðŸŒº</div>',
+          html: '<div style="font-size:30px;line-height:1;cursor:pointer;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.45));">🌺</div>',
           className: '', iconSize: [32, 32], iconAnchor: [16, 16]
         });
         const marker = L.marker([lat, lng], {icon}).addTo(dashboardOrchidLeafletMap);
@@ -2759,7 +2759,7 @@
         setDashboardDetailRow('dashboard-row-horticulture', 'dashboard-detail-horticulture', orchid.horticulture_value);
         setDashboardDetailRow('dashboard-row-cultural', 'dashboard-detail-cultural', orchid.cultural_importance);
 
-        // Show modal â†’ map stage first
+        // Show modal → map stage first
         dashboardOrchidDetailModal.hidden = false;
         document.getElementById('dashboard-orchid-map-stage').hidden = false;
         document.getElementById('dashboard-orchid-detail-stage').hidden = true;
@@ -2852,7 +2852,7 @@
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
       }
 
-      // â”€â”€ Orchid Photo Gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Orchid Photo Gallery ─────────────────────────────────────
       let galleryImages = [];
       let galleryCurrentIndex = 0;
 
@@ -2933,7 +2933,7 @@
         const next = document.getElementById('gallery-lightbox-next');
         if (!lb || !img) return;
         img.src = galleryImages[index].src;
-        if (caption) caption.textContent = galleryImages[index].caption + ' Â· ' + (index + 1) + ' / ' + galleryImages.length;
+        if (caption) caption.textContent = galleryImages[index].caption + ' · ' + (index + 1) + ' / ' + galleryImages.length;
         if (prev) prev.style.display = galleryImages.length > 1 ? 'flex' : 'none';
         if (next) next.style.display = galleryImages.length > 1 ? 'flex' : 'none';
         lb.hidden = false;
@@ -2964,7 +2964,7 @@
           if (e.target === this) { this.hidden = true; if (lbOverlay) lbOverlay.hidden = true; }
         });
       })();
-      // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ────────────────────────────────────────────────────────────
 
       function renderOrchidCatalog(items) {
         if (!catalogGrid) return;
@@ -3106,7 +3106,7 @@
             setVal('submission-related-study-link', rs.link || '');
           }
         } catch (e) { /* ignore parse errors */ }
-        // habitat-type and microhabitat are selects â€” set via direct property
+        // habitat-type and microhabitat are selects — set via direct property
         const habitatEl = document.getElementById('submission-habitat-type');
         if (habitatEl && draft.habitat_type) habitatEl.value = draft.habitat_type;
       }
@@ -3169,7 +3169,7 @@
         renderOrchidCatalog(filtered);
       }
 
-      // Trail definitions â€” all coordinates around Mt. Busa (6.2333Â°N, 124.7000Â°E)
+      // Trail definitions — all coordinates around Mt. Busa (6.2333°N, 124.7000°E)
       const NEON_BLUE = '#00e5ff';
       const MAP_TRAIL_DEFS = {
         trail1: {
@@ -3291,7 +3291,7 @@
         } else {
           const opts = { lineCap: 'square', lineJoin: 'miter' };
           const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
-          // Three-layer neon glow: outer halo â†’ mid glow â†’ bright core
+          // Three-layer neon glow: outer halo → mid glow → bright core
           const halo = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 18, opacity: 0.08 });
           const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
           const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
@@ -3405,7 +3405,7 @@
           '<div style="text-align:center;min-width:180px;">' +
           '<b style="font-size:1.05rem;color:#1E4F70;">&#9968; Mt. Busa</b><br>' +
           '<span style="color:#66786e;font-size:0.85rem;">Kiamba, Sarangani Province</span><br>' +
-          '<span style="color:#555;font-size:0.82rem;">6.1064Â°N, 124.6699Â°E</span><br>' +
+          '<span style="color:#555;font-size:0.82rem;">6.1064°N, 124.6699°E</span><br>' +
           '<span style="color:#34a853;font-size:0.82rem;margin-top:4px;display:block;">&#127808; Primary orchid survey area</span></div>'
         ).openPopup().addTo(leafletMap);
       }
@@ -3544,7 +3544,7 @@ function refreshConservationHeatMap(summary) {
       conservationHeatMap = L.map('conservation-heat-map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'ï¿½ OpenStreetMap contributors',
+        attribution: '� OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(conservationHeatMap);
 
@@ -3658,7 +3658,7 @@ function refreshConservationHeatMap(summary) {
 
         setActiveSidebarItem(viewName);
 
-        // Hide all views â€” also clear any map fixed-position styling
+        // Hide all views — also clear any map fixed-position styling
         document.querySelectorAll('.view-section').forEach(section => {
           section.style.display = 'none';
           section.style.pointerEvents = 'none';
@@ -3775,7 +3775,7 @@ function refreshConservationHeatMap(summary) {
         
         // Add satellite imagery base layer
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles -ï¿½ Esri',
+          attribution: 'Tiles -� Esri',
           maxZoom: 19
         }).addTo(dashboardMap);
         
@@ -4087,7 +4087,7 @@ function refreshConservationHeatMap(summary) {
       }
 
       function downloadFile(fileName) {
-        alert(`=ï¿½ï¿½ï¿½ File Download\n\n"${fileName}" will be downloaded.\n\nNote: In a production environment, this would trigger the actual file download.`);
+        alert(`=��� File Download\n\n"${fileName}" will be downloaded.\n\nNote: In a production environment, this would trigger the actual file download.`);
       }
 
       // Conservation Status Species Data
@@ -4667,17 +4667,17 @@ function refreshConservationHeatMap(summary) {
         const sections = getSelectedReportSections();
         
         if (!dateFrom || !dateTo) {
-          alert('Gï¿½ï¿½n+ï¿½ Please select both start and end dates');
+          alert('G��n+� Please select both start and end dates');
           return;
         }
         
         if (new Date(dateFrom) > new Date(dateTo)) {
-          alert('Gï¿½ï¿½n+ï¿½ Start date must be before end date');
+          alert('G��n+� Start date must be before end date');
           return;
         }
 
         if (!sections.summary && !sections.details && !sections.charts && !sections.recommendations) {
-          alert('Gï¿½ï¿½n+ï¿½ Please select at least one report content section.');
+          alert('G��n+� Please select at least one report content section.');
           return;
         }
 
@@ -4687,7 +4687,7 @@ function refreshConservationHeatMap(summary) {
           const fileNameBase = `${reportConfig.title.replace(/\s+/g, '_')}_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}`;
 
           if (rows.length === 0 && (sections.details || sections.charts)) {
-            alert('Gï¿½ï¿½n+ï¿½ No data found for the selected date range. The export will include a no-data note.');
+            alert('G��n+� No data found for the selected date range. The export will include a no-data note.');
           }
 
           if (format === 'excel') {
@@ -4696,7 +4696,7 @@ function refreshConservationHeatMap(summary) {
             downloadReportAsPdf(fileNameBase, reportConfig.title, dateFrom, dateTo, rows, sections, reportType);
           }
         } catch (error) {
-          alert(`Gï¿½ï¿½n+ï¿½ Could not generate report: ${error.message}`);
+          alert(`G��n+� Could not generate report: ${error.message}`);
         }
       }
 
@@ -4716,6 +4716,5 @@ function refreshConservationHeatMap(summary) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
-
 
 
