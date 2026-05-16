@@ -3598,11 +3598,18 @@
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
-          const postBtn = (isAdminRole && isApproved(submission))
-            ? `<button type="button" class="sub-post-btn" data-submission-id="${submission.id}" title="Post to Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid #1E4F70;background:#1E4F70;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;">
+          let postBtn = '';
+          if (isAdminRole && isApproved(submission)) {
+            if (submission.catalog_published) {
+              postBtn = `<span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-size:0.78rem;font-weight:700;white-space:nowrap;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Published
+              </span>`;
+            } else {
+              postBtn = `<button type="button" class="sub-post-btn" data-submission-id="${submission.id}" title="Publish to Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid #1E4F70;background:#1E4F70;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>Publish
-              </button>`
-            : '';
+              </button>`;
+            }
+          }
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">${safeResearcher}</td>
