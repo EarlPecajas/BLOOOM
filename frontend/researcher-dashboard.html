@@ -2539,6 +2539,26 @@
           .replace(/'/g, '&#39;');
       }
 
+      function formatTeamMembersValue(value) {
+        if (!value) return '';
+        try {
+          const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+          if (Array.isArray(parsed)) {
+            return parsed
+              .map((m) => {
+                if (!m) return '';
+                if (typeof m === 'string') return m.trim();
+                const name = String(m.name || '').trim();
+                const role = String(m.role || '').trim();
+                return name && role ? `${name} (${role})` : (name || role);
+              })
+              .filter(Boolean)
+              .join(', ');
+          }
+        } catch { /* fall through */ }
+        return String(value).trim();
+      }
+
       function parseJsonArrayValue(value) {
         if (Array.isArray(value)) {
           return value.filter(Boolean);
@@ -2579,6 +2599,7 @@
           genus: row.genus || '',
           common_name: commonNames[0] || row.common_name || '-',
           common_names: commonNames,
+          team_members_display: formatTeamMembersValue(row.team_members),
           submission_date: row.submission_date || row.observation_date || row.created_at?.slice(0, 10) || '-',
           review_status: row.review_status || 'pending',
           habitat: row.habitat || row.habitat_type || '-',
@@ -4091,7 +4112,7 @@ function refreshConservationHeatMap(summary) {
         setDetailFieldAlways('row-threat-level', 'value-threat-level', submission.threat_level || '');
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
-        setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || submission.team_members || '');
+        setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
         const ethnoEl = document.getElementById('value-ethnobotanical');
         if (ethnoEl) ethnoEl.textContent = submission.ethnobotanical || submission.researcher_notes || '-';
         const culturalEl = document.getElementById('value-cultural');
