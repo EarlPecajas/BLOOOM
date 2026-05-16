@@ -1346,182 +1346,228 @@
     </div>
 
     <!-- Detail Modal with Actions -->
-    <div id="detailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:2rem;overflow-y:auto;">
-      <div id="detailModalCard" style="background:white;border-radius:12px;padding:2.5rem;max-width:900px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2);margin:0 auto;max-height:calc(100vh - 4rem);overflow-y:auto;">
-        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:2rem;">
-          <div>
-            <h2 id="detailTitle" class="scientific-name" style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:2.4rem;font-weight:800;">
-            </h2>
-            <p id="detailResearcher" style="margin:0;color:#666;font-size:0.95rem;"></p>
+    <div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:2000;padding:1.5rem;overflow-y:auto;backdrop-filter:blur(3px);">
+      <div id="detailModalCard" style="background:#f8fafc;border-radius:18px;max-width:920px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.22);margin:0 auto;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- Sticky Header -->
+        <div style="background:#1E4F70;padding:1.4rem 1.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-shrink:0;position:sticky;top:0;z-index:10;">
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+              <span style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.6);">Sighting Submission</span>
+              <span id="detailStatusBadge" style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;padding:0.18rem 0.6rem;border-radius:999px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.3);"></span>
+            </div>
+            <h2 id="detailTitle" class="scientific-name" style="margin:0 0 0.3rem;color:#fff;font-size:1.65rem;font-weight:800;line-height:1.2;"></h2>
+            <p id="detailResearcher" style="margin:0;color:rgba(255,255,255,0.7);font-size:0.84rem;"></p>
           </div>
-          <button onclick="closeModal('detailModal')" style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+          <button onclick="closeModal('detailModal')" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 160ms;" onmouseover="this.style.background='rgba(255,255,255,0.24)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">&times;</button>
         </div>
-        
-        <!-- Main Info Section -->
-        <div id="detailContent" style="display:none;background:#f9f9f9;padding:1.5rem;border-radius:8px;margin-bottom:2rem;border-left:4px solid #1E4F70;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
-            <div>
-              <p style="margin:0 0 0.5rem 0;color:#999;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Family</p>
-              <p id="detailLocation" style="margin:0;color:#333;font-size:0.95rem;font-weight:500;"></p>
-            </div>
-            <div>
-              <p style="margin:0 0 0.5rem 0;color:#999;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Observation Date</p>
-              <p id="detailDate" style="margin:0;color:#333;font-size:0.95rem;font-weight:500;"></p>
-            </div>
-            <div>
-              <p style="margin:0 0 0.5rem 0;color:#999;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Common Name / Location</p>
-              <p id="detailHabitat" style="margin:0;color:#333;font-size:0.95rem;font-weight:500;"></p>
-            </div>
-            <div>
-              <p style="margin:0 0 0.5rem 0;color:#999;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Conservation Status</p>
-              <p id="detailStatus" style="margin:0;color:#333;font-size:0.95rem;font-weight:500;"></p>
-            </div>
-          </div>
-          <div style="border-top:1px solid #e0e0e0;padding-top:1.5rem;">
-            <p style="margin:0 0 0.5rem 0;color:#999;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Species Value</p>
-            <p id="detailDescription" style="margin:0;color:#333;font-size:0.95rem;line-height:1.6;white-space:pre-line;"></p>
-          </div>
+
+        <!-- Quick-facts strip -->
+        <div id="detailContent" style="background:#fff;border-bottom:1px solid #e2e8f0;padding:0.9rem 1.75rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem 1.5rem;">
+          <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Family</p><p id="detailLocation" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
+          <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Observed</p><p id="detailDate" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
+          <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Common Name</p><p id="detailHabitat" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
+          <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Review Status</p><p id="detailStatus" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
+          <div style="display:none;"><p id="detailDescription" style="margin:0;"></p></div>
         </div>
-      
-        <!-- Expanded Details Grid grouped into titled sections -->
-        <div id="detailFields" style="background:#fff;padding:1rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #EDF4FA;">
+
+        <!-- Scrollable body -->
+        <div style="padding:1.5rem 1.75rem;overflow-y:auto;max-height:calc(100vh - 260px);display:flex;flex-direction:column;gap:1rem;" id="detailFields">
+
+          <!-- helper: section card macro is inline below -->
+
           <!-- Basic Taxonomic Information -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Basic Taxonomic Information</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-entry-id"><strong>Entry ID:</strong> <span id="value-entry-id"></span></div>
-              <div id="row-common-names"><strong>Common Names:</strong> <span id="value-common-names"></span></div>
-              <div id="row-identification-confidence"><strong>Identification Confidence:</strong> <span id="value-identification-confidence"></span></div>
+          <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Basic Taxonomic Information</h4>
             </div>
-          </section>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+              <div id="row-entry-id" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Entry ID</span><span id="value-entry-id" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;font-family:monospace;"></span></div>
+              <div id="row-common-names" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Common Names</span><span id="value-common-names" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-identification-confidence" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">ID Confidence</span><span id="value-identification-confidence" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div style="padding:0.6rem 1rem;"></div>
+            </div>
+          </div>
 
           <!-- Observation / Collection Details -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Observation / Collection Details</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-collection-method"><strong>Collection Method:</strong> <span id="value-collection-method"></span></div>
-              <div id="row-observation-type"><strong>Observation Type:</strong> <span id="value-observation-type"></span></div>
-              <div id="row-voucher-collected"><strong>Voucher Collected:</strong> <span id="value-voucher-collected"></span></div>
-              <div id="row-observation-date"><strong>Observation Date:</strong> <span id="value-observation-date"></span></div>
-              <div id="row-observation-time"><strong>Observation Time:</strong> <span id="value-observation-time"></span></div>
+          <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Observation / Collection Details</h4>
             </div>
-          </section>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+              <div id="row-observation-date" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Observation Date</span><span id="value-observation-date" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-observation-time" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Time</span><span id="value-observation-time" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-collection-method" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Collection Method</span><span id="value-collection-method" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-observation-type" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Observation Type</span><span id="value-observation-type" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-voucher-collected" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Voucher Collected</span><span id="value-voucher-collected" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div style="padding:0.6rem 1rem;"></div>
+            </div>
+          </div>
 
           <!-- Geographical / Location Data -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Geographical / Location Data</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-mountain-name"><strong>Mountain:</strong> <span id="value-mountain-name"></span></div>
-              <div id="row-specific-site"><strong>Specific Site / Zone:</strong> <span id="value-specific-site"></span></div>
-              <div id="row-latitude"><strong>Latitude:</strong> <span id="value-latitude"></span></div>
-              <div id="row-longitude"><strong>Longitude:</strong> <span id="value-longitude"></span></div>
-              <div id="row-elevation"><strong>Elevation (m):</strong> <span id="value-elevation"></span></div>
+          <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Geographical / Location Data</h4>
             </div>
-          </section>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+              <div id="row-mountain-name" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Mountain</span><span id="value-mountain-name" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-specific-site" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Specific Site / Zone</span><span id="value-specific-site" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-latitude" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Latitude</span><span id="value-latitude" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;font-family:monospace;"></span></div>
+              <div id="row-longitude" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Longitude</span><span id="value-longitude" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;font-family:monospace;"></span></div>
+              <div id="row-elevation" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Elevation (m)</span><span id="value-elevation" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div style="padding:0.6rem 1rem;"></div>
+            </div>
+          </div>
 
-          <!-- Habitat Information -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Habitat Information</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-habitat-type"><strong>Habitat Type:</strong> <span id="value-habitat-type"></span></div>
-              <div id="row-microhabitat"><strong>Microhabitat:</strong> <span id="value-microhabitat"></span></div>
-              <div id="row-growth-substrate"><strong>Growth Substrate:</strong> <span id="value-growth-substrate"></span></div>
-              <div id="row-host-tree"><strong>Host Tree Species:</strong> <span id="value-host-tree"></span></div>
-              <div id="row-host-dbh"><strong>Host Tree DBH (cm):</strong> <span id="value-host-dbh"></span></div>
-              <div id="row-canopy-cover"><strong>Canopy Cover (%):</strong> <span id="value-canopy-cover"></span></div>
-              <div id="row-light-exposure"><strong>Light Exposure:</strong> <span id="value-light-exposure"></span></div>
-              <div id="row-soil-type"><strong>Soil Type:</strong> <span id="value-soil-type"></span></div>
-              <div id="row-nearby-water"><strong>Nearby Water Source:</strong> <span id="value-nearby-water"></span></div>
-            </div>
-          </section>
+          <!-- 2-column card row for Habitat + Morphological -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
 
-          <!-- Morphological Characteristics -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Morphological Characteristics</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-plant-height"><strong>Plant Height (cm):</strong> <span id="value-plant-height"></span></div>
-              <div id="row-pseudobulb"><strong>Pseudobulb Present:</strong> <span id="value-pseudobulb"></span></div>
-              <div id="row-stem-length"><strong>Stem Length (cm):</strong> <span id="value-stem-length"></span></div>
-              <div id="row-root-length"><strong>Root Length (cm):</strong> <span id="value-root-length"></span></div>
-              <div id="row-leaf-count"><strong>Leaf Count:</strong> <span id="value-leaf-count"></span></div>
-              <div id="row-leaf-shape"><strong>Leaf Shape:</strong> <span id="value-leaf-shape"></span></div>
-              <div id="row-leaf-shape-other"><strong>Leaf Shape (other):</strong> <span id="value-leaf-shape-other"></span></div>
-              <div id="row-leaf-dimensions"><strong>Leaf LxW (cm):</strong> <span id="value-leaf-dimensions"></span></div>
-              <div id="row-leaf-textures"><strong>Leaf Textures:</strong> <span id="value-leaf-textures"></span></div>
-              <div id="row-leaf-arrangement"><strong>Leaf Arrangement:</strong> <span id="value-leaf-arrangement"></span></div>
+            <!-- Habitat Information -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Habitat</h4>
+              </div>
+              <div>
+                <div id="row-habitat-type" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Type</span><span id="value-habitat-type" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-microhabitat" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Microhabitat</span><span id="value-microhabitat" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-growth-substrate" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Growth Substrate</span><span id="value-growth-substrate" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-host-tree" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Host Tree</span><span id="value-host-tree" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-host-dbh" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Host DBH (cm)</span><span id="value-host-dbh" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-canopy-cover" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Canopy Cover (%)</span><span id="value-canopy-cover" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-light-exposure" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Light Exposure</span><span id="value-light-exposure" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-soil-type" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Soil Type</span><span id="value-soil-type" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-nearby-water" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Nearby Water</span><span id="value-nearby-water" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              </div>
             </div>
-          </section>
 
-          <!-- Ecological / Biological Data -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Ecological / Biological Data</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-flower-color"><strong>Flower Color:</strong> <span id="value-flower-color"></span></div>
-              <div id="row-flower-count"><strong>Flower Count:</strong> <span id="value-flower-count"></span></div>
-              <div id="row-flower-diameter"><strong>Flower Diameter (cm):</strong> <span id="value-flower-diameter"></span></div>
-              <div id="row-inflorescence"><strong>Inflorescence Type:</strong> <span id="value-inflorescence"></span></div>
-              <div id="row-petal-char"><strong>Petal Characteristics:</strong> <span id="value-petal-char"></span></div>
-              <div id="row-sepal-char"><strong>Sepal Characteristics:</strong> <span id="value-sepal-char"></span></div>
-              <div id="row-labellum"><strong>Labellum / Lip:</strong> <span id="value-labellum"></span></div>
-              <div id="row-fragrance"><strong>Fragrance:</strong> <span id="value-fragrance"></span></div>
-              <div id="row-blooming-stage"><strong>Blooming Stage:</strong> <span id="value-blooming-stage"></span></div>
-              <div id="row-flowering-season"><strong>Flowering Season:</strong> <span id="value-flowering-season"></span></div>
-              <div id="row-fruit-present"><strong>Fruit Present:</strong> <span id="value-fruit-present"></span></div>
-              <div id="row-fruit-type"><strong>Fruit Type:</strong> <span id="value-fruit-type"></span></div>
-              <div id="row-seed-capsule"><strong>Seed Capsule Condition:</strong> <span id="value-seed-capsule"></span></div>
+            <!-- Morphological Characteristics -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Morphology</h4>
+              </div>
+              <div>
+                <div id="row-plant-height" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Plant Height (cm)</span><span id="value-plant-height" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-pseudobulb" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Pseudobulb</span><span id="value-pseudobulb" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-stem-length" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Stem Length (cm)</span><span id="value-stem-length" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-root-length" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Root Length (cm)</span><span id="value-root-length" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-leaf-count" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Leaf Count</span><span id="value-leaf-count" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-leaf-shape" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Leaf Shape</span><span id="value-leaf-shape" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-leaf-shape-other" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Leaf Shape (other)</span><span id="value-leaf-shape-other" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-leaf-dimensions" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Leaf L×W (cm)</span><span id="value-leaf-dimensions" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-leaf-textures" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Leaf Textures</span><span id="value-leaf-textures" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-leaf-arrangement" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Leaf Arrangement</span><span id="value-leaf-arrangement" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              </div>
             </div>
-          </section>
+          </div>
 
-          <!-- Conservation & Threat Data -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Conservation & Threat Data</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-life-stage"><strong>Life Stage:</strong> <span id="value-life-stage"></span></div>
-              <div id="row-phenology"><strong>Phenology:</strong> <span id="value-phenology"></span></div>
-              <div id="row-population-count"><strong>Population Count:</strong> <span id="value-population-count"></span></div>
-              <div id="row-population-status"><strong>Population Status:</strong> <span id="value-population-status"></span></div>
-              <div id="row-threat-level"><strong>Threat Level:</strong> <span id="value-threat-level"></span></div>
-              <div id="row-threat-types"><strong>Threat Types:</strong> <span id="value-threat-types"></span></div>
-              <div id="row-institution"><strong>Institution:</strong> <span id="value-institution"></span></div>
-            </div>
-          </section>
+          <!-- 2-column card row for Ecological + Conservation -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
 
-          <!-- Researchers -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Researchers</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.6rem;">
-              <div id="row-researcher-email"><strong>Researcher Email:</strong> <span id="value-researcher-email"></span></div>
-              <div id="row-researcher-name"><strong>Researcher Name:</strong> <span id="value-researcher-name"></span></div>
-              <div id="row-team-members"><strong>Team Members:</strong> <span id="value-team-members"></span></div>
+            <!-- Ecological / Biological Data -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Ecological / Biological</h4>
+              </div>
+              <div>
+                <div id="row-flower-color" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Flower Color</span><span id="value-flower-color" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-flower-count" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Flower Count</span><span id="value-flower-count" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-flower-diameter" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Flower Ø (cm)</span><span id="value-flower-diameter" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-inflorescence" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Inflorescence</span><span id="value-inflorescence" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-petal-char" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Petal Char.</span><span id="value-petal-char" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-sepal-char" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Sepal Char.</span><span id="value-sepal-char" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-labellum" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Labellum / Lip</span><span id="value-labellum" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-fragrance" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Fragrance</span><span id="value-fragrance" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-blooming-stage" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Blooming Stage</span><span id="value-blooming-stage" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-flowering-season" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Flowering Season</span><span id="value-flowering-season" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-fruit-present" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Fruit Present</span><span id="value-fruit-present" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-fruit-type" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Fruit Type</span><span id="value-fruit-type" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-seed-capsule" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Seed Capsule</span><span id="value-seed-capsule" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              </div>
             </div>
-          </section>
 
-          <!-- Notes & Remarks -->
-          <section style="margin-bottom:0.75rem;">
-            <h4 style="margin:0 0 0.5rem 0;color:#1E4F70;font-family:'Inter',Roboto,sans-serif;font-size:1.35rem;font-weight:800;">Notes & Remarks</h4>
-            <div>
-              <div id="row-ethnobotanical"><strong>Ethnobotanical / Notes:</strong> <span id="value-ethnobotanical"></span></div>
-              <div id="row-cultural"><strong>Cultural / Horticulture:</strong> <span id="value-cultural"></span></div>
+            <!-- Conservation & Threat Data -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;align-self:start;">
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#fff7ed;border-bottom:1px solid #fed7aa;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#c2410c;">Conservation & Threats</h4>
+              </div>
+              <div>
+                <div id="row-threat-level" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Threat Level</span><span id="value-threat-level" style="font-size:0.8rem;color:#1e293b;font-weight:700;text-align:right;"></span></div>
+                <div id="row-threat-types" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Threat Types</span><span id="value-threat-types" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-life-stage" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Life Stage</span><span id="value-life-stage" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-phenology" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Phenology</span><span id="value-phenology" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-population-count" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Population Count</span><span id="value-population-count" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-population-status" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Population Status</span><span id="value-population-status" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-institution" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.55rem 1rem;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Institution</span><span id="value-institution" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              </div>
             </div>
-          </section>
+          </div>
+
+          <!-- Researchers + Notes row -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+            <!-- Researchers -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Researchers</h4>
+              </div>
+              <div>
+                <div id="row-researcher-name" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Name</span><span id="value-researcher-name" style="font-size:0.8rem;color:#1e293b;font-weight:600;text-align:right;"></span></div>
+                <div id="row-researcher-email" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Email</span><span id="value-researcher-email" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+                <div id="row-team-members" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;"><span style="font-size:0.78rem;color:#64748b;font-weight:600;">Team Members</span><span id="value-team-members" style="font-size:0.8rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              </div>
+            </div>
+
+            <!-- Notes & Remarks -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Notes & Remarks</h4>
+              </div>
+              <div>
+                <div id="row-ethnobotanical" style="padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Ethnobotanical / Notes</p><p id="value-ethnobotanical" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
+                <div id="row-cultural" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Cultural / Horticulture</p><p id="value-cultural" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Field Documentation Photos -->
+          <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:#F0F5FA;border-bottom:1px solid #e2e8f0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E4F70" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Field Documentation — Photos</h4>
+            </div>
+            <div style="padding:1rem;">
+              <div id="imageGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem;"></div>
+            </div>
+          </div>
+
+        </div><!-- /body -->
+
+        <!-- Sticky action footer -->
+        <div id="actionButtons" style="display:flex;gap:0.6rem;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:1rem 1.75rem;background:#fff;border-top:1px solid #e2e8f0;flex-shrink:0;position:sticky;bottom:0;z-index:10;">
+          <button onclick="closeModal('detailModal')" style="padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:0.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 160ms;">Close</button>
+          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #1E4F70;background:#1E4F70;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 5v14M5 12l7-7 7 7"/></svg> Publish to Catalog
+          </button>
+          <button id="revisionBtn" onclick="performDetailAction('revision')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #d97706;background:#fffbeb;color:#b45309;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Request Revision
+          </button>
+          <button id="denyBtn" onclick="performDetailAction('deny')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #dc2626;background:#fef2f2;color:#dc2626;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
+          </button>
+          <button id="approveBtn" onclick="performDetailAction('approve')" style="display:none;padding:0.55rem 1.25rem;border-radius:999px;border:1.5px solid #16a34a;background:#16a34a;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><polyline points="20 6 9 17 4 12"/></svg> Approve
+          </button>
         </div>
 
-        <!-- Image Gallery Section -->
-        <div style="margin-bottom:2rem;">
-          <h3 style="margin:0 0 1rem 0;color:#1E4F70;font-size:1.2rem;font-weight:600;">Field Documentation - Images</h3>
-          <div id="imageGallery" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));gap:1rem;"></div>
-        </div>
-
-        <!-- Files Section removed -->
-
-        <!-- Action Buttons -->
-        <div id="actionButtons" style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid #e0e0e0;padding-top:1.5rem;">
-          <button onclick="closeModal('detailModal')" class="dashboard-btn dashboard-btn-secondary">Close</button>
-          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" class="dashboard-btn dashboard-btn-primary" style="display:none;">Post to Catalog</button>
-          <button id="approveBtn" onclick="performDetailAction('approve')" class="dashboard-btn dashboard-btn-success" style="display:none;">Approve</button>
-          <button id="denyBtn" onclick="performDetailAction('deny')" class="dashboard-btn dashboard-btn-danger" style="display:none;">Deny</button>
-          <button id="revisionBtn" onclick="performDetailAction('revision')" class="dashboard-btn dashboard-btn-primary" style="display:none;">Request Revision</button>
-        </div>
       </div>
     </div>
 
@@ -4800,6 +4846,9 @@
         // Update modal content
         document.getElementById('detailTitle').textContent = submission.species;
         document.getElementById('detailResearcher').textContent = `Researcher: ${submission.researcher} | Entry ID: ${submission.entry_id || '-'}`;
+        // Populate status badge in header
+        const statusBadgeEl = document.getElementById('detailStatusBadge');
+        if (statusBadgeEl) statusBadgeEl.textContent = getStatusLabel(submission.review_status);
         // Show family only if the backend provided it; do not default to Orchidaceae
         document.getElementById('detailLocation').textContent = submission.family || submission.location || '-';
         document.getElementById('detailDate').textContent = submission.submission_date || '-';
@@ -4894,6 +4943,11 @@
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
         setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
+        // Notes section
+        const ethnoEl = document.getElementById('value-ethnobotanical');
+        if (ethnoEl) ethnoEl.textContent = submission.ethnobotanical || submission.researcher_notes || '-';
+        const culturalEl = document.getElementById('value-cultural');
+        if (culturalEl) culturalEl.textContent = submission.cultural_importance || '-';
         
         // Populate image gallery if images array exists
         const imageGallery = document.getElementById('imageGallery');
