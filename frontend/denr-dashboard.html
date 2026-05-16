@@ -3586,7 +3586,8 @@
 
         try {
           const currentEmail = String(parsedActiveUser.email || '').trim();
-          const submissionsUrl = currentEmail
+          // Only filter by email for researcher/user roles — DENR/admin must see all submissions
+          const submissionsUrl = (isResearcherRole && currentEmail)
             ? `/api/submissions?email=${encodeURIComponent(currentEmail)}`
             : '/api/submissions';
 
