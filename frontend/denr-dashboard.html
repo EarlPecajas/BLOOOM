@@ -1386,6 +1386,9 @@
               <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1E4F70;">Basic Taxonomic Information</h4>
             </div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+              <div id="row-scientific-name" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;grid-column:1/-1;border-right:none;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Scientific Name</span><span id="value-scientific-name" class="scientific-name" style="font-size:0.85rem;color:#1e293b;font-weight:700;text-align:right;font-style:italic;"></span></div>
+              <div id="row-genus" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Genus</span><span id="value-genus" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
+              <div id="row-local-names" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Local Names</span><span id="value-local-names" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
               <div id="row-entry-id" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Entry ID</span><span id="value-entry-id" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;font-family:monospace;"></span></div>
               <div id="row-common-names" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">Common Names</span><span id="value-common-names" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
               <div id="row-identification-confidence" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid #f1f5f9;"><span style="font-size:0.8rem;color:#64748b;font-weight:600;">ID Confidence</span><span id="value-identification-confidence" style="font-size:0.82rem;color:#1e293b;font-weight:500;text-align:right;"></span></div>
@@ -4893,6 +4896,9 @@
           }
         }
 
+        setDetailFieldAlways('row-scientific-name', 'value-scientific-name', submission.species || submission.scientific_name || '');
+        setDetailFieldAlways('row-genus', 'value-genus', submission.genus || '');
+        setDetailFieldAlways('row-local-names', 'value-local-names', fmtArray(submission.local_names));
         setDetailFieldAlways('row-entry-id', 'value-entry-id', submission.entry_id || '');
         setDetailFieldAlways('row-researcher-email', 'value-researcher-email', submission.researcher_email || '');
         setDetailFieldAlways('row-researcher-name', 'value-researcher-name', submission.researcher || '');
