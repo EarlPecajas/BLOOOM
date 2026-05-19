@@ -1908,17 +1908,15 @@
           section.style.pointerEvents = 'none';
         });
 
-        // Keep container visible — all view sections are children of it
-        if (dashboardContainerEl) {
-          dashboardContainerEl.style.display = 'block';
-          dashboardContainerEl.style.pointerEvents = 'auto';
-        }
-
         document.querySelectorAll('.sidebar-item').forEach((navItem) => {
           navItem.classList.toggle('active', navItem.getAttribute('data-view') === effectiveView);
         });
 
         if (effectiveView === 'dashboard') {
+          if (dashboardContainerEl) {
+            dashboardContainerEl.style.display = 'block';
+            dashboardContainerEl.style.pointerEvents = 'auto';
+          }
           if (isResearcherRole) {
             if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'none';
             if (researcherHomeEl) researcherHomeEl.style.display = 'block';
@@ -1930,8 +1928,11 @@
           return;
         }
 
-        if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'none';
-        if (researcherHomeEl) researcherHomeEl.style.display = 'none';
+        // View sections are outside .dashboard-container — hide the container first
+        if (dashboardContainerEl) {
+          dashboardContainerEl.style.display = 'none';
+          dashboardContainerEl.style.pointerEvents = 'none';
+        }
 
         const targetSection = document.getElementById(`${effectiveView}-view`);
         if (targetSection) {
@@ -4788,16 +4789,12 @@
           section.style.pointerEvents = 'none';
         });
 
-        // Always keep the container visible — view sections are children of it
-        dashboardContainer.style.display = 'block';
-        dashboardContainer.style.pointerEvents = 'auto';
-
-        // Show selected view
+        // Show selected view (view sections live OUTSIDE .dashboard-container)
         const selectedView = document.getElementById(viewName + '-view');
         if (selectedView) {
-          // Hide dashboard-specific panels, show only the target section
-          if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'none';
-          if (researcherHome) researcherHome.style.display = 'none';
+          // Hide the dashboard container — view sections sit below it in the DOM
+          dashboardContainer.style.display = 'none';
+          dashboardContainer.style.pointerEvents = 'none';
           selectedView.style.display = 'block';
           selectedView.style.pointerEvents = 'auto';
           window.scrollTo(0, 0);
@@ -4814,15 +4811,16 @@
             loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
           }
         } else if (viewName === 'dashboard') {
+          dashboardContainer.style.display = 'block';
+          dashboardContainer.style.pointerEvents = 'auto';
           if (isResearcherRole) {
-            if (dashboardGrid) dashboardGrid.style.display = 'none';
             if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'none';
             if (researcherHome) researcherHome.style.display = 'block';
           } else {
-            if (dashboardGrid) dashboardGrid.style.display = 'grid';
             if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'grid';
             if (researcherHome) researcherHome.style.display = 'none';
           }
+          window.scrollTo(0, 0);
         }
       }
 
