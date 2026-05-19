@@ -1920,8 +1920,8 @@ form {
   top: 84px;
   width: 256px;
   height: calc(100vh - 84px);
-  background: linear-gradient(170deg, #112b40 0%, #1a3f5e 55%, #1E4F70 100%);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.22);
+  background: linear-gradient(170deg, #1E4F70 0%, #2a6898 100%);
+  box-shadow: 3px 0 16px rgba(30, 79, 112, 0.25);
   z-index: 1000;
   overflow-y: auto;
   transform: translateX(0);
