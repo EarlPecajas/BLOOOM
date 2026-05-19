@@ -339,8 +339,12 @@ body::before {
   box-shadow: 0 4px 12px rgba(30, 79, 112, 0.2);
 }
 
-.btn-solid:hover {
-  box-shadow: 0 6px 16px rgba(30, 79, 112, 0.3);
+.btn-solid:hover,
+.btn-solid:focus,
+.btn-solid:active {
+  background: #174060 !important;
+  color: white !important;
+  box-shadow: 0 6px 16px rgba(30, 79, 112, 0.35) !important;
 }
 
 .hero {
@@ -1974,6 +1978,7 @@ form {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
+  color: #1E4F70;
 }
 
 /* Sidebar scrollbar */
