@@ -4787,32 +4787,37 @@
 
         setActiveSidebarItem(viewName);
 
-        // Hide all views
+        // Hide all view sections first
         document.querySelectorAll('.view-section').forEach(section => {
           section.style.display = 'none';
           section.style.pointerEvents = 'none';
         });
-        dashboardContainer.style.display = 'none';
-        dashboardContainer.style.pointerEvents = 'none';
-        
+
+        // Always keep the container visible — view sections are children of it
+        dashboardContainer.style.display = 'block';
+        dashboardContainer.style.pointerEvents = 'auto';
+
         // Show selected view
         const selectedView = document.getElementById(viewName + '-view');
         if (selectedView) {
+          // Hide dashboard-specific panels, show only the target section
+          if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'none';
+          if (researcherHome) researcherHome.style.display = 'none';
           selectedView.style.display = 'block';
           selectedView.style.pointerEvents = 'auto';
-          // Initialize map if showing map view
           if (viewName === 'map') {
             setTimeout(() => initializeLeafletMap(), 100);
           }
           if (viewName === 'conservation') {
             loadConservationSummary();
           }
+          if (viewName === 'orchids') {
+            loadOrchidCatalog();
+          }
           if (viewName === 'submissions') {
             loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
           }
         } else if (viewName === 'dashboard') {
-          dashboardContainer.style.display = 'block';
-          dashboardContainer.style.pointerEvents = 'auto';
           if (isResearcherRole) {
             if (dashboardGrid) dashboardGrid.style.display = 'none';
             if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'none';
@@ -4822,19 +4827,7 @@
             if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'grid';
             if (researcherHome) researcherHome.style.display = 'none';
           }
-        } else {
-          if (dashboardGrid) dashboardGrid.style.display = 'grid';
-          if (dashboardAdminOverview) dashboardAdminOverview.style.display = 'none';
-          if (researcherHome) researcherHome.style.display = 'none';
         }
-          if (viewName === 'orchids') {
-            loadOrchidCatalog();
-          }
-        searchInput.addEventListener('input', function(e) {
-          const searchTerm = e.target.value.toLowerCase();
-          const filtered = orchidRows.filter((orchid) => orchid.name.toLowerCase().includes(searchTerm));
-          renderOrchidCatalog(filtered);
-        });
       }
 
       const initialSearchParams = new URLSearchParams(window.location.search);
