@@ -391,17 +391,19 @@
               <h3 class="text-sm font-bold text-gray-900 m-0" style="font-family:Inter,Roboto,sans-serif;">Quick Actions</h3>
             </div>
             <div class="flex flex-col gap-2.5">
-              <button type="button" onclick="openDashboardView(‘submissions’)"
+              <button type="button" data-dashboard-view="submissions"
                 class="w-full text-sm font-semibold text-white rounded-xl py-2.5 px-4 transition-all duration-150 hover:opacity-90 active:scale-95 text-left"
-                style="background:#1E4F70;">
+                style="background:#1E4F70;cursor:pointer;">
                 Open Submissions
               </button>
-              <button type="button" onclick="openDashboardView(‘report’)"
-                class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 hover:bg-gray-100 active:scale-95 text-left border border-gray-200 text-gray-700 bg-white">
+              <button type="button" data-dashboard-view="report"
+                class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 hover:bg-gray-100 active:scale-95 text-left border border-gray-200 text-gray-700 bg-white"
+                style="cursor:pointer;">
                 Generate Report
               </button>
-              <button type="button" onclick="openDashboardView(‘conservation’)"
-                class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 hover:bg-gray-100 active:scale-95 text-left border border-gray-200 text-gray-700 bg-white">
+              <button type="button" data-dashboard-view="conservation"
+                class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 hover:bg-gray-100 active:scale-95 text-left border border-gray-200 text-gray-700 bg-white"
+                style="cursor:pointer;">
                 View Conservation
               </button>
             </div>
@@ -1898,7 +1900,6 @@
         }
 
         const dashboardContainerEl = document.querySelector('.dashboard-container');
-        const dashboardGridEl = document.querySelector('.dashboard-grid');
         const dashboardAdminOverviewEl = document.getElementById('dashboard-admin-overview');
         const researcherHomeEl = document.getElementById('researcher-home');
 
@@ -1907,9 +1908,10 @@
           section.style.pointerEvents = 'none';
         });
 
+        // Keep container visible — all view sections are children of it
         if (dashboardContainerEl) {
-          dashboardContainerEl.style.display = 'none';
-          dashboardContainerEl.style.pointerEvents = 'none';
+          dashboardContainerEl.style.display = 'block';
+          dashboardContainerEl.style.pointerEvents = 'auto';
         }
 
         document.querySelectorAll('.sidebar-item').forEach((navItem) => {
@@ -1917,23 +1919,17 @@
         });
 
         if (effectiveView === 'dashboard') {
-          if (dashboardContainerEl) {
-            dashboardContainerEl.style.display = 'block';
-            dashboardContainerEl.style.pointerEvents = 'auto';
-          }
           if (isResearcherRole) {
-            if (dashboardGridEl) dashboardGridEl.style.display = 'none';
             if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'none';
             if (researcherHomeEl) researcherHomeEl.style.display = 'block';
           } else {
-            if (dashboardGridEl) dashboardGridEl.style.display = 'grid';
             if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'grid';
             if (researcherHomeEl) researcherHomeEl.style.display = 'none';
           }
+          window.scrollTo(0, 0);
           return;
         }
 
-        if (dashboardGridEl) dashboardGridEl.style.display = 'grid';
         if (dashboardAdminOverviewEl) dashboardAdminOverviewEl.style.display = 'none';
         if (researcherHomeEl) researcherHomeEl.style.display = 'none';
 
@@ -1941,27 +1937,16 @@
         if (targetSection) {
           targetSection.style.display = 'block';
           targetSection.style.pointerEvents = 'auto';
+          window.scrollTo(0, 0);
           if (effectiveView === 'map' && typeof initializeLeafletMap === 'function') {
-            try {
-              setTimeout(() => initializeLeafletMap(), 100);
-            } catch {
-              // Ignore and keep navigation stable if map internals are not yet initialized.
-            }
+            try { setTimeout(() => initializeLeafletMap(), 100); } catch {}
           }
           if (effectiveView === 'orchids' && typeof loadOrchidCatalog === 'function') {
-            try {
-              loadOrchidCatalog();
-            } catch {
-              // Ignore and keep navigation stable if catalog internals are not yet initialized.
-            }
+            try { loadOrchidCatalog(); } catch {}
           }
           if (effectiveView === 'submissions' && typeof loadSubmissions === 'function') {
             const searchInput = document.getElementById('submissions-search-input');
-            try {
-              loadSubmissions(searchInput ? searchInput.value.trim() : '');
-            } catch {
-              // Ignore and keep navigation stable if submissions internals are not yet initialized.
-            }
+            try { loadSubmissions(searchInput ? searchInput.value.trim() : ''); } catch {}
           }
           return;
         }
@@ -3359,6 +3344,16 @@
 
       // Global fallback: if specific handlers fail, route clicks by data attributes.
       document.addEventListener('click', function(e) {
+        const quickBtn = e.target.closest('[data-dashboard-view]');
+        if (quickBtn) {
+          const targetView = quickBtn.getAttribute('data-dashboard-view');
+          if (targetView) {
+            e.preventDefault();
+            openDashboardView(targetView);
+            return;
+          }
+        }
+
         const card = e.target.closest('[data-researcher-view]');
         if (card) {
           const targetView = card.getAttribute('data-researcher-view');
@@ -4805,6 +4800,7 @@
           if (researcherHome) researcherHome.style.display = 'none';
           selectedView.style.display = 'block';
           selectedView.style.pointerEvents = 'auto';
+          window.scrollTo(0, 0);
           if (viewName === 'map') {
             setTimeout(() => initializeLeafletMap(), 100);
           }
