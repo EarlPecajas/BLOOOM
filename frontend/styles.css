@@ -1712,6 +1712,17 @@ form {
   align-items: center;
   justify-content: center;
   border-radius: 0.6rem;
+  background: #1E4F70 !important;
+  border-color: #1E4F70 !important;
+  color: #fff !important;
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
+  --bs-btn-bg: #1E4F70;
+  --bs-btn-hover-bg: #174060;
+  --bs-btn-active-bg: #112d46;
+  --bs-btn-border-color: #1E4F70;
+  --bs-btn-hover-border-color: #174060;
 }
 
 #sidebar-toggle-button svg {
@@ -1721,12 +1732,14 @@ form {
 }
 
 #sidebar-toggle-button:hover {
+  background: #174060 !important;
+  border-color: #174060 !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(30, 79, 112, 0.18);
+  box-shadow: 0 4px 12px rgba(30, 79, 112, 0.35);
 }
 
 #sidebar-toggle-button:focus-visible {
-  box-shadow: 0 0 0 0.2rem rgba(30, 79, 112, 0.2);
+  box-shadow: 0 0 0 0.2rem rgba(30, 79, 112, 0.35);
 }
 
 .dashboard-header-left .brand-container {
@@ -1905,14 +1918,14 @@ form {
   position: fixed;
   left: 0;
   top: 84px;
-  width: 280px;
+  width: 256px;
   height: calc(100vh - 84px);
-  background: linear-gradient(180deg, #E4EFF8 0%, #f5f5f5 100%);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(170deg, #112b40 0%, #1a3f5e 55%, #1E4F70 100%);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.22);
   z-index: 1000;
   overflow-y: auto;
   transform: translateX(0);
-  transition: transform 220ms ease;
+  transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-hidden .sidebar {
@@ -1922,43 +1935,68 @@ form {
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 0;
+  padding: 1.25rem 0 1.5rem;
+}
+
+.sidebar-nav::before {
+  content: 'NAVIGATION';
+  display: block;
+  padding: 0 1.2rem 1rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.28);
+  text-transform: uppercase;
+  font-family: Inter, Roboto, sans-serif;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  color: #1E4F70;
+  gap: 0.85rem;
+  padding: 0.72rem 1rem;
+  margin: 0.12rem 0.75rem;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.68);
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: all 200ms ease;
-  border-left: 4px solid transparent;
+  font-size: 0.875rem;
+  font-family: Inter, Roboto, sans-serif;
+  transition: background 160ms ease, color 160ms ease;
+  border-left: none;
 }
 
 .sidebar-item:hover {
-  background: rgba(30, 79, 112, 0.08);
-  border-left-color: #1E4F70;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-decoration: none;
 }
 
 .sidebar-item.active {
-  background: rgba(30, 79, 112, 0.08);
-  color: #1E4F70;
-  border-left-color: #1E4F70;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-icon {
-  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
+
+/* Sidebar scrollbar */
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.35); }
 
 @media (max-width: 991.98px) {
   .sidebar {
-    width: 250px;
+    width: 240px;
   }
 
   .dashboard-header-left .brand-logo {
