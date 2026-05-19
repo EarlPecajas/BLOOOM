@@ -1981,6 +1981,30 @@ form {
   color: #1E4F70;
 }
 
+.sidebar-toggle-icon-btn {
+  color: #1E4F70;
+  border: 1.5px solid #1E4F70;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.sidebar-toggle-icon-btn:hover,
+.sidebar-toggle-icon-btn:focus,
+.sidebar-toggle-icon-btn:active {
+  background: #1E4F70 !important;
+  color: white !important;
+  border-color: #1E4F70 !important;
+}
+
+.sidebar-toggle-icon-btn svg {
+  fill: currentColor;
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
 /* Sidebar scrollbar */
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
