@@ -306,6 +306,8 @@
           identification_confidence: row.identification_confidence || '',
           observation_date: row.observation_date || '',
           observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
+          latitude: row.latitude != null ? Number(row.latitude) : null,
+          longitude: row.longitude != null ? Number(row.longitude) : null,
           mountain_name: row.mountain_name || '',
           specific_site_zone: row.specific_site_zone || '',
           elevation_meters: row.elevation_meters ?? '',

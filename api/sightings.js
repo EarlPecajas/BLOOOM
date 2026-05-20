@@ -20,8 +20,7 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const result = await pool.query(
-        `SELECT DISTINCT ON (lower(trim(scientific_name)))
-           *
+        `SELECT *
          FROM public_approved_sightings
          ORDER BY lower(trim(scientific_name)), observation_date DESC NULLS LAST, id DESC`
       );
