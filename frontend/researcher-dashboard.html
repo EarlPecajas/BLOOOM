@@ -2057,8 +2057,32 @@
                 const elev = document.getElementById('submission-elevation');
                 if (lat) lat.value = pos.coords.latitude.toFixed(6);
                 if (lng) lng.value = pos.coords.longitude.toFixed(6);
-                if (elev && pos.coords.altitude !== null) elev.value = pos.coords.altitude.toFixed(1);
-                if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                if (elev) {
+                  if (pos.coords.altitude !== null) {
+                    elev.value = pos.coords.altitude.toFixed(1);
+                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                  } else {
+                    // Fallback: fetch elevation from external service when device doesn't provide altitude
+                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy), looking up elevation...`;
+                    const latVal = pos.coords.latitude.toFixed(6);
+                    const lngVal = pos.coords.longitude.toFixed(6);
+                    // Use Open-Elevation public API (no API key). It's best-effort and may fail or be rate-limited.
+                    fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${latVal},${lngVal}`)
+                      .then((res) => res.json())
+                      .then((data) => {
+                        if (data && data.results && data.results[0] && typeof data.results[0].elevation === 'number') {
+                          elev.value = data.results[0].elevation.toFixed(1);
+                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                        } else {
+                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation unknown`;
+                        }
+                      })
+                      .catch((err) => {
+                        console.warn('Elevation lookup failed', err);
+                        if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation lookup failed`;
+                      });
+                  }
+                }
               },
               function(err) {
                 if (gpsStatus) gpsStatus.textContent = `GPS error: ${err.message}`;
