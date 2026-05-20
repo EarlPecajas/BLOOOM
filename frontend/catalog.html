@@ -61,7 +61,7 @@
             aria-label="Switch to list view"
             title="Switch to list view"
           >
-            <span id="catalog-view-icon" aria-hidden="true">â–¦</span>
+            <span id="catalog-view-icon" aria-hidden="true">&#9638;</span>
           </button>
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
@@ -85,21 +85,21 @@
         <div id="orchid-map-stage">
           <div class="orchid-modal-header">
             <div class="orchid-modal-title-group">
-              <p class="orchid-modal-subtitle">Mt. Busa Â· Orchid Location</p>
+              <p class="orchid-modal-subtitle">Mt. Busa &middot; Orchid Location</p>
               <h3 id="orchid-map-name" class="orchid-modal-name scientific-name">â€“</h3>
             </div>
-            <button type="button" id="orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">âœ•</button>
+            <button type="button" id="orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">&times;</button>
           </div>
           <div id="orchid-leaflet-map" style="height:480px;width:100%;"></div>
-          <p class="orchid-modal-hint">ðŸŒº Click the orchid icon on the map to view details</p>
+          <p class="orchid-modal-hint">Click an orchid icon on the map to view details</p>
         </div>
 
         <!-- STAGE 2: PAGED DETAILS -->
         <div id="orchid-detail-stage" hidden>
           <div class="orchid-detail-header-bar">
-            <button type="button" id="detail-to-map-btn" class="orchid-detail-back-btn">â† Map</button>
+            <button type="button" id="detail-to-map-btn" class="orchid-detail-back-btn">&larr; Map</button>
             <h3 id="orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">â€“</h3>
-            <button type="button" id="orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">âœ•</button>
+            <button type="button" id="orchid-detail-close-btn" class="orchid-modal-close-btn" aria-label="Close">&times;</button>
           </div>
           <div class="orchid-step-bar">
             <span id="orchid-step-label" class="orchid-step-label-text">Basic Taxonomic Information</span>
@@ -191,9 +191,9 @@
           </div>
 
           <div class="orchid-nav-bar">
-            <button type="button" id="orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">â† Back</button>
+            <button type="button" id="orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">&larr; Back</button>
             <div id="orchid-detail-step-dots" style="display:flex;align-items:center;gap:7px;flex:1;justify-content:center;"></div>
-            <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next â†’</button>
+            <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &larr;’</button>
           </div>
         </div>
 
@@ -470,7 +470,7 @@
         const prevBtn = document.getElementById('orchid-detail-prev-btn');
         const nextBtn = document.getElementById('orchid-detail-next-btn');
         if (prevBtn) prevBtn.hidden = (n === 1);
-        if (nextBtn) nextBtn.textContent = n === ORCHID_DETAIL_PAGES ? 'âœ“ Done' : 'Next â†’';
+        if (nextBtn) nextBtn.textContent = n === ORCHID_DETAIL_PAGES ? 'âœ“ Done' : 'Next &larr;’';
         const dotsEl = document.getElementById('orchid-detail-step-dots');
         if (dotsEl) {
           dotsEl.innerHTML = Array.from({length: ORCHID_DETAIL_PAGES}, (_, i) =>
@@ -502,7 +502,7 @@
         const primary = sightingPoints[0];
         orchidLeafletMap = L.map('orchid-leaflet-map').setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles Â© Esri', maxZoom: 19
+          attribution: 'Tiles &copy; Esri', maxZoom: 19
         }).addTo(orchidLeafletMap);
         const icon = L.icon({
           iconUrl: './catalogicon.png',
@@ -740,7 +740,7 @@
         resetDetailRows();
         renderDetailsFromSource(src, orchid, true);
 
-        // Show modal â†’ map stage first
+        // Show modal &larr;’ map stage first
         orchidDetailModal.hidden = false;
         document.getElementById('orchid-map-stage').hidden = false;
         document.getElementById('orchid-detail-stage').hidden = true;
@@ -994,5 +994,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
+
+
 
 
