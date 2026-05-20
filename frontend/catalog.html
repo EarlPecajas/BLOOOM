@@ -22,7 +22,7 @@
       /* ── Stage 1 overview layout ─────────────────── */
       #orchid-map-stage{flex:1;min-height:0;display:flex;overflow:hidden;}
       .orchid-identity-panel{width:360px;min-width:280px;flex-shrink:0;display:flex;flex-direction:column;background:#f6fbf4;border-right:1.5px solid #d8ecd6;overflow-y:auto;}
-      .orchid-map-panel{flex:1;display:flex;flex-direction:column;min-width:0;}
+      .orchid-map-panel{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;}
       #orchid-leaflet-map{flex:1;min-height:0;}
 
       /* identity panel header */
@@ -601,6 +601,16 @@
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         const primary = sightingPoints[0];
 
+        // Ensure the map container has a usable height for Leaflet
+        const mapEl = document.getElementById('orchid-leaflet-map');
+        if (mapEl && mapEl.offsetHeight < 10) {
+          const card = document.querySelector('.orchid-detail-card');
+          const hintEl = document.querySelector('.orchid-map-hint');
+          const hintH = hintEl ? hintEl.offsetHeight : 36;
+          const cardH = card ? card.offsetHeight : Math.round(window.innerHeight * 0.85);
+          mapEl.style.height = Math.max(400, cardH - hintH) + 'px';
+        }
+
         // Pad to 5 markers using offsets from the primary point
         const allPoints = sightingPoints.slice();
         for (let i = 0; allPoints.length < 5; i++) {
@@ -634,6 +644,8 @@
           L.latLngBounds(allPoints.map(pt => [pt.lat, pt.lng])),
           { padding: [40, 40] }
         );
+        // Force resize after container settles
+        setTimeout(() => { if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 150);
       }
 
       function resetDetailRows() {
@@ -945,7 +957,7 @@
           sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
         }
 
-        setTimeout(() => orchidInitMap(sightingPoints), 60);
+        setTimeout(() => orchidInitMap(sightingPoints), 150);
       }
 
       function closeOrchidDetails() {
