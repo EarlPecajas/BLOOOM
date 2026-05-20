@@ -746,10 +746,30 @@
         document.getElementById('orchid-detail-stage').hidden = true;
         orchidBindDetailNav();
 
-        // Build coordinate list from all sightings with valid lat/lng
-        const sightingPoints = allSightings
+        // Query species_sightings directly for all approved coords for this species
+        let sightingPoints = allSightings
           .filter(s => s.latitude != null && s.longitude != null)
           .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude) }));
+
+        // If the view didn't return coordinates, go directly to the table
+        if (sightingPoints.length === 0 && window.bloomSupabase) {
+          try {
+            const { data: directRows } = await window.bloomSupabase
+              .from('species_sightings')
+              .select('latitude, longitude')
+              .ilike('scientific_name', orchidName.trim())
+              .eq('review_status', 'approved')
+              .limit(10);
+            if (directRows && directRows.length > 0) {
+              sightingPoints = directRows
+                .filter(r => r.latitude != null && r.longitude != null)
+                .map(r => ({ lat: Number(r.latitude), lng: Number(r.longitude) }));
+            }
+          } catch (e) {
+            console.warn('Direct sighting coord lookup failed:', e);
+          }
+        }
+
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
         }
