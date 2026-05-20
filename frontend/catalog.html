@@ -15,6 +15,60 @@
     <link rel="stylesheet" href="styles.css?v=3" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+      /* ── Modal shell ─────────────────────────────── */
+      .orchid-detail-modal{position:fixed;inset:0;background:rgba(10,30,10,.62);z-index:9000;display:flex;align-items:center;justify-content:center;padding:2vh 2vw;}
+      .orchid-detail-card{background:#fff;border-radius:16px;width:96vw;max-width:1300px;height:93vh;max-height:960px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.4);}
+
+      /* ── Stage 1 overview layout ─────────────────── */
+      #orchid-map-stage{flex:1;min-height:0;display:flex;overflow:hidden;}
+      .orchid-identity-panel{width:360px;min-width:280px;flex-shrink:0;display:flex;flex-direction:column;background:#f6fbf4;border-right:1.5px solid #d8ecd6;overflow-y:auto;}
+      .orchid-map-panel{flex:1;display:flex;flex-direction:column;min-width:0;}
+      #orchid-leaflet-map{flex:1;min-height:0;}
+
+      /* identity panel header */
+      .oid-header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem .6rem;border-bottom:1px solid #d8ecd6;flex-shrink:0;}
+      .oid-subtitle{font-size:.7rem;font-weight:700;color:#5a8a54;letter-spacing:.1em;text-transform:uppercase;margin:0;}
+
+      /* photo */
+      .oid-photo-wrap{width:100%;aspect-ratio:4/3;overflow:hidden;background:#e4f0e2;flex-shrink:0;position:relative;}
+      .oid-photo{width:100%;height:100%;object-fit:cover;display:block;}
+      .oid-photo-placeholder{width:100%;height:100%;object-fit:contain;padding:1.5rem;opacity:.35;}
+
+      /* info section */
+      .oid-info{padding:1.1rem 1.2rem 1.4rem;flex:1;}
+      .oid-sci-name{font-size:1.18rem;font-style:italic;color:#1a4a15;margin:0 0 .18rem;line-height:1.3;font-weight:800;font-family:Georgia,serif;}
+      .oid-common-name{font-size:.97rem;color:#3e6639;margin:0 0 1rem;font-weight:500;}
+      .oid-meta-table{border:1px solid #d8ecd6;border-radius:9px;overflow:hidden;margin-bottom:1rem;background:#fff;}
+      .oid-meta-row{display:flex;justify-content:space-between;align-items:baseline;padding:.48rem .85rem;border-bottom:1px solid #ecf3eb;font-size:.83rem;}
+      .oid-meta-row:last-child{border-bottom:none;}
+      .oid-meta-label{color:#3e6639;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;}
+      .oid-meta-value{color:#162b14;font-weight:500;text-align:right;max-width:62%;}
+      .oid-badges{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.2rem;}
+      .oid-badge{padding:.28rem .8rem;border-radius:20px;font-size:.74rem;font-weight:700;letter-spacing:.03em;}
+      .oid-badge-status{background:#fff3cd;color:#664d03;}
+      .oid-badge-status.critical{background:#f8d7da;color:#842029;}
+      .oid-badge-status.endangered{background:#fce4d6;color:#9c3a0a;}
+      .oid-badge-status.vulnerable{background:#fff3cd;color:#664d03;}
+      .oid-badge-status.least-concern{background:#d1e7dd;color:#0f5132;}
+      .oid-badge-confidence{background:#dbeafe;color:#1e40af;}
+
+      /* map hint bar */
+      .orchid-map-hint{text-align:center;font-size:.8rem;color:#5a7a58;padding:.45rem 1rem;background:#f6fbf4;border-top:1px solid #d8ecd6;margin:0;flex-shrink:0;}
+
+      /* close button (shared) */
+      .orchid-modal-close-btn{background:none;border:1.5px solid #c8ddc5;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:#3e6639;flex-shrink:0;transition:all .15s;}
+      .orchid-modal-close-btn:hover{background:#e8f3e6;border-color:#3e6639;}
+
+      /* ── Stage 2 detail (paged) ──────────────────── */
+      #orchid-detail-stage{display:flex;flex-direction:column;flex:1;min-height:0;}
+      .orchid-detail-header-bar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.3rem;border-bottom:1.5px solid #d8ecd6;background:#f6fbf4;flex-shrink:0;gap:.75rem;}
+      .orchid-detail-back-btn{background:none;border:1.5px solid #c8ddc5;border-radius:8px;padding:.3rem .85rem;font-size:.82rem;font-weight:600;color:#3e6639;cursor:pointer;white-space:nowrap;transition:all .15s;}
+      .orchid-detail-back-btn:hover{background:#e8f3e6;}
+      .orchid-detail-header-name{font-size:1rem;font-style:italic;color:#162b14;font-weight:700;margin:0;flex:1;text-align:center;font-family:Georgia,serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .orchid-step-bar{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1.3rem;background:#fff;border-bottom:1px solid #ecf3eb;flex-shrink:0;}
+      .orchid-step-label-text{font-size:.8rem;font-weight:600;color:#3e6639;}
+      .orchid-step-badge{font-size:.75rem;font-weight:700;color:#6aaa5e;background:#e8f3e6;padding:.15rem .6rem;border-radius:12px;}
+      .orchid-detail-pages-wrap{flex:1;overflow-y:auto;min-height:0;}
       .detail-step-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8d9b2;transition:all .2s;}
       .detail-step-dot.active{background:#2d5a27;transform:scale(1.35);}
       .orchid-detail-page .orchid-detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.78rem 1.3rem;border-bottom:1px solid #ecf3eb;gap:1.5rem;}
@@ -23,6 +77,12 @@
       .orchid-detail-page .orchid-detail-label{color:#3e6639;font-weight:700;font-size:.76rem;min-width:150px;flex-shrink:0;text-transform:uppercase;letter-spacing:.06em;line-height:1.35;padding-top:.1rem;}
       .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label){color:#162b14;font-weight:500;font-size:.97rem;text-align:right;line-height:1.5;}
       .orchid-detail-label{color:#555;font-weight:500;flex-shrink:0;min-width:130px;}
+      .orchid-nav-bar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.2rem;border-top:1.5px solid #d8ecd6;background:#f6fbf4;flex-shrink:0;}
+      .orchid-nav-btn{padding:.42rem 1.2rem;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;border:1.5px solid #3e6639;transition:all .15s;}
+      .orchid-nav-btn-outline{background:#fff;color:#3e6639;}
+      .orchid-nav-btn-outline:hover{background:#e8f3e6;}
+      .orchid-nav-btn-fill{background:#2d5a27;color:#fff;border-color:#2d5a27;}
+      .orchid-nav-btn-fill:hover{background:#1e3d1a;}
     </style>
     <script src="config.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -79,19 +139,51 @@
     </main>
 
     <div class="orchid-detail-modal" id="orchid-detail-modal" hidden>
-      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="orchid-map-name">
+      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="oid-sci-name">
 
-        <!-- STAGE 1: MAP -->
-        <div id="orchid-map-stage">
-          <div class="orchid-modal-header">
-            <div class="orchid-modal-title-group">
-              <p class="orchid-modal-subtitle">Mt. Busa &middot; Orchid Location</p>
-              <h3 id="orchid-map-name" class="orchid-modal-name scientific-name">â€“</h3>
+        <!-- STAGE 1: OVERVIEW (identity panel + map) -->
+        <div id=”orchid-map-stage”>
+
+          <!-- Left: Orchid Identity Panel -->
+          <div class=”orchid-identity-panel”>
+            <div class=”oid-header”>
+              <span class=”oid-subtitle”>Orchid Identity</span>
+              <button type=”button” id=”orchid-map-close-btn” class=”orchid-modal-close-btn” aria-label=”Close”>&times;</button>
             </div>
-            <button type="button" id="orchid-map-close-btn" class="orchid-modal-close-btn" aria-label="Close">&times;</button>
+            <div class=”oid-photo-wrap”>
+              <img id=”oid-photo” class=”oid-photo” src=”” alt=”Orchid photo” hidden>
+              <img id=”oid-photo-placeholder” class=”oid-photo-placeholder” src=”./catalogicon.png” alt=”No photo available”>
+            </div>
+            <div class=”oid-info”>
+              <h3 id=”oid-sci-name” class=”oid-sci-name”>-</h3>
+              <p id=”oid-common-name” class=”oid-common-name”>-</p>
+              <div class=”oid-meta-table”>
+                <div class=”oid-meta-row”>
+                  <span class=”oid-meta-label”>Family</span>
+                  <span class=”oid-meta-value” id=”oid-family”>Orchidaceae</span>
+                </div>
+                <div class=”oid-meta-row” id=”oid-row-genus”>
+                  <span class=”oid-meta-label”>Genus</span>
+                  <span class=”oid-meta-value” id=”oid-genus”>-</span>
+                </div>
+                <div class=”oid-meta-row”>
+                  <span class=”oid-meta-label”>Location</span>
+                  <span class=”oid-meta-value” id=”oid-mountain”>Mt. Busa</span>
+                </div>
+              </div>
+              <div class=”oid-badges”>
+                <span class=”oid-badge oid-badge-status” id=”oid-status-badge” hidden>-</span>
+                <span class=”oid-badge oid-badge-confidence” id=”oid-confidence-badge” hidden>-</span>
+              </div>
+            </div>
           </div>
-          <div id="orchid-leaflet-map" style="height:480px;width:100%;"></div>
-          <p class="orchid-modal-hint">Click an orchid icon on the map to view details</p>
+
+          <!-- Right: Map Panel -->
+          <div class=”orchid-map-panel”>
+            <div id=”orchid-leaflet-map”></div>
+            <p class=”orchid-map-hint”>Click an orchid icon on the map to view details</p>
+          </div>
+
         </div>
 
         <!-- STAGE 2: PAGED DETAILS -->
@@ -106,7 +198,7 @@
             <span id="orchid-step-count" class="orchid-step-badge">1 / 7</span>
           </div>
 
-          <div style="overflow-y:auto;max-height:460px;">
+          <div class="orchid-detail-pages-wrap">
 
             <div id="orchid-detail-page-1" class="orchid-detail-page">
               <div class="orchid-detail-row" id="row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="detail-scientific-name" class="scientific-name">-</span></div>
@@ -744,10 +836,75 @@
         const src = publicSighting || {};
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
 
-        // Set orchid name in both stages
-        const mapNameEl = document.getElementById('orchid-map-name');
+        // Populate identity panel (Stage 1 left panel)
+        const oidSciName = document.getElementById('oid-sci-name');
+        const oidCommonName = document.getElementById('oid-common-name');
+        const oidGenus = document.getElementById('oid-genus');
+        const oidFamily = document.getElementById('oid-family');
+        const oidMountain = document.getElementById('oid-mountain');
+        const oidPhoto = document.getElementById('oid-photo');
+        const oidPhotoPlaceholder = document.getElementById('oid-photo-placeholder');
+        const oidStatusBadge = document.getElementById('oid-status-badge');
+        const oidConfidenceBadge = document.getElementById('oid-confidence-badge');
+
+        if (oidSciName) oidSciName.textContent = orchidName;
+
+        const commonName = getPrimaryCommonName(src.common_names) || orchid.common_name || '';
+        if (oidCommonName) oidCommonName.textContent = commonName || '';
+
+        const genus = orchid.genus || orchidName.split(' ')[0] || '';
+        if (oidGenus) oidGenus.textContent = genus;
+        const oidRowGenus = document.getElementById('oid-row-genus');
+        if (oidRowGenus) oidRowGenus.hidden = !genus;
+
+        if (oidFamily) oidFamily.textContent = 'Orchidaceae';
+        if (oidMountain) oidMountain.textContent = src.mountain_name || 'Mt. Busa';
+
+        // Photo: use first available image from sighting, else show placeholder
+        const images = getPublicSightingImages(src);
+        if (images.length > 0 && oidPhoto && oidPhotoPlaceholder) {
+          oidPhoto.src = images[0];
+          oidPhoto.hidden = false;
+          oidPhotoPlaceholder.hidden = true;
+        } else if (orchid.image_url && oidPhoto && oidPhotoPlaceholder) {
+          oidPhoto.src = orchid.image_url;
+          oidPhoto.hidden = false;
+          oidPhotoPlaceholder.hidden = true;
+        } else if (oidPhoto && oidPhotoPlaceholder) {
+          oidPhoto.hidden = true;
+          oidPhotoPlaceholder.hidden = false;
+        }
+
+        // Conservation status badge
+        const threatLevel = src.threat_level_generalized || '';
+        if (oidStatusBadge) {
+          if (threatLevel) {
+            const tl = threatLevel.toLowerCase();
+            oidStatusBadge.textContent = threatLevel;
+            oidStatusBadge.className = 'oid-badge oid-badge-status';
+            if (tl.includes('critical')) oidStatusBadge.classList.add('critical');
+            else if (tl.includes('endanger')) oidStatusBadge.classList.add('endangered');
+            else if (tl.includes('vulnerable')) oidStatusBadge.classList.add('vulnerable');
+            else oidStatusBadge.classList.add('least-concern');
+            oidStatusBadge.hidden = false;
+          } else {
+            oidStatusBadge.hidden = true;
+          }
+        }
+
+        // Confidence badge
+        const confidence = src.identification_confidence || '';
+        if (oidConfidenceBadge) {
+          if (confidence) {
+            oidConfidenceBadge.textContent = confidence;
+            oidConfidenceBadge.hidden = false;
+          } else {
+            oidConfidenceBadge.hidden = true;
+          }
+        }
+
+        // Set name in Stage 2 header
         const stageNameEl = document.getElementById('orchid-detail-stage-name');
-        if (mapNameEl) mapNameEl.textContent = orchidName;
         if (stageNameEl) stageNameEl.textContent = orchidName;
 
         // Populate all detail rows
