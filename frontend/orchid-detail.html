@@ -677,15 +677,15 @@
           }
         }
 
-        // Read orchid from sessionStorage (passed by catalog.html)
+        // Read orchid identity from sessionStorage (passed by catalog/dashboard)
         let orchid = null;
-        let allSightings = [];
+        let cachedSightings = [];
         try {
           const stored = sessionStorage.getItem('bloomOrchidDetail');
           if (stored) {
             const parsed = JSON.parse(stored);
             orchid = parsed.orchid || null;
-            allSightings = parsed.sightings || [];
+            cachedSightings = parsed.sightings || [];
           }
         } catch {}
 
@@ -706,6 +706,23 @@
           orchid = { name: nameFromUrl || 'Unknown Orchid', genus: '', common_name: '', image_url: '' };
         }
 
+        // Always fetch fresh sightings from Supabase so map reflects DB state
+        let allSightings = [];
+        if (orchid.name && window.bloomSupabase) {
+          try {
+            const { data } = await window.bloomSupabase
+              .from('species_sightings')
+              .select('*')
+              .ilike('scientific_name', orchid.name.trim())
+              .eq('review_status', 'approved')
+              .order('observation_date', { ascending: false })
+              .limit(10);
+            if (data && data.length > 0) allSightings = data;
+          } catch {}
+        }
+        // Fall back to sessionStorage sightings if Supabase unavailable
+        if (allSightings.length === 0) allSightings = cachedSightings;
+
         currentOrchid = orchid;
         const src = allSightings[0] ? normalizePublicSightingRow(allSightings[0]) : {};
         currentSrc = src;
@@ -714,27 +731,10 @@
         resetDetailRows();
         renderDetailsFromSource(src, orchid);
 
-        // Build sighting points for map
+        // Build sighting points for map from fresh data
         let sightingPoints = allSightings
           .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude) }))
           .filter(p => p.lat && p.lng);
-
-        // Fallback: query DB directly
-        if (sightingPoints.length === 0 && window.bloomSupabase) {
-          try {
-            const { data } = await window.bloomSupabase
-              .from('species_sightings')
-              .select('latitude, longitude')
-              .ilike('scientific_name', orchid.name)
-              .eq('review_status', 'approved')
-              .limit(10);
-            if (data && data.length > 0) {
-              sightingPoints = data
-                .filter(r => r.latitude && r.longitude)
-                .map(r => ({ lat: Number(r.latitude), lng: Number(r.longitude) }));
-            }
-          } catch {}
-        }
 
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
