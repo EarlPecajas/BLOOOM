@@ -497,9 +497,25 @@
         }
       }
 
+      // Fixed nearby offsets (~0.8-2 km) used to pad up to 5 markers
+      const NEARBY_OFFSETS = [
+        { dlat:  0.0072, dlng:  0.0105 },
+        { dlat: -0.0128, dlng:  0.0054 },
+        { dlat:  0.0175, dlng: -0.0083 },
+        { dlat: -0.0061, dlng: -0.0157 }
+      ];
+
       function orchidInitMap(sightingPoints) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         const primary = sightingPoints[0];
+
+        // Pad to 5 markers using offsets from the primary point
+        const allPoints = sightingPoints.slice();
+        for (let i = 0; allPoints.length < 5; i++) {
+          const off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
+          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng });
+        }
+
         orchidLeafletMap = L.map('orchid-leaflet-map').setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles &copy; Esri', maxZoom: 19
@@ -511,9 +527,9 @@
           popupAnchor: [0, -22]
         });
 
-        sightingPoints.forEach((pt, idx) => {
+        allPoints.forEach((pt, idx) => {
           const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(orchidLeafletMap);
-          const tip = idx === 0 ? 'Click to view details' : `Sighting ${idx + 1} â€” Click to view details`;
+          const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' - Click to view details';
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
           marker.on('click', function() {
             document.getElementById('orchid-map-stage').hidden = true;
@@ -522,12 +538,10 @@
           });
         });
 
-        if (sightingPoints.length > 1) {
-          orchidLeafletMap.fitBounds(
-            L.latLngBounds(sightingPoints.map(pt => [pt.lat, pt.lng])),
-            { padding: [30, 30] }
-          );
-        }
+        orchidLeafletMap.fitBounds(
+          L.latLngBounds(allPoints.map(pt => [pt.lat, pt.lng])),
+          { padding: [40, 40] }
+        );
       }
 
       function resetDetailRows() {

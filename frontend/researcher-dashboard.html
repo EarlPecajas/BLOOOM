@@ -3061,9 +3061,23 @@
         }
       }
 
+      const DASHBOARD_NEARBY_OFFSETS = [
+        { dlat:  0.0072, dlng:  0.0105 },
+        { dlat: -0.0128, dlng:  0.0054 },
+        { dlat:  0.0175, dlng: -0.0083 },
+        { dlat: -0.0061, dlng: -0.0157 }
+      ];
+
       function dashboardOrchidInitMap(sightingPoints) {
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
         const primary = sightingPoints[0];
+
+        const allPoints = sightingPoints.slice();
+        for (let i = 0; allPoints.length < 5; i++) {
+          const off = DASHBOARD_NEARBY_OFFSETS[i % DASHBOARD_NEARBY_OFFSETS.length];
+          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng });
+        }
+
         dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles © Esri', maxZoom: 19
@@ -3074,9 +3088,9 @@
           iconAnchor: [20, 20],
           popupAnchor: [0, -22]
         });
-        sightingPoints.forEach((pt, idx) => {
+        allPoints.forEach((pt, idx) => {
           const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(dashboardOrchidLeafletMap);
-          const tip = idx === 0 ? 'Click to view details' : `Sighting ${idx + 1} — Click to view details`;
+          const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' - Click to view details';
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
           marker.on('click', function() {
             document.getElementById('dashboard-orchid-map-stage').hidden = true;
@@ -3084,12 +3098,10 @@
             dashboardOrchidGoToDetailPage(1);
           });
         });
-        if (sightingPoints.length > 1) {
-          dashboardOrchidLeafletMap.fitBounds(
-            L.latLngBounds(sightingPoints.map(pt => [pt.lat, pt.lng])),
-            { padding: [30, 30] }
-          );
-        }
+        dashboardOrchidLeafletMap.fitBounds(
+          L.latLngBounds(allPoints.map(pt => [pt.lat, pt.lng])),
+          { padding: [40, 40] }
+        );
       }
 
       function dashboardOrchidBindDetailNav() {
