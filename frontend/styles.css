@@ -2790,8 +2790,17 @@ button:active {
   }
 }
 
-/* Keep index page and header text unchanged; set all other page text to black. */
-body:not(.index-page) *:not(header):not(header *) {
-  color: #145A1E !important;
+/* Button white-text safety — overrides Bootstrap defaults on filled buttons */
+.btn-solid,
+.catalog-btn,
+.map-trail-mode-btn.is-active,
+.stat-badge,
+.submission-action-btn,
+.dashboard-btn-primary,
+.dashboard-btn-success,
+.dashboard-btn-danger,
+.contributors-toggle {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
 }
 
