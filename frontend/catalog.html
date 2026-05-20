@@ -842,6 +842,15 @@
       }
 
       async function openOrchidDetails(orchid) {
+        // Navigate to the full detail page instead of opening a modal
+        const scientificKey = normalizeScientificKey(orchid.name);
+        const allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
+        try {
+          sessionStorage.setItem('bloomOrchidDetail', JSON.stringify({ orchid, sightings: allSightings }));
+        } catch {}
+        window.location.href = 'orchid-detail.html?name=' + encodeURIComponent(orchid.name || '');
+      }
+      async function _openOrchidDetails_UNUSED(orchid) {
         const scientificKey = normalizeScientificKey(orchid.name);
         const allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
         const publicSighting = allSightings[0] || null;
