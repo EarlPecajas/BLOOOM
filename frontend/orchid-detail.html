@@ -57,13 +57,18 @@
       }
       .oid-header-icon { width: 20px; height: 20px; flex-shrink: 0; opacity: .8; }
       .oid-subtitle { font-size: .72rem; font-weight: 800; color: #b8e0b0; letter-spacing: .12em; text-transform: uppercase; margin: 0; }
-      .oid-photo-wrap { width: 100%; aspect-ratio: 16/10; overflow: hidden; background: #eaf4e7; flex-shrink: 0; }
-      .oid-photo { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
-      .oid-photo:hover { transform: scale(1.04); }
-      .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2rem; opacity: .28; }
+      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #fff; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+      .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; padding: 6px; }
+      .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2.5rem; opacity: .55; }
       .oid-info { padding: 1.15rem 1.25rem 1.5rem; flex: 1; }
       .oid-sci-name { font-size: 1.18rem; font-style: italic; color: #143a10; margin: 0 0 .15rem; line-height: 1.3; font-weight: 800; font-family: Georgia, serif; }
       .oid-common-name { font-size: .88rem; color: #4a7a44; margin: 0 0 1.1rem; font-weight: 500; min-height: 1.2em; }
+      .oid-field-list { display: flex; flex-direction: column; }
+      .oid-field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .46rem 0; border-bottom: 1px solid #f0f5ef; gap: .5rem; }
+      .oid-field-row:last-child { border-bottom: none; }
+      .oid-field-sep { border-top: 2px solid #e0eedd; margin-top: .35rem; padding-top: .55rem; }
+      .oid-field-label { font-size: .68rem; font-weight: 700; color: #5a8a54; text-transform: uppercase; letter-spacing: .08em; flex-shrink: 0; min-width: 42%; line-height: 1.4; padding-top: .05rem; }
+      .oid-field-value { font-size: .84rem; font-weight: 500; color: #1c3d18; text-align: right; max-width: 58%; line-height: 1.4; }
       .oid-meta-table { border: 1px solid #daecd6; border-radius: 10px; overflow: hidden; margin-bottom: 1.1rem; background: #f8fcf7; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
       .oid-meta-row { display: flex; justify-content: space-between; align-items: center; padding: .55rem .95rem; border-bottom: 1px solid #eaf3e8; }
       .oid-meta-row:last-child { border-bottom: none; }
@@ -162,23 +167,17 @@
         <div class="oid-info">
           <h3 id="oid-sci-name" class="oid-sci-name">-</h3>
           <p id="oid-common-name" class="oid-common-name"></p>
-          <div class="oid-meta-table">
-            <div class="oid-meta-row">
-              <span class="oid-meta-label">Family</span>
-              <span class="oid-meta-value" id="oid-family">Orchidaceae</span>
-            </div>
-            <div class="oid-meta-row" id="oid-row-genus">
-              <span class="oid-meta-label">Genus</span>
-              <span class="oid-meta-value" id="oid-genus">-</span>
-            </div>
-            <div class="oid-meta-row">
-              <span class="oid-meta-label">Location</span>
-              <span class="oid-meta-value" id="oid-mountain">Mt. Busa</span>
-            </div>
-          </div>
-          <div class="oid-badges">
-            <span class="oid-badge oid-badge-status" id="oid-status-badge" hidden>-</span>
-            <span class="oid-badge oid-badge-confidence" id="oid-confidence-badge" hidden>-</span>
+          <div class="oid-field-list">
+            <div class="oid-field-row"><span class="oid-field-label">Family</span><span class="oid-field-value" id="oid-family">Orchidaceae</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Genus</span><span class="oid-field-value" id="oid-genus">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Local Names</span><span class="oid-field-value" id="oid-local-names">&mdash;</span></div>
+            <div class="oid-field-row oid-field-sep"><span class="oid-field-label">Conservation Status</span><span class="oid-field-value" id="oid-conservation-status">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Typical Habitat</span><span class="oid-field-value" id="oid-habitat">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Growth Substrate</span><span class="oid-field-value" id="oid-substrate">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Flower Color</span><span class="oid-field-value" id="oid-flower-color">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Flowering Season</span><span class="oid-field-value" id="oid-flowering-season">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Distribution</span><span class="oid-field-value" id="oid-distribution">Philippines</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Endemic</span><span class="oid-field-value" id="oid-endemic">&mdash;</span></div>
           </div>
         </div>
       </div>
@@ -421,6 +420,11 @@
       }
 
       // ── Identity panel ─────────────────────────────────────────────
+      function setField(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = hasUsableValue(value) ? String(value).trim() : '—';
+      }
+
       function populateIdentityPanel(orchid, src) {
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
 
@@ -432,14 +436,36 @@
         const commonNameEl = document.getElementById('oid-common-name');
         if (commonNameEl) commonNameEl.textContent = commonName;
 
+        // Taxonomy
         const genus = orchid.genus || orchidName.split(' ')[0] || '';
-        const genusEl = document.getElementById('oid-genus');
-        if (genusEl) genusEl.textContent = genus;
-        const genusRowEl = document.getElementById('oid-row-genus');
-        if (genusRowEl) genusRowEl.hidden = !genus;
+        setField('oid-genus', genus);
+        setField('oid-family', 'Orchidaceae');
 
-        const mountainEl = document.getElementById('oid-mountain');
-        if (mountainEl) mountainEl.textContent = src.mountain_name || 'Mt. Busa';
+        // Local names (all common names joined)
+        const allCommonNames = Array.isArray(src.common_names) ? src.common_names.filter(Boolean) : [];
+        setField('oid-local-names', allCommonNames.length > 0 ? allCommonNames.join(', ') : null);
+
+        // Conservation status
+        setField('oid-conservation-status', src.threat_level_generalized || null);
+
+        // Habitat & morphology
+        setField('oid-habitat', src.habitat_type || null);
+        setField('oid-substrate', src.growth_substrate || null);
+        setField('oid-flower-color', src.flower_color || null);
+        setField('oid-flowering-season', src.flowering_season || null);
+
+        // Distribution & endemicity
+        const endemicity = orchid.endemicity || '';
+        const distrib = endemicity && !endemicity.toLowerCase().includes('endemic')
+          ? endemicity
+          : (src.mountain_name ? 'Mindanao, Philippines' : 'Philippines');
+        setField('oid-distribution', distrib);
+        if (endemicity) {
+          const isEndemic = endemicity.toLowerCase().includes('endemic');
+          setField('oid-endemic', isEndemic ? 'Yes' : endemicity);
+        } else {
+          setField('oid-endemic', null);
+        }
 
         // Photo
         const oidPhoto = document.getElementById('oid-photo');
@@ -456,32 +482,6 @@
         } else if (oidPhoto && oidPhotoPlaceholder) {
           oidPhoto.hidden = true;
           oidPhotoPlaceholder.hidden = false;
-        }
-
-        // Status badge
-        const oidStatusBadge = document.getElementById('oid-status-badge');
-        const threatLevel = src.threat_level_generalized || '';
-        if (oidStatusBadge) {
-          if (threatLevel) {
-            const tl = threatLevel.toLowerCase();
-            oidStatusBadge.textContent = threatLevel;
-            oidStatusBadge.className = 'oid-badge oid-badge-status';
-            if (tl.includes('critical')) oidStatusBadge.classList.add('critical');
-            else if (tl.includes('endanger')) oidStatusBadge.classList.add('endangered');
-            else if (tl.includes('vulnerable')) oidStatusBadge.classList.add('vulnerable');
-            else oidStatusBadge.classList.add('least-concern');
-            oidStatusBadge.hidden = false;
-          } else {
-            oidStatusBadge.hidden = true;
-          }
-        }
-
-        // Confidence badge
-        const oidConfidenceBadge = document.getElementById('oid-confidence-badge');
-        const confidence = src.identification_confidence || '';
-        if (oidConfidenceBadge) {
-          oidConfidenceBadge.textContent = confidence;
-          oidConfidenceBadge.hidden = !confidence;
         }
       }
 
