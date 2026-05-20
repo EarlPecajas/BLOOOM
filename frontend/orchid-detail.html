@@ -143,7 +143,7 @@
         <img src="./loo.png" alt="BLOOM" class="detail-brand-logo">
         <span class="detail-brand-name">BLOOM</span>
       </a>
-      <a href="catalog.html" class="detail-back-link">&larr; Catalog</a>
+      <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
       <p id="detail-topbar-name" class="detail-topbar-title">Orchid Detail</p>
       <div class="detail-topbar-spacer"></div>
     </div>
@@ -659,6 +659,22 @@
       async function loadPage() {
         const params = new URLSearchParams(location.search);
         const nameFromUrl = params.get('name') || '';
+
+        // Update back link based on referrer page
+        const fromPage = params.get('from') || '';
+        const backLink = document.getElementById('detail-back-link');
+        if (backLink) {
+          if (fromPage === 'researcher-dashboard') {
+            backLink.href = 'researcher-dashboard.html';
+            backLink.innerHTML = '&larr; Dashboard';
+          } else if (fromPage === 'denr-dashboard') {
+            backLink.href = 'denr-dashboard.html';
+            backLink.innerHTML = '&larr; Dashboard';
+          } else {
+            backLink.href = 'catalog.html';
+            backLink.innerHTML = '&larr; Catalog';
+          }
+        }
 
         // Read orchid from sessionStorage (passed by catalog.html)
         let orchid = null;
