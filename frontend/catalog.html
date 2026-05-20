@@ -504,9 +504,11 @@
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles Â© Esri', maxZoom: 19
         }).addTo(orchidLeafletMap);
-        const icon = L.divIcon({
-          html: '<div style="font-size:30px;line-height:1;cursor:pointer;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.45));">ðŸŒº</div>',
-          className: '', iconSize: [32, 32], iconAnchor: [16, 16]
+        const icon = L.icon({
+          iconUrl: './catalogicon.png',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -22]
         });
 
         sightingPoints.forEach((pt, idx) => {
@@ -749,7 +751,7 @@
           .filter(s => s.latitude != null && s.longitude != null)
           .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude) }));
         if (sightingPoints.length === 0) {
-          sightingPoints.push({ lat: 6.2333, lng: 124.7000 });
+          sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
         }
 
         setTimeout(() => orchidInitMap(sightingPoints), 60);
@@ -992,4 +994,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
+
 

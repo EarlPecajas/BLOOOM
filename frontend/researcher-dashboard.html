@@ -3061,23 +3061,35 @@
         }
       }
 
-      function dashboardOrchidInitMap(lat, lng) {
+      function dashboardOrchidInitMap(sightingPoints) {
         if (dashboardOrchidLeafletMap) { dashboardOrchidLeafletMap.remove(); dashboardOrchidLeafletMap = null; }
-        dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([lat, lng], 11);
+        const primary = sightingPoints[0];
+        dashboardOrchidLeafletMap = L.map('dashboard-orchid-leaflet-map').setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles © Esri', maxZoom: 19
         }).addTo(dashboardOrchidLeafletMap);
-        const icon = L.divIcon({
-          html: '<div style="font-size:30px;line-height:1;cursor:pointer;filter:drop-shadow(1px 2px 3px rgba(0,0,0,.45));">🌺</div>',
-          className: '', iconSize: [32, 32], iconAnchor: [16, 16]
+        const icon = L.icon({
+          iconUrl: './catalogicon.png',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -22]
         });
-        const marker = L.marker([lat, lng], {icon}).addTo(dashboardOrchidLeafletMap);
-        marker.bindTooltip('Click to view details', {permanent: false, direction: 'top'});
-        marker.on('click', function() {
-          document.getElementById('dashboard-orchid-map-stage').hidden = true;
-          document.getElementById('dashboard-orchid-detail-stage').hidden = false;
-          dashboardOrchidGoToDetailPage(1);
+        sightingPoints.forEach((pt, idx) => {
+          const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(dashboardOrchidLeafletMap);
+          const tip = idx === 0 ? 'Click to view details' : `Sighting ${idx + 1} — Click to view details`;
+          marker.bindTooltip(tip, {permanent: false, direction: 'top'});
+          marker.on('click', function() {
+            document.getElementById('dashboard-orchid-map-stage').hidden = true;
+            document.getElementById('dashboard-orchid-detail-stage').hidden = false;
+            dashboardOrchidGoToDetailPage(1);
+          });
         });
+        if (sightingPoints.length > 1) {
+          dashboardOrchidLeafletMap.fitBounds(
+            L.latLngBounds(sightingPoints.map(pt => [pt.lat, pt.lng])),
+            { padding: [30, 30] }
+          );
+        }
       }
 
       function dashboardOrchidBindDetailNav() {
@@ -3165,8 +3177,7 @@
         dashboardOrchidBindDetailNav();
 
         // Fetch sighting data from Supabase
-        let sightingLat = 6.2333;
-        let sightingLng = 124.7000;
+        let sightingPoints = [];
         if (orchid.name) {
           try {
             const client = window.bloomSupabase || window.supabase;
@@ -3177,11 +3188,12 @@
                 .ilike('scientific_name', orchid.name.trim())
                 .eq('review_status', 'approved')
                 .order('observation_date', { ascending: false })
-                .limit(1);
+                .limit(10);
               if (!error && data && data.length > 0) {
                 const src = data[0];
-                if (src.latitude != null) sightingLat = Number(src.latitude);
-                if (src.longitude != null) sightingLng = Number(src.longitude);
+                sightingPoints = data
+                  .filter(s => s.latitude != null && s.longitude != null)
+                  .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude) }));
 
                 setDashboardDetailRow('dashboard-row-common-name', 'dashboard-detail-common-name',
                   (Array.isArray(src.common_names) ? src.common_names[0] : src.common_names) || src.common_name || orchid.common_name);
@@ -3243,7 +3255,8 @@
           }
         }
 
-        setTimeout(() => dashboardOrchidInitMap(sightingLat, sightingLng), 60);
+        if (sightingPoints.length === 0) sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
+        setTimeout(() => dashboardOrchidInitMap(sightingPoints), 60);
       }
 
       function closeDashboardOrchidDetails() {
