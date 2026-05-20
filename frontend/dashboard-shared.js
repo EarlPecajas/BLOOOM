@@ -81,7 +81,7 @@ function syncRoleState(user) {
   activeRole = String(parsedActiveUser.role || '').trim().toLowerCase();
   // Treat both 'admin' and 'denr' as admin (DENR) roles for dashboard purposes
   isAdminRole = activeRole === 'admin' || activeRole === 'denr';
-  isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+  isResearcherRole = !isAdminRole;
 }
 
 /**

@@ -1834,7 +1834,7 @@
         activeRole = String(parsedActiveUser.role || '').trim().toLowerCase();
         // Treat both 'admin' and 'denr' as admin (DENR) roles for dashboard purposes
         isAdminRole = activeRole === 'admin' || activeRole === 'denr';
-        isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+        isResearcherRole = !isAdminRole;
 
         document.body.classList.remove('researcher-mode', 'admin-mode');
         document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');

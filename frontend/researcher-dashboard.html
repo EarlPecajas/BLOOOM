@@ -936,12 +936,18 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Geographical / Location Data</strong>
             </div>
-            <input id="submission-mountain" type="text" value="Mt. Busa" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;" />
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-mountain" style="font-size:0.88rem;font-weight:600;color:#334155;">Mountain <span class="field-help" data-tooltip="Fixed location for this form.">?</span></label>
+              <input id="submission-mountain" type="text" value="Mt. Busa" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;" />
+            </div>
             <div style="display:grid;gap:0.35rem;">
               <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" data-tooltip="Optional. General area: Trail, Ridge, Streamside, or Others. Helps pinpoint location context.">?</span></label>
               <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
             </div>
-            <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
+              <label for="submission-specific-site-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site (if Others) <span class="field-help" data-tooltip="Optional. Use this when the zone is set to Others.">?</span></label>
+              <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            </div>
             <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
               <button type="button" id="submission-use-gps" style="padding:0.55rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
               <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
@@ -1103,8 +1109,14 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Notes, Remarks, and Researchers</strong>
             </div>
-            <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-institution" type="text" placeholder="Institution / Organization" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name</label>
+              <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            </div>
+            <div style="display:grid;gap:0.35rem;">
+              <label for="submission-institution" style="font-size:0.88rem;font-weight:600;color:#334155;">Institution / Organization</label>
+              <input id="submission-institution" type="text" placeholder="Institution / Organization" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            </div>
             <div style="grid-column:1/-1;display:grid;gap:0.55rem;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
                 <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members</span>
@@ -1112,7 +1124,10 @@
               </div>
               <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
             </div>
-            <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="grid-column:1/-1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
+            <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
+              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes</label>
+              <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
+            </div>
 
             <!-- Related Study -->
             <div style="grid-column:1/-1;border:1px solid #d4ddd7;border-radius:10px;padding:1rem;background:#f9fcfa;">
@@ -1429,7 +1444,7 @@
         parsedActiveUser = resolved;
         activeRole = String(parsedActiveUser.role || '').trim().toLowerCase();
         isAdminRole = activeRole === 'admin' || activeRole === 'denr';
-        isResearcherRole = activeRole === 'researcher' || activeRole === 'user';
+        isResearcherRole = !isAdminRole;
 
         if (isAdminRole && !isResearcherRole) {
           window.location.href = 'denr-dashboard.html';
@@ -3250,6 +3265,7 @@
         setVal('submission-flower-color', draft.flower_color || '');
         setVal('submission-flower-count', draft.flower_count || '');
         setVal('submission-leaf-count', draft.leaf_count || '');
+        setVal('submission-observation-time', draft.observation_time || '');
         setVal('submission-population-status', draft.population_status || '');
         setVal('submission-threat-level', draft.threat_level || '');
         setVal('submission-head-observer', draft.researcher_name || '');
