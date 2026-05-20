@@ -46,6 +46,15 @@
         border-radius: 8px;
         font-family: Inter, Roboto, sans-serif;
         color: #334155;
+        background-color: #fff;
+        min-height: 46px;
+        line-height: 1.2;
+        appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%);
+        background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        padding-right: 2.1rem;
       }
 
       .submission-select:required:invalid {
@@ -62,6 +71,33 @@
         font-weight: 400;
         color: #94a3b8;
         line-height: 1.2;
+      }
+      .submission-text-input,
+      .submission-number-input,
+      .submission-time-input,
+      .submission-date-input,
+      .submission-textarea {
+        padding: 0.72rem 0.8rem;
+        border: 1px solid #d4ddd7;
+        border-radius: 8px;
+        font-family: Inter, Roboto, sans-serif;
+        color: #334155;
+        background: #fff;
+        min-height: 46px;
+      }
+      .submission-number-input {
+        max-width: 220px;
+      }
+      .submission-canopy-input {
+        max-width: 220px;
+        height: 42px;
+      }
+      .submission-field {
+        display: grid;
+        gap: 0.35rem;
+      }
+      .submission-field--full {
+        grid-column: 1 / -1;
       }
       .field-help {
         display:inline-block;
@@ -876,13 +912,28 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Basic Taxonomic Information</strong>
             </div>
-            <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" />
-            <input id="submission-family" type="text" value="Orchidaceae" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;background:#f7faf8;" placeholder="Family" />
-            <input id="submission-genus" type="text" placeholder="Genus" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
-            <input id="submission-species-epithet" type="text" placeholder="Species Epithet" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
-            <div style="display:flex;gap:0.5rem;grid-column:1/-1;">
-              <input id="submission-scientific-name" type="text" placeholder="Scientific Name (auto-filled from Genus + Species, or type manually)" style="flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
-              <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">IDK</button>
+            <div class="submission-field">
+              <label for="submission-entry-id" style="font-size:0.88rem;font-weight:600;color:#334155;">Entry ID</label>
+              <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly class="submission-text-input" style="background:#f7faf8;font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-family" style="font-size:0.88rem;font-weight:600;color:#334155;">Family</label>
+              <input id="submission-family" type="text" value="Orchidaceae" readonly class="submission-text-input" style="background:#f7faf8;font-family:Inter,Roboto,sans-serif;" placeholder="Family" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus</label>
+              <input id="submission-genus" type="text" placeholder="Genus" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-species-epithet" style="font-size:0.88rem;font-weight:600;color:#334155;">Species Epithet</label>
+              <input id="submission-species-epithet" type="text" placeholder="Species Epithet" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div class="submission-field submission-field--full">
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name</label>
+              <div style="display:flex;gap:0.5rem;">
+                <input id="submission-scientific-name" type="text" placeholder="Scientific Name (auto-filled from Genus + Species, or type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">IDK</button>
+              </div>
             </div>
             <div style="grid-column:1/-1;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.45rem;">
@@ -898,7 +949,7 @@
               </div>
               <div id="submission-local-names-wrap" style="display:grid;gap:0.45rem;"></div>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
               <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
             </div>
@@ -909,23 +960,23 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Observation / Collection Details</strong>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
-              <input id="submission-observation-date" type="date" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+              <input id="submission-observation-date" type="date" class="submission-text-input submission-date-input" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-observation-time" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Time <span class="field-help" data-tooltip="Optional. Time of day observation was made (HH:MM format). Leave blank if unknown.">?</span></label>
-              <input id="submission-observation-time" type="time" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-family:Inter,Roboto,sans-serif;" />
+              <input id="submission-observation-time" type="time" class="submission-text-input submission-time-input" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-collection-method" style="font-size:0.88rem;font-weight:600;color:#334155;">Collection Method <span class="field-help" data-tooltip="Optional. How was the orchid located: Transect (survey line), Quadrat (defined area), Opportunistic (chance find), or Random Survey.">?</span></label>
               <select id="submission-collection-method" class="submission-select"><option value="" disabled selected hidden>Collection Method</option><option value="transect">Transect</option><option value="quadrat">Quadrat</option><option value="opportunistic">Opportunistic</option><option value="random survey">Random Survey</option></select>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-observation-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Type <span class="field-help" data-tooltip="Optional. State of specimen: Live (healthy), Flowering, Fruiting, Dead, or Photographic Only.">?</span></label>
               <select id="submission-observation-type" class="submission-select"><option value="" disabled selected hidden>Observation Type</option><option value="live specimen">Live Specimen</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option><option value="dead specimen">Dead Specimen</option><option value="photographic only">Photographic Only</option></select>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-voucher-collected" style="font-size:0.88rem;font-weight:600;color:#334155;">Voucher Specimen Collected <span class="field-help" data-tooltip="Optional. Select Yes if you collected a pressed/dried specimen for herbarium, No otherwise.">?</span></label>
               <select id="submission-voucher-collected" class="submission-select"><option value="" disabled selected hidden>Voucher Specimen Collected</option><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
@@ -936,33 +987,33 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Geographical / Location Data</strong>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-mountain" style="font-size:0.88rem;font-weight:600;color:#334155;">Mountain <span class="field-help" data-tooltip="Fixed location for this form.">?</span></label>
-              <input id="submission-mountain" type="text" value="Mt. Busa" readonly style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f7faf8;" />
+              <input id="submission-mountain" type="text" value="Mt. Busa" readonly class="submission-text-input" style="background:#f7faf8;" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" data-tooltip="Optional. General area: Trail, Ridge, Streamside, or Others. Helps pinpoint location context.">?</span></label>
               <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
             </div>
-            <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
+            <div id="submission-specific-site-other-wrap" class="submission-field submission-field--full" style="display:none;">
               <label for="submission-specific-site-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site (if Others) <span class="field-help" data-tooltip="Optional. Use this when the zone is set to Others.">?</span></label>
-              <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" class="submission-text-input" />
             </div>
             <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
               <button type="button" id="submission-use-gps" style="padding:0.55rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
               <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
-              <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" class="submission-text-input" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
-              <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation / Altitude (meters) <span class="field-help" data-tooltip="Auto-filled from GPS if available, or enter manually.">?</span></label>
-              <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation (meters)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation (meters)" class="submission-text-input submission-number-input" />
             </div>
           </div>
 
@@ -971,24 +1022,46 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Habitat Information</strong>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
+              <label for="submission-habitat-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Habitat Type</label>
               <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Habitat Type</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option><option value="others">Others</option></select>
-              <input id="submission-habitat-type-other" type="text" placeholder="Specify habitat type" style="display:none;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-habitat-type-other" type="text" placeholder="Specify habitat type" style="display:none;" class="submission-text-input" />
             </div>
-            <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
+              <label for="submission-microhabitat" style="font-size:0.88rem;font-weight:600;color:#334155;">Microhabitat</label>
+              <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+            </div>
+            <div class="submission-field">
               <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" data-tooltip="Optional. Surface orchid grows on: Tree Bark, Soil, Rock, or Decaying Wood.">?</span></label>
               <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Growth Substrate</option><option value="tree bark">Tree Bark (on Tree)</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option></select>
             </div>
             <div id="submission-tree-fields" style="display:none;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-              <input id="submission-host-tree-species" type="text" placeholder="Tree Species" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-              <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Tree Diameter / DBH (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <div class="submission-field">
+                <label for="submission-host-tree-species" style="font-size:0.88rem;font-weight:600;color:#334155;">Tree Species</label>
+                <input id="submission-host-tree-species" type="text" placeholder="Tree Species" class="submission-text-input" />
+              </div>
+              <div class="submission-field">
+                <label for="submission-host-tree-dbh" style="font-size:0.88rem;font-weight:600;color:#334155;">Tree Diameter / DBH (cm)</label>
+                <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Tree Diameter / DBH (cm)" class="submission-text-input submission-number-input" />
+              </div>
             </div>
-            <input id="submission-canopy-cover" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Canopy Cover (%)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
-            <select id="submission-soil-type" class="submission-select"><option value="" disabled selected hidden>Soil Type</option><option value="loamy">Loamy</option><option value="clay">Clay</option><option value="sandy">Sandy</option><option value="silty">Silty</option><option value="peaty">Peaty</option><option value="rocky">Rocky</option></select>
-            <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
+              <label for="submission-canopy-cover" style="font-size:0.88rem;font-weight:600;color:#334155;">Canopy Cover (%)</label>
+              <input id="submission-canopy-cover" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Canopy Cover (%)" class="submission-text-input submission-number-input submission-canopy-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-light-exposure" style="font-size:0.88rem;font-weight:600;color:#334155;">Light Exposure</label>
+              <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-soil-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Soil Type</label>
+              <select id="submission-soil-type" class="submission-select"><option value="" disabled selected hidden>Soil Type</option><option value="loamy">Loamy</option><option value="clay">Clay</option><option value="sandy">Sandy</option><option value="silty">Silty</option><option value="peaty">Peaty</option><option value="rocky">Rocky</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-nearby-water-source" style="font-size:0.88rem;font-weight:600;color:#334155;">Nearby Water Source</label>
+              <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
+            </div>
+            <div class="submission-field">
               <label for="submission-flowering-season" style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" data-tooltip="Optional. When does this orchid typically flower?">?</span></label>
               <select id="submission-flowering-season" class="submission-select"><option value="" disabled selected hidden>Flowering Season</option><option value="Spring">Spring</option><option value="Summer">Summer</option><option value="Autumn">Autumn</option><option value="Winter">Winter</option><option value="Year-round">Year-round</option><option value="Dry Season">Dry Season</option><option value="Wet Season">Wet Season</option><option value="Unknown">Unknown</option></select>
             </div>
@@ -999,15 +1072,42 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Morphological Characteristics</strong>
             </div>
-            <input id="submission-plant-height" type="number" step="0.01" placeholder="Plant Height (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <select id="submission-pseudobulb-present" class="submission-select"><option value="" disabled selected hidden>Pseudobulb Present</option><option value="yes">Yes</option><option value="no">No</option></select>
-            <input id="submission-stem-length" type="number" step="0.01" placeholder="Stem Length (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-root-length" type="number" step="0.01" placeholder="Root Length (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-leaf-count" type="number" placeholder="Number of Leaves" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <select id="submission-leaf-shape" class="submission-select"><option value="" disabled selected hidden>Leaf Shape</option><option value="Linear & Narrow">Linear & Narrow</option><option value="Rounded & Oval">Rounded & Oval</option><option value="Pointy or Tapered">Pointy or Tapered</option><option value="Reversed">Reversed</option><option value="Specialized Shapes">Specialized Shapes</option><option value="Others">Others</option></select>
-            <input id="submission-leaf-shape-other" type="text" placeholder="Leaf Shape (Others)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-leaf-length" type="number" step="0.01" placeholder="Leaf Length (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-leaf-width" type="number" step="0.01" placeholder="Leaf Width (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <div class="submission-field">
+              <label for="submission-plant-height" style="font-size:0.88rem;font-weight:600;color:#334155;">Plant Height (cm)</label>
+              <input id="submission-plant-height" type="number" step="0.01" placeholder="Plant Height (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-pseudobulb-present" style="font-size:0.88rem;font-weight:600;color:#334155;">Pseudobulb Present</label>
+              <select id="submission-pseudobulb-present" class="submission-select"><option value="" disabled selected hidden>Pseudobulb Present</option><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-stem-length" style="font-size:0.88rem;font-weight:600;color:#334155;">Stem Length (cm)</label>
+              <input id="submission-stem-length" type="number" step="0.01" placeholder="Stem Length (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-root-length" style="font-size:0.88rem;font-weight:600;color:#334155;">Root Length (cm)</label>
+              <input id="submission-root-length" type="number" step="0.01" placeholder="Root Length (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Leaves</label>
+              <input id="submission-leaf-count" type="number" placeholder="Number of Leaves" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-shape" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Shape</label>
+              <select id="submission-leaf-shape" class="submission-select"><option value="" disabled selected hidden>Leaf Shape</option><option value="Linear & Narrow">Linear & Narrow</option><option value="Rounded & Oval">Rounded & Oval</option><option value="Pointy or Tapered">Pointy or Tapered</option><option value="Reversed">Reversed</option><option value="Specialized Shapes">Specialized Shapes</option><option value="Others">Others</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-shape-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Shape (Others)</label>
+              <input id="submission-leaf-shape-other" type="text" placeholder="Leaf Shape (Others)" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-length" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Length (cm)</label>
+              <input id="submission-leaf-length" type="number" step="0.01" placeholder="Leaf Length (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-width" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Width (cm)</label>
+              <input id="submission-leaf-width" type="number" step="0.01" placeholder="Leaf Width (cm)" class="submission-text-input submission-number-input" />
+            </div>
             <div style="display:grid;gap:0.45rem;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
               <div style="font-size:0.95rem;font-weight:600;color:#334155;">Leaf Texture</div>
               <details id="submission-leaf-texture">
@@ -1023,19 +1123,58 @@
                 </div>
               </details>
             </div>
-            <select id="submission-leaf-arrangement" class="submission-select"><option value="" disabled selected hidden>Leaf Arrangement</option><option value="Alternate">Alternate</option><option value="Opposite">Opposite</option><option value="Whorled">Whorled</option></select>
-            <input id="submission-flower-color" type="text" placeholder="Flower Color" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-flower-count" type="number" placeholder="Number of Flowers" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <input id="submission-flower-diameter" type="number" step="0.01" placeholder="Flower Diameter (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <select id="submission-inflorescence-type" class="submission-select"><option value="" disabled selected hidden>Inflorescence Type</option><option value="Raceme">Raceme</option><option value="Spike">Spike</option><option value="Panicle">Panicle</option><option value="Solitary">Solitary</option></select>
-            <select id="submission-petal-characteristics" class="submission-select"><option value="" disabled selected hidden>Petal Characteristics</option><option value="Obovate">Obovate</option><option value="Elliptic">Elliptic</option><option value="Spatulate">Spatulate</option></select>
-            <input id="submission-sepal-characteristics" type="text" placeholder="Sepal Characteristics" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            <select id="submission-labellum-description" class="submission-select"><option value="" disabled selected hidden>Labellum / Lip Description</option><option value="Trilobed (Three-lobed)">Trilobed (Three-lobed)</option><option value="Saccate (Bag-like)">Saccate (Bag-like)</option><option value="Spurred">Spurred</option></select>
-            <select id="submission-fragrance" class="submission-select"><option value="" disabled selected hidden>Fragrance</option><option value="None">None</option><option value="Faint">Faint</option><option value="Strong">Strong</option><option value="Sweet">Sweet</option><option value="Musky">Musky</option><option value="Spicy">Spicy</option></select>
-            <select id="submission-blooming-stage" class="submission-select"><option value="" disabled selected hidden>Blooming Stage</option><option value="Budding">Budding</option><option value="Anthesis (Early)">Anthesis (Early)</option><option value="Full Bloom">Full Bloom</option><option value="Senescent">Senescent</option></select>
-            <select id="submission-fruit-present" class="submission-select"><option value="" disabled selected hidden>Fruit Present</option><option value="yes">Yes</option><option value="no">No</option></select>
-            <select id="submission-fruit-type" class="submission-select"><option value="" disabled selected hidden>Fruit Type</option><option value="Capsule">Capsule</option><option value="Pod">Pod</option><option value="Berry">Berry</option></select>
-            <select id="submission-seed-capsule-condition" class="submission-select"><option value="" disabled selected hidden>Seed Capsule Condition</option><option value="Immature (Green)">Immature (Green)</option><option value="Mature (Yellow/Brown)">Mature (Yellow/Brown)</option><option value="Dehisced (Split)">Dehisced (Split)</option><option value="Aborted">Aborted</option></select>
+            <div class="submission-field">
+              <label for="submission-leaf-arrangement" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Arrangement</label>
+              <select id="submission-leaf-arrangement" class="submission-select"><option value="" disabled selected hidden>Leaf Arrangement</option><option value="Alternate">Alternate</option><option value="Opposite">Opposite</option><option value="Whorled">Whorled</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-flower-color" style="font-size:0.88rem;font-weight:600;color:#334155;">Flower Color</label>
+              <input id="submission-flower-color" type="text" placeholder="Flower Color" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-flower-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Flowers</label>
+              <input id="submission-flower-count" type="number" placeholder="Number of Flowers" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-flower-diameter" style="font-size:0.88rem;font-weight:600;color:#334155;">Flower Diameter (cm)</label>
+              <input id="submission-flower-diameter" type="number" step="0.01" placeholder="Flower Diameter (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-inflorescence-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Inflorescence Type</label>
+              <select id="submission-inflorescence-type" class="submission-select"><option value="" disabled selected hidden>Inflorescence Type</option><option value="Raceme">Raceme</option><option value="Spike">Spike</option><option value="Panicle">Panicle</option><option value="Solitary">Solitary</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-petal-characteristics" style="font-size:0.88rem;font-weight:600;color:#334155;">Petal Characteristics</label>
+              <select id="submission-petal-characteristics" class="submission-select"><option value="" disabled selected hidden>Petal Characteristics</option><option value="Obovate">Obovate</option><option value="Elliptic">Elliptic</option><option value="Spatulate">Spatulate</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-sepal-characteristics" style="font-size:0.88rem;font-weight:600;color:#334155;">Sepal Characteristics</label>
+              <input id="submission-sepal-characteristics" type="text" placeholder="Sepal Characteristics" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-labellum-description" style="font-size:0.88rem;font-weight:600;color:#334155;">Labellum / Lip Description</label>
+              <select id="submission-labellum-description" class="submission-select"><option value="" disabled selected hidden>Labellum / Lip Description</option><option value="Trilobed (Three-lobed)">Trilobed (Three-lobed)</option><option value="Saccate (Bag-like)">Saccate (Bag-like)</option><option value="Spurred">Spurred</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-fragrance" style="font-size:0.88rem;font-weight:600;color:#334155;">Fragrance</label>
+              <select id="submission-fragrance" class="submission-select"><option value="" disabled selected hidden>Fragrance</option><option value="None">None</option><option value="Faint">Faint</option><option value="Strong">Strong</option><option value="Sweet">Sweet</option><option value="Musky">Musky</option><option value="Spicy">Spicy</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-blooming-stage" style="font-size:0.88rem;font-weight:600;color:#334155;">Blooming Stage</label>
+              <select id="submission-blooming-stage" class="submission-select"><option value="" disabled selected hidden>Blooming Stage</option><option value="Budding">Budding</option><option value="Anthesis (Early)">Anthesis (Early)</option><option value="Full Bloom">Full Bloom</option><option value="Senescent">Senescent</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-fruit-present" style="font-size:0.88rem;font-weight:600;color:#334155;">Fruit Present</label>
+              <select id="submission-fruit-present" class="submission-select"><option value="" disabled selected hidden>Fruit Present</option><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-fruit-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Fruit Type</label>
+              <select id="submission-fruit-type" class="submission-select"><option value="" disabled selected hidden>Fruit Type</option><option value="Capsule">Capsule</option><option value="Pod">Pod</option><option value="Berry">Berry</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-seed-capsule-condition" style="font-size:0.88rem;font-weight:600;color:#334155;">Seed Capsule Condition</label>
+              <select id="submission-seed-capsule-condition" class="submission-select"><option value="" disabled selected hidden>Seed Capsule Condition</option><option value="Immature (Green)">Immature (Green)</option><option value="Mature (Yellow/Brown)">Mature (Yellow/Brown)</option><option value="Dehisced (Split)">Dehisced (Split)</option><option value="Aborted">Aborted</option></select>
+            </div>
           </div>
 
           <!-- Page 6: Ecological / Biological Data -->
@@ -1043,9 +1182,18 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Ecological / Biological Data</strong>
             </div>
-            <select id="submission-life-stage" class="submission-select"><option value="" disabled selected hidden>Life Stage</option><option value="Seedling">Seedling</option><option value="juvenile">Juvenile</option><option value="Mature">Mature</option></select>
-            <select id="submission-phenology" class="submission-select"><option value="" disabled selected hidden>Phenology</option><option value="Vegetative">Vegetative</option><option value="budding">Budding</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option></select>
-            <input id="submission-population-count" type="number" placeholder="Population Count" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <div class="submission-field">
+              <label for="submission-life-stage" style="font-size:0.88rem;font-weight:600;color:#334155;">Life Stage</label>
+              <select id="submission-life-stage" class="submission-select"><option value="" disabled selected hidden>Life Stage</option><option value="Seedling">Seedling</option><option value="juvenile">Juvenile</option><option value="Mature">Mature</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-phenology" style="font-size:0.88rem;font-weight:600;color:#334155;">Phenology</label>
+              <select id="submission-phenology" class="submission-select"><option value="" disabled selected hidden>Phenology</option><option value="Vegetative">Vegetative</option><option value="budding">Budding</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-population-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Count</label>
+              <input id="submission-population-count" type="number" placeholder="Population Count" class="submission-text-input submission-number-input" />
+            </div>
           </div>
 
           <!-- Page 7: Conservation & Threat Data -->
@@ -1053,8 +1201,14 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Conservation &amp; Threat Data</strong>
             </div>
-            <select id="submission-population-status" class="submission-select"><option value="" disabled selected hidden>Population Status</option><option value="Abundant">Abundant</option><option value="common">Common</option><option value="rare">Rare</option></select>
-            <select id="submission-threat-level" class="submission-select"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Least Concern">Least Concern</option></select>
+            <div class="submission-field">
+              <label for="submission-population-status" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Status</label>
+              <select id="submission-population-status" class="submission-select"><option value="" disabled selected hidden>Population Status</option><option value="Abundant">Abundant</option><option value="common">Common</option><option value="rare">Rare</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level</label>
+              <select id="submission-threat-level" class="submission-select"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Least Concern">Least Concern</option></select>
+            </div>
             <div style="display:grid;gap:0.45rem;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;grid-column:1/-1;">
               <div style="font-size:0.95rem;font-weight:600;color:#334155;">Threat Type</div>
               <details id="submission-threat-types">
@@ -1109,24 +1263,24 @@
             <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
               <strong>Notes, Remarks, and Researchers</strong>
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name</label>
-              <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" class="submission-text-input" />
             </div>
-            <div style="display:grid;gap:0.35rem;">
+            <div class="submission-field">
               <label for="submission-institution" style="font-size:0.88rem;font-weight:600;color:#334155;">Institution / Organization</label>
-              <input id="submission-institution" type="text" placeholder="Institution / Organization" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <input id="submission-institution" type="text" placeholder="Institution / Organization" class="submission-text-input" />
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.55rem;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
-                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members</span>
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members <span style="color:#b42318;">*</span></span>
                 <button type="button" id="submission-add-team-member" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add Member</button>
               </div>
               <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
               <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes</label>
-              <textarea id="submission-researcher-notes" placeholder="Researcher Notes" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;min-height:90px;"></textarea>
+              <textarea id="submission-researcher-notes" placeholder="Researcher Notes" class="submission-textarea" style="min-height:90px;"></textarea>
             </div>
 
             <!-- Related Study -->
@@ -1630,19 +1784,36 @@
       function createTeamMemberInput(index) {
         const wrap = document.createElement('div');
         wrap.className = 'submission-team-member-item';
-        wrap.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;align-items:center;';
+        wrap.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:0.5rem;align-items:end;';
 
+        const nameField = document.createElement('div');
+        nameField.style.cssText = 'display:grid;gap:0.35rem;';
+        const nameLabel = document.createElement('label');
+        nameLabel.textContent = `Member ${index} Name`;
+        nameLabel.style.cssText = 'font-size:0.82rem;font-weight:600;color:#334155;';
+        nameLabel.setAttribute('for', `submission-team-member-name-${index}`);
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
-        nameInput.className = 'submission-team-member-name';
+        nameInput.id = `submission-team-member-name-${index}`;
+        nameInput.className = 'submission-team-member-name submission-text-input';
         nameInput.placeholder = `Member ${index} Name`;
-        nameInput.style.cssText = 'padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
+        nameField.appendChild(nameLabel);
+        nameField.appendChild(nameInput);
 
+        const roleField = document.createElement('div');
+        roleField.style.cssText = 'display:grid;gap:0.35rem;';
+        const roleLabel = document.createElement('label');
+        roleLabel.textContent = 'Role';
+        roleLabel.style.cssText = 'font-size:0.82rem;font-weight:600;color:#334155;';
+        roleLabel.setAttribute('for', `submission-team-member-role-${index}`);
         const roleSelect = document.createElement('select');
+        roleSelect.id = `submission-team-member-role-${index}`;
         roleSelect.className = 'submission-team-member-role submission-select';
         roleSelect.innerHTML = '<option value="" disabled selected hidden>Role</option>' +
           ['Lead Researcher','Field Assistant','Data Recorder','Photographer','Botanist','Student','Observer','Other']
             .map(r => `<option value="${r}">${r}</option>`).join('');
+        roleField.appendChild(roleLabel);
+        roleField.appendChild(roleSelect);
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
@@ -1650,8 +1821,8 @@
         removeBtn.style.cssText = 'padding:0.5rem 0.75rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1.1rem;line-height:1;';
         removeBtn.addEventListener('click', function() { wrap.remove(); });
 
-        wrap.appendChild(nameInput);
-        wrap.appendChild(roleSelect);
+        wrap.appendChild(nameField);
+        wrap.appendChild(roleField);
         wrap.appendChild(removeBtn);
         return wrap;
       }
@@ -1849,6 +2020,24 @@
           habitatTypeEl.addEventListener('change', toggleHabitatOther);
         }
         toggleHabitatOther();
+
+        // Specific site zone → show/hide "Others" text field
+        const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
+        const specificSiteOtherWrapEl = document.getElementById('submission-specific-site-other-wrap');
+        const specificSiteOtherEl = document.getElementById('submission-specific-site-other');
+        function toggleSpecificSiteOther() {
+          if (!specificSiteOtherWrapEl) return;
+          const showOther = specificSiteZoneEl?.value === 'others';
+          specificSiteOtherWrapEl.style.display = showOther ? 'grid' : 'none';
+          if (!showOther && specificSiteOtherEl) {
+            specificSiteOtherEl.value = '';
+          }
+        }
+        if (specificSiteZoneEl && !specificSiteZoneEl.dataset.bound) {
+          specificSiteZoneEl.dataset.bound = '1';
+          specificSiteZoneEl.addEventListener('change', toggleSpecificSiteOther);
+        }
+        toggleSpecificSiteOther();
 
         // GPS button
         const gpsBtn = document.getElementById('submission-use-gps');
@@ -2260,6 +2449,20 @@
               const role = item.querySelector('.submission-team-member-role')?.value || '';
               return name ? { name, role } : null;
             }).filter(Boolean);
+
+            const observerName = (document.getElementById('submission-head-observer')?.value || '').trim();
+            if (!observerName) throw new Error('Head Observer / Researcher Name is required (Page 9).');
+
+            if (!teamMembers.length) throw new Error('Team Members is required (Page 9). Add at least one complete entry.');
+
+            const researcherNotes = (document.getElementById('submission-researcher-notes')?.value || '').trim();
+            if (!researcherNotes) throw new Error('Researcher Notes is required (Page 9).');
+
+            const specificSiteZone = document.getElementById('submission-specific-site-zone')?.value || '';
+            const specificSiteOther = (document.getElementById('submission-specific-site-other')?.value || '').trim();
+            if (specificSiteZone === 'others' && !specificSiteOther) {
+              throw new Error('Specific Site is required when the zone is set to Others.');
+            }
 
             async function uploadFilesFromInput(inputEl, fieldName) {
               const files = Array.from(inputEl?.files || []);
@@ -3266,6 +3469,8 @@
         setVal('submission-flower-count', draft.flower_count || '');
         setVal('submission-leaf-count', draft.leaf_count || '');
         setVal('submission-observation-time', draft.observation_time || '');
+        setVal('submission-specific-site-zone', draft.specific_site_zone || '');
+        setVal('submission-specific-site-other', draft.specific_site_other || '');
         setVal('submission-population-status', draft.population_status || '');
         setVal('submission-threat-level', draft.threat_level || '');
         setVal('submission-head-observer', draft.researcher_name || '');
@@ -3282,6 +3487,13 @@
         // habitat-type and microhabitat are selects — set via direct property
         const habitatEl = document.getElementById('submission-habitat-type');
         if (habitatEl && draft.habitat_type) habitatEl.value = draft.habitat_type;
+        const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
+        const specificSiteOtherWrapEl = document.getElementById('submission-specific-site-other-wrap');
+        if (specificSiteZoneEl) {
+          specificSiteZoneEl.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (specificSiteOtherWrapEl && draft.specific_site_other) {
+          specificSiteOtherWrapEl.style.display = 'grid';
+        }
       }
 
       if (catalogGrid) {
