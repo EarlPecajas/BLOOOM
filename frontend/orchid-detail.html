@@ -35,11 +35,11 @@
       }
       .detail-back-link:hover { background: rgba(255,255,255,.12); color: #d8f0d0; }
       .detail-topbar-title {
-        position: absolute; left: 50%; transform: translateX(-50%);
+        position: absolute; left: 0; right: 0;
         font-size: 1.35rem; font-style: italic; color: #e8f8e0;
         font-family: Georgia, serif; font-weight: 700;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        max-width: 50%; pointer-events: none;
+        text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        pointer-events: none;
       }
       .detail-topbar-spacer { display: none; }
 
@@ -376,6 +376,11 @@
           identification_confidence: row.identification_confidence || '',
           observation_date: row.observation_date || '',
           observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
+          observation_time: row.observation_time || '',
+          observation_type: row.observation_type || '',
+          collection_method: row.collection_method || '',
+          voucher_collected: row.voucher_collected,
+          researcher_notes: row.researcher_notes || '',
           latitude: row.latitude != null ? Number(row.latitude) : null,
           longitude: row.longitude != null ? Number(row.longitude) : null,
           mountain_name: row.mountain_name || '',
@@ -537,13 +542,20 @@
         setDetailRow('row-threat-level', 'detail-threat-level', src.threat_level_generalized || '');
         setDetailRow('row-ethnobotanical', 'detail-ethnobotanical', src.educational_notes || '');
         setDetailRow('row-researcher', 'detail-researcher', src.researcher_name || '');
-        // hide public-hidden rows
-        ['row-endemicity','row-observation-summary','row-observation-type','row-observation-month',
-         'row-location-visibility','row-latitude','row-longitude','row-observation-date',
-         'row-observation-time','row-host-tree','row-canopy-cover','row-pseudobulb','row-stem-length',
+        setDetailRow('row-observation-summary', 'detail-observation-summary', src.researcher_notes || '');
+        setDetailRow('row-observation-type', 'detail-observation-type', src.observation_type || '');
+        setDetailRow('row-observation-month', 'detail-observation-month', src.observation_month || '');
+        setDetailRow('row-observation-date', 'detail-observation-date', src.observation_date || '');
+        setDetailRow('row-observation-time', 'detail-observation-time', src.observation_time || '');
+        setDetailRow('row-collection-method', 'detail-collection-method', src.collection_method || '');
+        setDetailRow('row-voucher', 'detail-voucher', src.voucher_collected === true ? 'Yes' : src.voucher_collected === false ? 'No' : '');
+        // hide rows not relevant for public view
+        ['row-endemicity',
+         'row-location-visibility','row-latitude','row-longitude',
+         'row-host-tree','row-canopy-cover','row-pseudobulb','row-stem-length',
          'row-root-length','row-sepal-characteristics','row-life-stage','row-phenology',
          'row-population-count','row-threat-types','row-institution','row-team-members',
-         'row-collection-method','row-voucher','row-light-exposure','row-soil-type',
+         'row-light-exposure','row-soil-type',
          'row-population-status'].forEach(id => {
           const el = document.getElementById(id); if (el) el.hidden = true;
         });
