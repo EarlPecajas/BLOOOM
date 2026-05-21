@@ -19,7 +19,7 @@
       /* Top nav */
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
-        padding: 0 1.4rem; height: 58px;
+        padding: 0 1.4rem; height: 58px; position: relative;
         background: linear-gradient(135deg, #162b12 0%, #2d5a27 100%);
         box-shadow: 0 2px 16px rgba(0,0,0,.35); gap: 1rem; z-index: 10;
       }
@@ -35,11 +35,13 @@
       }
       .detail-back-link:hover { background: rgba(255,255,255,.12); color: #d8f0d0; }
       .detail-topbar-title {
-        flex: 1; font-size: 1.35rem; font-style: italic; color: #e8f8e0;
+        position: absolute; left: 50%; transform: translateX(-50%);
+        font-size: 1.35rem; font-style: italic; color: #e8f8e0;
         font-family: Georgia, serif; font-weight: 700;
-        text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        max-width: 50%; pointer-events: none;
       }
-      .detail-topbar-spacer { min-width: 160px; }
+      .detail-topbar-spacer { display: none; }
 
       /* Stage 1 */
       #detail-overview { flex: 1; min-height: 0; display: flex; overflow: hidden; }
@@ -58,8 +60,8 @@
       }
       .oid-header-icon { width: 20px; height: 20px; flex-shrink: 0; opacity: .8; }
       .oid-subtitle { font-size: .72rem; font-weight: 800; color: #b8e0b0; letter-spacing: .12em; text-transform: uppercase; margin: 0; }
-      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #111; flex-shrink: 0; }
-      .oid-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #fff; flex-shrink: 0; }
+      .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; }
       .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2.5rem; opacity: .55; }
       .oid-info { padding: 1.15rem 1.25rem 1.5rem; flex: 1; }
       .oid-sci-name { font-size: 1.18rem; font-style: italic; color: #143a10; margin: 0 0 .15rem; line-height: 1.3; font-weight: 800; font-family: Georgia, serif; }
