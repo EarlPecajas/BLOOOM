@@ -429,7 +429,11 @@
       // ── Identity panel ─────────────────────────────────────────────
       function setField(id, value) {
         const el = document.getElementById(id);
-        if (el) el.textContent = hasUsableValue(value) ? String(value).trim() : '—';
+        if (!el) return;
+        const hasValue = hasUsableValue(value);
+        el.textContent = hasValue ? String(value).trim() : '';
+        const row = el.closest('.oid-field-row');
+        if (row) row.hidden = !hasValue;
       }
 
       function populateIdentityPanel(orchid, src) {
