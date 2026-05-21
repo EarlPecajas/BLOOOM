@@ -19,7 +19,7 @@
       /* Top nav */
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
-        padding: 0 1.4rem; height: 54px;
+        padding: 0 1.4rem; height: 54px; position: relative;
         background: linear-gradient(135deg, #0f1f0d 0%, #1e4019 50%, #2d5a27 100%);
         box-shadow: 0 2px 18px rgba(0,0,0,.4); gap: 1rem; z-index: 10;
       }
@@ -34,7 +34,17 @@
         transition: all .15s; white-space: nowrap;
       }
       .detail-back-link:hover { background: rgba(255,255,255,.11); color: #c8f0c0; border-color: rgba(144,200,136,.5); }
-      .detail-topbar-title { display: none; }
+      .detail-topbar-title {
+        position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.35rem; font-style: italic; color: #e8f8e0;
+        font-family: Georgia, serif; font-weight: 700;
+        pointer-events: none; overflow: hidden;
+      }
+      .detail-topbar-title span {
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        max-width: calc(100% - 420px);
+      }
       .detail-topbar-spacer { display: none; }
 
       /* Stage 1 */
@@ -153,6 +163,7 @@
         <span class="detail-brand-name">BLOOM</span>
       </a>
       <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
+      <div id="detail-topbar-name" class="detail-topbar-title"><span></span></div>
 
     </div>
 
@@ -192,9 +203,6 @@
 
       <!-- Right: Map Panel -->
       <div class="orchid-map-panel">
-        <div class="orchid-map-name-bar">
-          <p id="oid-map-orchid-name" class="orchid-map-orchid-name">—</p>
-        </div>
         <div class="orchid-map-subheader">
           <div class="map-subheader-left">
             <span class="map-subheader-title">Sighting Locations</span>
@@ -449,9 +457,7 @@
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
 
         const topbarNameEl = document.getElementById('detail-topbar-name');
-        if (topbarNameEl) topbarNameEl.textContent = orchidName;
-        const mapOrchidNameEl = document.getElementById('oid-map-orchid-name');
-        if (mapOrchidNameEl) mapOrchidNameEl.textContent = orchidName;
+        if (topbarNameEl) { const sp = topbarNameEl.querySelector('span'); if (sp) sp.textContent = orchidName; }
         document.getElementById('orchid-detail-stage-name').textContent = orchidName;
         document.getElementById('oid-sci-name').textContent = orchidName;
 
