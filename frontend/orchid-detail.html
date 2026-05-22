@@ -787,9 +787,19 @@
         const params = new URLSearchParams(location.search);
         const nameFromUrl = params.get('name') || '';
 
-        // Back link always returns to catalog
+        // Back link: return to dashboard catalog view if navigated from there
         const backLink = document.getElementById('detail-back-link');
-        if (backLink) { backLink.href = 'catalog.html'; backLink.innerHTML = '&larr; Catalog'; }
+        if (backLink) {
+          const from = params.get('from');
+          if (from === 'researcher-dashboard' || from === 'denr-dashboard') {
+            const dashPage = from === 'denr-dashboard' ? 'denr-dashboard.html' : 'researcher-dashboard.html';
+            backLink.href = dashPage + '?view=orchids';
+            backLink.innerHTML = '&larr; Catalog';
+          } else {
+            backLink.href = 'catalog.html';
+            backLink.innerHTML = '&larr; Catalog';
+          }
+        }
 
         // Read orchid identity from sessionStorage (passed by catalog/dashboard)
         let orchid = null;
