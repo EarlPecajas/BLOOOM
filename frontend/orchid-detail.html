@@ -20,26 +20,19 @@
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
         padding: 0 1.4rem; height: 54px; position: relative;
-        background: #145A1E;
-        box-shadow: 0 4px 20px rgba(20,90,30,.25); gap: 1rem; z-index: 10;
+        background: #F2F9F2;
+        box-shadow: 0 2px 8px rgba(0,0,0,.07); gap: 1rem; z-index: 10;
+        border-bottom: 1px solid #cde3c8;
       }
       .detail-brand { display: flex; align-items: center; gap: .5rem; text-decoration: none; flex-shrink: 0; }
-      .detail-brand-logo { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.25); object-fit: cover; }
-      .detail-brand-name { font-size: .85rem; font-weight: 800; color: #c8e8c0; letter-spacing: .14em; text-transform: uppercase; }
-      .detail-back-link {
-        display: flex; align-items: center; gap: .4rem;
-        color: #fff; font-size: .78rem; font-weight: 600; text-decoration: none;
-        padding: .28rem .85rem; border-radius: 6px;
-        background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
-        transition: all .15s; white-space: nowrap;
-      }
-      .detail-back-link:hover { background: rgba(255,255,255,.25); }
+      .detail-brand-logo { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(20,90,30,.2); object-fit: cover; }
+      .detail-brand-name { font-size: .85rem; font-weight: 800; color: #145A1E; letter-spacing: .14em; text-transform: uppercase; }
       /* Title centered over the map panel (identity panel = 320px) */
       .detail-topbar-title {
         position: absolute;
         left: 320px; right: 0; top: 0; bottom: 0;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.35rem; font-style: italic; color: #fff;
+        font-size: 1.35rem; font-style: italic; color: #145A1E;
         font-family: Georgia, serif; font-weight: 700;
         pointer-events: none; overflow: hidden;
       }
@@ -48,6 +41,16 @@
         max-width: calc(100% - 60px);
       }
       .detail-topbar-spacer { display: none; }
+      /* Back button overlaid on photo thumbnail */
+      .detail-back-link {
+        position: absolute; top: .5rem; left: .5rem; z-index: 5;
+        display: inline-flex; align-items: center; gap: .3rem;
+        color: #fff; font-size: .72rem; font-weight: 700; text-decoration: none;
+        padding: .22rem .65rem; border-radius: 5px;
+        background: rgba(20,90,30,.72); border: 1px solid rgba(255,255,255,.3);
+        backdrop-filter: blur(4px); transition: background .15s; white-space: nowrap;
+      }
+      .detail-back-link:hover { background: rgba(20,90,30,.92); color: #fff; }
 
       /* Stage 1 */
       #detail-overview { flex: 1; min-height: 0; display: flex; overflow: hidden; }
@@ -67,7 +70,7 @@
       }
       .oid-header-icon { width: 18px; height: 18px; flex-shrink: 0; opacity: .85; }
       .oid-subtitle { font-size: .65rem; font-weight: 800; color: #a8d8a0; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
-      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #daecd6; }
+      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #daecd6; position: relative; }
       .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; }
       .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2.5rem; opacity: .4; }
       .oid-info { padding: 1rem 1.1rem 1.4rem; flex: 1; }
@@ -164,7 +167,6 @@
         <img src="./loo.png" alt="BLOOM" class="detail-brand-logo">
         <span class="detail-brand-name">BLOOM</span>
       </a>
-      <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
       <div id="detail-topbar-name" class="detail-topbar-title"><span></span></div>
 
     </div>
@@ -182,6 +184,7 @@
           <span class="oid-subtitle">Orchid Identity</span>
         </div>
         <div class="oid-photo-wrap">
+          <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
           <img id="oid-photo" class="oid-photo" src="" alt="Orchid photo" hidden>
           <img id="oid-photo-placeholder" class="oid-photo-placeholder" src="./catalogicon.png" alt="No photo available">
         </div>
