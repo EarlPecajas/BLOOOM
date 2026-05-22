@@ -1684,10 +1684,8 @@ form {
 
 /* Dashboard Page Styles */
 .dashboard-page {
-    background: #FFFFFF;
-    background-image:
-      radial-gradient(circle at 20% 50%, rgba(95, 134, 160, 0.06) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(20, 90, 30, 0.05) 0%, transparent 50%);
+    background: transparent;
+    background-image: none;
 }
 
 .dashboard-header {
@@ -1695,8 +1693,9 @@ form {
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem clamp(1.1rem, 4vw, 3rem);
-  background: #F2F9F2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: transparent;
+  box-shadow: none;
+  border-bottom: none;
   position: sticky;
   top: 0;
   z-index: 1001;
@@ -1911,9 +1910,9 @@ form {
   top: 84px;
   width: 256px;
   height: calc(100vh - 84px);
-  background: #ffffff;
-  border-right: 1.5px solid #dce8f0;
-  box-shadow: 2px 0 12px rgba(20, 90, 30, 0.08);
+  background: rgba(10,32,14,.88);
+  border-right: 1px solid rgba(100,200,120,.15);
+  box-shadow: none;
   z-index: 1000;
   overflow-y: auto;
   transform: translateX(0);
@@ -3024,7 +3023,7 @@ textarea.form-control {
 .dashboard-header {
   background: transparent !important;
   box-shadow: none !important;
-  border-bottom: 1px solid var(--dt-border) !important;
+  border-bottom: none !important;
 }
 .dashboard-user { color: var(--dt-text) !important; }
 .dashboard-header .bloom-text { color: #e8f8e0 !important; }
@@ -3124,7 +3123,7 @@ textarea.form-control {
 .contributor-date { color: var(--dt-muted) !important; }
 
 /* ── Researcher home ── */
-.researcher-home::before { background: none !important; display: none !important; }
+.researcher-home::before { content: none !important; display: none !important; background: none !important; }
 .researcher-home-title { color: var(--dt-text) !important; }
 .researcher-home-subtitle { color: var(--dt-muted) !important; }
 .researcher-home-card {
