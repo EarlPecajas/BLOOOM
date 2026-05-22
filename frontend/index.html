@@ -39,19 +39,18 @@
 
     .index-page .bloom-text { color: #e8f8e0 !important; }
     .index-page .brand-tagline span { color: rgba(200,240,190,.65) !important; }
-    .index-page .btn-ghost {
-      color: rgba(255,255,255,.85) !important;
-      border-color: rgba(255,255,255,.25) !important;
-      background: rgba(255,255,255,.07) !important;
-    }
-    .index-page .btn-ghost:hover { background: rgba(255,255,255,.15) !important; }
+    .index-page .btn-ghost,
     .index-page .btn-solid {
       background: rgba(255,255,255,.15) !important;
       border: 1.5px solid rgba(255,255,255,.4) !important;
       color: #fff !important;
       backdrop-filter: blur(6px);
     }
-    .index-page .btn-solid:hover { background: rgba(255,255,255,.25) !important; }
+    .index-page .btn-ghost:hover,
+    .index-page .btn-solid:hover {
+      background: rgba(255,255,255,.25) !important;
+      border-color: rgba(255,255,255,.55) !important;
+    }
 
     /* ── Animated hero background ── */
     .index-page .hero {
