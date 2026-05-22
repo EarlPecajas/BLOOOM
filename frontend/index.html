@@ -16,7 +16,7 @@
   <style>
     /* ── Entire index page is dark so header + hero are one canvas ── */
     body.index-page {
-      background: #040f04 !important;
+      background: #020a02 !important;
     }
 
     /* ── Transparent header — sits over the dark background ── */
@@ -49,29 +49,34 @@
     }
     .index-page .btn-solid:hover { background: rgba(255,255,255,.25) !important; }
 
-    /* ── Animated hero background ── */
+    /* ── Photo hero background with dark overlay ── */
     .index-page .hero {
       position: relative;
-      background:
-        radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,110,40,.35) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 80% at 15% 80%, rgba(10,50,15,.6) 0%, transparent 60%),
-        linear-gradient(160deg, #040f04 0%, #071a07 25%, #0d3010 55%, #145a1e 80%, #0a2a0c 100%);
-      background-size: auto, auto, 250% 250%;
-      animation: heroBgShift 16s ease infinite;
+      background: none;
       overflow: hidden;
     }
-    @keyframes heroBgShift {
-      0%   { background-position: center, center, 0% 60%; }
-      50%  { background-position: center, center, 100% 40%; }
-      100% { background-position: center, center, 0% 60%; }
+
+    /* Actual photo layer — slow Ken-Burns zoom */
+    .index-page .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background: url('./Indexpicture.avif') center/cover no-repeat;
+      animation: heroBgZoom 24s ease-in-out infinite alternate;
+      transform-origin: center center;
+    }
+    @keyframes heroBgZoom {
+      0%   { transform: scale(1);    filter: brightness(.72); }
+      100% { transform: scale(1.08); filter: brightness(.65); }
     }
 
-    /* Subtle vignette overlay */
+    /* Dark gradient overlay for text legibility */
     .index-page .hero::after {
       content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 90% 90% at 50% 50%, transparent 40%, rgba(0,0,0,.45) 100%);
-      pointer-events: none; z-index: 0;
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        linear-gradient(100deg, rgba(2,10,2,.72) 0%, rgba(4,20,4,.45) 55%, rgba(2,10,2,.6) 100%),
+        radial-gradient(ellipse 90% 90% at 50% 50%, transparent 30%, rgba(0,0,0,.5) 100%);
+      pointer-events: none;
     }
 
     /* Floating petals */
