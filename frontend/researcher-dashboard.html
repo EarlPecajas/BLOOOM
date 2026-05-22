@@ -378,7 +378,7 @@
       </section>
 
       <section id="researcher-home" class="researcher-home" style="display:none;">
-        <h1 id="researcher-greeting" class="researcher-home-title">Hi, Researcher</h1>
+        <h1 id="researcher-greeting" class="researcher-home-title">Welcome, Researcher</h1>
         <p class="researcher-home-subtitle">Choose where you want to explore next.</p>
 
         <div class="researcher-home-cards">
@@ -2180,7 +2180,7 @@
         const readableName = withoutDomain.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
         const researcherName = readableName ? toTitleCase(readableName) : 'Researcher';
 
-        researcherGreetingElement.textContent = `Hi, ${researcherName}`;
+        researcherGreetingElement.textContent = `Welcome, ${researcherName}`;
       }
 
       if (isResearcherRole) {

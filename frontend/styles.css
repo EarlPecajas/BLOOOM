@@ -3141,6 +3141,11 @@ textarea.form-control {
 .researcher-home-card h2,
 .researcher-home-card p,
 .researcher-home-card span { color: var(--dt-text) !important; }
+.researcher-home-card-tag {
+  background: rgba(77,184,106,.18) !important;
+  color: var(--dt-accent-lt) !important;
+  border: 1px solid rgba(100,200,120,.3) !important;
+}
 .researcher-home-card .badge,
 .researcher-home-card [class*="badge"] {
   background: rgba(77,184,106,.2) !important;
