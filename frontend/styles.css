@@ -2809,10 +2809,10 @@ button:active {
    ══════════════════════════════════════════════════════════════════ */
 
 :root {
-  --dt-bg:        #0d2414;
-  --dt-bg-card:   #142e1a;
-  --dt-bg-input:  #0a1c0f;
-  --dt-bg-panel:  #112819;
+  --dt-bg:        #145a1e;
+  --dt-bg-card:   #1a6e26;
+  --dt-bg-input:  #0f4416;
+  --dt-bg-panel:  #176320;
   --dt-border:    rgba(100, 200, 120, 0.15);
   --dt-border-md: rgba(100, 200, 120, 0.25);
   --dt-text:      #e8f8e0;
@@ -2835,7 +2835,7 @@ body.register-page,
 body.catalog-page,
 body.dashboard-page,
 body.gallery-page {
-  background: #0d2414 !important;
+  background: #145a1e !important;
   background-attachment: unset !important;
   animation: none !important;
   color: var(--dt-text) !important;
