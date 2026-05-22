@@ -41,15 +41,19 @@
     .index-page .brand-tagline span { color: rgba(200,240,190,.65) !important; }
     .index-page .btn-ghost,
     .index-page .btn-solid {
-      background: rgba(255,255,255,.15) !important;
-      border: 1.5px solid rgba(255,255,255,.4) !important;
-      color: #fff !important;
-      backdrop-filter: blur(6px);
+      background: transparent !important;
+      border: 1.5px solid rgba(255,255,255,.45) !important;
+      color: rgba(255,255,255,.88) !important;
+      backdrop-filter: none !important;
+      box-shadow: none !important;
+      transition: color .2s, border-color .2s !important;
     }
     .index-page .btn-ghost:hover,
     .index-page .btn-solid:hover {
-      background: rgba(255,255,255,.25) !important;
-      border-color: rgba(255,255,255,.55) !important;
+      background: transparent !important;
+      border-color: #8ee8a0 !important;
+      color: #8ee8a0 !important;
+      box-shadow: none !important;
     }
 
     /* ── Animated hero background ── */
