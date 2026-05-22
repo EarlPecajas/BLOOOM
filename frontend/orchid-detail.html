@@ -41,16 +41,15 @@
         max-width: calc(100% - 60px);
       }
       .detail-topbar-spacer { display: none; }
-      /* Back button overlaid on photo thumbnail */
+      /* Back button in topbar */
       .detail-back-link {
-        position: absolute; top: .5rem; left: .5rem; z-index: 5;
         display: inline-flex; align-items: center; gap: .3rem;
-        color: #fff; font-size: .72rem; font-weight: 700; text-decoration: none;
-        padding: .22rem .65rem; border-radius: 5px;
-        background: rgba(20,90,30,.72); border: 1px solid rgba(255,255,255,.3);
-        backdrop-filter: blur(4px); transition: background .15s; white-space: nowrap;
+        color: #c8ecc0; font-size: .72rem; font-weight: 700; text-decoration: none;
+        padding: .25rem .7rem; border-radius: 6px; flex-shrink: 0;
+        background: rgba(4,14,4,.85); border: 1px solid rgba(100,200,120,.3);
+        transition: background .15s, border-color .15s; white-space: nowrap;
       }
-      .detail-back-link:hover { background: rgba(20,90,30,.92); color: #fff; }
+      .detail-back-link:hover { background: rgba(8,24,8,.95); border-color: rgba(100,200,120,.6); color: #e8f8e0; }
 
       /* Stage 1 */
       #detail-overview { flex: 1; min-height: 0; display: flex; overflow: hidden; }
@@ -62,13 +61,12 @@
         background: #fafffe; border-right: 1.5px solid #c8e0c4;
         overflow-y: auto; box-shadow: 3px 0 16px rgba(0,0,0,.09);
       }
-      .oid-header {
-        display: flex; align-items: center; gap: .55rem;
-        padding: .75rem 1.1rem .65rem;
-        background: linear-gradient(135deg, #0f2a0c 0%, #1e4a19 60%, #2d6127 100%);
-        flex-shrink: 0; border-bottom: 2px solid rgba(184,224,176,.2);
+      .oid-topbar {
+        display: flex; align-items: center; gap: .7rem;
+        padding: .6rem .9rem .55rem;
+        background: rgba(6,16,6,.9);
+        flex-shrink: 0; border-bottom: 1px solid rgba(100,200,120,.18);
       }
-      .oid-header-icon { width: 18px; height: 18px; flex-shrink: 0; opacity: .85; }
       .oid-subtitle { font-size: .65rem; font-weight: 800; color: #a8d8a0; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
       .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #daecd6; position: relative; }
       .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -254,7 +252,6 @@
         color: #e8f8e0 !important;
       }
       .orchid-nav-btn-fill:hover { background: rgba(55,120,48,.95) !important; }
-      .detail-back-link { background: rgba(20,90,30,.72) !important; }
     </style>
     <script src="config.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -267,15 +264,11 @@
 
       <!-- Left: Orchid Identity Panel -->
       <div class="orchid-identity-panel">
-        <div class="oid-header">
-          <svg class="oid-header-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C9 2 4 6 4 12c0 4 2.5 7.5 8 9.5C18 19.5 20 16 20 12c0-6-5-10-8-10z" fill="rgba(184,224,176,.6)" stroke="#b8e0b0" stroke-width="1.2"/>
-            <path d="M12 21.5V10M12 10C10 8 7 8 6 10M12 10C14 8 17 8 18 10" stroke="#b8e0b0" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
+        <div class="oid-topbar">
+          <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
           <span class="oid-subtitle">Orchid Identity</span>
         </div>
         <div class="oid-photo-wrap">
-          <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
           <img id="oid-photo" class="oid-photo" src="" alt="Orchid photo" hidden>
           <img id="oid-photo-placeholder" class="oid-photo-placeholder" src="./catalogicon.png" alt="No photo available">
         </div>
