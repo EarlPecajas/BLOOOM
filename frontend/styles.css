@@ -2837,9 +2837,13 @@ body.gallery-page {
   color: var(--dt-text) !important;
 }
 
-/* ── Navigation — no border, blends into background ── */
+/* ── Navigation — same fixed gradient as body, fully seamless ── */
 .top-nav {
-  background: transparent !important;
+  background:
+    radial-gradient(ellipse 70% 55% at 80% 25%, rgba(20,90,30,.22) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 70% at 10% 75%, rgba(8,40,12,.45) 0%, transparent 60%),
+    #040f04 !important;
+  background-attachment: fixed !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
