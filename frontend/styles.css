@@ -2887,7 +2887,7 @@ body.gallery-page {
 }
 
 /* ── Sign in / Register ── */
-.signin-form-wrapper { background: var(--dt-bg) !important; }
+.signin-form-wrapper { background: transparent !important; }
 .signin-form {
   background: var(--dt-bg-card) !important;
   border: 1px solid var(--dt-border-md) !important;
@@ -2930,7 +2930,7 @@ textarea.form-control {
 .checkbox-label { color: var(--dt-muted) !important; }
 
 /* ── Catalog ── */
-.catalog-container { background: var(--dt-bg) !important; }
+.catalog-container { background: transparent !important; }
 .catalog-title { color: var(--dt-text) !important; }
 .catalog-search,
 .catalog-search-filter {
@@ -3017,10 +3017,10 @@ textarea.form-control {
 .orchid-detail-title { color: var(--dt-text) !important; }
 
 /* ── Dashboard ── */
-.dashboard-page { background: var(--dt-bg) !important; background-image: none !important; }
+.dashboard-page { background: transparent !important; background-image: none !important; }
 .dashboard-nav,
-.dashboard-header { background: var(--dt-bg) !important; border-color: var(--dt-border) !important; }
-.dashboard-sidebar { background: var(--dt-bg-panel) !important; border-color: var(--dt-border) !important; }
+.dashboard-header { background: transparent !important; border-color: var(--dt-border) !important; }
+.dashboard-sidebar { background: rgba(10,26,12,.75) !important; border-color: var(--dt-border) !important; }
 .stat-card,
 .dashboard-card,
 .researcher-home-card,
@@ -3066,7 +3066,7 @@ textarea.form-control {
 .contributor-date { color: var(--dt-muted) !important; }
 
 /* ── Gallery ── */
-.gallery-page { background: var(--dt-bg) !important; }
+.gallery-page { background: transparent !important; }
 .gallery-title { color: var(--dt-text) !important; }
 .gallery-subtitle { color: var(--dt-muted) !important; }
 .gallery-item { background: var(--dt-bg-card) !important; border-color: var(--dt-border) !important; }
