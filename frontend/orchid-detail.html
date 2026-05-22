@@ -20,30 +20,32 @@
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
         padding: 0 1.4rem; height: 54px; position: relative;
-        background: linear-gradient(135deg, #0f1f0d 0%, #1e4019 50%, #2d5a27 100%);
-        box-shadow: 0 2px 18px rgba(0,0,0,.4); gap: 1rem; z-index: 10;
+        background: #145A1E;
+        box-shadow: 0 4px 20px rgba(20,90,30,.25); gap: 1rem; z-index: 10;
       }
       .detail-brand { display: flex; align-items: center; gap: .5rem; text-decoration: none; flex-shrink: 0; }
-      .detail-brand-logo { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(184,224,176,.35); object-fit: cover; }
-      .detail-brand-name { font-size: .85rem; font-weight: 800; color: #b8e0b0; letter-spacing: .14em; text-transform: uppercase; }
+      .detail-brand-logo { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.25); object-fit: cover; }
+      .detail-brand-name { font-size: .85rem; font-weight: 800; color: #c8e8c0; letter-spacing: .14em; text-transform: uppercase; }
       .detail-back-link {
         display: flex; align-items: center; gap: .4rem;
-        color: #90c888; font-size: .78rem; font-weight: 600; text-decoration: none;
-        padding: .25rem .7rem; border-radius: 6px;
-        border: 1px solid rgba(144,200,136,.25); background: rgba(255,255,255,.05);
+        color: #fff; font-size: .78rem; font-weight: 600; text-decoration: none;
+        padding: .28rem .85rem; border-radius: 6px;
+        background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
         transition: all .15s; white-space: nowrap;
       }
-      .detail-back-link:hover { background: rgba(255,255,255,.11); color: #c8f0c0; border-color: rgba(144,200,136,.5); }
+      .detail-back-link:hover { background: rgba(255,255,255,.25); }
+      /* Title centered over the map panel (identity panel = 320px) */
       .detail-topbar-title {
-        position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+        position: absolute;
+        left: 320px; right: 0; top: 0; bottom: 0;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.35rem; font-style: italic; color: #e8f8e0;
+        font-size: 1.35rem; font-style: italic; color: #fff;
         font-family: Georgia, serif; font-weight: 700;
         pointer-events: none; overflow: hidden;
       }
       .detail-topbar-title span {
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        max-width: calc(100% - 420px);
+        max-width: calc(100% - 60px);
       }
       .detail-topbar-spacer { display: none; }
 
