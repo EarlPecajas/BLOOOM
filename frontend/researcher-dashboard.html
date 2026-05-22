@@ -4083,6 +4083,14 @@ function refreshConservationHeatMap(summary) {
         switchView('dashboard');
       }
 
+      // Add background to sticky header when page is scrolled so content doesn't show through
+      const _dashHdr = document.querySelector('.dashboard-header');
+      if (_dashHdr) {
+        window.addEventListener('scroll', function() {
+          _dashHdr.classList.toggle('scrolled', window.scrollY > 10);
+        }, { passive: true });
+      }
+
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && !dashboardImageLightbox.hidden) {
           closeDashboardLightbox();
