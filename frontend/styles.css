@@ -3019,6 +3019,7 @@ textarea.form-control {
 
 /* ── Dashboard ── */
 .dashboard-page { background: transparent !important; background-image: none !important; }
+.dashboard-container { background: transparent !important; }
 
 .dashboard-header {
   background: transparent !important;
