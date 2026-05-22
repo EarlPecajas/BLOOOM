@@ -2840,13 +2840,15 @@ body.gallery-page {
     radial-gradient(ellipse 50% 80% at 15% 80%, rgba(10,50,15,.6) 0%, transparent 60%),
     linear-gradient(160deg, #040f04 0%, #071a07 25%, #0d3010 55%, #145a1e 80%, #0a2a0c 100%) !important;
   background-size: auto, auto, 250% 250% !important;
+  background-attachment: fixed !important;
   animation: heroBgShift 16s ease infinite !important;
   color: var(--dt-text) !important;
 }
 
-/* ── Navigation — transparent, no border, floats over background ── */
+/* ── Navigation — transparent, no border, floats over fixed background ── */
 .top-nav {
   background: transparent !important;
+  background-image: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
