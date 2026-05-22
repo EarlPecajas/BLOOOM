@@ -2821,7 +2821,7 @@ button:active {
   --dt-accent-lt: #8ee8a0;
 }
 
-/* ── Base ── */
+/* ── Base — same dark-green tinted background on every page ── */
 body,
 body.bg-light,
 body.signin-page,
@@ -2829,14 +2829,18 @@ body.register-page,
 body.catalog-page,
 body.dashboard-page,
 body.gallery-page {
-  background: var(--dt-bg) !important;
+  background:
+    radial-gradient(ellipse 70% 55% at 80% 25%, rgba(20,90,30,.22) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 70% at 10% 75%, rgba(8,40,12,.45) 0%, transparent 60%),
+    #040f04 !important;
+  background-attachment: fixed !important;
   color: var(--dt-text) !important;
 }
 
-/* ── Navigation ── */
+/* ── Navigation — no border, blends into background ── */
 .top-nav {
-  background: var(--dt-bg) !important;
-  border-bottom: 1px solid var(--dt-border) !important;
+  background: transparent !important;
+  border-bottom: none !important;
   box-shadow: none !important;
 }
 .bloom-text { color: #e8f8e0 !important; }
