@@ -1646,7 +1646,15 @@
         document.body.classList.add(isResearcherRole ? 'researcher-mode' : 'admin-mode');
 
         try {
-          if (typeof openDashboardView === 'function') openDashboardView('dashboard');
+          const _initView = new URLSearchParams(window.location.search).get('view');
+          const _allowed = isResearcherRole
+            ? new Set(['orchids', 'map', 'collection3d', 'submissions'])
+            : new Set(['orchids', 'conservation', 'report', 'map', 'submissions']);
+          if (typeof switchView === 'function') {
+            switchView((_initView && _allowed.has(_initView)) ? _initView : 'dashboard');
+          } else if (typeof openDashboardView === 'function') {
+            openDashboardView('dashboard');
+          }
           if (typeof loadSubmissions === 'function') loadSubmissions('');
         } catch (e) {
           console.error('Dashboard initialization error:', e);
