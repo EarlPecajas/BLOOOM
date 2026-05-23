@@ -4208,7 +4208,7 @@ function refreshConservationHeatMap(summary) {
         
         // Update modal content
         document.getElementById('detailTitle').textContent = submission.species;
-        document.getElementById('detailResearcher').textContent = `Researcher: ${submission.researcher} | Entry ID: ${submission.entry_id || '-'}`;
+        document.getElementById('detailResearcher').textContent = `Researcher: ${submission.researcher}`;
         const statusBadgeEl = document.getElementById('detailStatusBadge');
         if (statusBadgeEl) statusBadgeEl.textContent = getStatusLabel(submission.review_status);
         // Show family only if the backend provided it; do not default to Orchidaceae
@@ -4253,7 +4253,7 @@ function refreshConservationHeatMap(summary) {
         setDetailFieldAlways('row-scientific-name', 'value-scientific-name', submission.species || submission.scientific_name || '');
         setDetailFieldAlways('row-genus', 'value-genus', submission.genus || '');
         setDetailFieldAlways('row-local-names', 'value-local-names', fmtArray(submission.local_names));
-        setDetailFieldAlways('row-entry-id', 'value-entry-id', submission.entry_id || '');
+        // Entry ID intentionally not displayed
         setDetailFieldAlways('row-researcher-email', 'value-researcher-email', submission.researcher_email || '');
         setDetailFieldAlways('row-researcher-name', 'value-researcher-name', submission.researcher || '');
         setDetailFieldAlways('row-common-names', 'value-common-names', fmtArray(submission.common_names));
@@ -4261,7 +4261,7 @@ function refreshConservationHeatMap(summary) {
         setDetailFieldAlways('row-collection-method', 'value-collection-method', submission.collection_method || '');
         setDetailFieldAlways('row-observation-type', 'value-observation-type', submission.observation_type || '');
         setDetailFieldAlways('row-voucher-collected', 'value-voucher-collected', submission.voucher_collected ? 'Yes' : 'No');
-        setDetailFieldAlways('row-observation-date', 'value-observation-date', submission.observation_date || '');
+        setDetailFieldAlways('row-observation-date', 'value-observation-date', (submission.observation_date || '').slice(0, 10));
         setDetailFieldAlways('row-observation-time', 'value-observation-time', submission.observation_time || '');
         setDetailFieldAlways('row-mountain-name', 'value-mountain-name', submission.location || '');
         setDetailFieldAlways('row-specific-site', 'value-specific-site', submission.specific_site_zone || submission.specific_site_other || '');
@@ -4320,17 +4320,29 @@ function refreshConservationHeatMap(summary) {
             evidence.images.forEach((img) => {
               const thumbnail = document.createElement('button');
               thumbnail.type = 'button';
-              thumbnail.style.cssText = 'cursor:pointer;overflow:hidden;border-radius:12px;background:#fff;display:grid;gap:0.55rem;padding:0;border:1px solid #d8e3dc;transition:transform 200ms ease,box-shadow 200ms ease;text-align:left;';
-              thumbnail.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)'; };
+              thumbnail.style.cssText = 'cursor:pointer;overflow:hidden;border-radius:12px;background:var(--dt-bg-panel);display:grid;gap:0.55rem;padding:0;border:1px solid var(--dt-border-md);transition:transform 200ms ease,box-shadow 200ms ease;text-align:left;';
+              thumbnail.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4)'; };
               thumbnail.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; };
-              thumbnail.innerHTML = `<div style="aspect-ratio:1;overflow:hidden;background:linear-gradient(135deg,#f5f5f5,#e8e8e8);"><img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.name)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div><div style="padding:0 0.75rem 0.75rem;"><div style="font-size:0.82rem;font-weight:600;color:#145A1E;">${escapeHtml(img.name)}</div></div>`;
+              thumbnail.innerHTML = `<div style="aspect-ratio:1;overflow:hidden;background:var(--dt-bg-input);"><img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.name)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div><div style="padding:0 0.75rem 0.75rem;"><div style="font-size:0.82rem;font-weight:600;color:var(--dt-accent-lt);">${escapeHtml(img.name)}</div></div>`;
               thumbnail.onclick = () => openLightbox(img.src);
               imageGallery.appendChild(thumbnail);
             });
           } else {
-            imageGallery.innerHTML = '<p style="margin:0;color:#666;font-size:0.9rem;">No field photos were attached to this record.</p>';
+            imageGallery.innerHTML = '<p style="margin:0;color:var(--dt-muted);font-size:0.9rem;">No field photos were attached to this record.</p>';
           }
         }
+
+        // Classify section cards for dark theme (fallback for browsers without :has() support)
+        document.querySelectorAll('#detailFields > div, #detailFields > div > div').forEach(function(el) {
+          if (el.style && el.style.overflow === 'hidden' && el.style.borderRadius) {
+            el.classList.add('detail-card');
+            var hdr = el.firstElementChild;
+            if (hdr && hdr.querySelector('h4')) hdr.classList.add('detail-section-hdr');
+          }
+        });
+        // Hide Entry ID row (setDetailFieldAlways may have un-hidden it)
+        var entryIdRow = document.getElementById('row-entry-id');
+        if (entryIdRow) entryIdRow.style.display = 'none';
 
         // Only DENR/admin can review pending submissions.
         const normalizedStatus = String(submission.review_status || 'pending').toLowerCase();

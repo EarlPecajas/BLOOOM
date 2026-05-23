@@ -3247,6 +3247,18 @@ textarea.form-control {
   color: rgba(245,195,60,.95) !important;
 }
 
+/* === Dark Theme: Detail modal section cards (JS-classified) === */
+.detail-card {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+}
+.detail-section-hdr {
+  background: var(--dt-bg-input) !important;
+  border-bottom-color: var(--dt-border-md) !important;
+}
+.detail-section-hdr h4 { color: var(--dt-accent-lt) !important; }
+.detail-section-hdr svg { stroke: var(--dt-accent) !important; }
+
 /* === Dark Theme: View Submission Detail Modal === */
 #detailModalCard {
   background: var(--dt-bg) !important;
