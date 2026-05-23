@@ -3247,6 +3247,63 @@ textarea.form-control {
   color: rgba(245,195,60,.95) !important;
 }
 
+/* === Dark Theme: View Submission Detail Modal === */
+#detailModalCard {
+  background: var(--dt-bg) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6) !important;
+  border: 1px solid var(--dt-border-md) !important;
+}
+/* Header — matches submissions table header */
+#detailModalCard > div:first-child {
+  background: var(--dt-bg-input) !important;
+  border-bottom: 1px solid var(--dt-border-md) !important;
+  border-radius: 18px 18px 0 0 !important;
+}
+/* Quick-facts strip */
+#detailContent {
+  background: var(--dt-bg-panel) !important;
+  border-bottom-color: var(--dt-border-md) !important;
+}
+#detailContent > div > p:first-child { color: var(--dt-muted) !important; }
+#detailContent > div > p:last-child  { color: var(--dt-text) !important; }
+/* Body padding area */
+#detailFields { background: var(--dt-bg) !important; }
+/* Section header strips (div directly containing h4) */
+#detailFields div:has(> h4) {
+  background: var(--dt-bg-input) !important;
+  border-bottom-color: var(--dt-border-md) !important;
+}
+#detailFields div:has(> h4) h4  { color: var(--dt-accent-lt) !important; }
+#detailFields div:has(> h4) svg { stroke: var(--dt-accent) !important; }
+/* Section cards (divs that contain a section header strip) */
+#detailFields div:has(> div:has(> h4)) {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+}
+/* Row dividers */
+#detailFields [id^="row-"] {
+  border-bottom-color: var(--dt-border) !important;
+  border-right-color: var(--dt-border) !important;
+}
+/* Row labels */
+#detailFields [id^="row-"] > span:first-child,
+#detailFields [id^="row-"] > p:first-child { color: var(--dt-muted) !important; }
+/* Row values */
+#detailFields [id^="value-"] { color: var(--dt-text) !important; }
+/* Hide Entry ID row */
+#row-entry-id { display: none !important; }
+/* Footer */
+#actionButtons {
+  background: var(--dt-bg-panel) !important;
+  border-top-color: var(--dt-border-md) !important;
+  border-radius: 0 0 18px 18px !important;
+}
+#actionButtons > button:first-child {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-muted) !important;
+}
+
 /* ── Submission modal & form ── */
 #researcher-submission-modal { background: rgba(0,0,0,.65) !important; }
 #researcher-submission-panel {
