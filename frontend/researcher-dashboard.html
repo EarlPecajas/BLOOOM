@@ -2858,7 +2858,7 @@
           common_name: commonNames[0] || row.common_name || '-',
           common_names: commonNames,
           team_members_display: formatTeamMembersValue(row.team_members),
-          submission_date: row.submission_date || row.observation_date || row.created_at?.slice(0, 10) || '-',
+          submission_date: (row.submission_date || row.observation_date || row.created_at || '').slice(0, 10) || '-',
           review_status: row.review_status || 'pending',
           habitat: row.habitat || row.habitat_type || '-',
           endemicity: row.endemicity || row.population_status || '-',

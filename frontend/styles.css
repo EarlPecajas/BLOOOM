@@ -3185,6 +3185,7 @@ textarea.form-control {
   background: var(--dt-bg-input) !important;
   color: var(--dt-text) !important;
   border-bottom: 1px solid var(--dt-border-md) !important;
+  box-shadow: inset 0 -1px 0 var(--dt-border-md) !important;
 }
 .submissions-table tbody td {
   color: var(--dt-text) !important;
