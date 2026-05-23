@@ -3553,3 +3553,226 @@ select option { background: var(--dt-bg-card); color: var(--dt-text); }
 .badge.bg-secondary { background: var(--dt-bg-panel) !important; color: var(--dt-text) !important; }
 hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   DENR — Dark Theme: Dashboard, Conservation, Generate Report, Submissions
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tailwind text utilities scoped to DENR views ── */
+#dashboard-admin-overview .text-gray-900,
+#conservation-view .text-gray-900 { color: var(--dt-text) !important; }
+
+#dashboard-admin-overview .text-gray-800,
+#conservation-view .text-gray-800 { color: var(--dt-text) !important; }
+
+#dashboard-admin-overview .text-gray-700,
+#conservation-view .text-gray-700 { color: rgba(200,240,190,.82) !important; }
+
+#dashboard-admin-overview .text-gray-600,
+#conservation-view .text-gray-600 { color: var(--dt-muted) !important; }
+
+#dashboard-admin-overview .text-gray-500,
+#conservation-view .text-gray-500 { color: var(--dt-muted) !important; }
+
+#dashboard-admin-overview .text-gray-400,
+#conservation-view .text-gray-400 { color: rgba(200,240,190,.45) !important; }
+
+/* ── Tailwind bg & border utilities ── */
+#dashboard-admin-overview .bg-white,
+#conservation-view .bg-white { background: var(--dt-bg-card) !important; }
+
+#dashboard-admin-overview .border-gray-100,
+#dashboard-admin-overview .border-gray-200,
+#conservation-view .border-gray-200 { border-color: var(--dt-border-md) !important; }
+
+#dashboard-admin-overview .border-gray-50,
+#conservation-view .border-gray-50 { border-color: var(--dt-border) !important; }
+
+/* ── Dashboard: stat card icon badge backgrounds ── */
+#dashboard-admin-overview span[style*="background:#f0fdf4"],
+#dashboard-admin-overview span[style*="background:#eff6ff"],
+#dashboard-admin-overview span[style*="background:#fefce8"],
+#dashboard-admin-overview span[style*="background:#fff7ed"],
+#dashboard-admin-overview span[style*="background:#fee2e2"],
+#dashboard-admin-overview span[style*="background:#dcfce7"] {
+  background: rgba(77,184,106,.15) !important;
+}
+
+/* ── Dashboard: map placeholder ── */
+#dashboard-map { background: var(--dt-bg-input) !important; }
+
+/* ── Dashboard: Executive Snapshot mini-cells ── */
+#dashboard-admin-overview div[style*="background:#f0fdf4"],
+#dashboard-admin-overview div[style*="background:#fff7ed"],
+#dashboard-admin-overview div[style*="background:#eff6ff"],
+#dashboard-admin-overview div[style*="background:#f9fafb"] {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+}
+
+/* ── Dashboard: Chart year-filter buttons (inactive) ── */
+.orchid-year-btn {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-muted) !important;
+}
+/* Active year button keeps its dark-green inline style — reinforce it */
+.orchid-year-btn[style*="background:#145A1E"] {
+  background: #145A1E !important;
+  color: #fff !important;
+  border-color: #145A1E !important;
+}
+
+/* ── Dashboard: Quick Actions outline buttons ── */
+#dashboard-admin-overview button.bg-white {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+#dashboard-admin-overview button.bg-white:hover { background: var(--dt-bg-panel) !important; }
+
+/* ── Conservation: Live Database badge ── */
+#conservation-view span.bg-green-50.text-green-700 {
+  background: rgba(30,90,40,.35) !important;
+  color: var(--dt-accent-lt) !important;
+  border-color: var(--dt-border-md) !important;
+}
+
+/* ── Conservation: IUCN card count text ── */
+#count-critically-endangered,
+#count-endangered,
+#count-vulnerable,
+#count-least-concern,
+#count-unassigned { color: var(--dt-text) !important; }
+
+/* ── Conservation: IUCN category label chips ── */
+#conservation-view span.text-red-700   { color: rgba(255,140,140,.9) !important; }
+#conservation-view span.bg-red-50      { background: rgba(120,20,20,.3) !important; }
+#conservation-view span.border-red-100 { border-color: rgba(200,60,60,.3) !important; }
+#conservation-view span.text-orange-700   { color: rgba(255,180,100,.9) !important; }
+#conservation-view span.bg-orange-50      { background: rgba(120,70,20,.3) !important; }
+#conservation-view span.border-orange-100 { border-color: rgba(200,120,40,.3) !important; }
+#conservation-view span.text-yellow-700   { color: rgba(245,210,80,.9) !important; }
+#conservation-view span.bg-yellow-50      { background: rgba(100,80,10,.3) !important; }
+#conservation-view span.border-yellow-200 { border-color: rgba(200,170,30,.3) !important; }
+#conservation-view span.text-green-700 { color: var(--dt-accent-lt) !important; }
+#conservation-view span.bg-green-50    { background: rgba(30,90,40,.3) !important; }
+#conservation-view span.border-green-100 { border-color: var(--dt-border-md) !important; }
+#conservation-view span.text-gray-500  { color: var(--dt-muted) !important; }
+#conservation-view span.bg-gray-100    { background: var(--dt-bg-input) !important; }
+#conservation-view span.border-gray-200 { border-color: var(--dt-border-md) !important; }
+
+/* ── Conservation: IUCN card border accents ── */
+#conservation-view .border-red-100    { border-color: rgba(200,60,60,.25) !important; }
+#conservation-view .border-orange-100 { border-color: rgba(200,120,40,.25) !important; }
+#conservation-view .border-yellow-100 { border-color: rgba(200,170,30,.25) !important; }
+#conservation-view .border-green-100  { border-color: var(--dt-border-md) !important; }
+#conservation-view .border-gray-100   { border-color: var(--dt-border) !important; }
+
+/* ── Conservation: "View species →" links ── */
+#conservation-view p.text-red-600    { color: rgba(255,130,130,.9) !important; }
+#conservation-view p.text-orange-600 { color: rgba(255,175,90,.9) !important; }
+#conservation-view p.text-yellow-700 { color: rgba(240,200,65,.9) !important; }
+#conservation-view p.text-green-700  { color: var(--dt-accent-lt) !important; }
+#conservation-view p.text-gray-500   { color: var(--dt-muted) !important; }
+
+/* ── Conservation: Overview mini-stat cells ── */
+#conservation-view .bg-green-50  { background: rgba(30,90,40,.25) !important; }
+#conservation-view .bg-orange-50 { background: rgba(110,55,15,.3) !important; }
+#conservation-view .bg-gray-50   { background: var(--dt-bg-input) !important; }
+#conservation-view .border-orange-100 { border-color: rgba(180,100,30,.3) !important; }
+
+/* ── Conservation: text within overview sections ── */
+#conservation-estimate-text { color: var(--dt-muted) !important; }
+#conservation-heat-insights  { color: var(--dt-muted) !important; }
+#conservation-heat-insights li { color: var(--dt-muted) !important; }
+#conservation-view .text-orange-700 { color: rgba(255,175,85,.9) !important; }
+#conservation-view .text-blue-600   { color: rgba(130,185,255,.9) !important; }
+
+/* ── Conservation: heat map & divider ── */
+#conservation-heat-map {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+}
+#conservation-view .h-px {
+  background: linear-gradient(90deg, rgba(77,184,106,.3), rgba(100,200,120,.1), transparent) !important;
+}
+
+/* ── Generate Report: page header strip ── */
+#report-view > div:first-child {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+}
+
+/* ── Generate Report: config card & right-side info cards ── */
+#report-view div[style*="background:#fff"] {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+}
+
+/* ── Generate Report: card internal header strips ── */
+#report-view div[style*="background:linear-gradient(135deg,#f8fafc"] {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border) !important;
+}
+#report-view div[style*="border-bottom:1px solid #f1f5f9"] { border-color: var(--dt-border) !important; }
+#report-view div[style*="border-bottom:1px solid #f8fafc"] { border-color: var(--dt-border) !important; }
+
+/* ── Generate Report: inline text colors ── */
+#report-view [style*="color:#475569"] { color: var(--dt-text) !important; }
+#report-view [style*="color:#94a3b8"] { color: var(--dt-muted) !important; }
+#report-view [style*="color:#1e293b"] { color: var(--dt-text) !important; }
+#report-view [style*="color:#374151"] { color: var(--dt-text) !important; }
+#report-view [style*="color:#64748b"] { color: var(--dt-muted) !important; }
+
+/* ── Generate Report: select & date inputs ── */
+#reportType, #dateFrom, #dateTo {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+#reportType option { background: var(--dt-bg-card) !important; color: var(--dt-text) !important; }
+#dateFrom, #dateTo { color-scheme: dark; }
+
+/* ── Generate Report: "Include in Report" checkbox labels ── */
+#report-view label[style*="border:1.5px solid #e2e8f0"] {
+  border-color: var(--dt-border-md) !important;
+}
+#report-view label[style*="border:1.5px solid #e2e8f0"] span { color: var(--dt-text) !important; }
+
+/* ── Generate Report: export format boxes ── */
+#fmt-pdf {
+  background: rgba(30,100,45,.3) !important;
+  border-color: var(--dt-accent) !important;
+}
+#fmt-pdf span[style*="color:#145A1E"] { color: var(--dt-accent-lt) !important; }
+#fmt-excel {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+}
+#fmt-excel svg { stroke: var(--dt-muted) !important; }
+
+/* ── Generate Report: Clear button ── */
+#report-view button[onclick="resetReportForm()"] {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-muted) !important;
+}
+#report-view button[onclick="resetReportForm()"]:hover { background: var(--dt-bg-panel) !important; }
+
+/* ── Submissions view: filter tabs ── */
+.sub-filter-btn {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-muted) !important;
+}
+.sub-filter-btn:hover {
+  background: var(--dt-bg-panel) !important;
+  border-color: var(--dt-accent) !important;
+  color: var(--dt-text) !important;
+}
+.sub-filter-btn.sub-filter-active {
+  background: #145A1E !important;
+  border-color: #145A1E !important;
+  color: #fff !important;
+}
+
