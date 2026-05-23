@@ -3306,7 +3306,7 @@ textarea.form-control {
 #submission-step-label { color: var(--dt-text) !important; }
 #submission-step-count { color: var(--dt-muted) !important; }
 /* Nav / submit / draft buttons — all same outlined style */
-#submission-prev-btn,
+#submission-back-btn,
 #submission-next-btn,
 #submission-submit-btn,
 #submission-draft-btn {
@@ -3315,7 +3315,14 @@ textarea.form-control {
   color: var(--dt-accent) !important;
 }
 #submission-nav-row { border-color: var(--dt-border) !important; }
-/* Remove number input spinners */
+/* GPS / location buttons */
+#submission-use-gps,
+#submission-auto-location {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-muted) !important;
+}
+/* Remove number input spinners and fix width */
 #researcher-submission-panel input[type="number"]::-webkit-outer-spin-button,
 #researcher-submission-panel input[type="number"]::-webkit-inner-spin-button,
 .submission-number-input::-webkit-outer-spin-button,
@@ -3327,6 +3334,7 @@ textarea.form-control {
 .submission-number-input {
   -moz-appearance: textfield !important;
   appearance: textfield !important;
+  max-width: 100% !important;
 }
 /* Dropdown option text */
 .submission-select option {
@@ -3342,6 +3350,33 @@ textarea.form-control {
 }
 #submission-related-study-title::placeholder,
 #submission-related-study-link::placeholder { color: var(--dt-muted) !important; }
+/* File inputs */
+#researcher-submission-panel input[type="file"] {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+#researcher-submission-panel input[type="file"]::file-selector-button,
+#researcher-submission-panel input[type="file"]::-webkit-file-upload-button {
+  background: var(--dt-bg-panel) !important;
+  border: 1px solid var(--dt-border-md) !important;
+  color: var(--dt-accent-lt) !important;
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+/* Muted subtitle/hint text (e.g. "Up to 3 photos…") */
+#researcher-submission-panel [style*="color:#64748b"] { color: var(--dt-muted) !important; }
+/* Add Member / Choose Photo buttons */
+#submission-add-team-member,
+.submission-media-add-btn {
+  background: var(--dt-bg-input) !important;
+  border: 1px solid var(--dt-accent) !important;
+  color: var(--dt-accent) !important;
+}
+/* Hide Entry ID field */
+#researcher-submission-panel div:has(> #submission-entry-id) { display: none !important; }
 
 /* ── Gallery ── */
 .gallery-page { background: transparent !important; }
