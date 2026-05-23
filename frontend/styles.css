@@ -3316,6 +3316,41 @@ textarea.form-control {
   color: var(--dt-muted) !important;
 }
 
+/* ── Map View ── */
+/* Header bar */
+#map-view > div:first-child {
+  background: var(--dt-bg-input) !important;
+  border-bottom-color: var(--dt-border-md) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+#map-view > div:first-child h1 { color: var(--dt-text) !important; }
+#map-view > div:first-child p  { color: var(--dt-muted) !important; }
+#map-view > div:first-child button {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-accent) !important;
+}
+#map-view > div:first-child button:hover {
+  background: rgba(77,184,106,.18) !important;
+  border-color: var(--dt-accent) !important;
+  color: var(--dt-accent-lt) !important;
+}
+/* Trail selector bar */
+#map-view > div:nth-child(2) {
+  background: var(--dt-bg-panel) !important;
+  border-bottom-color: var(--dt-border-md) !important;
+}
+#map-view > div:nth-child(2) > span { color: var(--dt-muted) !important; }
+/* Map legend overlay */
+#map-legend {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+}
+#map-legend h4 { color: var(--dt-accent-lt) !important; }
+#map-legend span { color: var(--dt-text) !important; }
+#map-legend > div > div { color: var(--dt-muted) !important; }
+
 /* ── Submission modal & form ── */
 #researcher-submission-modal { background: rgba(0,0,0,.65) !important; }
 #researcher-submission-panel {
