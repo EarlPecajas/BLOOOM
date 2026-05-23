@@ -3179,8 +3179,10 @@ textarea.form-control {
   box-shadow: 0 2px 12px rgba(0,0,0,.35) !important;
 }
 .submissions-table { color: var(--dt-text) !important; }
-.submissions-table-head th {
-  background: var(--dt-bg-panel) !important;
+/* Thead matches search bar color */
+.submissions-table-head th,
+.submissions-table thead th {
+  background: var(--dt-bg-input) !important;
   color: var(--dt-text) !important;
   border-bottom: 1px solid var(--dt-border-md) !important;
 }
@@ -3188,7 +3190,61 @@ textarea.form-control {
   color: var(--dt-text) !important;
   border-color: var(--dt-border) !important;
 }
-.submissions-table tbody tr:hover td { background: rgba(255,255,255,.04) !important; }
+/* Fix hover — override both tr and td so the light #f9f9f9 rule can't bleed through */
+.submissions-table tbody tr:hover,
+.submissions-table tbody tr.submission-row:hover {
+  background: var(--dt-bg-panel) !important;
+  background-color: var(--dt-bg-panel) !important;
+}
+.submissions-table tbody tr:hover td { background: transparent !important; color: var(--dt-text) !important; }
+/* Status badges — dark theme colours */
+.submission-status-badge.status-pending {
+  background: rgba(50,70,100,.55) !important;
+  color: rgba(170,200,240,.92) !important;
+  border-color: rgba(100,140,200,.3) !important;
+}
+.submission-status-badge.status-approved {
+  background: rgba(10,70,35,.65) !important;
+  color: rgba(90,220,130,.95) !important;
+  border-color: rgba(50,170,90,.35) !important;
+}
+.submission-status-badge.status-rejected {
+  background: rgba(80,18,18,.65) !important;
+  color: rgba(255,140,140,.95) !important;
+  border-color: rgba(200,70,70,.35) !important;
+}
+.submission-status-badge.status-revision {
+  background: rgba(75,55,8,.65) !important;
+  color: rgba(245,195,70,.95) !important;
+  border-color: rgba(200,155,30,.35) !important;
+}
+.submission-status-badge.status-draft {
+  background: rgba(60,50,10,.65) !important;
+  color: rgba(230,190,70,.9) !important;
+  border-color: rgba(185,145,25,.35) !important;
+}
+/* View / Edit action buttons */
+.submission-action-btn {
+  background: var(--dt-bg-input) !important;
+  border: 1px solid var(--dt-accent) !important;
+  color: var(--dt-accent) !important;
+  box-shadow: none !important;
+}
+.submission-action-btn:hover {
+  background: rgba(77,184,106,.14) !important;
+  border-color: var(--dt-accent-lt) !important;
+  color: var(--dt-accent-lt) !important;
+  box-shadow: none !important;
+}
+.submission-edit-btn {
+  border-color: rgba(230,160,30,.7) !important;
+  color: rgba(235,175,50,.95) !important;
+}
+.submission-edit-btn:hover {
+  background: rgba(80,55,10,.3) !important;
+  border-color: rgba(245,195,60,.85) !important;
+  color: rgba(245,195,60,.95) !important;
+}
 
 /* ── Submission modal & form ── */
 #researcher-submission-modal { background: rgba(0,0,0,.65) !important; }
