@@ -3289,20 +3289,59 @@ textarea.form-control {
   border-color: var(--dt-border-md) !important;
   color: var(--dt-text) !important;
 }
+/* Help icon */
+#researcher-submission-panel .field-help {
+  background: rgba(20,80,30,.6) !important;
+  border-color: rgba(100,200,120,.35) !important;
+  color: var(--dt-accent-lt) !important;
+}
+/* Multi-select summary "Choose one or more" text */
+#researcher-submission-panel details summary > span { color: var(--dt-text) !important; }
+/* Details/multi-select box */
+#researcher-submission-panel details {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+}
 /* Step labels */
 #submission-step-label { color: var(--dt-text) !important; }
 #submission-step-count { color: var(--dt-muted) !important; }
-/* Nav / submit buttons */
-#submission-prev-btn {
-  background: var(--dt-bg-panel) !important;
+/* Nav / submit / draft buttons — all same outlined style */
+#submission-prev-btn,
+#submission-next-btn,
+#submission-submit-btn,
+#submission-draft-btn {
+  background: var(--dt-bg-input) !important;
+  border: 1px solid var(--dt-accent) !important;
+  color: var(--dt-accent) !important;
+}
+#submission-nav-row { border-color: var(--dt-border) !important; }
+/* Remove number input spinners */
+#researcher-submission-panel input[type="number"]::-webkit-outer-spin-button,
+#researcher-submission-panel input[type="number"]::-webkit-inner-spin-button,
+.submission-number-input::-webkit-outer-spin-button,
+.submission-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+#researcher-submission-panel input[type="number"],
+.submission-number-input {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+/* Dropdown option text */
+.submission-select option {
+  background-color: var(--dt-bg-card) !important;
+  color: var(--dt-text) !important;
+}
+/* Related study inputs */
+#submission-related-study-title,
+#submission-related-study-link {
+  background: var(--dt-bg-input) !important;
   border-color: var(--dt-border-md) !important;
   color: var(--dt-text) !important;
 }
-#submission-next-btn, #submission-submit-btn {
-  background: var(--dt-accent) !important;
-  border-color: var(--dt-accent) !important;
-  color: #fff !important;
-}
+#submission-related-study-title::placeholder,
+#submission-related-study-link::placeholder { color: var(--dt-muted) !important; }
 
 /* ── Gallery ── */
 .gallery-page { background: transparent !important; }
