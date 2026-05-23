@@ -426,10 +426,17 @@
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(520px,100%);">
-          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:120px;" aria-label="Search filter">
             <option value="all">All</option>
-            <option value="family">Family</option>
             <option value="species">Species</option>
+            <option value="genus">Genus</option>
+          </select>
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:180px;" aria-label="Conservation status filter">
+            <option value="all">All Statuses</option>
+            <option value="critically endangered">Critically Endangered</option>
+            <option value="endangered">Endangered</option>
+            <option value="vulnerable">Vulnerable</option>
+            <option value="least concern">Least Concern</option>
           </select>
           <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
@@ -2681,6 +2688,7 @@
       const catalogLoadingMessage = document.getElementById('catalog-loading-message');
       const searchInput = document.getElementById('search-input');
       const searchFilter = document.getElementById('search-filter');
+      const conservationFilter = document.getElementById('conservation-filter');
       const dashboardCatalogViewToggle = document.getElementById('dashboard-catalog-view-toggle');
       const dashboardCatalogViewIcon = document.getElementById('dashboard-catalog-view-icon');
       const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n              </svg>';
@@ -3371,6 +3379,12 @@
         });
       }
 
+      if (conservationFilter) {
+        conservationFilter.addEventListener('change', function() {
+          applyOrchidSearch();
+        });
+      }
+
       if (dashboardCatalogViewToggle) {
         dashboardCatalogViewToggle.addEventListener('click', function() {
           dashboardCatalogListView = !dashboardCatalogListView;
@@ -3485,23 +3499,21 @@
 
         const searchTerm = (searchInput?.value || '').toLowerCase().trim();
         const filterValue = searchFilter?.value || 'all';
+        const conservationValue = (conservationFilter?.value || 'all').toLowerCase();
 
         const filtered = orchidRows.filter((orchid) => {
           const name = (orchid.name || '').toLowerCase();
           const genus = (orchid.genus || '').toLowerCase();
+          const status = (orchid.conservation_status || '').toLowerCase();
 
-          if (!searchTerm) {
-            return true;
+          if (conservationValue !== 'all' && !status.includes(conservationValue)) {
+            return false;
           }
 
-          if (filterValue === 'family') {
-            return genus.includes(searchTerm);
-          }
+          if (!searchTerm) return true;
 
-          if (filterValue === 'species') {
-            return name.includes(searchTerm);
-          }
-
+          if (filterValue === 'genus') return genus.includes(searchTerm);
+          if (filterValue === 'species') return name.includes(searchTerm);
           return name.includes(searchTerm) || genus.includes(searchTerm);
         });
 

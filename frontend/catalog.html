@@ -126,10 +126,17 @@
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(520px,100%);">
-          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:120px;" aria-label="Search filter">
             <option value="all">All</option>
-            <option value="family">Family</option>
             <option value="species">Species</option>
+            <option value="genus">Genus</option>
+          </select>
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:180px;" aria-label="Conservation status filter">
+            <option value="all">All Statuses</option>
+            <option value="critically endangered">Critically Endangered</option>
+            <option value="endangered">Endangered</option>
+            <option value="vulnerable">Vulnerable</option>
+            <option value="least concern">Least Concern</option>
           </select>
           <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
@@ -296,6 +303,7 @@
       const catalogGrid = document.getElementById('catalog-grid');
       const searchInput = document.getElementById('search-input');
       const searchFilter = document.getElementById('search-filter');
+      const conservationFilter = document.getElementById('conservation-filter');
       const catalogViewToggle = document.getElementById('catalog-view-toggle');
       const catalogViewIcon = document.getElementById('catalog-view-icon');
       const orchidDetailModal = document.getElementById('orchid-detail-modal');
@@ -1048,23 +1056,21 @@
       function applySearchFilter() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const filterValue = searchFilter.value;
+        const conservationValue = (conservationFilter?.value || 'all').toLowerCase();
 
         const filtered = orchids.filter((orchid) => {
           const name = (orchid.name || '').toLowerCase();
           const genus = (orchid.genus || '').toLowerCase();
+          const status = (orchid.conservation_status || '').toLowerCase();
 
-          if (!searchTerm) {
-            return true;
+          if (conservationValue !== 'all' && !status.includes(conservationValue)) {
+            return false;
           }
 
-          if (filterValue === 'family') {
-            return genus.includes(searchTerm);
-          }
+          if (!searchTerm) return true;
 
-          if (filterValue === 'species') {
-            return name.includes(searchTerm);
-          }
-
+          if (filterValue === 'genus') return genus.includes(searchTerm);
+          if (filterValue === 'species') return name.includes(searchTerm);
           return name.includes(searchTerm) || genus.includes(searchTerm);
         });
 
@@ -1154,6 +1160,12 @@
       searchFilter.addEventListener('change', function() {
         applySearchFilter();
       });
+
+      if (conservationFilter) {
+        conservationFilter.addEventListener('change', function() {
+          applySearchFilter();
+        });
+      }
 
       if (catalogViewToggle) {
         catalogViewToggle.addEventListener('click', function() {
