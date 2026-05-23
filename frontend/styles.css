@@ -3153,6 +3153,121 @@ textarea.form-control {
   border: 1px solid var(--dt-border-md) !important;
 }
 
+/* ── Submissions view ── */
+#submissions-view .catalog-title { color: var(--dt-text) !important; }
+#submissions-search-input {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+#submissions-search-input::placeholder { color: var(--dt-muted) !important; }
+.submissions-table-shell {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.35) !important;
+}
+.submissions-table { color: var(--dt-text) !important; }
+.submissions-table-head th {
+  background: var(--dt-bg-panel) !important;
+  color: var(--dt-text) !important;
+  border-bottom: 1px solid var(--dt-border-md) !important;
+}
+.submissions-table tbody td {
+  color: var(--dt-text) !important;
+  border-color: var(--dt-border) !important;
+}
+.submissions-table tbody tr:hover td { background: rgba(255,255,255,.04) !important; }
+
+/* ── Submission modal & form ── */
+#researcher-submission-modal { background: rgba(0,0,0,.65) !important; }
+#researcher-submission-panel {
+  background: var(--dt-bg-card) !important;
+  border-color: var(--dt-border-md) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,.55) !important;
+}
+#researcher-submission-panel h2 { color: var(--dt-text) !important; }
+#researcher-submission-panel label { color: var(--dt-text) !important; }
+#researcher-submission-panel strong { color: var(--dt-text) !important; }
+#researcher-submission-panel span { color: var(--dt-muted) !important; }
+/* Section header divs */
+#researcher-submission-panel [style*="background:#f9fcfa"],
+#researcher-submission-panel [style*="background: #f9fcfa"] {
+  background: var(--dt-bg-panel) !important;
+  border-color: var(--dt-border) !important;
+  color: var(--dt-text) !important;
+}
+/* Inline-styled checkbox containers */
+#researcher-submission-panel [style*="background:#fff"] {
+  background: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+/* All form inputs */
+.submission-text-input,
+.submission-number-input,
+.submission-time-input,
+.submission-date-input,
+.submission-textarea {
+  background: var(--dt-bg-input) !important;
+  background-color: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+.submission-text-input::placeholder,
+.submission-number-input::placeholder,
+.submission-textarea::placeholder { color: var(--dt-muted) !important; }
+.submission-text-input[readonly] { background: rgba(10,32,12,.5) !important; color: var(--dt-muted) !important; }
+/* Readonly inputs with inline bg */
+#researcher-submission-panel [style*="background:#f7faf8"] {
+  background: rgba(10,32,12,.5) !important;
+  color: var(--dt-muted) !important;
+}
+.submission-select {
+  background-color: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+/* GPS & utility buttons */
+#submission-use-gps {
+  background: rgba(20,80,28,.8) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-accent-lt) !important;
+}
+#submission-gps-status { color: var(--dt-muted) !important; }
+/* IDK / + Add / close buttons */
+#submission-scientific-idk,
+#submission-add-common-name,
+#submission-add-local-name {
+  background: var(--dt-bg-panel) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+[id^="submission-remove-common-"],
+[id^="submission-remove-local-"] {
+  background: rgba(80,20,20,.6) !important;
+  border-color: rgba(200,80,80,.3) !important;
+  color: rgba(255,160,160,.9) !important;
+}
+#researcher-submission-panel button[aria-label="Close submission form"] {
+  background: var(--dt-bg-panel) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+/* Step labels */
+#submission-step-label { color: var(--dt-text) !important; }
+#submission-step-count { color: var(--dt-muted) !important; }
+/* Nav / submit buttons */
+#submission-prev-btn {
+  background: var(--dt-bg-panel) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+#submission-next-btn, #submission-submit-btn {
+  background: var(--dt-accent) !important;
+  border-color: var(--dt-accent) !important;
+  color: #fff !important;
+}
+
 /* ── Gallery ── */
 .gallery-page { background: transparent !important; }
 .gallery-title { color: var(--dt-text) !important; }
