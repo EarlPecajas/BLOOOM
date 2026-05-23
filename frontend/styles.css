@@ -3202,6 +3202,42 @@ textarea.form-control {
   border-color: var(--dt-border-md) !important;
   color: var(--dt-text) !important;
 }
+/* Dynamically-created common/local name inputs and team member / media inputs */
+.submission-common-name-item,
+.submission-local-name-item,
+.submission-team-member-name,
+.submission-team-member-role,
+.submission-media-contributor {
+  background: var(--dt-bg-input) !important;
+  background-color: var(--dt-bg-input) !important;
+  border-color: var(--dt-border-md) !important;
+  color: var(--dt-text) !important;
+}
+.submission-common-name-item::placeholder,
+.submission-local-name-item::placeholder,
+.submission-team-member-name::placeholder,
+.submission-team-member-role::placeholder,
+.submission-media-contributor::placeholder { color: var(--dt-muted) !important; }
+/* Remove buttons next to dynamic name inputs and inside team member rows */
+.submission-common-name-item + button,
+.submission-local-name-item + button,
+.submission-team-member-item > button,
+.submission-team-member-row > button,
+.submission-media-item > button {
+  background: rgba(80,20,20,.6) !important;
+  border-color: rgba(200,80,80,.3) !important;
+  color: rgba(255,160,160,.9) !important;
+}
+/* Labels inside dynamically-created team member rows */
+.submission-team-member-item label,
+.submission-team-member-row label,
+.submission-media-item label { color: var(--dt-muted) !important; }
+/* Media item row card background */
+.submission-media-item {
+  background: var(--dt-bg-panel) !important;
+  border-color: var(--dt-border-md) !important;
+}
+.submission-media-item div[style*="color:#145A1E"] { color: var(--dt-accent-lt) !important; }
 /* All form inputs */
 .submission-text-input,
 .submission-number-input,
