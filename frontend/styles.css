@@ -3174,7 +3174,7 @@ textarea.form-control {
 }
 #submissions-search-input::placeholder { color: var(--dt-muted) !important; }
 .submissions-table-shell {
-  background: var(--dt-bg-card) !important;
+  background: var(--dt-bg-input) !important;
   border-color: var(--dt-border-md) !important;
   box-shadow: 0 2px 12px rgba(0,0,0,.35) !important;
 }
@@ -3699,13 +3699,13 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
 
 /* ── Generate Report: page header strip ── */
 #report-view > div:first-child {
-  background: var(--dt-bg-card) !important;
+  background: var(--dt-bg-input) !important;
   border-color: var(--dt-border-md) !important;
 }
 
 /* ── Generate Report: config card & right-side info cards ── */
 #report-view div[style*="background:#fff"] {
-  background: var(--dt-bg-card) !important;
+  background: var(--dt-bg-input) !important;
   border-color: var(--dt-border-md) !important;
 }
 
