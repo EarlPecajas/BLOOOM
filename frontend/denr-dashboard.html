@@ -4696,10 +4696,17 @@
 
         setActiveSidebarItem(viewName);
 
-        // Hide all view sections first
+        // Hide all view sections first and clear any fixed-position styling
         document.querySelectorAll('.view-section').forEach(section => {
           section.style.display = 'none';
           section.style.pointerEvents = 'none';
+          section.style.position = '';
+          section.style.top = '';
+          section.style.left = '';
+          section.style.right = '';
+          section.style.bottom = '';
+          section.style.zIndex = '';
+          section.style.margin = '';
         });
 
         // Show selected view (view sections live OUTSIDE .dashboard-container)
@@ -4708,11 +4715,29 @@
           // Hide the dashboard container — view sections sit below it in the DOM
           dashboardContainer.style.display = 'none';
           dashboardContainer.style.pointerEvents = 'none';
-          selectedView.style.display = 'block';
           selectedView.style.pointerEvents = 'auto';
-          window.scrollTo(0, 0);
           if (viewName === 'map') {
+            const headerEl = document.querySelector('.dashboard-header');
+            const headerH = headerEl ? headerEl.getBoundingClientRect().height : 84;
+            selectedView.style.display = 'flex';
+            selectedView.style.position = 'fixed';
+            selectedView.style.top = headerH + 'px';
+            selectedView.style.left = '0';
+            selectedView.style.right = '0';
+            selectedView.style.bottom = '0';
+            selectedView.style.zIndex = '500';
+            selectedView.style.margin = '0';
             setTimeout(() => initializeLeafletMap(), 100);
+          } else {
+            selectedView.style.display = 'block';
+            selectedView.style.position = '';
+            selectedView.style.top = '';
+            selectedView.style.left = '';
+            selectedView.style.right = '';
+            selectedView.style.bottom = '';
+            selectedView.style.zIndex = '';
+            selectedView.style.margin = '';
+            window.scrollTo(0, 0);
           }
           if (viewName === 'conservation') {
             loadConservationSummary();
