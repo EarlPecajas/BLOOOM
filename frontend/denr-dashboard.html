@@ -977,63 +977,54 @@
     </div>
 
     <!-- Map View -->
-    <div id="map-view" class="view-section" style="display:none;padding:0;overflow:hidden;">
+    <div id="map-view" class="view-section" style="display:none;padding:0;background:transparent;border-radius:0;overflow:hidden;flex-direction:column;">
 
-      <!-- Header bar -->
-      <div class="bg-white border-b flex justify-between items-center gap-4 px-6 py-3.5 flex-shrink-0" style="border-color:#d8e8d4;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
-        <div class="flex items-center gap-3">
-          <div class="w-0.5 h-10 rounded-full flex-shrink-0" style="background:linear-gradient(180deg,#6fcf4a,#34a853);"></div>
-          <div>
-            <h1 class="text-xl font-black text-gray-900 leading-tight tracking-tight m-0" style="font-family:Inter,Roboto,sans-serif;">Mt. Busa Trail &amp; Orchid Distribution</h1>
-            <p class="text-xs font-bold uppercase tracking-widest mt-0.5 mb-0" style="color:#4a7a42;">Interactive ecological survey map</p>
-          </div>
+      <!-- Title + Trail bar — seamless on website background, no header box -->
+      <div id="map-trail-bar" style="background:transparent;border-bottom:1px solid rgba(100,200,120,.22);flex-shrink:0;">
+        <!-- Title row -->
+        <div style="padding:0.7rem 1.3rem 0.3rem;">
+          <div style="font-size:1.15rem;font-weight:800;color:#e8f8e0;font-family:Inter,Roboto,sans-serif;line-height:1.2;letter-spacing:0.01em;">Mt. Busa Trail &amp; Orchid Distribution</div>
+          <div style="font-size:0.65rem;font-weight:700;color:rgba(200,240,190,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.15rem;">Interactive ecological survey map</div>
         </div>
-        <div class="flex gap-2 flex-wrap justify-end items-center">
-          <button onclick="document.getElementById('map-legend').style.display=document.getElementById('map-legend').style.display==='none'?'block':'none'"
-            class="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-white border cursor-pointer transition-all duration-200 hover:bg-green-50 whitespace-nowrap"
-            style="color:#145A1E;border-color:rgba(13,83,14,0.32);">Legend</button>
-          <button onclick="if(leafletMap){leafletMap.setView(MT_BUSA_COORDS,MT_BUSA_ZOOM_MAIN);}"
-            class="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-white border cursor-pointer transition-all duration-200 hover:bg-green-50 whitespace-nowrap"
-            style="color:#145A1E;border-color:rgba(13,83,14,0.32);">Reset View</button>
+        <!-- Trails row -->
+        <div style="padding:0.25rem 1.3rem 0.45rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.2rem;flex-shrink:0;color:rgba(200,240,190,0.45);">Trails</span>
+          <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" style="flex-shrink:0;padding:0.26rem 0.72rem;background:#4db86a;border:1.5px solid #4db86a;border-radius:20px;cursor:pointer;font-weight:700;color:#0a2710;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Canopy Loop 1</button>
+          <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" style="flex-shrink:0;padding:0.26rem 0.72rem;background:#4db86a;border:1.5px solid #4db86a;border-radius:20px;cursor:pointer;font-weight:700;color:#0a2710;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Moss Corridor 2</button>
+          <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" style="flex-shrink:0;padding:0.26rem 0.72rem;background:#4db86a;border:1.5px solid #4db86a;border-radius:20px;cursor:pointer;font-weight:700;color:#0a2710;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Valley Way 3</button>
+          <button id="trail-btn-trail4" onclick="toggleTrail('trail4')" style="flex-shrink:0;padding:0.26rem 0.72rem;background:#4db86a;border:1.5px solid #4db86a;border-radius:20px;cursor:pointer;font-weight:700;color:#0a2710;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Forest Spur 4</button>
+          <button id="trail-btn-trail5" onclick="toggleTrail('trail5')" style="flex-shrink:0;padding:0.26rem 0.72rem;background:#4db86a;border:1.5px solid #4db86a;border-radius:20px;cursor:pointer;font-weight:700;color:#0a2710;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Busa Loop 5</button>
+          <div style="flex:1;min-width:0.5rem;"></div>
+          <button onclick="document.getElementById('map-legend').style.display=document.getElementById('map-legend').style.display==='none'?'block':'none'" style="flex-shrink:0;padding:0.26rem 0.78rem;background:transparent;border:1.5px solid rgba(77,184,106,.45);border-radius:20px;color:#4db86a;cursor:pointer;font-size:0.75rem;font-weight:700;transition:all 0.2s;white-space:nowrap;">Legend</button>
         </div>
-      </div>
-
-      <!-- Trail selector bar -->
-      <div class="flex items-center gap-2 px-5 py-2 border-b overflow-x-auto flex-shrink-0" style="-webkit-overflow-scrolling:touch;background:#f5faf3;border-color:#d8e8d4;">
-        <span class="text-xs font-bold uppercase tracking-widest flex-shrink-0 mr-1" style="color:#145A1E;">Trails</span>
-        <button id="trail-btn-trail1" onclick="toggleTrail('trail1')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Canopy Loop 1</button>
-        <button id="trail-btn-trail2" onclick="toggleTrail('trail2')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Moss Corridor 2</button>
-        <button id="trail-btn-trail3" onclick="toggleTrail('trail3')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Valley Way 3</button>
-        <button id="trail-btn-trail4" onclick="toggleTrail('trail4')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Forest Spur 4</button>
-        <button id="trail-btn-trail5" onclick="toggleTrail('trail5')" class="flex-shrink-0 text-xs font-bold px-3 py-1 rounded-full cursor-pointer whitespace-nowrap transition-all duration-200" style="background:#00e5ff;border:1.5px solid #00e5ff;color:#001a1f;">&#9632; Busa Loop 5</button>
       </div>
 
       <!-- Map + legend overlay -->
-      <div class="relative" style="width:100%;min-height:calc(100vh - 190px);">
-        <div id="map" style="width:100%;height:calc(100vh - 190px);background:#0a1a09;"></div>
+      <div style="position:relative;width:100%;flex:1;display:flex;overflow:hidden;">
+        <div id="map" style="flex:1;width:100%;height:100%;background:#0a1a09;"></div>
 
         <!-- Legend overlay -->
-        <div id="map-legend" class="absolute bottom-5 left-3.5 bg-white rounded-xl border border-gray-200 p-4 z-50 text-xs" style="min-width:215px;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.18);">
-          <h4 class="font-bold uppercase tracking-wider text-xs m-0 mb-3" style="color:#145A1E;letter-spacing:0.05em;">Map Legend</h4>
-          <div class="flex flex-col gap-2">
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 m-0">Orchid Density</p>
-            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#dc2626;"></div><span class="text-gray-700">High (≥80%)</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#f97316;"></div><span class="text-gray-700">Medium-High (60–79%)</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#facc15;"></div><span class="text-gray-700">Medium (40–59%)</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:#34d399;"></div><span class="text-gray-700">Low (&lt;40%)</span></div>
-            <div class="h-px bg-gray-100 my-1"></div>
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 m-0">Conservation Status</p>
-            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#ff3b3b;border:1.5px solid #ff7070;"></div><span class="text-gray-700">Critically Endangered</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#ff8c00;border:1.5px solid #ffa040;"></div><span class="text-gray-700">Endangered</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#f5c518;border:1.5px solid #f5d845;"></div><span class="text-gray-700">Vulnerable</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#4caf50;border:1.5px solid #7ccc7e;"></div><span class="text-gray-700">Least Concern</span></div>
-            <div class="h-px bg-gray-100 my-1"></div>
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 m-0">Trails</p>
-            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Canopy Loop 1</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Moss Corridor 2</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Valley Way 3</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Forest Spur 4</span></div>
-            <div class="flex items-center gap-2.5"><div class="w-5 h-0.5 flex-shrink-0 rounded" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff;"></div><span class="text-gray-700">Busa Loop 5</span></div>
+        <div id="map-legend" style="position:absolute;bottom:22px;left:14px;background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:1rem 1.1rem;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:400;min-width:210px;display:none;font-size:0.82rem;">
+          <h4 style="margin:0 0 0.75rem 0;color:#145A1E;font-weight:700;font-size:0.88rem;letter-spacing:0.05em;text-transform:uppercase;">Map Legend</h4>
+          <div style="display:flex;flex-direction:column;gap:0.55rem;">
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Orchid Density</div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#dc2626;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">High (≥80%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#f97316;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium-High (60–79%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#facc15;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Medium (40–59%)</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:14px;height:14px;background:#34d399;border-radius:50%;flex-shrink:0;"></div><span style="color:#374151;">Low (&lt;40%)</span></div>
+            <div style="height:1px;background:#e5e7eb;margin:0.3rem 0;"></div>
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Conservation Status</div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff3b3b;border-radius:50%;border:1.5px solid #ff7070;flex-shrink:0;"></div><span style="color:#374151;">Critically Endangered</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#ff8c00;border-radius:50%;border:1.5px solid #ffa040;flex-shrink:0;"></div><span style="color:#374151;">Endangered</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#f5c518;border-radius:50%;border:1.5px solid #f5d845;flex-shrink:0;"></div><span style="color:#374151;">Vulnerable</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:12px;height:12px;background:#4caf50;border-radius:50%;border:1.5px solid #7ccc7e;flex-shrink:0;"></div><span style="color:#374151;">Least Concern</span></div>
+            <div style="height:1px;background:#e5e7eb;margin:0.3rem 0;"></div>
+            <div style="font-size:0.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.1rem;">Trails</div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4db86a;border-radius:2px;flex-shrink:0;box-shadow:0 0 4px rgba(77,184,106,.6);"></div><span style="color:#374151;">Canopy Loop 1</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4db86a;border-radius:2px;flex-shrink:0;box-shadow:0 0 4px rgba(77,184,106,.6);"></div><span style="color:#374151;">Moss Corridor 2</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4db86a;border-radius:2px;flex-shrink:0;box-shadow:0 0 4px rgba(77,184,106,.6);"></div><span style="color:#374151;">Valley Way 3</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4db86a;border-radius:2px;flex-shrink:0;box-shadow:0 0 4px rgba(77,184,106,.6);"></div><span style="color:#374151;">Forest Spur 4</span></div>
+            <div style="display:flex;align-items:center;gap:0.65rem;"><div style="width:22px;height:3px;background:#4db86a;border-radius:2px;flex-shrink:0;box-shadow:0 0 4px rgba(77,184,106,.6);"></div><span style="color:#374151;">Busa Loop 5</span></div>
           </div>
         </div>
       </div>
@@ -3466,7 +3457,7 @@
       let activeStatusFilter = 'all';
 
       // Neon GPS-track trail definitions (same as researcher dashboard)
-      const NEON_BLUE = '#00e5ff';
+      const NEON_BLUE = '#4db86a';
       const MAP_TRAIL_DEFS = {
         trail1: {
           name: 'Canopy Loop 1', color: NEON_BLUE, weight: 3,
@@ -3547,7 +3538,7 @@
         if (mapTrailLayers[trailId]) {
           leafletMap.removeLayer(mapTrailLayers[trailId]);
           delete mapTrailLayers[trailId];
-          if (btn) { btn.style.background = 'transparent'; btn.style.color = NEON_BLUE; btn.style.borderColor = NEON_BLUE; }
+          if (btn) { btn.style.background = 'transparent'; btn.style.color = '#4db86a'; btn.style.borderColor = 'rgba(77,184,106,.45)'; }
         } else {
           const opts = { lineCap: 'square', lineJoin: 'miter' };
           const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
@@ -3555,7 +3546,7 @@
           const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
           const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
           mapTrailLayers[trailId] = L.layerGroup([halo, mid, core]).addTo(leafletMap);
-          if (btn) { btn.style.background = NEON_BLUE; btn.style.color = '#001a1f'; btn.style.borderColor = NEON_BLUE; }
+          if (btn) { btn.style.background = '#4db86a'; btn.style.color = '#0a2710'; btn.style.borderColor = '#4db86a'; }
         }
       };
 
