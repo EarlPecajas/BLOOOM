@@ -2930,36 +2930,42 @@
 
         try {
           const currentEmail = String(parsedActiveUser.email || '').trim();
-          const submissionsUrl = currentEmail
-            ? `/api/submissions?email=${encodeURIComponent(currentEmail)}`
-            : '/api/submissions';
+          let rows = [];
 
-          const response = await fetch(submissionsUrl, {
-            headers: {
-              Accept: 'application/json'
+          if (window.bloomSupabase) {
+            let query = window.bloomSupabase
+              .from('species_sightings')
+              .select('*')
+              .order('created_at', { ascending: false });
+
+            // Researchers only see their own submissions
+            if (isResearcherRole && currentEmail) {
+              query = query.eq('researcher_email', currentEmail);
             }
-          });
 
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Failed to load submissions (${response.status})`);
+            const { data, error } = await query;
+            if (error) throw new Error(error.message || 'Failed to load submissions');
+            rows = Array.isArray(data) ? data : [];
+          } else {
+            // Fallback to REST API when Supabase client is unavailable
+            const submissionsUrl = currentEmail
+              ? `/api/submissions?email=${encodeURIComponent(currentEmail)}`
+              : '/api/submissions';
+            const response = await fetch(submissionsUrl, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`Failed to load submissions (${response.status})`);
+            rows = await response.json();
           }
 
-          const data = await response.json();
           const searchValue = String(searchTerm || '').trim().toLowerCase();
-          const normalizedRows = (Array.isArray(data) ? data : []).map(normalizeSubmissionRow);
+          const normalizedRows = rows.map(normalizeSubmissionRow);
 
           submissionRows = normalizedRows.filter((submission) => {
-            const matchesResearcher = !isResearcherRole || !currentEmail || String(submission.researcher_email || '').trim().toLowerCase() === currentEmail.toLowerCase();
-            if (!matchesResearcher) {
-              return false;
-            }
+            const matchesResearcher = !isResearcherRole || !currentEmail ||
+              String(submission.researcher_email || '').trim().toLowerCase() === currentEmail.toLowerCase();
+            if (!matchesResearcher) return false;
+            if (!searchValue) return true;
 
-            if (!searchValue) {
-              return true;
-            }
-
-            const searchableValues = [
+            return [
               submission.scientific_name,
               submission.researcher,
               submission.researcher_email,
@@ -2972,12 +2978,7 @@
               submission.threat_level,
               submission.institution,
               submission.team_members
-            ]
-              .filter(Boolean)
-              .join(' ')
-              .toLowerCase();
-
-            return searchableValues.includes(searchValue);
+            ].filter(Boolean).join(' ').toLowerCase().includes(searchValue);
           });
 
           renderSubmissions(submissionRows);

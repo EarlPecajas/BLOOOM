@@ -3791,31 +3791,33 @@
 
         try {
           const currentEmail = String(parsedActiveUser.email || '').trim();
-          // Only filter by email for researcher/user roles — DENR/admin must see all submissions
-          const submissionsUrl = (isResearcherRole && currentEmail)
-            ? `/api/submissions?email=${encodeURIComponent(currentEmail)}`
-            : '/api/submissions';
+          let rows = [];
 
-          const response = await fetch(submissionsUrl, {
-            headers: {
-              Accept: 'application/json'
+          if (bloomSupabase) {
+            let query = bloomSupabase
+              .from('species_sightings')
+              .select('*')
+              .order('created_at', { ascending: false });
+
+            // Researchers only see their own; DENR/admin sees all
+            if (isResearcherRole && currentEmail) {
+              query = query.eq('researcher_email', currentEmail);
             }
-          });
 
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Failed to load submissions (${response.status})`);
+            const { data, error } = await query;
+            if (error) throw new Error(error.message || 'Failed to load submissions');
+            rows = Array.isArray(data) ? data : [];
+          } else {
+            // Fallback to REST API when Supabase client is unavailable
+            const submissionsUrl = (isResearcherRole && currentEmail)
+              ? `/api/submissions?email=${encodeURIComponent(currentEmail)}`
+              : '/api/submissions';
+            const response = await fetch(submissionsUrl, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`Failed to load submissions (${response.status})`);
+            rows = await response.json();
           }
 
-          const data = await response.json();
-          const normalizedRows = (Array.isArray(data) ? data : []).map(normalizeSubmissionRow);
-
-          // Store all eligible rows; filtering is handled by applySubmissionsFilter
-          submissionRows = normalizedRows.filter((submission) => {
-            return !isResearcherRole || !currentEmail ||
-              String(submission.researcher_email || '').trim().toLowerCase() === currentEmail.toLowerCase();
-          });
-
+          submissionRows = rows.map(normalizeSubmissionRow);
           applySubmissionsFilter();
         } catch {
           submissionsTableBody.innerHTML = `
