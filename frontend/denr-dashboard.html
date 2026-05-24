@@ -1071,7 +1071,7 @@
           <button class="sub-filter-btn" data-filter="pending"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Pending</button>
           <button class="sub-filter-btn" data-filter="approved" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Approved</button>
           <button class="sub-filter-btn" data-filter="rejected" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Rejected</button>
-          <button class="sub-filter-btn" data-filter="revision" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Needs Revision</button>
+          <button class="sub-filter-btn" data-filter="revision" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">For Revision</button>
         </div>
         <input id="submissions-search-input" type="text" placeholder="Search submissions…" style="width:min(320px,100%);padding:0.65rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:999px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;" />
       </div>
@@ -1649,16 +1649,16 @@
         <!-- Action footer -->
         <div id="actionButtons" style="display:flex;gap:0.6rem;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:1rem 1.75rem;background:var(--dt-bg-panel);border-top:1px solid var(--dt-border-md);flex-shrink:0;border-radius:0 0 18px 18px;">
           <button onclick="closeModal('detailModal')" style="padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid var(--dt-border-md);background:var(--dt-bg-input);color:var(--dt-muted);font-size:0.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 160ms;">Close</button>
-          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid var(--dt-accent);background:var(--dt-accent);color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;display:inline-flex;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid var(--dt-accent);background:var(--dt-accent);color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;box-shadow:0 6px 14px rgba(20,90,30,0.22);">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 5v14M5 12l7-7 7 7"/></svg> Publish to Catalog
           </button>
-          <button id="revisionBtn" onclick="performDetailAction('revision')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid rgba(217,119,6,.6);background:rgba(120,60,0,.35);color:#fbbf24;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Request Revision
+          <button id="revisionBtn" onclick="performDetailAction('revision')" style="display:none;display:inline-flex;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid rgba(217,119,6,.6);background:rgba(120,60,0,.35);color:#fbbf24;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> For Revision
           </button>
-          <button id="denyBtn" onclick="performDetailAction('deny')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid rgba(220,38,38,.6);background:rgba(100,15,15,.35);color:#f87171;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+          <button id="denyBtn" onclick="performDetailAction('deny')" style="display:none;display:inline-flex;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid rgba(220,38,38,.6);background:rgba(100,15,15,.35);color:#f87171;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
           </button>
-          <button id="approveBtn" onclick="performDetailAction('approve')" style="display:none;padding:0.55rem 1.25rem;border-radius:999px;border:1.5px solid #16a34a;background:#16a34a;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+          <button id="approveBtn" onclick="performDetailAction('approve')" style="display:none;display:inline-flex;padding:0.55rem 1.25rem;border-radius:999px;border:1.5px solid #16a34a;background:#16a34a;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><polyline points="20 6 9 17 4 12"/></svg> Approve
           </button>
         </div>
@@ -3757,11 +3757,11 @@
           let postBtn = '';
           if (isAdminRole && isApproved(submission)) {
             if (submission.catalog_published) {
-              postBtn = `<span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-size:0.78rem;font-weight:700;white-space:nowrap;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Published
-              </span>`;
+              postBtn = `<button type="button" class="sub-unpublish-btn" data-submission-id="${submission.id}" title="Unpublish from Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid rgba(245,158,11,0.6);background:rgba(245,158,11,0.14);color:#f59e0b;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7 7 7-7"/></svg>Unpublish
+              </button>`;
             } else {
-              postBtn = `<button type="button" class="sub-post-btn" data-submission-id="${submission.id}" title="Publish to Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid #145A1E;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;">
+              postBtn = `<button type="button" class="sub-post-btn" data-submission-id="${submission.id}" title="Publish to Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid var(--dt-accent);background:var(--dt-accent);color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;box-shadow:0 6px 14px rgba(20,90,30,0.2);">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>Publish
               </button>`;
             }
@@ -3773,7 +3773,7 @@
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
               <td class="submission-action-cell" style="white-space:nowrap;">
-                <button type="button" class="submission-action-btn" data-submission-id="${submission.id}" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.78rem;border-radius:999px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#334155;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 160ms;">
+                <button type="button" class="submission-action-btn" data-submission-id="${submission.id}" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.78rem;border-radius:999px;border:1.5px solid rgba(20,90,30,0.45);background:rgba(20,90,30,0.12);color:var(--dt-accent-lt);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 160ms;">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Review
                 </button>
                 ${postBtn}
@@ -4309,6 +4309,8 @@
           if (actionButton.classList.contains('sub-post-btn')) {
             currentSubmission = selectedSubmission;
             openPostToCatalogModal();
+          } else if (actionButton.classList.contains('sub-unpublish-btn')) {
+            unpublishCatalogForSubmission(selectedSubmission);
           } else {
             showDetailModal(selectedSubmission);
           }
@@ -5081,7 +5083,7 @@
         const labels = {
           approved: 'Approved',
           rejected: 'Rejected',
-          revision: 'Need Revision',
+          revision: 'For Revision',
           pending: 'Pending Review'
         };
         return labels[String(status || '').toLowerCase()] || 'Pending Review';
@@ -5139,7 +5141,7 @@
         } else if (action === 'revision') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'revision');
-            alert(`Status updated to Need Revision for ${currentSubmission.species}.`);
+            alert(`Status updated to For Revision for ${currentSubmission.species}.`);
           } catch (error) {
             alert(error.message);
           }
@@ -6223,6 +6225,57 @@
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Publish to Catalog';
+        }
+      }
+
+      async function unpublishCatalogForSubmission(submission) {
+        if (!submission) return;
+        if (!bloomSupabase) {
+          alert('Supabase is not configured');
+          return;
+        }
+
+        const sciName = submission.scientific_name || submission.species || submission.species_name || '';
+        if (!sciName) {
+          alert('Scientific name is missing for this submission.');
+          return;
+        }
+
+        const confirmed = confirm(`Unpublish "${sciName}" from the catalog? This removes it from the public catalog.`);
+        if (!confirmed) return;
+
+        try {
+          const { data: orchidRow, error: orchidError } = await bloomSupabase
+            .from('orchids')
+            .select('orchid_id')
+            .eq('sci_name', sciName)
+            .maybeSingle();
+          if (orchidError) throw orchidError;
+
+          if (orchidRow?.orchid_id) {
+            await bloomSupabase.from('biogeography').delete().eq('orchid_id', orchidRow.orchid_id);
+            await bloomSupabase.from('orchids').delete().eq('orchid_id', orchidRow.orchid_id);
+          }
+
+          if (submission.id) {
+            await bloomSupabase
+              .from('species_sightings')
+              .update({ catalog_published: false, updated_at: new Date().toISOString() })
+              .eq('sighting_id', submission.id);
+          }
+
+          const row = submissionRows.find((item) => String(item.id) === String(submission.id));
+          if (row) row.catalog_published = false;
+          if (currentSubmission && String(currentSubmission.id) === String(submission.id)) {
+            currentSubmission.catalog_published = false;
+          }
+
+          renderSubmissions(submissionRows);
+          loadOrchidCatalog();
+          alert(`"${sciName}" has been unpublished from the catalog.`);
+        } catch (error) {
+          console.error('Failed to unpublish catalog entry:', error);
+          alert('Failed to unpublish: ' + (error.message || 'Unknown error'));
         }
       }
 
