@@ -144,14 +144,6 @@
       .orchid-step-label-text { font-size: .8rem; font-weight: 600; color: #3e6639; }
       .orchid-step-badge { font-size: .73rem; font-weight: 700; color: #2d5a27; background: #d4eed0; padding: .18rem .7rem; border-radius: 12px; }
       .orchid-detail-pages-wrap { flex: 1; overflow-y: auto; min-height: 0; }
-      .orchid-detail-actions {
-        display: flex;
-        justify-content: flex-end;
-        padding: .7rem 1.3rem;
-        border-top: 1px solid #ecf3eb;
-        background: #f0f9ed;
-        flex-shrink: 0;
-      }
       .detail-step-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b8d9b2; transition: all .2s; }
       .detail-step-dot.active { background: #2d5a27; transform: scale(1.4); }
       .orchid-detail-page .orchid-detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .8rem 1.4rem; border-bottom: 1px solid #f0f5ef; gap: 1.5rem; }
@@ -528,15 +520,10 @@
 
       </div>
 
-      <div class="orchid-detail-actions">
-        <button type="button" id="orchid-detail-add-btn-bottom" class="orchid-nav-btn orchid-nav-btn-fill">Add Sighting</button>
-      </div>
-
       <div class="orchid-nav-bar">
         <button type="button" id="orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">&larr; Back</button>
         <div id="orchid-detail-step-dots" style="display:flex;align-items:center;gap:7px;flex:1;justify-content:center;"></div>
         <div class="orchid-nav-actions">
-          <button type="button" id="orchid-detail-add-btn" class="orchid-nav-btn orchid-nav-btn-outline">Add Sighting</button>
           <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &rarr;</button>
         </div>
       </div>
@@ -1276,27 +1263,9 @@
           else showOverview();
         });
         document.getElementById('detail-to-map-btn').addEventListener('click', showOverview);
-        const addBtn = document.getElementById('orchid-detail-add-btn');
-        if (addBtn) {
-          addBtn.addEventListener('click', function() {
-            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
-              ? currentOrchid.name
-              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
-            openResearcherSubmissionModal(orchidName);
-          });
-        }
         const addIdentityBtn = document.getElementById('orchid-detail-add-btn-identity');
         if (addIdentityBtn) {
           addIdentityBtn.addEventListener('click', function() {
-            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
-              ? currentOrchid.name
-              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
-            openResearcherSubmissionModal(orchidName);
-          });
-        }
-        const addBottomBtn = document.getElementById('orchid-detail-add-btn-bottom');
-        if (addBottomBtn) {
-          addBottomBtn.addEventListener('click', function() {
             const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
               ? currentOrchid.name
               : (document.getElementById('oid-sci-name')?.textContent || '').trim();
