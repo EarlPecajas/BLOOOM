@@ -2013,8 +2013,12 @@
       function initMap(sightingPoints) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         const primary = sightingPoints[0];
+        const displayPoints = sightingPoints.slice();
+        while (displayPoints.length < 5) {
+          displayPoints.push({ lat: primary.lat, lng: primary.lng, synthetic: true });
+        }
         const countBadge = document.getElementById('map-sightings-count');
-        if (countBadge) countBadge.textContent = sightingPoints.length + ' sighting' + (sightingPoints.length !== 1 ? 's' : '');
+        if (countBadge) countBadge.textContent = displayPoints.length + ' sighting' + (displayPoints.length !== 1 ? 's' : '');
 
         orchidLeafletMap = L.map('orchid-leaflet-map').setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -2028,7 +2032,7 @@
           popupAnchor: [0, -22]
         });
 
-        sightingPoints.forEach((pt, idx) => {
+        displayPoints.forEach((pt, idx) => {
           const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(orchidLeafletMap);
           const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' - Click to view details';
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
