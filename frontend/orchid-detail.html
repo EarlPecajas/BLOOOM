@@ -147,6 +147,7 @@
       .orchid-detail-page .orchid-detail-label { color: #4a7a44; font-weight: 700; font-size: .72rem; min-width: 150px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .07em; line-height: 1.35; padding-top: .1rem; }
       .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label) { color: #162b14; font-weight: 500; font-size: .95rem; text-align: right; line-height: 1.5; }
       .orchid-nav-bar { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1.3rem; border-top: 1.5px solid #d8ecd6; background: linear-gradient(to right, #f0f9ed, #f8fcf7); flex-shrink: 0; }
+      .orchid-nav-actions { display: flex; align-items: center; gap: .6rem; }
       .orchid-nav-btn { padding: .45rem 1.3rem; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; border: 1.5px solid #2d5a27; transition: all .15s; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
       .orchid-nav-btn-outline { background: #fff; color: #2d5a27; }
       .orchid-nav-btn-outline:hover { background: #e8f3e6; }
@@ -155,10 +156,7 @@
 
       /* ── Dark theme ── */
       body {
-        background:
-          radial-gradient(ellipse 80% 60% at 70% 50%, rgba(40,130,55,.4) 0%, transparent 70%),
-          radial-gradient(ellipse 50% 80% at 15% 80%, rgba(15,65,20,.65) 0%, transparent 60%),
-          linear-gradient(160deg, #0a1f0a 0%, #0f3010 25%, #164e1e 55%, #1e7028 80%, #103818 100%) !important;
+        background: #0f2a12 !important;
       }
       .detail-topbar {
         background: rgba(8,22,8,.82) !important;
@@ -233,8 +231,11 @@
       .orchid-step-label-text { color: #a8d8a0 !important; }
       .orchid-step-badge { background: rgba(30,80,30,.85) !important; color: #b8e8b0 !important; }
       .orchid-detail-pages-wrap { background: transparent !important; }
-      .orchid-detail-page .orchid-detail-row { border-bottom-color: rgba(100,200,120,.1) !important; }
-      .orchid-detail-page .orchid-detail-row:nth-child(even) { background: rgba(255,255,255,.04) !important; }
+      .orchid-detail-page .orchid-detail-row {
+        border-bottom-color: rgba(100,200,120,.1) !important;
+        background: rgba(12,34,16,.9) !important;
+      }
+      .orchid-detail-page .orchid-detail-row:nth-child(even) { background: rgba(12,34,16,.9) !important; }
       .orchid-detail-page .orchid-detail-label { color: #a8d8a0 !important; }
       .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label) { color: #e8f8e0 !important; }
       .orchid-nav-bar {
@@ -407,7 +408,10 @@
       <div class="orchid-nav-bar">
         <button type="button" id="orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">&larr; Back</button>
         <div id="orchid-detail-step-dots" style="display:flex;align-items:center;gap:7px;flex:1;justify-content:center;"></div>
-        <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &rarr;</button>
+        <div class="orchid-nav-actions">
+          <button type="button" id="orchid-detail-add-btn" class="orchid-nav-btn orchid-nav-btn-outline">Add Sighting</button>
+          <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &rarr;</button>
+        </div>
       </div>
     </div>
 
@@ -722,6 +726,20 @@
           else showOverview();
         });
         document.getElementById('detail-to-map-btn').addEventListener('click', showOverview);
+        const addBtn = document.getElementById('orchid-detail-add-btn');
+        if (addBtn) {
+          addBtn.addEventListener('click', function() {
+            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
+              ? currentOrchid.name
+              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
+            const params = new URLSearchParams();
+            params.set('addSighting', '1');
+            if (hasUsableValue(orchidName)) {
+              params.set('orchidName', String(orchidName).trim());
+            }
+            window.location.href = 'researcher-dashboard.html?' + params.toString();
+          });
+        }
       }
 
       function showOverview() {

@@ -2107,11 +2107,23 @@
       function openResearcherSubmissionModal(speciesName) {
         if (!researcherSubmissionModal) return;
         initializeResearcherSightingForm();
+        const form = document.getElementById('researcher-submission-form');
+        if (form) {
+          delete form.dataset.editDraftId;
+          delete form.dataset.editDraftEntryId;
+        }
         if (speciesName) {
           const speciesEl = document.getElementById('submission-scientific-name');
           if (speciesEl) speciesEl.value = String(speciesName).trim();
         }
         researcherSubmissionModal.style.display = 'block';
+      }
+
+      const addSightingParams = new URLSearchParams(window.location.search);
+      if (addSightingParams.get('addSighting')) {
+        const orchidName = addSightingParams.get('orchidName') || addSightingParams.get('orchid') || '';
+        openDashboardView('submissions');
+        openResearcherSubmissionModal(orchidName);
       }
 
       function closeResearcherSubmissionModal() {
