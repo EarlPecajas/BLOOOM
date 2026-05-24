@@ -119,15 +119,6 @@
       .map-sightings-badge { font-size: .68rem; font-weight: 700; color: #143a10; background: #b8e0b0; padding: .18rem .65rem; border-radius: 10px; letter-spacing: .02em; }
       #orchid-leaflet-map { flex: 1; }
       .orchid-map-hint { text-align: center; font-size: .75rem; color: #5a7a58; padding: .35rem 1rem; background: #eaf5e7; border-top: 1px solid #c8e0c4; margin: 0; flex-shrink: 0; }
-      .orchid-overview-actions {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        padding: .6rem 1rem;
-        background: #eaf5e7;
-        border-top: 1px solid #c8e0c4;
-        flex-shrink: 0;
-      }
 
       /* Stage 2: paged detail */
       #detail-paged { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
@@ -162,6 +153,107 @@
       .orchid-nav-btn-outline:hover { background: #e8f3e6; }
       .orchid-nav-btn-fill { background: #2d5a27; color: #fff; border-color: #2d5a27; }
       .orchid-nav-btn-fill:hover { background: #1e3d1a; }
+
+      .submission-select {
+        padding: 0.72rem 0.8rem;
+        border: 1px solid #d4ddd7;
+        border-radius: 8px;
+        font-family: Inter, Roboto, sans-serif;
+        color: #334155;
+        background-color: #fff;
+        min-height: 46px;
+        line-height: 1.2;
+        appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%);
+        background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        padding-right: 2.1rem;
+      }
+
+      .submission-select:required:invalid { color: #94a3b8; }
+      .submission-select option { color: #334155; }
+      .submission-field-title {
+        font-family: Inter, Roboto, sans-serif;
+        font-size: 0.92rem;
+        font-weight: 400;
+        color: #94a3b8;
+        line-height: 1.2;
+      }
+      .submission-text-input,
+      .submission-number-input,
+      .submission-time-input,
+      .submission-date-input,
+      .submission-textarea {
+        padding: 0.72rem 0.8rem;
+        border: 1px solid #d4ddd7;
+        border-radius: 8px;
+        font-family: Inter, Roboto, sans-serif;
+        color: #334155;
+        background: #fff;
+        min-height: 46px;
+      }
+      .submission-number-input { max-width: 220px; }
+      .submission-canopy-input { max-width: 220px; height: 42px; }
+      .submission-field { display: grid; gap: 0.35rem; }
+      .submission-field--full { grid-column: 1 / -1; }
+      .field-help {
+        display:inline-block;
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        background:#EAF5EA;
+        color:#274041;
+        font-size:12px;
+        line-height:18px;
+        text-align:center;
+        margin-left:6px;
+        cursor:pointer;
+        border:1px solid #d4e9df;
+        position:relative;
+        opacity:0.9;
+        vertical-align:middle;
+      }
+      .field-help:hover { background:#daeaf8; }
+      .field-help::after {
+        content: attr(data-tooltip);
+        position:absolute;
+        bottom:calc(100% + 7px);
+        left:50%;
+        transform:translateX(-50%);
+        background:#1e293b;
+        color:#fff;
+        padding:0.45rem 0.7rem;
+        border-radius:7px;
+        font-size:0.73rem;
+        font-weight:500;
+        line-height:1.45;
+        white-space:normal;
+        width:220px;
+        pointer-events:none;
+        opacity:0;
+        transition:opacity 150ms ease;
+        z-index:10050;
+        text-align:left;
+        box-shadow:0 4px 14px rgba(0,0,0,0.22);
+      }
+      .field-help::before {
+        content:'';
+        position:absolute;
+        bottom:calc(100% + 2px);
+        left:50%;
+        transform:translateX(-50%);
+        border:5px solid transparent;
+        border-top-color:#1e293b;
+        pointer-events:none;
+        opacity:0;
+        transition:opacity 150ms ease;
+        z-index:10050;
+      }
+      .field-help:hover::after,
+      .field-help:hover::before,
+      .field-help.is-open::after,
+      .field-help.is-open::before { opacity:1; }
 
       /* ── Dark theme ── */
       body {
@@ -219,10 +311,6 @@
         background: rgba(16,42,19,.90) !important;
         border-top-color: rgba(100,200,120,.18) !important;
         color: rgba(180,225,170,.8) !important;
-      }
-      .orchid-overview-actions {
-        background: rgba(16,42,19,.90) !important;
-        border-top-color: rgba(100,200,120,.18) !important;
       }
       #detail-paged { background: rgba(13,36,15,.90) !important; }
       .orchid-detail-header-bar {
@@ -319,9 +407,6 @@
         </div>
         <div id="orchid-leaflet-map"></div>
         <p class="orchid-map-hint">Click an orchid icon on the map to view sighting details</p>
-        <div class="orchid-overview-actions">
-          <button type="button" id="orchid-detail-add-btn-overview" class="orchid-nav-btn orchid-nav-btn-fill">Add Sighting</button>
-        </div>
       </div>
 
     </div>
@@ -429,6 +514,429 @@
           <button type="button" id="orchid-detail-add-btn" class="orchid-nav-btn orchid-nav-btn-outline">Add Sighting</button>
           <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &rarr;</button>
         </div>
+      </div>
+    </div>
+
+    <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
+      <div id="researcher-submission-panel" style="background:white;border-radius:12px;padding:1.4rem;border:1px solid #dfe7e2;box-shadow:0 12px 30px rgba(0,0,0,0.18);max-width:980px;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;">
+          <h2 style="margin:0;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:1.3rem;">Add Species Sighting</h2>
+          <button type="button" aria-label="Close submission form" onclick="closeResearcherSubmissionModal()" style="background:#f8fafc;border:1px solid #d5dee8;color:#334155;border-radius:8px;width:34px;height:34px;font-size:1.1rem;line-height:1;cursor:pointer;">x</button>
+        </div>
+        <form id="researcher-submission-form" style="display:block;">
+          <!-- Step indicator -->
+          <div style="margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.45rem;">
+              <span id="submission-step-label" style="font-weight:700;color:#145A1E;font-size:0.95rem;"></span>
+              <span id="submission-step-count" style="font-size:0.82rem;color:#9caeab;"></span>
+            </div>
+            <div id="submission-step-dots" style="display:flex;gap:0.3rem;"></div>
+          </div>
+
+          <!-- Page 1: Basic Taxonomic Information -->
+          <div class="submission-page" data-page="1" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Basic Taxonomic Information</strong>
+            </div>
+            <div class="submission-field" style="display:none;">
+              <label for="submission-entry-id" style="font-size:0.88rem;font-weight:600;color:#334155;">Entry ID</label>
+              <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly class="submission-text-input" style="background:#f7faf8;font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-family" style="font-size:0.88rem;font-weight:600;color:#334155;">Family</label>
+              <input id="submission-family" type="text" value="Orchidaceae" readonly class="submission-text-input" style="background:#f7faf8;font-family:Inter,Roboto,sans-serif;" placeholder="Family" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus</label>
+              <input id="submission-genus" type="text" placeholder="Genus" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-species-epithet" style="font-size:0.88rem;font-weight:600;color:#334155;">Species Epithet</label>
+              <input id="submission-species-epithet" type="text" placeholder="Species Epithet" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
+            </div>
+            <div class="submission-field submission-field--full">
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name</label>
+              <div style="display:flex;gap:0.5rem;">
+                <input id="submission-scientific-name" type="text" placeholder="Scientific Name (auto-filled from Genus + Species, or type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">IDK</button>
+              </div>
+            </div>
+            <div style="grid-column:1/-1;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.45rem;">
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Common Name(s) <span class="field-help" data-tooltip="English or standard common names for this orchid.">?</span></span>
+                <button type="button" id="submission-add-common-name" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add</button>
+              </div>
+              <div id="submission-common-names-wrap" style="display:grid;gap:0.45rem;"></div>
+            </div>
+            <div style="grid-column:1/-1;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.45rem;">
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Local / Indigenous Name(s) <span class="field-help" data-tooltip="Dialect or indigenous names used locally for this orchid.">?</span></span>
+                <button type="button" id="submission-add-local-name" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add</button>
+              </div>
+              <div id="submission-local-names-wrap" style="display:grid;gap:0.45rem;"></div>
+            </div>
+            <div class="submission-field">
+              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
+              <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
+            </div>
+          </div>
+
+          <!-- Page 2: Observation / Collection Details -->
+          <div class="submission-page" data-page="2" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Observation / Collection Details</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
+              <input id="submission-observation-date" type="date" class="submission-text-input submission-date-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-observation-time" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Time <span class="field-help" data-tooltip="Optional. Time of day observation was made (HH:MM format). Leave blank if unknown.">?</span></label>
+              <input id="submission-observation-time" type="time" class="submission-text-input submission-time-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-collection-method" style="font-size:0.88rem;font-weight:600;color:#334155;">Collection Method <span class="field-help" data-tooltip="Optional. How was the orchid located: Transect (survey line), Quadrat (defined area), Opportunistic (chance find), or Random Survey.">?</span></label>
+              <select id="submission-collection-method" class="submission-select"><option value="" disabled selected hidden>Collection Method</option><option value="transect">Transect</option><option value="quadrat">Quadrat</option><option value="opportunistic">Opportunistic</option><option value="random survey">Random Survey</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-observation-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Type <span class="field-help" data-tooltip="Optional. State of specimen: Live (healthy), Flowering, Fruiting, Dead, or Photographic Only.">?</span></label>
+              <select id="submission-observation-type" class="submission-select"><option value="" disabled selected hidden>Observation Type</option><option value="live specimen">Live Specimen</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option><option value="dead specimen">Dead Specimen</option><option value="photographic only">Photographic Only</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-voucher-collected" style="font-size:0.88rem;font-weight:600;color:#334155;">Voucher Specimen Collected <span class="field-help" data-tooltip="Optional. Select Yes if you collected a pressed/dried specimen for herbarium, No otherwise.">?</span></label>
+              <select id="submission-voucher-collected" class="submission-select"><option value="" disabled selected hidden>Voucher Specimen Collected</option><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+          </div>
+
+          <!-- Page 3: Geographical / Location Data -->
+          <div class="submission-page" data-page="3" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Geographical / Location Data</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-mountain" style="font-size:0.88rem;font-weight:600;color:#334155;">Mountain <span class="field-help" data-tooltip="Fixed location for this form.">?</span></label>
+              <input id="submission-mountain" type="text" value="Mt. Busa" readonly class="submission-text-input" style="background:#f7faf8;" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" data-tooltip="Optional. General area: Trail, Ridge, Streamside, or Others. Helps pinpoint location context.">?</span></label>
+              <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
+            </div>
+            <div id="submission-specific-site-other-wrap" class="submission-field submission-field--full" style="display:none;">
+              <label for="submission-specific-site-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site (if Others) <span class="field-help" data-tooltip="Optional. Use this when the zone is set to Others.">?</span></label>
+              <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" class="submission-text-input" />
+            </div>
+            <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+              <button type="button" id="submission-use-gps" style="padding:0.55rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
+              <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
+            </div>
+            <div class="submission-field">
+              <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+              <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+              <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation / Altitude (meters) <span class="field-help" data-tooltip="Auto-filled from GPS if available, or enter manually.">?</span></label>
+              <input id="submission-elevation" type="number" step="0.01" placeholder="Elevation (meters)" class="submission-text-input submission-number-input" />
+            </div>
+          </div>
+
+          <!-- Page 4: Habitat Information -->
+          <div class="submission-page" data-page="4" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Habitat Information</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-habitat-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Habitat Type</label>
+              <select id="submission-habitat-type" class="submission-select"><option value="" disabled selected hidden>Habitat Type</option><option value="lowland forest">Lowland Forest</option><option value="montane forest">Montane Forest</option><option value="mossy forest">Mossy Forest</option><option value="others">Others</option></select>
+              <input id="submission-habitat-type-other" type="text" placeholder="Specify habitat type" style="display:none;" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-microhabitat" style="font-size:0.88rem;font-weight:600;color:#334155;">Microhabitat</label>
+              <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" data-tooltip="Optional. Surface orchid grows on: Tree Bark, Soil, Rock, or Decaying Wood.">?</span></label>
+              <select id="submission-growth-substrate" class="submission-select"><option value="" disabled selected hidden>Growth Substrate</option><option value="tree bark">Tree Bark (on Tree)</option><option value="soil">Soil</option><option value="rock">Rock</option><option value="decaying wood">Decaying Wood</option></select>
+            </div>
+            <div id="submission-tree-fields" style="display:none;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+              <div class="submission-field">
+                <label for="submission-host-tree-species" style="font-size:0.88rem;font-weight:600;color:#334155;">Tree Species</label>
+                <input id="submission-host-tree-species" type="text" placeholder="Tree Species" class="submission-text-input" />
+              </div>
+              <div class="submission-field">
+                <label for="submission-host-tree-dbh" style="font-size:0.88rem;font-weight:600;color:#334155;">Tree Diameter / DBH (cm)</label>
+                <input id="submission-host-tree-dbh" type="number" step="0.01" placeholder="Tree Diameter / DBH (cm)" class="submission-text-input submission-number-input" />
+              </div>
+            </div>
+            <div class="submission-field">
+              <label for="submission-canopy-cover" style="font-size:0.88rem;font-weight:600;color:#334155;">Canopy Cover (%)</label>
+              <input id="submission-canopy-cover" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Canopy Cover (%)" class="submission-text-input submission-number-input submission-canopy-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-light-exposure" style="font-size:0.88rem;font-weight:600;color:#334155;">Light Exposure</label>
+              <select id="submission-light-exposure" class="submission-select"><option value="" disabled selected hidden>Light Exposure</option><option value="full shade">Full Shade</option><option value="partial">Partial</option><option value="direct">Direct</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-soil-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Soil Type</label>
+              <select id="submission-soil-type" class="submission-select"><option value="" disabled selected hidden>Soil Type</option><option value="loamy">Loamy</option><option value="clay">Clay</option><option value="sandy">Sandy</option><option value="silty">Silty</option><option value="peaty">Peaty</option><option value="rocky">Rocky</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-nearby-water-source" style="font-size:0.88rem;font-weight:600;color:#334155;">Nearby Water Source</label>
+              <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-flowering-season" style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" data-tooltip="Optional. When does this orchid typically flower?">?</span></label>
+              <select id="submission-flowering-season" class="submission-select"><option value="" disabled selected hidden>Flowering Season</option><option value="Spring">Spring</option><option value="Summer">Summer</option><option value="Autumn">Autumn</option><option value="Winter">Winter</option><option value="Year-round">Year-round</option><option value="Dry Season">Dry Season</option><option value="Wet Season">Wet Season</option><option value="Unknown">Unknown</option></select>
+            </div>
+          </div>
+
+          <!-- Page 5: Morphological Characteristics -->
+          <div class="submission-page" data-page="5" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Morphological Characteristics</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-plant-height" style="font-size:0.88rem;font-weight:600;color:#334155;">Plant Height (cm)</label>
+              <input id="submission-plant-height" type="number" step="0.01" placeholder="Plant Height (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-pseudobulb-present" style="font-size:0.88rem;font-weight:600;color:#334155;">Pseudobulb Present</label>
+              <select id="submission-pseudobulb-present" class="submission-select"><option value="" disabled selected hidden>Pseudobulb Present</option><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-stem-length" style="font-size:0.88rem;font-weight:600;color:#334155;">Stem Length (cm)</label>
+              <input id="submission-stem-length" type="number" step="0.01" placeholder="Stem Length (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-root-length" style="font-size:0.88rem;font-weight:600;color:#334155;">Root Length (cm)</label>
+              <input id="submission-root-length" type="number" step="0.01" placeholder="Root Length (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Leaves</label>
+              <input id="submission-leaf-count" type="number" placeholder="Number of Leaves" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-shape" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Shape</label>
+              <select id="submission-leaf-shape" class="submission-select"><option value="" disabled selected hidden>Leaf Shape</option><option value="Linear & Narrow">Linear & Narrow</option><option value="Rounded & Oval">Rounded & Oval</option><option value="Pointy or Tapered">Pointy or Tapered</option><option value="Reversed">Reversed</option><option value="Specialized Shapes">Specialized Shapes</option><option value="Others">Others</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-shape-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Shape (Others)</label>
+              <input id="submission-leaf-shape-other" type="text" placeholder="Leaf Shape (Others)" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-length" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Length (cm)</label>
+              <input id="submission-leaf-length" type="number" step="0.01" placeholder="Leaf Length (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-width" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Width (cm)</label>
+              <input id="submission-leaf-width" type="number" step="0.01" placeholder="Leaf Width (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Texture</label>
+              <details id="submission-leaf-texture" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
+                <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
+                  <span>Choose one or more</span>
+                  <span aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #64748b;flex:0 0 auto;margin-top:2px;"></span>
+                </summary>
+                <div style="display:grid;gap:0.35rem;margin-top:0.55rem;">
+                  <label><input type="checkbox" value="Smooth" class="submission-leaf-texture-option" /> Smooth</label>
+                  <label><input type="checkbox" value="Leathery" class="submission-leaf-texture-option" /> Leathery</label>
+                  <label><input type="checkbox" value="Hairy or Fuzzy" class="submission-leaf-texture-option" /> Hairy or Fuzzy</label>
+                  <label><input type="checkbox" value="Thin or Fragile" class="submission-leaf-texture-option" /> Thin or Fragile</label>
+                </div>
+              </details>
+            </div>
+            <div class="submission-field">
+              <label for="submission-leaf-arrangement" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Arrangement</label>
+              <select id="submission-leaf-arrangement" class="submission-select"><option value="" disabled selected hidden>Leaf Arrangement</option><option value="Alternate">Alternate</option><option value="Opposite">Opposite</option><option value="Whorled">Whorled</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-flower-color" style="font-size:0.88rem;font-weight:600;color:#334155;">Flower Color</label>
+              <input id="submission-flower-color" type="text" placeholder="Flower Color" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-flower-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Flowers</label>
+              <input id="submission-flower-count" type="number" placeholder="Number of Flowers" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-flower-diameter" style="font-size:0.88rem;font-weight:600;color:#334155;">Flower Diameter (cm)</label>
+              <input id="submission-flower-diameter" type="number" step="0.01" placeholder="Flower Diameter (cm)" class="submission-text-input submission-number-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-inflorescence-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Inflorescence Type</label>
+              <select id="submission-inflorescence-type" class="submission-select"><option value="" disabled selected hidden>Inflorescence Type</option><option value="Raceme">Raceme</option><option value="Spike">Spike</option><option value="Panicle">Panicle</option><option value="Solitary">Solitary</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-petal-characteristics" style="font-size:0.88rem;font-weight:600;color:#334155;">Petal Characteristics</label>
+              <select id="submission-petal-characteristics" class="submission-select"><option value="" disabled selected hidden>Petal Characteristics</option><option value="Obovate">Obovate</option><option value="Elliptic">Elliptic</option><option value="Spatulate">Spatulate</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-sepal-characteristics" style="font-size:0.88rem;font-weight:600;color:#334155;">Sepal Characteristics</label>
+              <input id="submission-sepal-characteristics" type="text" placeholder="Sepal Characteristics" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-labellum-description" style="font-size:0.88rem;font-weight:600;color:#334155;">Labellum / Lip Description</label>
+              <select id="submission-labellum-description" class="submission-select"><option value="" disabled selected hidden>Labellum / Lip Description</option><option value="Trilobed (Three-lobed)">Trilobed (Three-lobed)</option><option value="Saccate (Bag-like)">Saccate (Bag-like)</option><option value="Spurred">Spurred</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-fragrance" style="font-size:0.88rem;font-weight:600;color:#334155;">Fragrance</label>
+              <select id="submission-fragrance" class="submission-select"><option value="" disabled selected hidden>Fragrance</option><option value="None">None</option><option value="Faint">Faint</option><option value="Strong">Strong</option><option value="Sweet">Sweet</option><option value="Musky">Musky</option><option value="Spicy">Spicy</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-blooming-stage" style="font-size:0.88rem;font-weight:600;color:#334155;">Blooming Stage</label>
+              <select id="submission-blooming-stage" class="submission-select"><option value="" disabled selected hidden>Blooming Stage</option><option value="Budding">Budding</option><option value="Anthesis (Early)">Anthesis (Early)</option><option value="Full Bloom">Full Bloom</option><option value="Senescent">Senescent</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-fruit-present" style="font-size:0.88rem;font-weight:600;color:#334155;">Fruit Present</label>
+              <select id="submission-fruit-present" class="submission-select"><option value="" disabled selected hidden>Fruit Present</option><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-fruit-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Fruit Type</label>
+              <select id="submission-fruit-type" class="submission-select"><option value="" disabled selected hidden>Fruit Type</option><option value="Capsule">Capsule</option><option value="Pod">Pod</option><option value="Berry">Berry</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-seed-capsule-condition" style="font-size:0.88rem;font-weight:600;color:#334155;">Seed Capsule Condition</label>
+              <select id="submission-seed-capsule-condition" class="submission-select"><option value="" disabled selected hidden>Seed Capsule Condition</option><option value="Immature (Green)">Immature (Green)</option><option value="Mature (Yellow/Brown)">Mature (Yellow/Brown)</option><option value="Dehisced (Split)">Dehisced (Split)</option><option value="Aborted">Aborted</option></select>
+            </div>
+          </div>
+
+          <!-- Page 6: Ecological / Biological Data -->
+          <div class="submission-page" data-page="6" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Ecological / Biological Data</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-life-stage" style="font-size:0.88rem;font-weight:600;color:#334155;">Life Stage</label>
+              <select id="submission-life-stage" class="submission-select"><option value="" disabled selected hidden>Life Stage</option><option value="Seedling">Seedling</option><option value="juvenile">Juvenile</option><option value="Mature">Mature</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-phenology" style="font-size:0.88rem;font-weight:600;color:#334155;">Phenology</label>
+              <select id="submission-phenology" class="submission-select"><option value="" disabled selected hidden>Phenology</option><option value="Vegetative">Vegetative</option><option value="budding">Budding</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-population-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Count</label>
+              <input id="submission-population-count" type="number" placeholder="Population Count" class="submission-text-input submission-number-input" />
+            </div>
+          </div>
+
+          <!-- Page 7: Conservation & Threat Data -->
+          <div class="submission-page" data-page="7" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Conservation &amp; Threat Data</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-population-status" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Status</label>
+              <select id="submission-population-status" class="submission-select"><option value="" disabled selected hidden>Population Status</option><option value="Abundant">Abundant</option><option value="common">Common</option><option value="rare">Rare</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level</label>
+              <select id="submission-threat-level" class="submission-select"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Least Concern">Least Concern</option></select>
+            </div>
+            <div class="submission-field submission-field--full">
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Type</label>
+              <details id="submission-threat-types" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
+                <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
+                  <span>Choose one or more</span>
+                  <span aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #64748b;flex:0 0 auto;margin-top:2px;"></span>
+                </summary>
+                <div style="display:grid;gap:0.35rem;margin-top:0.55rem;">
+                  <label><input type="checkbox" value="logging" class="submission-threat-type-option" /> Logging</label>
+                  <label><input type="checkbox" value="collection" class="submission-threat-type-option" /> Collection</label>
+                  <label><input type="checkbox" value="Fire" class="submission-threat-type-option" /> Fire</label>
+                  <label><input type="checkbox" value="land conversion" class="submission-threat-type-option" /> Land Conversion</label>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <!-- Page 8: Multimedia Documentation -->
+          <div class="submission-page" data-page="8" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Multimedia Documentation</strong>
+              <div style="font-size:0.82rem;color:#64748b;margin-top:0.25rem;">Up to 3 photos per category. Whole plant photo is required.</div>
+            </div>
+            <div style="grid-column:1/-1;">
+              <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span style="color:#b42318;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
+              <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <div id="submission-whole-plant-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+            </div>
+            <div>
+              <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Close-up Flower Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
+              <input id="submission-closeup-flower-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <div id="submission-closeup-flower-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+            </div>
+            <div>
+              <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Habitat Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
+              <input id="submission-habitat-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <div id="submission-habitat-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+            </div>
+            <div>
+              <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">3D Photo <span style="font-weight:400;color:#64748b;">(optional, max 3)</span></label>
+              <input id="submission-photo-3d" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
+              <div id="submission-photo-3d-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+            </div>
+            <div style="grid-column:1/-1;">
+              <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Video Documentation</label>
+              <input id="submission-video" type="file" accept="video/*" style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            </div>
+          </div>
+
+          <!-- Page 9: Notes, Remarks, and Researchers -->
+          <div class="submission-page" data-page="9" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
+            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+              <strong>Notes, Remarks, and Researchers</strong>
+            </div>
+            <div class="submission-field">
+              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name</label>
+              <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" class="submission-text-input" />
+            </div>
+            <div class="submission-field">
+              <label for="submission-institution" style="font-size:0.88rem;font-weight:600;color:#334155;">Institution / Organization</label>
+              <input id="submission-institution" type="text" placeholder="Institution / Organization" class="submission-text-input" />
+            </div>
+            <div style="grid-column:1/-1;display:grid;gap:0.55rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members <span style="color:#b42318;">*</span></span>
+                <button type="button" id="submission-add-team-member" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add Member</button>
+              </div>
+              <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
+            </div>
+            <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
+              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes</label>
+              <textarea id="submission-researcher-notes" placeholder="Researcher Notes" class="submission-textarea" style="min-height:90px;"></textarea>
+            </div>
+
+            <!-- Related Study -->
+            <div style="grid-column:1/-1;border:1px solid #d4ddd7;border-radius:10px;padding:1rem;background:#f9fcfa;">
+              <div style="font-size:0.88rem;font-weight:700;color:#145A1E;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                Related Study
+              </div>
+              <div style="display:grid;gap:0.65rem;">
+                <input id="submission-related-study-title" type="text" placeholder="Title of Information" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;width:100%;box-sizing:border-box;font-family:inherit;font-size:0.92rem;" />
+                <input id="submission-related-study-link" type="url" placeholder="Link (https://...)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;width:100%;box-sizing:border-box;font-family:inherit;font-size:0.92rem;" />
+                <div>
+                  <label style="display:block;font-size:0.83rem;color:#52655b;margin-bottom:0.3rem;font-weight:600;">Upload Study (PDF)</label>
+                  <input id="submission-related-study-file" type="file" accept=".pdf,application/pdf" style="padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;width:100%;box-sizing:border-box;background:#fff;font-size:0.88rem;" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Row -->
+          <div id="submission-nav-row" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-top:1rem;padding-top:0.85rem;border-top:1px solid #e8eeea;flex-wrap:wrap;">
+            <button type="button" id="submission-back-btn" style="padding:0.65rem 1.2rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;color:#334155;font-weight:600;cursor:pointer;display:none;">&#8592; Back</button>
+            <div style="display:flex;gap:0.65rem;margin-left:auto;align-items:center;flex-wrap:wrap;">
+              <span id="researcher-submission-feedback" style="font-size:0.92rem;color:#4f5f56;max-width:260px;"></span>
+              <button type="button" id="submission-draft-btn" style="padding:0.65rem 1.2rem;border:1px solid #145A1E;border-radius:8px;background:#fff;color:#145A1E;font-weight:600;cursor:pointer;">Save as Draft</button>
+              <button type="button" id="submission-next-btn" style="padding:0.65rem 1.2rem;border:none;border-radius:8px;background:#145A1E;color:#fff;font-weight:600;cursor:pointer;">Next &#8594;</button>
+              <button type="submit" id="submission-submit-btn" class="dashboard-btn dashboard-btn-primary" style="display:none;padding:0.65rem 1.2rem;background-color:#145A1E !important;border-color:#145A1E !important;color:white !important;">Submit Sighting</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -749,26 +1257,7 @@
             const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
               ? currentOrchid.name
               : (document.getElementById('oid-sci-name')?.textContent || '').trim();
-            const params = new URLSearchParams();
-            params.set('addSighting', '1');
-            if (hasUsableValue(orchidName)) {
-              params.set('orchidName', String(orchidName).trim());
-            }
-            window.location.href = 'researcher-dashboard.html?' + params.toString();
-          });
-        }
-        const addOverviewBtn = document.getElementById('orchid-detail-add-btn-overview');
-        if (addOverviewBtn) {
-          addOverviewBtn.addEventListener('click', function() {
-            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
-              ? currentOrchid.name
-              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
-            const params = new URLSearchParams();
-            params.set('addSighting', '1');
-            if (hasUsableValue(orchidName)) {
-              params.set('orchidName', String(orchidName).trim());
-            }
-            window.location.href = 'researcher-dashboard.html?' + params.toString();
+            openResearcherSubmissionModal(orchidName);
           });
         }
       }
@@ -786,6 +1275,695 @@
         orchidGoToDetailPage(1);
         document.getElementById('detail-overview').hidden = true;
         document.getElementById('detail-paged').hidden = false;
+      }
+
+      // ── Submission modal (researcher) ───────────────────────────
+      const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
+      const submissionClient = window.bloomSupabase || window.supabase;
+      let parsedActiveUser = {};
+      try {
+        const storedUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
+        if (storedUser) parsedActiveUser = JSON.parse(storedUser);
+      } catch {}
+
+      let currentSubmissionPage = 1;
+      const SUBMISSION_TOTAL_PAGES = 9;
+      const SUBMISSION_PAGE_LABELS = [
+        'Basic Taxonomic Information',
+        'Observation / Collection Details',
+        'Geographical / Location Data',
+        'Habitat Information',
+        'Morphological Characteristics',
+        'Ecological / Biological Data',
+        'Conservation & Threat Data',
+        'Multimedia Documentation',
+        'Notes, Remarks, and Researchers'
+      ];
+
+      function updateSubmissionStepIndicator(n) {
+        const labelEl = document.getElementById('submission-step-label');
+        const countEl = document.getElementById('submission-step-count');
+        const dotsEl = document.getElementById('submission-step-dots');
+        if (labelEl) labelEl.textContent = SUBMISSION_PAGE_LABELS[n - 1] || '';
+        if (countEl) countEl.textContent = `Step ${n} of ${SUBMISSION_TOTAL_PAGES}`;
+        if (dotsEl) {
+          dotsEl.innerHTML = '';
+          for (let i = 1; i <= SUBMISSION_TOTAL_PAGES; i++) {
+            const dot = document.createElement('div');
+            dot.style.cssText = `width:${i === n ? '22px' : '8px'};height:8px;border-radius:4px;background:${i <= n ? '#145A1E' : '#d4ddd7'};transition:all 0.2s;`;
+            dotsEl.appendChild(dot);
+          }
+        }
+      }
+
+      function goToSubmissionPage(n) {
+        currentSubmissionPage = Math.max(1, Math.min(SUBMISSION_TOTAL_PAGES, n));
+        document.querySelectorAll('.submission-page').forEach(page => {
+          page.style.display = 'none';
+        });
+        const target = document.querySelector(`.submission-page[data-page="${currentSubmissionPage}"]`);
+        if (target) target.style.display = 'grid';
+        updateSubmissionStepIndicator(currentSubmissionPage);
+        const backBtn = document.getElementById('submission-back-btn');
+        const nextBtn = document.getElementById('submission-next-btn');
+        const submitBtn = document.getElementById('submission-submit-btn');
+        if (backBtn) backBtn.style.display = currentSubmissionPage === 1 ? 'none' : '';
+        if (nextBtn) nextBtn.style.display = currentSubmissionPage === SUBMISSION_TOTAL_PAGES ? 'none' : '';
+        if (submitBtn) submitBtn.style.display = currentSubmissionPage === SUBMISSION_TOTAL_PAGES ? '' : 'none';
+        const panel = document.getElementById('researcher-submission-panel');
+        if (panel) panel.scrollTop = 0;
+      }
+
+      function validateCurrentSubmissionPage() {
+        const p = currentSubmissionPage;
+        const feedback = document.getElementById('researcher-submission-feedback');
+        function showErr(msg) {
+          if (feedback) { feedback.style.color = '#b42318'; feedback.textContent = msg; }
+          return false;
+        }
+        if (p === 1) {
+          const sci = (document.getElementById('submission-scientific-name')?.value || '').trim();
+          if (!sci) return showErr('Scientific Name is required.');
+        }
+        if (p === 2) {
+          const date = document.getElementById('submission-observation-date')?.value;
+          if (!date) return showErr('Observation Date is required.');
+        }
+        if (p === 3) {
+          const lat = document.getElementById('submission-latitude')?.value;
+          const lng = document.getElementById('submission-longitude')?.value;
+          if (!lat || !lng) return showErr('GPS Latitude and Longitude are required.');
+        }
+        if (feedback) feedback.textContent = '';
+        return true;
+      }
+
+      function createCommonNameInput(index) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;gap:0.45rem;align-items:center;';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'submission-common-name-item';
+        input.placeholder = `Common Name ${index}`;
+        input.style.cssText = 'flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '×';
+        removeBtn.style.cssText = 'padding:0.4rem 0.65rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;';
+        removeBtn.addEventListener('click', () => wrap.remove());
+        wrap.appendChild(input);
+        wrap.appendChild(removeBtn);
+        return wrap;
+      }
+
+      function createLocalNameInput(index) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;gap:0.45rem;align-items:center;';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'submission-local-name-item';
+        input.placeholder = `Local / Indigenous Name ${index}`;
+        input.style.cssText = 'flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '×';
+        removeBtn.style.cssText = 'padding:0.4rem 0.65rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;';
+        removeBtn.addEventListener('click', () => wrap.remove());
+        wrap.appendChild(input);
+        wrap.appendChild(removeBtn);
+        return wrap;
+      }
+
+      function createTeamMemberInput(index) {
+        const wrap = document.createElement('div');
+        wrap.className = 'submission-team-member-item';
+        wrap.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:0.5rem;align-items:end;';
+
+        const nameField = document.createElement('div');
+        nameField.style.cssText = 'display:grid;gap:0.35rem;';
+        const nameLabel = document.createElement('label');
+        nameLabel.textContent = `Member ${index} Name`;
+        nameLabel.style.cssText = 'font-size:0.82rem;font-weight:600;color:#334155;';
+        nameLabel.setAttribute('for', `submission-team-member-name-${index}`);
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.id = `submission-team-member-name-${index}`;
+        nameInput.className = 'submission-team-member-name submission-text-input';
+        nameInput.placeholder = `Member ${index} Name`;
+        nameField.appendChild(nameLabel);
+        nameField.appendChild(nameInput);
+
+        const roleField = document.createElement('div');
+        roleField.style.cssText = 'display:grid;gap:0.35rem;';
+        const roleLabel = document.createElement('label');
+        roleLabel.textContent = 'Role';
+        roleLabel.style.cssText = 'font-size:0.82rem;font-weight:600;color:#334155;';
+        roleLabel.setAttribute('for', `submission-team-member-role-${index}`);
+        const roleSelect = document.createElement('select');
+        roleSelect.id = `submission-team-member-role-${index}`;
+        roleSelect.className = 'submission-team-member-role submission-select';
+        roleSelect.innerHTML = '<option value="" disabled selected hidden>Role</option>' +
+          ['Lead Researcher','Field Assistant','Data Recorder','Photographer','Botanist','Student','Observer','Other']
+            .map(r => `<option value="${r}">${r}</option>`).join('');
+        roleField.appendChild(roleLabel);
+        roleField.appendChild(roleSelect);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '×';
+        removeBtn.style.cssText = 'padding:0.5rem 0.75rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1.1rem;line-height:1;';
+        removeBtn.addEventListener('click', function() { wrap.remove(); });
+
+        wrap.appendChild(nameField);
+        wrap.appendChild(roleField);
+        wrap.appendChild(removeBtn);
+        return wrap;
+      }
+
+      function initializeResearcherSightingForm() {
+        const entryIdEl = document.getElementById('submission-entry-id');
+        const observationDateEl = document.getElementById('submission-observation-date');
+        const observationTimeEl = document.getElementById('submission-observation-time');
+        const commonNamesWrap = document.getElementById('submission-common-names-wrap');
+        const addCommonNameBtn = document.getElementById('submission-add-common-name');
+        const localNamesWrap = document.getElementById('submission-local-names-wrap');
+        const addLocalNameBtn = document.getElementById('submission-add-local-name');
+        const teamMembersWrap = document.getElementById('submission-team-members-wrap');
+        const addTeamMemberBtn = document.getElementById('submission-add-team-member');
+
+        goToSubmissionPage(1);
+
+        if (entryIdEl) {
+          const generatedPreviewId = `PENDING-${Date.now().toString().slice(-8)}`;
+          entryIdEl.value = generatedPreviewId;
+        }
+
+        const now = new Date();
+        if (observationDateEl && !observationDateEl.value) {
+          observationDateEl.value = now.toISOString().slice(0, 10);
+        }
+        if (observationTimeEl && !observationTimeEl.value) {
+          observationTimeEl.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        if (commonNamesWrap && commonNamesWrap.children.length === 0) {
+          commonNamesWrap.appendChild(createCommonNameInput(1));
+        }
+
+        if (addCommonNameBtn && !addCommonNameBtn.dataset.bound) {
+          addCommonNameBtn.dataset.bound = '1';
+          addCommonNameBtn.addEventListener('click', function() {
+            if (!commonNamesWrap) return;
+            const currentInputs = commonNamesWrap.querySelectorAll('.submission-common-name-item').length;
+            if (currentInputs >= 5) return;
+            commonNamesWrap.appendChild(createCommonNameInput(currentInputs + 1));
+          });
+        }
+
+        if (localNamesWrap && localNamesWrap.children.length === 0) {
+          localNamesWrap.appendChild(createLocalNameInput(1));
+        }
+
+        if (addLocalNameBtn && !addLocalNameBtn.dataset.bound) {
+          addLocalNameBtn.dataset.bound = '1';
+          addLocalNameBtn.addEventListener('click', function() {
+            if (!localNamesWrap) return;
+            const currentInputs = localNamesWrap.querySelectorAll('.submission-local-name-item').length;
+            if (currentInputs >= 5) return;
+            localNamesWrap.appendChild(createLocalNameInput(currentInputs + 1));
+          });
+        }
+
+        if (teamMembersWrap && teamMembersWrap.children.length === 0) {
+          teamMembersWrap.appendChild(createTeamMemberInput(1));
+        }
+
+        if (addTeamMemberBtn && !addTeamMemberBtn.dataset.bound) {
+          addTeamMemberBtn.dataset.bound = '1';
+          addTeamMemberBtn.addEventListener('click', function() {
+            if (!teamMembersWrap) return;
+            teamMembersWrap.appendChild(createTeamMemberInput(teamMembersWrap.children.length + 1));
+          });
+        }
+
+        const backBtn = document.getElementById('submission-back-btn');
+        const nextBtn = document.getElementById('submission-next-btn');
+        if (backBtn && !backBtn.dataset.bound) {
+          backBtn.dataset.bound = '1';
+          backBtn.addEventListener('click', function() { goToSubmissionPage(currentSubmissionPage - 1); });
+        }
+        if (nextBtn && !nextBtn.dataset.bound) {
+          nextBtn.dataset.bound = '1';
+          nextBtn.addEventListener('click', function() {
+            if (!validateCurrentSubmissionPage()) return;
+            goToSubmissionPage(currentSubmissionPage + 1);
+          });
+        }
+
+        const draftBtn = document.getElementById('submission-draft-btn');
+        if (draftBtn && !draftBtn.dataset.bound) {
+          draftBtn.dataset.bound = '1';
+          draftBtn.addEventListener('click', async function() {
+            const feedback = document.getElementById('researcher-submission-feedback');
+            if (feedback) { feedback.style.color = '#4f5f56'; feedback.textContent = 'Saving draft…'; }
+            try {
+              if (!submissionClient) throw new Error('Supabase not configured');
+              const form = document.getElementById('researcher-submission-form');
+              const editDraftId = form?.dataset?.editDraftId || '';
+              const editDraftEntryId = form?.dataset?.editDraftEntryId || '';
+              const entryId = (editDraftId && editDraftEntryId)
+                ? editDraftEntryId
+                : `DRAFT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+              const currentEmail = String(parsedActiveUser.email || '').trim() || null;
+              const currentName = [parsedActiveUser.first_name, parsedActiveUser.last_name].filter(Boolean).join(' ').trim() || null;
+              const commonNames = Array.from(document.querySelectorAll('.submission-common-name-item')).map(el => (el.value || '').trim()).filter(Boolean);
+              const localNames = Array.from(document.querySelectorAll('.submission-local-name-item')).map(el => (el.value || '').trim()).filter(Boolean);
+              const leafTextures = Array.from(document.querySelectorAll('.submission-leaf-texture-option:checked')).map(opt => opt.value);
+              const threatTypes = Array.from(document.querySelectorAll('.submission-threat-type-option:checked')).map(opt => opt.value);
+              const teamMembers = Array.from(document.querySelectorAll('.submission-team-member-item')).map(item => {
+                const name = (item.querySelector('.submission-team-member-name')?.value || '').trim();
+                const role = item.querySelector('.submission-team-member-role')?.value || '';
+                return name ? { name, role } : null;
+              }).filter(Boolean);
+              const draftPayload = buildSubmissionPayload({ entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers, reviewStatus: 'draft' });
+              let saveError;
+              if (editDraftId) {
+                const { error } = await submissionClient.from('species_sightings').update(draftPayload).eq('sighting_id', editDraftId);
+                saveError = error;
+              } else {
+                const { error } = await submissionClient.from('species_sightings').insert(draftPayload);
+                saveError = error;
+              }
+              if (saveError) throw new Error(saveError.message || 'Failed to save draft');
+              if (feedback) { feedback.style.color = '#145A1E'; feedback.textContent = 'Draft saved.'; }
+            } catch (err) {
+              const feedback = document.getElementById('researcher-submission-feedback');
+              if (feedback) { feedback.style.color = '#b42318'; feedback.textContent = err.message || 'Could not save draft.'; }
+            }
+          });
+        }
+
+        [
+          ['submission-whole-plant-photo', 'submission-whole-plant-photo-err'],
+          ['submission-closeup-flower-photo', 'submission-closeup-flower-photo-err'],
+          ['submission-habitat-photo', 'submission-habitat-photo-err'],
+          ['submission-photo-3d', 'submission-photo-3d-err']
+        ].forEach(([inputId, errId]) => {
+          const input = document.getElementById(inputId);
+          const errEl = document.getElementById(errId);
+          if (input && !input.dataset.bound) {
+            input.dataset.bound = '1';
+            input.addEventListener('change', function() {
+              if (this.files && this.files.length > 3) {
+                if (errEl) { errEl.textContent = 'Maximum 3 photos allowed. Please select up to 3.'; errEl.style.display = 'block'; }
+                this.value = '';
+              } else {
+                if (errEl) errEl.style.display = 'none';
+              }
+            });
+          }
+        });
+
+        const genusEl = document.getElementById('submission-genus');
+        const speciesEl = document.getElementById('submission-species-epithet');
+        const scientificEl = document.getElementById('submission-scientific-name');
+        function syncScientificName() {
+          const g = (genusEl?.value || '').trim();
+          const s = (speciesEl?.value || '').trim();
+          if (g || s) scientificEl.value = [g, s].filter(Boolean).join(' ');
+        }
+        if (genusEl && !genusEl.dataset.bound) {
+          genusEl.dataset.bound = '1';
+          genusEl.addEventListener('input', syncScientificName);
+        }
+        if (speciesEl && !speciesEl.dataset.bound) {
+          speciesEl.dataset.bound = '1';
+          speciesEl.addEventListener('input', syncScientificName);
+        }
+
+        const growthSubstrateEl = document.getElementById('submission-growth-substrate');
+        const treeFieldsEl = document.getElementById('submission-tree-fields');
+        function toggleTreeFields() {
+          if (!treeFieldsEl) return;
+          const isTree = growthSubstrateEl?.value === 'tree bark';
+          treeFieldsEl.style.display = isTree ? 'grid' : 'none';
+        }
+        if (growthSubstrateEl && !growthSubstrateEl.dataset.bound) {
+          growthSubstrateEl.dataset.bound = '1';
+          growthSubstrateEl.addEventListener('change', toggleTreeFields);
+        }
+        toggleTreeFields();
+
+        const habitatTypeEl = document.getElementById('submission-habitat-type');
+        const habitatTypeOtherEl = document.getElementById('submission-habitat-type-other');
+        function toggleHabitatOther() {
+          if (!habitatTypeOtherEl) return;
+          habitatTypeOtherEl.style.display = habitatTypeEl?.value === 'others' ? 'block' : 'none';
+        }
+        if (habitatTypeEl && !habitatTypeEl.dataset.bound) {
+          habitatTypeEl.dataset.bound = '1';
+          habitatTypeEl.addEventListener('change', toggleHabitatOther);
+        }
+        toggleHabitatOther();
+
+        const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
+        const specificSiteOtherWrapEl = document.getElementById('submission-specific-site-other-wrap');
+        const specificSiteOtherEl = document.getElementById('submission-specific-site-other');
+        function toggleSpecificSiteOther() {
+          if (!specificSiteOtherWrapEl) return;
+          const showOther = specificSiteZoneEl?.value === 'others';
+          specificSiteOtherWrapEl.style.display = showOther ? 'grid' : 'none';
+          if (!showOther && specificSiteOtherEl) {
+            specificSiteOtherEl.value = '';
+          }
+        }
+        if (specificSiteZoneEl && !specificSiteZoneEl.dataset.bound) {
+          specificSiteZoneEl.dataset.bound = '1';
+          specificSiteZoneEl.addEventListener('change', toggleSpecificSiteOther);
+        }
+        toggleSpecificSiteOther();
+
+        const gpsBtn = document.getElementById('submission-use-gps');
+        const gpsStatus = document.getElementById('submission-gps-status');
+        if (gpsBtn && !gpsBtn.dataset.bound) {
+          gpsBtn.dataset.bound = '1';
+          gpsBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+              if (gpsStatus) gpsStatus.textContent = 'Geolocation is not supported by this browser.';
+              return;
+            }
+            if (gpsStatus) gpsStatus.textContent = 'Getting location…';
+            navigator.geolocation.getCurrentPosition(
+              function(pos) {
+                const lat = document.getElementById('submission-latitude');
+                const lng = document.getElementById('submission-longitude');
+                const elev = document.getElementById('submission-elevation');
+                if (lat) lat.value = pos.coords.latitude.toFixed(6);
+                if (lng) lng.value = pos.coords.longitude.toFixed(6);
+                if (elev) {
+                  if (pos.coords.altitude !== null) {
+                    elev.value = pos.coords.altitude.toFixed(1);
+                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                  } else {
+                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy), looking up elevation...`;
+                    const latVal = pos.coords.latitude.toFixed(6);
+                    const lngVal = pos.coords.longitude.toFixed(6);
+                    fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${latVal},${lngVal}`)
+                      .then((res) => res.json())
+                      .then((data) => {
+                        if (data && data.results && data.results[0] && typeof data.results[0].elevation === 'number') {
+                          elev.value = data.results[0].elevation.toFixed(1);
+                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                        } else {
+                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation unknown`;
+                        }
+                      })
+                      .catch(() => {
+                        if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation lookup failed`;
+                      });
+                  }
+                }
+              },
+              function(err) {
+                if (gpsStatus) gpsStatus.textContent = `GPS error: ${err.message}`;
+              },
+              { enableHighAccuracy: true, timeout: 15000 }
+            );
+          });
+        }
+      }
+
+      function openResearcherSubmissionModal(speciesName) {
+        if (!researcherSubmissionModal) return;
+        initializeResearcherSightingForm();
+        const form = document.getElementById('researcher-submission-form');
+        if (form) {
+          delete form.dataset.editDraftId;
+          delete form.dataset.editDraftEntryId;
+        }
+        if (speciesName) {
+          const speciesEl = document.getElementById('submission-scientific-name');
+          if (speciesEl) speciesEl.value = String(speciesName).trim();
+        }
+        researcherSubmissionModal.style.display = 'block';
+      }
+
+      function closeResearcherSubmissionModal() {
+        if (!researcherSubmissionModal) return;
+        researcherSubmissionModal.style.display = 'none';
+        const form = document.getElementById('researcher-submission-form');
+        if (form) {
+          delete form.dataset.editDraftId;
+          delete form.dataset.editDraftEntryId;
+        }
+      }
+
+      function buildSubmissionPayload({ entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers, wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [], photo3dUrls = [], videoUrls = [], relatedStudyFileUrls = [], reviewStatus = 'pending' }) {
+        return {
+          entry_id: entryId,
+          user_id: null,
+          researcher_email: currentEmail,
+          researcher_name: currentName,
+          scientific_name: (document.getElementById('submission-scientific-name')?.value || '').trim(),
+          genus: document.getElementById('submission-genus')?.value.trim() || null,
+          common_names: commonNames,
+          local_names: localNames,
+          identification_confidence: document.getElementById('submission-identification-confidence')?.value || 'Unidentified',
+          observation_date: document.getElementById('submission-observation-date')?.value || null,
+          observation_time: document.getElementById('submission-observation-time')?.value || null,
+          collection_method: document.getElementById('submission-collection-method')?.value || null,
+          observation_type: document.getElementById('submission-observation-type')?.value || null,
+          voucher_collected: document.getElementById('submission-voucher-collected')?.value === 'yes',
+          mountain_name: document.getElementById('submission-mountain')?.value || 'Mt. Busa',
+          specific_site_zone: document.getElementById('submission-specific-site-zone')?.value || null,
+          specific_site_other: document.getElementById('submission-specific-site-other')?.value || null,
+          latitude: Number(document.getElementById('submission-latitude')?.value || 0),
+          longitude: Number(document.getElementById('submission-longitude')?.value || 0),
+          elevation_meters: Number(document.getElementById('submission-elevation')?.value || 0),
+          habitat_type: (function() {
+            const v = document.getElementById('submission-habitat-type')?.value;
+            if (v === 'others') {
+              const other = (document.getElementById('submission-habitat-type-other')?.value || '').trim();
+              return other ? `Others: ${other}` : 'Others';
+            }
+            return v || null;
+          })(),
+          flowering_season: document.getElementById('submission-flowering-season')?.value || null,
+          microhabitat: document.getElementById('submission-microhabitat')?.value || null,
+          growth_substrate: document.getElementById('submission-growth-substrate')?.value || null,
+          host_tree_species: document.getElementById('submission-host-tree-species')?.value || null,
+          host_tree_dbh_cm: document.getElementById('submission-host-tree-dbh')?.value ? Number(document.getElementById('submission-host-tree-dbh').value) : null,
+          canopy_cover_percent: document.getElementById('submission-canopy-cover')?.value ? Number(document.getElementById('submission-canopy-cover').value) : null,
+          light_exposure: document.getElementById('submission-light-exposure')?.value || null,
+          soil_type: document.getElementById('submission-soil-type')?.value || null,
+          nearby_water_source: document.getElementById('submission-nearby-water-source')?.value || null,
+          plant_height_cm: document.getElementById('submission-plant-height')?.value ? Number(document.getElementById('submission-plant-height').value) : null,
+          pseudobulb_present: document.getElementById('submission-pseudobulb-present')?.value === 'yes',
+          stem_length_cm: document.getElementById('submission-stem-length')?.value ? Number(document.getElementById('submission-stem-length').value) : null,
+          root_length_cm: document.getElementById('submission-root-length')?.value ? Number(document.getElementById('submission-root-length').value) : null,
+          leaf_count: document.getElementById('submission-leaf-count')?.value ? Number(document.getElementById('submission-leaf-count').value) : null,
+          leaf_shape: document.getElementById('submission-leaf-shape')?.value || null,
+          leaf_shape_other: document.getElementById('submission-leaf-shape-other')?.value || null,
+          leaf_length_cm: document.getElementById('submission-leaf-length')?.value ? Number(document.getElementById('submission-leaf-length').value) : null,
+          leaf_width_cm: document.getElementById('submission-leaf-width')?.value ? Number(document.getElementById('submission-leaf-width').value) : null,
+          leaf_textures: leafTextures,
+          leaf_arrangement: document.getElementById('submission-leaf-arrangement')?.value || null,
+          flower_color: document.getElementById('submission-flower-color')?.value || null,
+          flower_count: document.getElementById('submission-flower-count')?.value ? Number(document.getElementById('submission-flower-count').value) : null,
+          flower_diameter_cm: document.getElementById('submission-flower-diameter')?.value ? Number(document.getElementById('submission-flower-diameter').value) : null,
+          inflorescence_type: document.getElementById('submission-inflorescence-type')?.value || null,
+          petal_characteristics: document.getElementById('submission-petal-characteristics')?.value || null,
+          sepal_characteristics: document.getElementById('submission-sepal-characteristics')?.value || null,
+          labellum_lip_description: document.getElementById('submission-labellum-description')?.value || null,
+          fragrance: document.getElementById('submission-fragrance')?.value || null,
+          blooming_stage: document.getElementById('submission-blooming-stage')?.value || null,
+          fruit_present: document.getElementById('submission-fruit-present')?.value === 'yes',
+          fruit_type: document.getElementById('submission-fruit-type')?.value || null,
+          seed_capsule_condition: document.getElementById('submission-seed-capsule-condition')?.value || null,
+          life_stage: document.getElementById('submission-life-stage')?.value || null,
+          phenology: document.getElementById('submission-phenology')?.value || null,
+          population_count: document.getElementById('submission-population-count')?.value ? Number(document.getElementById('submission-population-count').value) : null,
+          population_status: document.getElementById('submission-population-status')?.value || null,
+          threat_level: document.getElementById('submission-threat-level')?.value || null,
+          threat_types: threatTypes,
+          whole_plant_photo_path: wholePlantPhotoUrls,
+          closeup_flower_photo_path: closeupFlowerPhotoUrls,
+          habitat_photo_path: habitatPhotoUrls,
+          photo_3d_path: photo3dUrls,
+          video_path: videoUrls,
+          institution: document.getElementById('submission-institution')?.value || null,
+          team_members: teamMembers.length ? JSON.stringify(teamMembers) : null,
+          researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
+          related_study: (function() {
+            const title = document.getElementById('submission-related-study-title')?.value || '';
+            const link = document.getElementById('submission-related-study-link')?.value || '';
+            const fileUrl = relatedStudyFileUrls?.[0] || '';
+            return (title || link || fileUrl) ? JSON.stringify({ title, link, file_url: fileUrl }) : null;
+          })(),
+          review_status: reviewStatus
+        };
+      }
+
+      const researcherSubmissionFormEl = document.getElementById('researcher-submission-form');
+      const submissionScientificNameEl = document.getElementById('submission-scientific-name');
+      const submissionScientificIdkEl = document.getElementById('submission-scientific-idk');
+
+      if (submissionScientificIdkEl && submissionScientificNameEl) {
+        submissionScientificIdkEl.addEventListener('click', function() {
+          submissionScientificNameEl.value = 'IDK';
+        });
+      }
+
+      if (researcherSubmissionFormEl) {
+        researcherSubmissionFormEl.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const feedback = document.getElementById('researcher-submission-feedback');
+          if (feedback) {
+            feedback.style.color = '#4f5f56';
+            feedback.textContent = 'Submitting...';
+          }
+
+          try {
+            if (!submissionClient) {
+              throw new Error('Supabase is not configured');
+            }
+
+            const sciName = (document.getElementById('submission-scientific-name')?.value || '').trim();
+            if (!sciName) throw new Error('Scientific Name is required (Page 1).');
+            const obsDate = document.getElementById('submission-observation-date')?.value;
+            if (!obsDate) throw new Error('Observation Date is required (Page 2).');
+            const lat = document.getElementById('submission-latitude')?.value;
+            const lng = document.getElementById('submission-longitude')?.value;
+            if (!lat || !lng) throw new Error('GPS Latitude and Longitude are required (Page 3).');
+            const wholePlantInput = document.getElementById('submission-whole-plant-photo');
+            if (!wholePlantInput || !wholePlantInput.files || wholePlantInput.files.length === 0) {
+              throw new Error('Whole Plant Photo is required (Page 8).');
+            }
+
+            const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+            const editDraftId = researcherSubmissionFormEl.dataset?.editDraftId || '';
+            const editDraftEntryId = researcherSubmissionFormEl.dataset?.editDraftEntryId || '';
+            const entryId = (editDraftId && editDraftEntryId)
+              ? editDraftEntryId
+              : `SIGHT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+            const currentEmail = String(parsedActiveUser.email || '').trim() || null;
+            const currentName = [parsedActiveUser.first_name, parsedActiveUser.last_name].filter(Boolean).join(' ').trim() || null;
+
+            const commonNames = Array.from(document.querySelectorAll('.submission-common-name-item'))
+              .map((el) => (el.value || '').trim())
+              .filter(Boolean)
+              .slice(0, 5);
+            const localNames = Array.from(document.querySelectorAll('.submission-local-name-item'))
+              .map((el) => (el.value || '').trim())
+              .filter(Boolean)
+              .slice(0, 5);
+            const leafTextures = Array.from(document.querySelectorAll('.submission-leaf-texture-option:checked')).map((opt) => opt.value);
+            const threatTypes = Array.from(document.querySelectorAll('.submission-threat-type-option:checked')).map((opt) => opt.value);
+            const teamMembers = Array.from(document.querySelectorAll('.submission-team-member-item')).map((item) => {
+              const name = (item.querySelector('.submission-team-member-name')?.value || '').trim();
+              const role = item.querySelector('.submission-team-member-role')?.value || '';
+              return name ? { name, role } : null;
+            }).filter(Boolean);
+
+            const observerName = (document.getElementById('submission-head-observer')?.value || '').trim();
+            if (!observerName) throw new Error('Head Observer / Researcher Name is required (Page 9).');
+
+            if (!teamMembers.length) throw new Error('Team Members is required (Page 9). Add at least one complete entry.');
+
+            const researcherNotes = (document.getElementById('submission-researcher-notes')?.value || '').trim();
+            if (!researcherNotes) throw new Error('Researcher Notes is required (Page 9).');
+
+            const specificSiteZone = document.getElementById('submission-specific-site-zone')?.value || '';
+            const specificSiteOther = (document.getElementById('submission-specific-site-other')?.value || '').trim();
+            if (specificSiteZone === 'others' && !specificSiteOther) {
+              throw new Error('Specific Site is required when the zone is set to Others.');
+            }
+
+            async function uploadFilesFromInput(inputEl, fieldName) {
+              const files = Array.from(inputEl?.files || []);
+              if (!files.length) {
+                return [];
+              }
+
+              const uploadedUrls = [];
+              for (const file of files) {
+                const extension = (file.name && file.name.includes('.')) ? `.${file.name.split('.').pop()}` : '';
+                const safeExt = extension || '.jpg';
+                const token = Math.random().toString(16).slice(2, 10);
+                const storagePath = `submissions/${entryId}/${fieldName}-${Date.now()}-${token}${safeExt}`;
+
+                const { error } = await submissionClient.storage
+                  .from(uploadBucket)
+                  .upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+
+                if (error) {
+                  throw new Error(error.message || `Failed to upload ${file.name}`);
+                }
+
+                const { data: publicUrlData } = submissionClient.storage.from(uploadBucket).getPublicUrl(storagePath);
+                uploadedUrls.push(publicUrlData.publicUrl);
+              }
+
+              return uploadedUrls;
+            }
+
+            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls, relatedStudyFileUrls] = await Promise.all([
+              uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
+              uploadFilesFromInput(document.getElementById('submission-photo-3d'), 'photo3d'),
+              uploadFilesFromInput(document.getElementById('submission-video'), 'video'),
+              uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
+            ]);
+
+            const insertPayload = buildSubmissionPayload({
+              entryId, currentEmail, currentName,
+              commonNames, localNames, leafTextures, threatTypes, teamMembers,
+              wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls,
+              relatedStudyFileUrls,
+              reviewStatus: 'pending'
+            });
+
+            let data, submitError;
+            if (editDraftId) {
+              const result = await submissionClient
+                .from('species_sightings')
+                .update(insertPayload)
+                .eq('sighting_id', editDraftId)
+                .select('sighting_id, entry_id, scientific_name, review_status')
+                .single();
+              data = result.data;
+              submitError = result.error;
+            } else {
+              const result = await submissionClient
+                .from('species_sightings')
+                .insert(insertPayload)
+                .select('sighting_id, entry_id, scientific_name, review_status')
+                .single();
+              data = result.data;
+              submitError = result.error;
+            }
+
+            if (submitError) {
+              throw new Error(submitError.message || 'Failed to submit record');
+            }
+
+            delete researcherSubmissionFormEl.dataset.editDraftId;
+            delete researcherSubmissionFormEl.dataset.editDraftEntryId;
+            researcherSubmissionFormEl.reset();
+            initializeResearcherSightingForm();
+            if (feedback) {
+              feedback.style.color = '#145A1E';
+              feedback.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}.`;
+            }
+            closeResearcherSubmissionModal();
+          } catch (error) {
+            if (feedback) {
+              feedback.style.color = '#b42318';
+              feedback.textContent = error.message || 'Could not submit this record.';
+            }
+          }
+        });
       }
 
       // ── Map initialization ─────────────────────────────────────────
