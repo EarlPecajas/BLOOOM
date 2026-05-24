@@ -139,6 +139,14 @@
       .orchid-step-label-text { font-size: .8rem; font-weight: 600; color: #3e6639; }
       .orchid-step-badge { font-size: .73rem; font-weight: 700; color: #2d5a27; background: #d4eed0; padding: .18rem .7rem; border-radius: 12px; }
       .orchid-detail-pages-wrap { flex: 1; overflow-y: auto; min-height: 0; }
+      .orchid-detail-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: .7rem 1.3rem;
+        border-top: 1px solid #ecf3eb;
+        background: #f0f9ed;
+        flex-shrink: 0;
+      }
       .detail-step-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b8d9b2; transition: all .2s; }
       .detail-step-dot.active { background: #2d5a27; transform: scale(1.4); }
       .orchid-detail-page .orchid-detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .8rem 1.4rem; border-bottom: 1px solid #f0f5ef; gap: 1.5rem; }
@@ -333,6 +341,10 @@
       .orchid-step-label-text { color: #a8d8a0 !important; }
       .orchid-step-badge { background: rgba(30,80,30,.85) !important; color: #b8e8b0 !important; }
       .orchid-detail-pages-wrap { background: transparent !important; }
+      .orchid-detail-actions {
+        background: rgba(14,38,16,.90) !important;
+        border-top-color: rgba(100,200,120,.2) !important;
+      }
       .orchid-detail-page .orchid-detail-row {
         border-bottom-color: rgba(100,200,120,.1) !important;
         background: rgba(12,34,16,.9) !important;
@@ -505,6 +517,10 @@
           <div class="orchid-detail-row" id="row-team-members"><span class="orchid-detail-label">Team Members</span><span id="detail-team-members">-</span></div>
         </div>
 
+      </div>
+
+      <div class="orchid-detail-actions">
+        <button type="button" id="orchid-detail-add-btn-bottom" class="orchid-nav-btn orchid-nav-btn-fill">Add Sighting</button>
       </div>
 
       <div class="orchid-nav-bar">
@@ -1254,6 +1270,15 @@
         const addBtn = document.getElementById('orchid-detail-add-btn');
         if (addBtn) {
           addBtn.addEventListener('click', function() {
+            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
+              ? currentOrchid.name
+              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
+            openResearcherSubmissionModal(orchidName);
+          });
+        }
+        const addBottomBtn = document.getElementById('orchid-detail-add-btn-bottom');
+        if (addBottomBtn) {
+          addBottomBtn.addEventListener('click', function() {
             const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
               ? currentOrchid.name
               : (document.getElementById('oid-sci-name')?.textContent || '').trim();
