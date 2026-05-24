@@ -1145,12 +1145,12 @@
         const oidPhoto = document.getElementById('oid-photo');
         const oidPhotoPlaceholder = document.getElementById('oid-photo-placeholder');
         const images = getPublicSightingImages(src);
-        if (images.length > 0 && oidPhoto) {
-          oidPhoto.src = images[0];
+        if (orchid.image_url && oidPhoto) {
+          oidPhoto.src = orchid.image_url;
           oidPhoto.hidden = false;
           if (oidPhotoPlaceholder) oidPhotoPlaceholder.hidden = true;
-        } else if (orchid.image_url && oidPhoto) {
-          oidPhoto.src = orchid.image_url;
+        } else if (images.length > 0 && oidPhoto) {
+          oidPhoto.src = images[0];
           oidPhoto.hidden = false;
           if (oidPhotoPlaceholder) oidPhotoPlaceholder.hidden = true;
         } else if (oidPhoto && oidPhotoPlaceholder) {
@@ -2013,15 +2013,8 @@
       function initMap(sightingPoints) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         const primary = sightingPoints[0];
-
-        const allPoints = sightingPoints.slice();
-        for (let i = 0; allPoints.length < 5; i++) {
-          const off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
-          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng });
-        }
-
         const countBadge = document.getElementById('map-sightings-count');
-        if (countBadge) countBadge.textContent = allPoints.length + ' sighting' + (allPoints.length !== 1 ? 's' : '');
+        if (countBadge) countBadge.textContent = sightingPoints.length + ' sighting' + (sightingPoints.length !== 1 ? 's' : '');
 
         orchidLeafletMap = L.map('orchid-leaflet-map').setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -2035,7 +2028,7 @@
           popupAnchor: [0, -22]
         });
 
-        allPoints.forEach((pt, idx) => {
+        sightingPoints.forEach((pt, idx) => {
           const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(orchidLeafletMap);
           const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' - Click to view details';
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
@@ -2045,10 +2038,14 @@
           });
         });
 
-        orchidLeafletMap.fitBounds(
-          L.latLngBounds(allPoints.map(pt => [pt.lat, pt.lng])),
-          { padding: [40, 40] }
-        );
+        if (sightingPoints.length === 1) {
+          orchidLeafletMap.setView([primary.lat, primary.lng], 13);
+        } else {
+          orchidLeafletMap.fitBounds(
+            L.latLngBounds(sightingPoints.map(pt => [pt.lat, pt.lng])),
+            { padding: [40, 40] }
+          );
+        }
         setTimeout(() => { if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 150);
       }
 
