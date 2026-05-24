@@ -119,6 +119,15 @@
       .map-sightings-badge { font-size: .68rem; font-weight: 700; color: #143a10; background: #b8e0b0; padding: .18rem .65rem; border-radius: 10px; letter-spacing: .02em; }
       #orchid-leaflet-map { flex: 1; }
       .orchid-map-hint { text-align: center; font-size: .75rem; color: #5a7a58; padding: .35rem 1rem; background: #eaf5e7; border-top: 1px solid #c8e0c4; margin: 0; flex-shrink: 0; }
+      .orchid-overview-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: .6rem 1rem;
+        background: #eaf5e7;
+        border-top: 1px solid #c8e0c4;
+        flex-shrink: 0;
+      }
 
       /* Stage 2: paged detail */
       #detail-paged { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
@@ -176,7 +185,8 @@
       .oid-common-name { color: #a8d8a0 !important; }
       .oid-field-list { background: rgba(10,25,12,.5) !important; border-color: rgba(100,200,120,.2) !important; }
       .oid-field-row { border-bottom-color: rgba(100,200,120,.1) !important; }
-      .oid-field-row:nth-child(even) { background: rgba(255,255,255,.03) !important; }
+      .oid-field-row { background: rgba(12,34,16,.9) !important; }
+      .oid-field-row:nth-child(even) { background: rgba(12,34,16,.9) !important; }
       .oid-field-sep { border-top-color: rgba(100,200,120,.2) !important; }
       .oid-field-label { color: #a8d8a0 !important; }
       .oid-field-value { color: #e8f8e0 !important; }
@@ -209,6 +219,10 @@
         background: rgba(16,42,19,.90) !important;
         border-top-color: rgba(100,200,120,.18) !important;
         color: rgba(180,225,170,.8) !important;
+      }
+      .orchid-overview-actions {
+        background: rgba(16,42,19,.90) !important;
+        border-top-color: rgba(100,200,120,.18) !important;
       }
       #detail-paged { background: rgba(13,36,15,.90) !important; }
       .orchid-detail-header-bar {
@@ -305,6 +319,9 @@
         </div>
         <div id="orchid-leaflet-map"></div>
         <p class="orchid-map-hint">Click an orchid icon on the map to view sighting details</p>
+        <div class="orchid-overview-actions">
+          <button type="button" id="orchid-detail-add-btn-overview" class="orchid-nav-btn orchid-nav-btn-fill">Add Sighting</button>
+        </div>
       </div>
 
     </div>
@@ -729,6 +746,20 @@
         const addBtn = document.getElementById('orchid-detail-add-btn');
         if (addBtn) {
           addBtn.addEventListener('click', function() {
+            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
+              ? currentOrchid.name
+              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
+            const params = new URLSearchParams();
+            params.set('addSighting', '1');
+            if (hasUsableValue(orchidName)) {
+              params.set('orchidName', String(orchidName).trim());
+            }
+            window.location.href = 'researcher-dashboard.html?' + params.toString();
+          });
+        }
+        const addOverviewBtn = document.getElementById('orchid-detail-add-btn-overview');
+        if (addOverviewBtn) {
+          addOverviewBtn.addEventListener('click', function() {
             const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
               ? currentOrchid.name
               : (document.getElementById('oid-sci-name')?.textContent || '').trim();
