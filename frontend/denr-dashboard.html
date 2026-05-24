@@ -5038,14 +5038,14 @@
         // Only DENR/admin can review pending submissions.
         const normalizedStatus = String(submission.review_status || 'pending').toLowerCase();
         const canReview = isAdminRole && normalizedStatus === 'pending';
-        document.getElementById('approveBtn').style.display = canReview ? 'inline-block' : 'none';
-        document.getElementById('denyBtn').style.display = canReview ? 'inline-block' : 'none';
-        document.getElementById('revisionBtn').style.display = canReview ? 'inline-block' : 'none';
+        document.getElementById('approveBtn').style.display = canReview ? 'inline-flex' : 'none';
+        document.getElementById('denyBtn').style.display = canReview ? 'inline-flex' : 'none';
+        document.getElementById('revisionBtn').style.display = canReview ? 'inline-flex' : 'none';
         
         // Show Post to Catalog button for approved submissions (admin only)
         const postBtnEl = document.getElementById('postToCatalogBtn');
         const canPostToCatalog = isAdminRole && normalizedStatus === 'approved';
-        postBtnEl.style.display = canPostToCatalog ? 'inline-block' : 'none';
+        postBtnEl.style.display = canPostToCatalog ? 'inline-flex' : 'none';
 
         // If the submission has already been posted to the orchids catalog (an `orchids` record exists
         // for the same scientific name), hide the Post button — avoid reposting.
