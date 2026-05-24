@@ -3700,12 +3700,6 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
   background: linear-gradient(90deg, rgba(77,184,106,.3), rgba(100,200,120,.1), transparent) !important;
 }
 
-/* ── Generate Report: page header strip ── */
-#report-view > div:first-child {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-}
-
 /* ── Generate Report: config card & right-side info cards ── */
 #report-view div[style*="background:#fff"] {
   background: var(--dt-bg-input) !important;
