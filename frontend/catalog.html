@@ -404,6 +404,7 @@
         return {
           scientific_name: row.scientific_name || '',
           common_names: parseJsonArrayValue(row.common_names),
+          local_names: parseJsonArrayValue(row.local_names),
           identification_confidence: row.identification_confidence || '',
           observation_date: row.observation_date || '',
           observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
@@ -1044,12 +1045,16 @@
             thumbnailImage = storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchid.image_url || catalogImage;
           }
 
+          const localName = approvedSighting
+            ? (parseJsonArrayValue(approvedSighting.local_names)[0] || parseJsonArrayValue(approvedSighting.common_names)[0] || '')
+            : '';
+
           return `
             <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">
               <img src="${thumbnailImage}" alt="${orchid.name}" class="orchid-card-image" />
               <div class="orchid-card-info">
                 <p class="orchid-card-name scientific-name">${orchid.name}</p>
-                <p class="orchid-card-genus">${orchid.genus}</p>
+                <p class="orchid-card-genus">${escapeHtml(localName)}</p>
               </div>
             </button>
           `;
