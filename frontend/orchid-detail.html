@@ -555,10 +555,6 @@
               <input id="submission-entry-id" type="text" placeholder="Entry ID (auto-generated)" readonly class="submission-text-input" style="background:#f7faf8;font-family:Inter,Roboto,sans-serif;" />
             </div>
             <div class="submission-field">
-              <label for="submission-family" style="font-size:0.88rem;font-weight:600;color:#334155;">Family</label>
-              <input id="submission-family" type="text" value="Orchidaceae" readonly class="submission-text-input" style="background:#f7faf8;font-family:Inter,Roboto,sans-serif;" placeholder="Family" />
-            </div>
-            <div class="submission-field">
               <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus</label>
               <input id="submission-genus" type="text" placeholder="Genus" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
             </div>
@@ -567,29 +563,33 @@
               <input id="submission-species-epithet" type="text" placeholder="Species Epithet" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
             </div>
             <div class="submission-field submission-field--full">
-              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name</label>
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
               <div style="display:flex;gap:0.5rem;">
                 <input id="submission-scientific-name" type="text" placeholder="Scientific Name (auto-filled from Genus + Species, or type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
-                <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">IDK</button>
+                <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
             </div>
             <div style="grid-column:1/-1;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.45rem;">
-                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Common Name(s) <span class="field-help" data-tooltip="English or standard common names for this orchid.">?</span></span>
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Vernacular / Common Name(s) <span class="field-help" data-tooltip="English or standard common names for this orchid.">?</span></span>
                 <button type="button" id="submission-add-common-name" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add</button>
               </div>
               <div id="submission-common-names-wrap" style="display:grid;gap:0.45rem;"></div>
             </div>
             <div style="grid-column:1/-1;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.45rem;">
-                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Local / Indigenous Name(s) <span class="field-help" data-tooltip="Dialect or indigenous names used locally for this orchid.">?</span></span>
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Local Name(s) <span class="field-help" data-tooltip="Dialect or indigenous names used locally for this orchid.">?</span></span>
                 <button type="button" id="submission-add-local-name" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add</button>
               </div>
               <div id="submission-local-names-wrap" style="display:grid;gap:0.45rem;"></div>
             </div>
             <div class="submission-field">
-              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
-              <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
+              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
+              <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Taxonomic Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-endemic-philippines" style="font-size:0.88rem;font-weight:600;color:#334155;">Endemic to the Philippines <span class="field-help" data-tooltip="Optional. Is this orchid species endemic (found only) in the Philippines?">?</span></label>
+              <select id="submission-endemic-philippines" class="submission-select"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
             </div>
           </div>
 
@@ -607,12 +607,12 @@
               <input id="submission-observation-time" type="time" class="submission-text-input submission-time-input" />
             </div>
             <div class="submission-field">
-              <label for="submission-collection-method" style="font-size:0.88rem;font-weight:600;color:#334155;">Collection Method <span class="field-help" data-tooltip="Optional. How was the orchid located: Transect (survey line), Quadrat (defined area), Opportunistic (chance find), or Random Survey.">?</span></label>
-              <select id="submission-collection-method" class="submission-select"><option value="" disabled selected hidden>Collection Method</option><option value="transect">Transect</option><option value="quadrat">Quadrat</option><option value="opportunistic">Opportunistic</option><option value="random survey">Random Survey</option></select>
+              <label for="submission-collection-method" style="font-size:0.88rem;font-weight:600;color:#334155;">Sampling Methodology <span class="field-help" data-tooltip="Optional. How was the orchid located: Transect (survey line), Quadrat (defined area), Opportunistic (chance find), or Random Survey.">?</span></label>
+              <select id="submission-collection-method" class="submission-select"><option value="" disabled selected hidden>Sampling Methodology</option><option value="transect">Transect</option><option value="quadrat">Quadrat</option><option value="opportunistic">Opportunistic</option><option value="random survey">Random Survey</option></select>
             </div>
             <div class="submission-field">
-              <label for="submission-observation-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Type <span class="field-help" data-tooltip="Optional. State of specimen: Live (healthy), Flowering, Fruiting, Dead, or Photographic Only.">?</span></label>
-              <select id="submission-observation-type" class="submission-select"><option value="" disabled selected hidden>Observation Type</option><option value="live specimen">Live Specimen</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option><option value="dead specimen">Dead Specimen</option><option value="photographic only">Photographic Only</option></select>
+              <label for="submission-observation-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Specimen Observation Type <span class="field-help" data-tooltip="Optional. State of specimen: Live (healthy), Flowering, Fruiting, Dead, or Photographic Only.">?</span></label>
+              <select id="submission-observation-type" class="submission-select"><option value="" disabled selected hidden>Specimen Observation Type</option><option value="live specimen">Live Specimen</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option><option value="dead specimen">Dead Specimen</option><option value="photographic only">Photographic Only</option></select>
             </div>
             <div class="submission-field">
               <label for="submission-voucher-collected" style="font-size:0.88rem;font-weight:600;color:#334155;">Voucher Specimen Collected <span class="field-help" data-tooltip="Optional. Select Yes if you collected a pressed/dried specimen for herbarium, No otherwise.">?</span></label>
@@ -698,10 +698,6 @@
             <div class="submission-field">
               <label for="submission-nearby-water-source" style="font-size:0.88rem;font-weight:600;color:#334155;">Nearby Water Source</label>
               <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
-            </div>
-            <div class="submission-field">
-              <label for="submission-flowering-season" style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" data-tooltip="Optional. When does this orchid typically flower?">?</span></label>
-              <select id="submission-flowering-season" class="submission-select"><option value="" disabled selected hidden>Flowering Season</option><option value="Spring">Spring</option><option value="Summer">Summer</option><option value="Autumn">Autumn</option><option value="Winter">Winter</option><option value="Year-round">Year-round</option><option value="Dry Season">Dry Season</option><option value="Wet Season">Wet Season</option><option value="Unknown">Unknown</option></select>
             </div>
           </div>
 
@@ -813,6 +809,31 @@
               <label for="submission-seed-capsule-condition" style="font-size:0.88rem;font-weight:600;color:#334155;">Seed Capsule Condition</label>
               <select id="submission-seed-capsule-condition" class="submission-select"><option value="" disabled selected hidden>Seed Capsule Condition</option><option value="Immature (Green)">Immature (Green)</option><option value="Mature (Yellow/Brown)">Mature (Yellow/Brown)</option><option value="Dehisced (Split)">Dehisced (Split)</option><option value="Aborted">Aborted</option></select>
             </div>
+            <div class="submission-field submission-field--full">
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" data-tooltip="Optional. Select the start and end month of the flowering period, or check Unknown.">?</span></label>
+              <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+                <select id="submission-flowering-season-start" class="submission-select" style="flex:1;min-width:120px;" onchange="updateFloweringSeasonValue()">
+                  <option value="" disabled selected hidden>Start Month</option>
+                  <option value="January">January</option><option value="February">February</option><option value="March">March</option>
+                  <option value="April">April</option><option value="May">May</option><option value="June">June</option>
+                  <option value="July">July</option><option value="August">August</option><option value="September">September</option>
+                  <option value="October">October</option><option value="November">November</option><option value="December">December</option>
+                </select>
+                <span style="color:#64748b;font-size:0.85rem;flex-shrink:0;">to</span>
+                <select id="submission-flowering-season-end" class="submission-select" style="flex:1;min-width:120px;" onchange="updateFloweringSeasonValue()">
+                  <option value="" disabled selected hidden>End Month</option>
+                  <option value="January">January</option><option value="February">February</option><option value="March">March</option>
+                  <option value="April">April</option><option value="May">May</option><option value="June">June</option>
+                  <option value="July">July</option><option value="August">August</option><option value="September">September</option>
+                  <option value="October">October</option><option value="November">November</option><option value="December">December</option>
+                </select>
+              </div>
+              <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#64748b;font-weight:400;cursor:pointer;">
+                <input type="checkbox" id="submission-flowering-season-unknown" onchange="updateFloweringSeasonValue()" />
+                Unknown
+              </label>
+              <input type="hidden" id="submission-flowering-season" />
+            </div>
           </div>
 
           <!-- Page 6: Ecological / Biological Data -->
@@ -829,8 +850,8 @@
               <select id="submission-phenology" class="submission-select"><option value="" disabled selected hidden>Phenology</option><option value="Vegetative">Vegetative</option><option value="budding">Budding</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option></select>
             </div>
             <div class="submission-field">
-              <label for="submission-population-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Count</label>
-              <input id="submission-population-count" type="number" placeholder="Population Count" class="submission-text-input submission-number-input" />
+              <label for="submission-population-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Orchids in the Area</label>
+              <input id="submission-population-count" type="number" placeholder="Number of Orchids in the Area" class="submission-text-input submission-number-input" />
             </div>
           </div>
 
@@ -874,21 +895,25 @@
               <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span style="color:#b42318;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-whole-plant-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <input id="submission-whole-plant-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
             </div>
             <div>
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Close-up Flower Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-closeup-flower-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-closeup-flower-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <input id="submission-closeup-flower-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
             </div>
             <div>
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Habitat Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-habitat-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-habitat-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <input id="submission-habitat-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
             </div>
             <div>
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">3D Photo <span style="font-weight:400;color:#64748b;">(optional, max 3)</span></label>
               <input id="submission-photo-3d" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-photo-3d-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <input id="submission-photo-3d-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
             </div>
             <div style="grid-column:1/-1;">
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Video Documentation</label>
@@ -1251,6 +1276,24 @@
           } else if (msg) {
             msg.hidden = true;
           }
+        }
+      }
+
+      function updateFloweringSeasonValue() {
+        const unknownCb = document.getElementById('submission-flowering-season-unknown');
+        const startSel  = document.getElementById('submission-flowering-season-start');
+        const endSel    = document.getElementById('submission-flowering-season-end');
+        const hidden    = document.getElementById('submission-flowering-season');
+        const isUnknown = unknownCb && unknownCb.checked;
+        if (startSel) startSel.disabled = isUnknown;
+        if (endSel)   endSel.disabled   = isUnknown;
+        if (!hidden) return;
+        if (isUnknown) {
+          hidden.value = 'Unknown';
+        } else {
+          const s = startSel ? startSel.value : '';
+          const e = endSel   ? endSel.value   : '';
+          hidden.value = s && e ? s + '–' + e : (s || e || '');
         }
       }
 
@@ -1760,6 +1803,7 @@
             }
             return v || null;
           })(),
+          endemic_to_philippines: document.getElementById('submission-endemic-philippines')?.value || null,
           flowering_season: document.getElementById('submission-flowering-season')?.value || null,
           microhabitat: document.getElementById('submission-microhabitat')?.value || null,
           growth_substrate: document.getElementById('submission-growth-substrate')?.value || null,
