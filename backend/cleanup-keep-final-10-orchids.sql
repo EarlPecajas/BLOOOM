@@ -35,7 +35,7 @@ WHERE sci_name NOT IN (
 ORDER BY sci_name;
 
 -- ── PREVIEW: sightings that will be deleted ─────────────────
-SELECT id, scientific_name, review_status, created_at
+SELECT sighting_id, scientific_name, review_status, created_at
 FROM species_sightings
 WHERE TRIM(scientific_name) NOT IN (
   'Aerides quinquevulnera',
