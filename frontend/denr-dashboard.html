@@ -4129,31 +4129,37 @@
       })();
       // ────────────────────────────────────────────────────────────
 
-      const STORAGE_SKIP_WORDS = new Set(['closeup', 'habitat', 'forest', 'grassland', 'limestone', 'montane', 'mossy', 'stream', 'edge', 'flower', 'plant', 'whole', '3d', 'photo']);
-
       async function loadStorageImages() {
         if (!bloomSupabase) return;
         try {
           const { data, error } = await bloomSupabase.storage.from('bloom-uploads').list('sightings');
           if (error || !data) return;
-          data.forEach(file => {
-            const { data: urlData } = bloomSupabase.storage.from('bloom-uploads').getPublicUrl('sightings/' + file.name);
-            const url = urlData?.publicUrl;
-            if (!url) return;
-            const parts = file.name
-              .replace(/^seed_/, '')
-              .replace(/\.(jpg|jpeg|png|webp|gif)$/i, '')
-              .split('_')
-              .map(p => p.toLowerCase())
-              .filter(p => p && !STORAGE_SKIP_WORDS.has(p));
-            if (parts.length === 0) return;
-            const genus = parts[0];
-            if (!storageImagesByGenus.has(genus)) storageImagesByGenus.set(genus, url);
-            if (parts.length >= 2) {
-              const full = parts[0] + ' ' + parts[1];
-              if (!storageImagesByGenus.has(full)) storageImagesByGenus.set(full, url);
-            }
-          });
+          const files = data.filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+
+          const getUrl = (name) => bloomSupabase.storage.from('bloom-uploads').getPublicUrl('sightings/' + name).data?.publicUrl;
+
+          // Pass 1: species files (seed_genus_species.jpg) → map full name, genus as fallback
+          files
+            .filter(f => /^seed_[a-z]+_[a-z]/i.test(f.name) && !/^seed_closeup_/i.test(f.name) && !/^seed_habitat_/i.test(f.name))
+            .forEach(file => {
+              const url = getUrl(file.name);
+              if (!url) return;
+              const parts = file.name.replace(/^seed_/, '').replace(/\.[^.]+$/, '').split('_');
+              const genus = parts[0].toLowerCase();
+              const full = parts.length >= 2 ? genus + ' ' + parts[1].toLowerCase() : null;
+              if (!storageImagesByGenus.has(genus)) storageImagesByGenus.set(genus, url);
+              if (full) storageImagesByGenus.set(full, url);
+            });
+
+          // Pass 2: closeup files (seed_closeup_genus.jpg) → overwrite genus key (preferred thumbnail)
+          files
+            .filter(f => /^seed_closeup_/i.test(f.name))
+            .forEach(file => {
+              const url = getUrl(file.name);
+              if (!url) return;
+              const genus = file.name.replace(/^seed_closeup_/i, '').replace(/\.[^.]+$/, '').toLowerCase();
+              if (genus) storageImagesByGenus.set(genus, url);
+            });
         } catch (e) {
           console.warn('Failed to load storage images:', e);
         }
