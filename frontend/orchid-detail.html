@@ -1856,6 +1856,10 @@
             const fileUrl = relatedStudyFileUrls?.[0] || '';
             return (title || link || fileUrl) ? JSON.stringify({ title, link, file_url: fileUrl }) : null;
           })(),
+          whole_plant_photographer: document.getElementById('submission-whole-plant-photographer')?.value || null,
+          closeup_flower_photographer: document.getElementById('submission-closeup-flower-photographer')?.value || null,
+          habitat_photographer: document.getElementById('submission-habitat-photographer')?.value || null,
+          photo_3d_photographer: document.getElementById('submission-photo-3d-photographer')?.value || null,
           review_status: reviewStatus
         };
       }
@@ -1866,7 +1870,7 @@
 
       if (submissionScientificIdkEl && submissionScientificNameEl) {
         submissionScientificIdkEl.addEventListener('click', function() {
-          submissionScientificNameEl.value = 'IDK';
+          submissionScientificNameEl.value = 'Unknown';
         });
       }
 
