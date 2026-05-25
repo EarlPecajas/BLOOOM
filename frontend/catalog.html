@@ -1046,8 +1046,8 @@
           }
 
           const localName = approvedSighting
-            ? (parseJsonArrayValue(approvedSighting.local_names)[0] || parseJsonArrayValue(approvedSighting.common_names)[0] || '')
-            : '';
+            ? (parseJsonArrayValue(approvedSighting.local_names)[0] || parseJsonArrayValue(approvedSighting.common_names)[0] || orchid.common_name || '')
+            : (orchid.common_name || '');
 
           return `
             <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">
