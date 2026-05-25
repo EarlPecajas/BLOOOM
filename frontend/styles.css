@@ -3341,7 +3341,6 @@ textarea.form-control {
 }
 /* Green header stays dark */
 #submission-modal-header { background: #0d2e19 !important; }
-#submission-modal-header h2 { color: #ffffff !important; }
 #submission-modal-header button[aria-label="Close submission form"] {
   background: rgba(255,255,255,.13) !important;
   border-color: rgba(255,255,255,.28) !important;
@@ -3353,6 +3352,8 @@ textarea.form-control {
 #submission-step-count { color: rgba(255,255,255,.6) !important; }
 /* Form body — white, green text */
 #researcher-submission-panel h2 { color: #145A1E !important; }
+/* Header h2 must override the general panel h2 rule above — placed after so it wins */
+#researcher-submission-panel #submission-modal-header h2 { color: #ffffff !important; }
 #researcher-submission-panel label { color: #145A1E !important; font-weight: 600 !important; }
 #researcher-submission-panel strong { color: #145A1E !important; }
 #researcher-submission-panel span { color: #3d6b42 !important; }
@@ -3444,6 +3445,8 @@ textarea.form-control {
 #submission-gps-status { color: #6b8f6b !important; }
 /* Unknown / + Add buttons */
 #submission-scientific-idk,
+#submission-genus-unknown,
+#submission-species-unknown,
 #submission-add-common-name,
 #submission-add-local-name {
   background: #ffffff !important;

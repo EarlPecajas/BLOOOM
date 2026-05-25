@@ -921,11 +921,17 @@
             </div>
             <div class="submission-field">
               <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus</label>
-              <input id="submission-genus" type="text" placeholder="Genus" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
+              <div style="display:flex;gap:0.5rem;">
+                <input id="submission-genus" type="text" placeholder="Genus" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <button type="button" id="submission-genus-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
+              </div>
             </div>
             <div class="submission-field">
               <label for="submission-species-epithet" style="font-size:0.88rem;font-weight:600;color:#334155;">Species Epithet</label>
-              <input id="submission-species-epithet" type="text" placeholder="Species Epithet" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
+              <div style="display:flex;gap:0.5rem;">
+                <input id="submission-species-epithet" type="text" placeholder="e.g. amabilis" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <button type="button" id="submission-species-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
+              </div>
             </div>
             <div class="submission-field submission-field--full">
               <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
@@ -1789,13 +1795,7 @@
         input.className = 'submission-common-name-item';
         input.placeholder = `Common Name ${index}`;
         input.style.cssText = 'flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.textContent = '×';
-        removeBtn.style.cssText = 'padding:0.4rem 0.65rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;';
-        removeBtn.addEventListener('click', () => wrap.remove());
         wrap.appendChild(input);
-        wrap.appendChild(removeBtn);
         return wrap;
       }
 
@@ -1807,13 +1807,7 @@
         input.className = 'submission-local-name-item';
         input.placeholder = `Local / Indigenous Name ${index}`;
         input.style.cssText = 'flex:1;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;';
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.textContent = '×';
-        removeBtn.style.cssText = 'padding:0.4rem 0.65rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff5f5;color:#b42318;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0;';
-        removeBtn.addEventListener('click', () => wrap.remove());
         wrap.appendChild(input);
-        wrap.appendChild(removeBtn);
         return wrap;
       }
 
@@ -2490,6 +2484,23 @@
       if (submissionScientificIdkEl && submissionScientificNameEl) {
         submissionScientificIdkEl.addEventListener('click', function() {
           submissionScientificNameEl.value = 'Unknown';
+        });
+      }
+
+      const submissionGenusEl = document.getElementById('submission-genus');
+      const submissionSpeciesEl = document.getElementById('submission-species-epithet');
+      const genusUnknownBtn = document.getElementById('submission-genus-unknown');
+      const speciesUnknownBtn = document.getElementById('submission-species-unknown');
+      if (genusUnknownBtn && submissionGenusEl) {
+        genusUnknownBtn.addEventListener('click', function() {
+          submissionGenusEl.value = 'Unknown';
+          submissionGenusEl.dispatchEvent(new Event('input'));
+        });
+      }
+      if (speciesUnknownBtn && submissionSpeciesEl) {
+        speciesUnknownBtn.addEventListener('click', function() {
+          submissionSpeciesEl.value = 'Unknown';
+          submissionSpeciesEl.dispatchEvent(new Event('input'));
         });
       }
 
