@@ -3332,151 +3332,153 @@ textarea.form-control {
 #map-legend span { color: var(--dt-text) !important; }
 #map-legend > div > div { color: var(--dt-muted) !important; }
 
-/* ── Submission modal & form ── */
-#researcher-submission-modal { background: rgba(0,0,0,.65) !important; }
+/* ── Submission modal & form (light theme matching mobile app) ── */
+#researcher-submission-modal { background: rgba(0,0,0,.55) !important; }
 #researcher-submission-panel {
-  background: var(--dt-bg-card) !important;
-  border-color: var(--dt-border-md) !important;
-  box-shadow: 0 16px 48px rgba(0,0,0,.55) !important;
+  background: #ffffff !important;
+  border-color: #c8ddc5 !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,.35) !important;
 }
-#researcher-submission-panel h2 { color: var(--dt-text) !important; }
-#researcher-submission-panel label { color: var(--dt-text) !important; }
-#researcher-submission-panel strong { color: var(--dt-text) !important; }
-#researcher-submission-panel span { color: var(--dt-muted) !important; }
-/* Section header divs */
+/* Green header stays dark */
+#submission-modal-header { background: #0d2e19 !important; }
+#submission-modal-header h2 { color: #ffffff !important; }
+#submission-modal-header button[aria-label="Close submission form"] {
+  background: rgba(255,255,255,.13) !important;
+  border-color: rgba(255,255,255,.28) !important;
+  color: #ffffff !important;
+}
+/* Step indicator row — also dark green */
+#submission-step-indicator { background: #0d2e19 !important; border-color: rgba(255,255,255,.1) !important; }
+#submission-step-label { color: #e8f8e0 !important; }
+#submission-step-count { color: rgba(255,255,255,.6) !important; }
+/* Form body — white, green text */
+#researcher-submission-panel h2 { color: #145A1E !important; }
+#researcher-submission-panel label { color: #145A1E !important; font-weight: 600 !important; }
+#researcher-submission-panel strong { color: #145A1E !important; }
+#researcher-submission-panel span { color: #3d6b42 !important; }
+/* Section header divs (e.g. "Basic Taxonomic Information" card) */
 #researcher-submission-panel [style*="background:#f9fcfa"],
 #researcher-submission-panel [style*="background: #f9fcfa"] {
-  background: var(--dt-bg-panel) !important;
-  border-color: var(--dt-border) !important;
-  color: var(--dt-text) !important;
+  background: #f0f9f0 !important;
+  border-color: #c8ddc5 !important;
+  color: #145A1E !important;
 }
-/* Inline-styled checkbox containers */
+/* White inline bg containers */
 #researcher-submission-panel [style*="background:#fff"] {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #ffffff !important;
+  border-color: #c8ddc5 !important;
+  color: #1a2e1a !important;
 }
-/* Dynamically-created common/local name inputs and team member / media inputs */
+/* Dynamic name / team / media inputs */
 .submission-common-name-item,
 .submission-local-name-item,
 .submission-team-member-name,
 .submission-team-member-role,
 .submission-media-contributor {
-  background: var(--dt-bg-input) !important;
-  background-color: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #c8ddc5 !important;
+  color: #1a2e1a !important;
 }
 .submission-common-name-item::placeholder,
 .submission-local-name-item::placeholder,
 .submission-team-member-name::placeholder,
 .submission-team-member-role::placeholder,
-.submission-media-contributor::placeholder { color: var(--dt-muted) !important; }
-/* Remove buttons next to dynamic name inputs and inside team member rows */
+.submission-media-contributor::placeholder { color: #8aab8a !important; }
+/* Remove buttons */
 .submission-common-name-item + button,
 .submission-local-name-item + button,
 .submission-team-member-item > button,
 .submission-team-member-row > button,
 .submission-media-item > button {
-  background: rgba(80,20,20,.6) !important;
-  border-color: rgba(200,80,80,.3) !important;
-  color: rgba(255,160,160,.9) !important;
+  background: #fff0f0 !important;
+  border-color: #f5c6c6 !important;
+  color: #c0392b !important;
 }
-/* Labels inside dynamically-created team member rows */
+/* Labels inside team member / media rows */
 .submission-team-member-item label,
 .submission-team-member-row label,
-.submission-media-item label { color: var(--dt-muted) !important; }
-/* Media item row card background */
+.submission-media-item label { color: #145A1E !important; }
+/* Media card row */
 .submission-media-item {
-  background: var(--dt-bg-panel) !important;
-  border-color: var(--dt-border-md) !important;
+  background: #f8fdf8 !important;
+  border-color: #c8ddc5 !important;
 }
-.submission-media-item div[style*="color:#145A1E"] { color: var(--dt-accent-lt) !important; }
-/* All form inputs */
+.submission-media-item div[style*="color:#145A1E"] { color: #145A1E !important; }
+/* All text/number/date/time/textarea inputs */
 .submission-text-input,
 .submission-number-input,
 .submission-time-input,
 .submission-date-input,
 .submission-textarea {
-  background: var(--dt-bg-input) !important;
-  background-color: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #c8ddc5 !important;
+  color: #1a2e1a !important;
 }
 .submission-text-input::placeholder,
 .submission-number-input::placeholder,
-.submission-textarea::placeholder { color: var(--dt-muted) !important; }
-.submission-text-input[readonly] { background: rgba(10,32,12,.5) !important; color: var(--dt-muted) !important; }
-/* Readonly inputs with inline bg */
+.submission-textarea::placeholder { color: #8aab8a !important; }
+.submission-text-input[readonly] { background: #f3f8f3 !important; color: #6b8f6b !important; }
 #researcher-submission-panel [style*="background:#f7faf8"] {
-  background: rgba(10,32,12,.5) !important;
-  color: var(--dt-muted) !important;
+  background: #f3f8f3 !important;
+  color: #6b8f6b !important;
 }
+/* Select dropdowns */
 .submission-select {
-  background-color: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background-color: #ffffff !important;
+  border-color: #c8ddc5 !important;
+  color: #1a2e1a !important;
 }
-/* GPS & utility buttons */
-#submission-use-gps {
-  background: rgba(20,80,28,.8) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-accent-lt) !important;
+.submission-select option {
+  background-color: #ffffff !important;
+  color: #1a2e1a !important;
 }
-#submission-gps-status { color: var(--dt-muted) !important; }
-/* IDK / + Add / close buttons */
+/* GPS & location buttons */
+#submission-use-gps,
+#submission-auto-location {
+  background: #e8f5e8 !important;
+  border-color: #c8ddc5 !important;
+  color: #145A1E !important;
+}
+#submission-gps-status { color: #6b8f6b !important; }
+/* Unknown / + Add buttons */
 #submission-scientific-idk,
 #submission-add-common-name,
 #submission-add-local-name {
-  background: var(--dt-bg-panel) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #ffffff !important;
+  border-color: #145A1E !important;
+  color: #145A1E !important;
 }
 [id^="submission-remove-common-"],
 [id^="submission-remove-local-"] {
-  background: rgba(80,20,20,.6) !important;
-  border-color: rgba(200,80,80,.3) !important;
-  color: rgba(255,160,160,.9) !important;
-}
-#researcher-submission-panel button[aria-label="Close submission form"] {
-  background: var(--dt-bg-panel) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #fff0f0 !important;
+  border-color: #f5c6c6 !important;
+  color: #c0392b !important;
 }
 /* Help icon */
 #researcher-submission-panel .field-help {
-  background: rgba(20,80,30,.6) !important;
-  border-color: rgba(100,200,120,.35) !important;
-  color: var(--dt-accent-lt) !important;
+  background: #e8f5e8 !important;
+  border-color: #c8ddc5 !important;
+  color: #145A1E !important;
 }
-/* Multi-select summary "Choose one or more" text */
-#researcher-submission-panel details summary > span { color: var(--dt-text) !important; }
-/* Details/multi-select box */
+/* Multi-select */
+#researcher-submission-panel details summary > span { color: #1a2e1a !important; }
 #researcher-submission-panel details {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
+  background: #ffffff !important;
+  border-color: #c8ddc5 !important;
 }
-/* Step labels */
-#submission-step-label { color: var(--dt-text) !important; }
-#submission-step-count { color: var(--dt-muted) !important; }
-/* Nav / submit / draft buttons — all same outlined style */
+/* Nav / submit / draft buttons */
 #submission-back-btn,
 #submission-next-btn,
 #submission-submit-btn,
 #submission-draft-btn {
-  background: var(--dt-bg-input) !important;
-  border: 1px solid var(--dt-accent) !important;
-  color: var(--dt-accent) !important;
+  background: #ffffff !important;
+  border: 1.5px solid #145A1E !important;
+  color: #145A1E !important;
 }
-#submission-nav-row { border-color: var(--dt-border) !important; }
-/* GPS / location buttons */
-#submission-use-gps,
-#submission-auto-location {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-muted) !important;
-}
-/* Remove number input spinners and fix width */
+#submission-nav-row { border-color: #d8ead8 !important; background: #f8fdf8 !important; }
+/* Remove number spinners */
 #researcher-submission-panel input[type="number"]::-webkit-outer-spin-button,
 #researcher-submission-panel input[type="number"]::-webkit-inner-spin-button,
 .submission-number-input::-webkit-outer-spin-button,
@@ -3490,44 +3492,39 @@ textarea.form-control {
   appearance: textfield !important;
   max-width: 100% !important;
 }
-/* Dropdown option text */
-.submission-select option {
-  background-color: var(--dt-bg-card) !important;
-  color: var(--dt-text) !important;
-}
 /* Related study inputs */
 #submission-related-study-title,
 #submission-related-study-link {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #ffffff !important;
+  border-color: #c8ddc5 !important;
+  color: #1a2e1a !important;
 }
 #submission-related-study-title::placeholder,
-#submission-related-study-link::placeholder { color: var(--dt-muted) !important; }
+#submission-related-study-link::placeholder { color: #8aab8a !important; }
 /* File inputs */
 #researcher-submission-panel input[type="file"] {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
-  color: var(--dt-text) !important;
+  background: #f3f8f3 !important;
+  border-color: #c8ddc5 !important;
+  color: #1a2e1a !important;
 }
 #researcher-submission-panel input[type="file"]::file-selector-button,
 #researcher-submission-panel input[type="file"]::-webkit-file-upload-button {
-  background: var(--dt-bg-panel) !important;
-  border: 1px solid var(--dt-border-md) !important;
-  color: var(--dt-accent-lt) !important;
+  background: #e8f5e8 !important;
+  border: 1px solid #c8ddc5 !important;
+  color: #145A1E !important;
   border-radius: 6px;
   padding: 0.3rem 0.65rem;
   cursor: pointer;
   margin-right: 0.5rem;
 }
-/* Muted subtitle/hint text (e.g. "Up to 3 photos…") */
-#researcher-submission-panel [style*="color:#64748b"] { color: var(--dt-muted) !important; }
+/* Muted hint text */
+#researcher-submission-panel [style*="color:#64748b"] { color: #6b8f6b !important; }
 /* Add Member / Choose Photo buttons */
 #submission-add-team-member,
 .submission-media-add-btn {
-  background: var(--dt-bg-input) !important;
-  border: 1px solid var(--dt-accent) !important;
-  color: var(--dt-accent) !important;
+  background: #ffffff !important;
+  border: 1.5px solid #145A1E !important;
+  color: #145A1E !important;
 }
 /* Hide Entry ID field */
 #researcher-submission-panel div:has(> #submission-entry-id) { display: none !important; }
