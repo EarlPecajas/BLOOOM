@@ -1073,6 +1073,8 @@ form {
   transition: transform 300ms ease, box-shadow 300ms ease;
   cursor: pointer;
   animation: cardFadeIn 600ms ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 .orchid-card-button {
@@ -1094,12 +1096,18 @@ form {
   height: 150px;
   object-fit: cover;
   display: block;
+  flex-shrink: 0;
 }
 
 .orchid-card-info {
-  padding: 1rem;
+  padding: 0.75rem 0.85rem;
   background: white;
   text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 5rem;
 }
 
 .orchid-card-name {
@@ -1107,6 +1115,10 @@ form {
   font-size: 0.95rem;
   font-weight: 600;
   color: #145A1E;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .scientific-name,
@@ -1118,10 +1130,15 @@ form {
 }
 
 .orchid-card-genus {
-  margin: 0.25rem 0 0;
+  margin: 0.3rem 0 0;
   font-size: 0.8rem;
   color: #577A5C;
   font-weight: 400;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 1.15em;
 }
 
 .orchid-detail-modal {
