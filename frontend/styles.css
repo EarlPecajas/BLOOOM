@@ -3348,8 +3348,9 @@ textarea.form-control {
 }
 /* Step indicator row — also dark green */
 #submission-step-indicator { background: #0d2e19 !important; border-color: rgba(255,255,255,.1) !important; }
-#submission-step-label { color: #e8f8e0 !important; }
-#submission-step-count { color: rgba(255,255,255,.6) !important; }
+#submission-step-indicator span { color: #ffffff !important; }
+#submission-step-indicator #submission-step-label { color: #ffffff !important; font-weight: 700 !important; }
+#submission-step-indicator #submission-step-count { color: rgba(255,255,255,.75) !important; }
 /* Form body — white, green text */
 #researcher-submission-panel h2 { color: #145A1E !important; }
 /* Header h2 must override the general panel h2 rule above — placed after so it wins */
