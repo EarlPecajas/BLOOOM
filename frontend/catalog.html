@@ -1106,40 +1106,46 @@
         }
       }
 
-      async function loadStorageImages() {
-        if (!bloomSupabase) return;
-        try {
-          const { data, error } = await bloomSupabase.storage.from('bloom-uploads').list('sightings');
-          if (error || !data) return;
-          const files = data.filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+      // getPublicUrl is synchronous - no auth or network call needed
+      function loadStorageImages() {
+        const client = window.bloomSupabase;
+        if (!client?.storage) return;
+        const bucket = client.storage.from('bloom-uploads');
+        const url = (name) => bucket.getPublicUrl('sightings/' + name).data?.publicUrl;
 
-          const getUrl = (name) => bloomSupabase.storage.from('bloom-uploads').getPublicUrl('sightings/' + name).data?.publicUrl;
+        // Closeup photos → used as primary catalog thumbnail (keyed by genus)
+        [
+          ['aerides',       'seed_closeup_aerides.jpg'],
+          ['bulbophyllum',  'seed_closeup_bulbophyllum.jpg'],
+          ['calanthe',      'seed_closeup_calanthe.jpg'],
+          ['coelogyne',     'seed_closeup_coelogyne.jpg'],
+          ['dendrobium',    'seed_closeup_dendrobium.jpg'],
+          ['paphiopedilum', 'seed_closeup_paphiopedilum.jpg'],
+          ['phalaenopsis',  'seed_closeup_phalaenopsis.jpg'],
+          ['spathoglottis', 'seed_closeup_spathoglottis.jpg'],
+          ['trichoglottis', 'seed_closeup_trichoglottis.jpg'],
+          ['vanda',         'seed_closeup_vanda.jpg']
+        ].forEach(([genus, file]) => {
+          const u = url(file);
+          if (u) storageImagesByGenus.set(genus, u);
+        });
 
-          // Pass 1: species files (seed_genus_species.jpg) → map full name, genus as fallback
-          files
-            .filter(f => /^seed_[a-z]+_[a-z]/i.test(f.name) && !/^seed_closeup_/i.test(f.name) && !/^seed_habitat_/i.test(f.name))
-            .forEach(file => {
-              const url = getUrl(file.name);
-              if (!url) return;
-              const parts = file.name.replace(/^seed_/, '').replace(/\.[^.]+$/, '').split('_');
-              const genus = parts[0].toLowerCase();
-              const full = parts.length >= 2 ? genus + ' ' + parts[1].toLowerCase() : null;
-              if (!storageImagesByGenus.has(genus)) storageImagesByGenus.set(genus, url);
-              if (full) storageImagesByGenus.set(full, url);
-            });
-
-          // Pass 2: closeup files (seed_closeup_genus.jpg) → overwrite genus key (preferred thumbnail)
-          files
-            .filter(f => /^seed_closeup_/i.test(f.name))
-            .forEach(file => {
-              const url = getUrl(file.name);
-              if (!url) return;
-              const genus = file.name.replace(/^seed_closeup_/i, '').replace(/\.[^.]+$/, '').toLowerCase();
-              if (genus) storageImagesByGenus.set(genus, url);
-            });
-        } catch (e) {
-          console.warn('Failed to load storage images:', e);
-        }
+        // Full species names → fallback (also lets full-name lookup work)
+        [
+          ['aerides quinquevulnera',    'seed_aerides_quinquevulnera.jpg'],
+          ['bulbophyllum lobbii',       'seed_bulbophyllum_lobbii.jpg'],
+          ['calanthe triplicata',       'seed_calanthe_triplicata.jpg'],
+          ['coelogyne asperata',        'seed_coelogyne_asperata.jpg'],
+          ['dendrobium secundum',       'seed_dendrobium_secundum.jpg'],
+          ['paphiopedilum fowliei',     'seed_paphiopedilum_fowliei.jpg'],
+          ['phalaenopsis schilleriana', 'seed_phalaenopsis_schilleriana.jpg'],
+          ['spathoglottis plicata',     'seed_spathoglottis_plicata.jpg'],
+          ['trichoglottis brachiata',   'seed_trichoglottis_brachiata.jpg'],
+          ['vanda sanderiana',          'seed_vanda_sanderiana.jpg']
+        ].forEach(([fullName, file]) => {
+          const u = url(file);
+          if (u) storageImagesByGenus.set(fullName, u);
+        });
       }
 
       async function loadCatalog() {
@@ -1248,12 +1254,13 @@
       syncCatalogViewState();
 
       (async () => {
+        loadStorageImages(); // synchronous — populates map before any render
         await loadCatalog();
         try {
-          await Promise.all([loadApprovedSightings(), loadStorageImages()]);
+          await loadApprovedSightings();
           renderCatalog(orchids);
         } catch (error) {
-          console.warn('Background image load failed:', error?.message || error);
+          console.warn('Sightings load failed:', error?.message || error);
         }
       })();
     </script>

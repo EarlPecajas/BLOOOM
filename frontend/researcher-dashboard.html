@@ -2814,6 +2814,7 @@
       };
       let orchidRows = [];
       let orchidCatalogLoaded = false;
+      let storageImagesByGenus = new Map();
       let dashboardCatalogListView = false;
       let submissionRows = [];
       let conservationDonutChart = null;
@@ -3360,6 +3361,45 @@
       })();
       // ────────────────────────────────────────────────────────────
 
+      function loadStorageImages() {
+        const client = window.bloomSupabase;
+        if (!client?.storage) return;
+        const bucket = client.storage.from('bloom-uploads');
+        const url = (name) => bucket.getPublicUrl('sightings/' + name).data?.publicUrl;
+
+        [
+          ['aerides',       'seed_closeup_aerides.jpg'],
+          ['bulbophyllum',  'seed_closeup_bulbophyllum.jpg'],
+          ['calanthe',      'seed_closeup_calanthe.jpg'],
+          ['coelogyne',     'seed_closeup_coelogyne.jpg'],
+          ['dendrobium',    'seed_closeup_dendrobium.jpg'],
+          ['paphiopedilum', 'seed_closeup_paphiopedilum.jpg'],
+          ['phalaenopsis',  'seed_closeup_phalaenopsis.jpg'],
+          ['spathoglottis', 'seed_closeup_spathoglottis.jpg'],
+          ['trichoglottis', 'seed_closeup_trichoglottis.jpg'],
+          ['vanda',         'seed_closeup_vanda.jpg']
+        ].forEach(([genus, file]) => {
+          const u = url(file);
+          if (u) storageImagesByGenus.set(genus, u);
+        });
+
+        [
+          ['aerides quinquevulnera',    'seed_aerides_quinquevulnera.jpg'],
+          ['bulbophyllum lobbii',       'seed_bulbophyllum_lobbii.jpg'],
+          ['calanthe triplicata',       'seed_calanthe_triplicata.jpg'],
+          ['coelogyne asperata',        'seed_coelogyne_asperata.jpg'],
+          ['dendrobium secundum',       'seed_dendrobium_secundum.jpg'],
+          ['paphiopedilum fowliei',     'seed_paphiopedilum_fowliei.jpg'],
+          ['phalaenopsis schilleriana', 'seed_phalaenopsis_schilleriana.jpg'],
+          ['spathoglottis plicata',     'seed_spathoglottis_plicata.jpg'],
+          ['trichoglottis brachiata',   'seed_trichoglottis_brachiata.jpg'],
+          ['vanda sanderiana',          'seed_vanda_sanderiana.jpg']
+        ].forEach(([fullName, file]) => {
+          const u = url(file);
+          if (u) storageImagesByGenus.set(fullName, u);
+        });
+      }
+
       function renderOrchidCatalog(items) {
         if (!catalogGrid) return;
 
@@ -3368,15 +3408,20 @@
           return;
         }
 
-        catalogGrid.innerHTML = items.map((orchid) => `
+        catalogGrid.innerHTML = items.map((orchid) => {
+          const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
+          const fullName = (orchid.name || '').toLowerCase();
+          const thumbnail = storageImagesByGenus.get(genus) || storageImagesByGenus.get(fullName) || orchid.image_url || orchidImage;
+          return `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
-            <img src="${orchid.image_url || orchidImage}" alt="${orchid.name}" class="orchid-card-image" />
+            <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${orchid.name}</p>
               <p class="orchid-card-genus">${orchid.genus}</p>
             </div>
           </button>
-        `).join('');
+        `;
+        }).join('');
       }
 
       function updateDashboardCounts(items) {
@@ -3394,6 +3439,7 @@
 
       async function loadOrchidCatalog() {
         if (!catalogGrid || orchidCatalogLoaded) return;
+        if (storageImagesByGenus.size === 0) loadStorageImages();
 
             try {
               const client = window.bloomSupabase || window.supabase;
