@@ -3791,3 +3791,165 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
   color: #fff !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   RESEARCHER THEME — matches mobile app warm-cream + dark-green palette
+   All rules scoped to body.researcher-theme so DENR is unaffected.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Page & html background */
+html:has(body.researcher-theme),
+body.researcher-theme {
+  background: #F0EAD2 !important;
+  background-image: none !important;
+}
+
+/* Top nav */
+body.researcher-theme .top-nav,
+body.researcher-theme .dashboard-header {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border-bottom: 1px solid #D8D0B8 !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07) !important;
+}
+body.researcher-theme .bloom-text { color: #145A1E !important; }
+body.researcher-theme .brand-tagline span { color: #4a7a44 !important; }
+body.researcher-theme .dashboard-user { color: #1a3a1a !important; }
+
+/* Sidebar */
+body.researcher-theme .sidebar {
+  background: #E8E2CB !important;
+  backdrop-filter: none !important;
+  border-right: 1px solid #D0C9B0 !important;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.06) !important;
+}
+body.researcher-theme .sidebar-nav::before { color: #7a8a6a !important; }
+body.researcher-theme .sidebar-item {
+  color: #3a5a3a !important;
+}
+body.researcher-theme .sidebar-item:hover {
+  background: #D4CDB0 !important;
+  color: #145A1E !important;
+}
+body.researcher-theme .sidebar-item.active {
+  background: #FFFFFF !important;
+  color: #145A1E !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+body.researcher-theme .sidebar-icon { color: #145A1E !important; }
+body.researcher-theme .sidebar-toggle-icon-btn {
+  color: #145A1E !important;
+  border-color: #145A1E !important;
+  background: transparent !important;
+}
+body.researcher-theme .sidebar-toggle-icon-btn:hover,
+body.researcher-theme .sidebar-toggle-icon-btn:focus,
+body.researcher-theme .sidebar-toggle-icon-btn:active {
+  background: #145A1E !important;
+  border-color: #145A1E !important;
+  color: #fff !important;
+}
+body.researcher-theme #sidebar-toggle-button {
+  background: rgba(20,90,30,0.08) !important;
+  border-color: rgba(20,90,30,0.25) !important;
+  color: #145A1E !important;
+}
+body.researcher-theme #sidebar-toggle-button:hover { background: rgba(20,90,30,0.15) !important; }
+
+/* Main content areas */
+body.researcher-theme .dashboard-container,
+body.researcher-theme #orchids-view,
+body.researcher-theme #conservation-view,
+body.researcher-theme #report-view,
+body.researcher-theme #submissions-view {
+  background: #F0EAD2 !important;
+}
+
+/* Cards and panels */
+body.researcher-theme .orchid-card,
+body.researcher-theme .stat-card,
+body.researcher-theme .dashboard-card,
+body.researcher-theme .researcher-home-card,
+body.researcher-theme .info-card {
+  background: #FFFFFF !important;
+  border-color: #E0D8C0 !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07) !important;
+}
+body.researcher-theme .orchid-card-info { background: #FFFFFF !important; }
+body.researcher-theme .orchid-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.13) !important; }
+
+/* Card text */
+body.researcher-theme .orchid-card-name { color: #145A1E !important; }
+body.researcher-theme .orchid-card-genus { color: #5a7a54 !important; }
+body.researcher-theme .stat-card-title,
+body.researcher-theme .stat-card-value,
+body.researcher-theme .dashboard-card-title,
+body.researcher-theme .researcher-home-card h3,
+body.researcher-theme .info-card-title { color: #1a3a1a !important; }
+body.researcher-theme .stat-card-label,
+body.researcher-theme .dashboard-card-subtitle,
+body.researcher-theme .researcher-home-card p { color: #5a7a54 !important; }
+
+/* Search & filter inputs */
+body.researcher-theme .catalog-search,
+body.researcher-theme .catalog-search-filter,
+body.researcher-theme input[type="text"],
+body.researcher-theme input[type="search"],
+body.researcher-theme select:not(.submission-select):not(#submission-genus):not(#submission-species-epithet) {
+  background: #FFFFFF !important;
+  border-color: #C8C0A8 !important;
+  color: #1a3a1a !important;
+}
+body.researcher-theme .catalog-search::placeholder { color: #8a9a80 !important; }
+
+/* Researcher data button/dropdown */
+body.researcher-theme .researcher-data-button {
+  background: rgba(20,90,30,0.08) !important;
+  border-color: rgba(20,90,30,0.25) !important;
+  color: #145A1E !important;
+}
+body.researcher-theme .researcher-data-button:hover { background: rgba(20,90,30,0.15) !important; }
+body.researcher-theme .researcher-data-dropdown,
+body.researcher-theme .user-dropdown {
+  background: #FFFFFF !important;
+  border-color: #D8D0B8 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+  backdrop-filter: none !important;
+}
+body.researcher-theme .researcher-data-dropdown-item,
+body.researcher-theme .user-dropdown-item { color: #1a3a1a !important; }
+body.researcher-theme .researcher-data-dropdown-item:hover,
+body.researcher-theme .user-dropdown-item:hover { background: #F0EAD2 !important; }
+
+/* Tables */
+body.researcher-theme .dashboard-table thead th,
+body.researcher-theme .table thead th {
+  background: #E8E2CB !important;
+  color: #1a3a1a !important;
+  border-color: #D0C9B0 !important;
+}
+body.researcher-theme .dashboard-table td,
+body.researcher-theme .table td,
+body.researcher-theme .table tbody tr { color: #1a3a1a !important; border-color: #E0D8C0 !important; }
+body.researcher-theme .dashboard-table tbody tr:hover td,
+body.researcher-theme .table tbody tr:hover td { background: #F8F3E6 !important; }
+
+/* Bootstrap overrides for researcher */
+body.researcher-theme .bg-white,
+body.researcher-theme .bg-light { background: #FFFFFF !important; }
+body.researcher-theme .text-muted { color: #5a7a54 !important; }
+body.researcher-theme .card { background: #FFFFFF !important; border-color: #E0D8C0 !important; }
+body.researcher-theme .card-body { background: #FFFFFF !important; color: #1a3a1a !important; }
+body.researcher-theme hr,
+body.researcher-theme .border-bottom,
+body.researcher-theme .border-top { border-color: #D8D0B8 !important; }
+body.researcher-theme select option { background: #FFFFFF; color: #1a3a1a; }
+
+/* Catalog view header text */
+body.researcher-theme .catalog-title { color: #145A1E !important; }
+body.researcher-theme h1, body.researcher-theme h2, body.researcher-theme h3 { color: #145A1E !important; }
+body.researcher-theme p, body.researcher-theme span, body.researcher-theme label { color: #1a3a1a !important; }
+
+/* Scrollbar */
+body.researcher-theme .sidebar::-webkit-scrollbar-thumb { background: rgba(20,90,30,0.2) !important; }
+body.researcher-theme .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(20,90,30,0.35) !important; }
+
