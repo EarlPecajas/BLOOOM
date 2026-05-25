@@ -3452,6 +3452,7 @@
       let dashboardCatalogListView = false;
       let submissionRows = [];
       let activeStatusFilter = 'all';
+      let storageImagesByGenus = new Map();
 
       // Neon GPS-track trail definitions (same as researcher dashboard)
       const NEON_BLUE = '#4db86a';
@@ -4128,6 +4129,36 @@
       })();
       // ────────────────────────────────────────────────────────────
 
+      const STORAGE_SKIP_WORDS = new Set(['closeup', 'habitat', 'forest', 'grassland', 'limestone', 'montane', 'mossy', 'stream', 'edge', 'flower', 'plant', 'whole', '3d', 'photo']);
+
+      async function loadStorageImages() {
+        if (!bloomSupabase) return;
+        try {
+          const { data, error } = await bloomSupabase.storage.from('bloom-uploads').list('sightings');
+          if (error || !data) return;
+          data.forEach(file => {
+            const { data: urlData } = bloomSupabase.storage.from('bloom-uploads').getPublicUrl('sightings/' + file.name);
+            const url = urlData?.publicUrl;
+            if (!url) return;
+            const parts = file.name
+              .replace(/^seed_/, '')
+              .replace(/\.(jpg|jpeg|png|webp|gif)$/i, '')
+              .split('_')
+              .map(p => p.toLowerCase())
+              .filter(p => p && !STORAGE_SKIP_WORDS.has(p));
+            if (parts.length === 0) return;
+            const genus = parts[0];
+            if (!storageImagesByGenus.has(genus)) storageImagesByGenus.set(genus, url);
+            if (parts.length >= 2) {
+              const full = parts[0] + ' ' + parts[1];
+              if (!storageImagesByGenus.has(full)) storageImagesByGenus.set(full, url);
+            }
+          });
+        } catch (e) {
+          console.warn('Failed to load storage images:', e);
+        }
+      }
+
       function renderOrchidCatalog(items) {
         if (!catalogGrid) return;
 
@@ -4136,15 +4167,20 @@
           return;
         }
 
-        catalogGrid.innerHTML = items.map((orchid) => `
+        catalogGrid.innerHTML = items.map((orchid) => {
+          const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
+          const fullName = (orchid.name || '').toLowerCase();
+          const thumbnail = storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchid.image_url || orchidImage;
+          return `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
-            <img src="${orchid.image_url || orchidImage}" alt="${orchid.name}" class="orchid-card-image" />
+            <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${orchid.name}</p>
               <p class="orchid-card-genus">${orchid.genus}</p>
             </div>
           </button>
-        `).join('');
+        `;
+        }).join('');
       }
 
       function updateDashboardCounts(items) {
@@ -4185,6 +4221,10 @@
         }
 
         console.log('⏳ Starting catalog load...');
+
+        if (storageImagesByGenus.size === 0) {
+          await loadStorageImages().catch(() => {});
+        }
 
         const showCatalogError = (error) => {
           const errorMessage = String(error?.message || error || 'Unknown error').trim();

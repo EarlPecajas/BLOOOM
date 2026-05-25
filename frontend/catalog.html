@@ -326,6 +326,7 @@
       const LIST_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="5" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="11" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="17" width="18" height="2" fill="currentColor" rx="1" />\n              </svg>';
       let orchids = [];
       let approvedSightingsByScientificName = new Map();
+      let storageImagesByGenus = new Map(); // genus_lower or "genus species" -> publicUrl
       let isListView = false;
       let currentSubmission = null;
       const bloomSupabase = window.bloomSupabase;
@@ -1028,17 +1029,19 @@
           const scientificKey = normalizeScientificKey(orchid.name);
           const approvedSighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
 
-          let thumbnailImage = catalogImage;
+          let thumbnailImage = null;
           if (approvedSighting) {
             const allImages = [
               ...(approvedSighting.whole_plant_photo_path || []),
               ...(approvedSighting.closeup_flower_photo_path || []),
               ...(approvedSighting.habitat_photo_path || [])
             ].filter(Boolean);
-            
-            if (allImages.length > 0) {
-              thumbnailImage = allImages[0];
-            }
+            if (allImages.length > 0) thumbnailImage = allImages[0];
+          }
+          if (!thumbnailImage) {
+            const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
+            const fullName = (orchid.name || '').toLowerCase();
+            thumbnailImage = storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchid.image_url || catalogImage;
           }
 
           return `
@@ -1100,6 +1103,38 @@
         } catch (error) {
           console.warn('Local orchid fallback failed:', error?.message || error);
           return false;
+        }
+      }
+
+      // Category words that appear in filenames but aren't genus/species names
+      const STORAGE_SKIP_WORDS = new Set(['closeup', 'habitat', 'forest', 'grassland', 'limestone', 'montane', 'mossy', 'stream', 'edge', 'flower', 'plant', 'whole', '3d', 'photo']);
+
+      async function loadStorageImages() {
+        if (!bloomSupabase) return;
+        try {
+          const { data, error } = await bloomSupabase.storage.from('bloom-uploads').list('sightings');
+          if (error || !data) return;
+          data.forEach(file => {
+            const { data: urlData } = bloomSupabase.storage.from('bloom-uploads').getPublicUrl('sightings/' + file.name);
+            const url = urlData?.publicUrl;
+            if (!url) return;
+            // Strip seed_ prefix and extension, split by _
+            const parts = file.name
+              .replace(/^seed_/, '')
+              .replace(/\.(jpg|jpeg|png|webp|gif)$/i, '')
+              .split('_')
+              .map(p => p.toLowerCase())
+              .filter(p => p && !STORAGE_SKIP_WORDS.has(p));
+            if (parts.length === 0) return;
+            const genus = parts[0];
+            if (!storageImagesByGenus.has(genus)) storageImagesByGenus.set(genus, url);
+            if (parts.length >= 2) {
+              const full = parts[0] + ' ' + parts[1];
+              if (!storageImagesByGenus.has(full)) storageImagesByGenus.set(full, url);
+            }
+          });
+        } catch (e) {
+          console.warn('Failed to load storage images:', e);
         }
       }
 
@@ -1211,10 +1246,10 @@
       (async () => {
         await loadCatalog();
         try {
-          await loadApprovedSightings();
+          await Promise.all([loadApprovedSightings(), loadStorageImages()]);
           renderCatalog(orchids);
         } catch (error) {
-          console.warn('Approved sightings load failed:', error?.message || error);
+          console.warn('Background image load failed:', error?.message || error);
         }
       })();
     </script>
