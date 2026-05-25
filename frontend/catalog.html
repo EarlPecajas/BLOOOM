@@ -1061,7 +1061,9 @@
         const filtered = orchids.filter((orchid) => {
           const name = (orchid.name || '').toLowerCase();
           const genus = (orchid.genus || '').toLowerCase();
-          const status = (orchid.conservation_status || '').toLowerCase();
+          const scientificKey = normalizeScientificKey(orchid.name);
+          const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          const status = (orchid.conservation_status || sighting?.threat_level_generalized || '').toLowerCase();
 
           if (conservationValue !== 'all' && !status.includes(conservationValue)) {
             return false;
@@ -1206,12 +1208,14 @@
 
       syncCatalogViewState();
 
-      // Render the catalog immediately, then load sighting thumbnails in the background.
       (async () => {
         await loadCatalog();
-        loadApprovedSightings().catch((error) => {
+        try {
+          await loadApprovedSightings();
+          renderCatalog(orchids);
+        } catch (error) {
           console.warn('Approved sightings load failed:', error?.message || error);
-        });
+        }
       })();
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
