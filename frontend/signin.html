@@ -55,8 +55,10 @@
               <a href="#" class="forgot-password">Forgot password</a>
             </div>
             
+            <div id="signin-error" style="display:none;color:#c0392b;background:#fdf0ee;border:1px solid #e8b4ae;border-radius:6px;padding:0.6rem 0.9rem;font-size:0.875rem;margin-bottom:0.5rem;"></div>
+
             <button type="submit" class="signin-btn btn btn-primary w-100">Sign In</button>
-            
+
             <p class="signin-footer small text-muted mb-0">
               Don't have an account? <a href="register.html" class="signin-link">Sign Up</a>
             </p>
@@ -76,25 +78,40 @@
     <script>
       const bloomSupabase = window.bloomSupabase;
 
+      function showSigninError(msg) {
+        const el = document.getElementById('signin-error');
+        el.textContent = msg;
+        el.style.display = 'block';
+      }
+
+      function hideSigninError() {
+        const el = document.getElementById('signin-error');
+        el.style.display = 'none';
+      }
+
       document.getElementById('signin-form').addEventListener('submit', async function(e) {
         e.preventDefault();
+        hideSigninError();
 
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
 
-        if (!supabase) {
-          alert('Supabase is not configured.');
+        if (!bloomSupabase) {
+          showSigninError('Unable to connect. Please refresh and try again.');
           return;
         }
 
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Signing in…';
+
         try {
-          const { data, error } = await bloomSupabase.auth.signInWithPassword({
-            email,
-            password
-          });
+          const { data, error } = await bloomSupabase.auth.signInWithPassword({ email, password });
 
           if (error || !data.user) {
-            alert(error?.message || 'Invalid email or password');
+            showSigninError(error?.message || 'Invalid email or password.');
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
             return;
           }
 
@@ -109,11 +126,12 @@
 
           localStorage.setItem('bloomUser', JSON.stringify(userRecord));
           sessionStorage.setItem('bloomUser', JSON.stringify(userRecord));
-          // Redirect to appropriate dashboard based on role
           const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
           window.location.href = targetDashboard;
-        } catch (error) {
-          alert(error.message || 'Could not connect to Supabase. Please try again.');
+        } catch (err) {
+          showSigninError(err.message || 'Could not connect. Please try again.');
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
         }
       });
     </script>
