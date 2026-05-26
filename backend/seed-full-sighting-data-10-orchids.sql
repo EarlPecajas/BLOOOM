@@ -10,7 +10,7 @@ BEGIN;
 -- ── 1. Aerides quinquevulnera ─────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -33,7 +33,6 @@ INSERT INTO species_sightings (
   'BLOOM-AQ-001', 'Aerides quinquevulnera', 'Aerides',
   '["Five-spotted Aerides", "Five-wounded Aerides", "Pink Aerides"]'::jsonb,
   '["Talisay", "Sampaguita sa Bundok"]'::jsonb,
-  'Five-spotted Aerides',
   'Confirmed', 'yes',
   '2024-03-15', '09:30:00', 'transect', 'flowering', false,
   'Mt. Busa', 'trail', 6.1821, 124.3482, 1050.00,
@@ -58,7 +57,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -101,7 +99,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 2. Bulbophyllum lobbii ────────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -124,7 +122,6 @@ INSERT INTO species_sightings (
   'BLOOM-BL-001', 'Bulbophyllum lobbii', 'Bulbophyllum',
   '["Lobb''s Bulbophyllum", "Yellow Bulbophyllum"]'::jsonb,
   '["Bulbul na Orchid", "Kalimba"]'::jsonb,
-  'Lobb''s Bulbophyllum',
   'Confirmed', 'no',
   '2024-04-08', '08:15:00', 'opportunistic', 'live specimen', false,
   'Mt. Busa', 'ridge', 6.1754, 124.3521, 1250.00,
@@ -149,7 +146,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -192,7 +188,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 3. Calanthe triplicata ────────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -215,7 +211,6 @@ INSERT INTO species_sightings (
   'BLOOM-CT-001', 'Calanthe triplicata', 'Calanthe',
   '["White Calanthe", "Triplefolded Calanthe", "Christmas Orchid"]'::jsonb,
   '["Puting Orkidyas", "Kahoy na Puting Bulaklak"]'::jsonb,
-  'White Calanthe',
   'Confirmed', 'no',
   '2024-02-20', '10:00:00', 'transect', 'flowering', false,
   'Mt. Busa', 'streamside', 6.1892, 124.3445, 800.00,
@@ -240,7 +235,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -282,7 +276,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 4. Coelogyne asperata ─────────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -305,7 +299,6 @@ INSERT INTO species_sightings (
   'BLOOM-CA-001', 'Coelogyne asperata', 'Coelogyne',
   '["Rough Coelogyne", "Rough-surfaced Coelogyne"]'::jsonb,
   '["Batingaw na Orchid", "Garing-garing"]'::jsonb,
-  'Rough Coelogyne',
   'Confirmed', 'no',
   '2024-05-12', '07:45:00', 'transect', 'flowering', false,
   'Mt. Busa', 'trail', 6.1668, 124.3389, 650.00,
@@ -330,7 +323,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -373,7 +365,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 5. Dendrobium secundum ────────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -396,7 +388,6 @@ INSERT INTO species_sightings (
   'BLOOM-DS-001', 'Dendrobium secundum', 'Dendrobium',
   '["Toothbrush Orchid", "Pink Dendrobium", "One-sided Dendrobium"]'::jsonb,
   '["Suklay-suklay", "Sipit-sipit", "Brosang-Orkidyas"]'::jsonb,
-  'Toothbrush Orchid',
   'Confirmed', 'yes',
   '2024-03-28', '08:00:00', 'transect', 'flowering', false,
   'Mt. Busa', 'ridge', 6.1935, 124.3562, 1150.00,
@@ -421,7 +412,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -464,7 +454,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 6. Paphiopedilum fowliei ──────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -487,7 +477,6 @@ INSERT INTO species_sightings (
   'BLOOM-PF-001', 'Paphiopedilum fowliei', 'Paphiopedilum',
   '["Fowlie''s Slipper Orchid", "Mindanao Slipper Orchid"]'::jsonb,
   '["Zapatilla", "Tsinelas ng Diyos", "Sinelas-sinelas"]'::jsonb,
-  'Fowlie''s Slipper Orchid',
   'Confirmed', 'yes',
   '2024-01-18', '09:00:00', 'quadrat', 'live specimen', true,
   'Mt. Busa', 'ridge', 6.2012, 124.3478, 1350.00,
@@ -512,7 +501,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -554,7 +542,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 7. Phalaenopsis schilleriana ──────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -577,7 +565,6 @@ INSERT INTO species_sightings (
   'BLOOM-PS-001', 'Phalaenopsis schilleriana', 'Phalaenopsis',
   '["Schiller''s Moth Orchid", "Pink Butterfly Orchid", "Mariposa Orchid"]'::jsonb,
   '["Mariposa", "Paruparo-paruparo", "Alibangbang na Orchid"]'::jsonb,
-  'Schiller''s Moth Orchid',
   'Confirmed', 'yes',
   '2024-02-10', '08:30:00', 'transect', 'flowering', false,
   'Mt. Busa', 'trail', 6.1723, 124.3413, 720.00,
@@ -602,7 +589,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -645,7 +631,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 8. Spathoglottis plicata ──────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -668,7 +654,6 @@ INSERT INTO species_sightings (
   'BLOOM-SP-001', 'Spathoglottis plicata', 'Spathoglottis',
   '["Philippine Ground Orchid", "Large Purple Spathoglottis", "Pleated Spathoglottis"]'::jsonb,
   '["Abukay", "Kampupot sa Bundok", "Lakatan na Orchid"]'::jsonb,
-  'Philippine Ground Orchid',
   'Confirmed', 'no',
   '2024-04-22', '10:30:00', 'random survey', 'live specimen', false,
   'Mt. Busa', 'streamside', 6.1845, 124.3502, 920.00,
@@ -693,7 +678,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -736,7 +720,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 9. Trichoglottis brachiata ────────────────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -759,7 +743,6 @@ INSERT INTO species_sightings (
   'BLOOM-TB-001', 'Trichoglottis brachiata', 'Trichoglottis',
   '["Philippine Trichoglottis", "Braided Trichoglottis", "Dark Orchid"]'::jsonb,
   '["Kayumanggi na Orchid", "Itim na Bulaklak", "Dikya"]'::jsonb,
-  'Philippine Trichoglottis',
   'Confirmed', 'yes',
   '2024-05-05', '07:30:00', 'transect', 'flowering', false,
   'Mt. Busa', 'trail', 6.1791, 124.3467, 1080.00,
@@ -784,7 +767,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
@@ -827,7 +809,7 @@ ON CONFLICT (entry_id) DO UPDATE SET
 -- ── 10. Vanda sanderiana (Waling-Waling) ──────────────────────────────
 INSERT INTO species_sightings (
   entry_id, scientific_name, genus,
-  common_names, local_names, common_name,
+  common_names, local_names,
   identification_confidence, endemic_to_philippines,
   observation_date, observation_time, collection_method, observation_type, voucher_collected,
   mountain_name, specific_site_zone, latitude, longitude, elevation_meters,
@@ -850,7 +832,6 @@ INSERT INTO species_sightings (
   'BLOOM-VS-001', 'Vanda sanderiana', 'Vanda',
   '["Waling-Waling", "Sander''s Vanda", "Queen of Philippine Flowers"]'::jsonb,
   '["Waling-waling", "Adlawon", "Bulak sa Kahoy"]'::jsonb,
-  'Waling-Waling',
   'Confirmed', 'yes',
   '2024-09-14', '08:00:00', 'quadrat', 'flowering', false,
   'Mt. Busa', 'trail', 6.1634, 124.3358, 580.00,
@@ -875,7 +856,6 @@ INSERT INTO species_sightings (
 ON CONFLICT (entry_id) DO UPDATE SET
   genus = EXCLUDED.genus,
   common_names = EXCLUDED.common_names, local_names = EXCLUDED.local_names,
-  common_name = EXCLUDED.common_name,
   identification_confidence = EXCLUDED.identification_confidence,
   endemic_to_philippines = EXCLUDED.endemic_to_philippines,
   observation_date = EXCLUDED.observation_date, observation_time = EXCLUDED.observation_time,
