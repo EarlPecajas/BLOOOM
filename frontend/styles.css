@@ -3356,10 +3356,10 @@ textarea.form-control {
   border-color: #D8D0B8 !important;
   box-shadow: 0 16px 48px rgba(0,0,0,.18) !important;
 }
-/* Header — cream with dark green text */
+/* Header — cream with dark green text, no border so it merges seamlessly with step indicator */
 #submission-modal-header {
   background: #E8E2CB !important;
-  border-bottom: 1.5px solid #C8C0A4 !important;
+  border-bottom: none !important;
 }
 #submission-modal-header h2 { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
 #submission-modal-header button[aria-label="Close submission form"] {
@@ -3505,7 +3505,7 @@ textarea.form-control {
   border: 1.5px solid #145A1E !important;
   color: #145A1E !important;
 }
-#submission-nav-row { border-color: #D8D0B8 !important; background: #F0EAD2 !important; }
+#submission-nav-row { border-color: #D8D0B8 !important; background: #F0EAD2 !important; justify-content: flex-end !important; }
 /* Remove number spinners */
 #researcher-submission-panel input[type="number"]::-webkit-outer-spin-button,
 #researcher-submission-panel input[type="number"]::-webkit-inner-spin-button,
