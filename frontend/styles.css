@@ -3505,7 +3505,17 @@ textarea.form-control {
   border: 1.5px solid #145A1E !important;
   color: #145A1E !important;
 }
-#submission-nav-row { border-color: #D8D0B8 !important; background: #F0EAD2 !important; justify-content: flex-end !important; }
+#submission-nav-row {
+  margin: 1rem -1.4rem -1.4rem !important;
+  padding: 0.85rem 1.4rem !important;
+  border-top: 1.5px solid #C8C0A4 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  background: #E8E2CB !important;
+  border-radius: 0 0 12px 12px !important;
+  justify-content: flex-end !important;
+}
 /* Remove number spinners */
 #researcher-submission-panel input[type="number"]::-webkit-outer-spin-button,
 #researcher-submission-panel input[type="number"]::-webkit-inner-spin-button,
