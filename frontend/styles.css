@@ -3938,7 +3938,6 @@ body.researcher-theme .catalog-search::placeholder { color: #8a9a80 !important; 
 body.researcher-theme input,
 body.researcher-theme textarea,
 body.researcher-theme select {
-  background: #FFFFFF !important;
   background-color: #FFFFFF !important;
   border-color: #C8C0A8 !important;
   color: #1a3a1a !important;
