@@ -3925,6 +3925,30 @@ body.researcher-theme .orchid-card { background: #FFFFFF !important; box-shadow:
 body.researcher-theme .orchid-card-info { background: #FFFFFF !important; }
 body.researcher-theme .orchid-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.13) !important; }
 
+/* 8b ── Researcher home cards (dark theme hardcodes rgba here, vars don't help) */
+body.researcher-theme .researcher-home-card {
+  background: #FFFFFF !important;
+  border-color: #E0D8C0 !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07) !important;
+  backdrop-filter: none !important;
+}
+body.researcher-theme .researcher-home-card:hover {
+  border-color: #145A1E !important;
+  box-shadow: 0 8px 22px rgba(20,90,30,0.14) !important;
+  transform: translateY(-4px);
+}
+body.researcher-theme .researcher-home-card h3,
+body.researcher-theme .researcher-home-card h2,
+body.researcher-theme .researcher-home-card p,
+body.researcher-theme .researcher-home-card span { color: #1a3a1a !important; -webkit-text-fill-color: #1a3a1a !important; }
+body.researcher-theme .researcher-home-card-title { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
+body.researcher-theme .researcher-home-card-tag {
+  background: rgba(20,90,30,0.1) !important;
+  color: #145A1E !important;
+  -webkit-text-fill-color: #145A1E !important;
+  border-color: rgba(20,90,30,0.2) !important;
+}
+
 /* 9 ── Submissions table */
 body.researcher-theme .submissions-table-shell { background: #FFFFFF !important; border-color: #E0D8C0 !important; }
 body.researcher-theme .submissions-table-head th { background: #E8E2CB !important; color: #1a3a1a !important; }
