@@ -2155,6 +2155,11 @@
         }
       }
 
+      // Clear placeholder option text from all submission selects — labels above already explain each field
+      document.querySelectorAll('#researcher-submission-form .submission-select option[value=""][disabled]').forEach(function(opt) {
+        opt.textContent = '';
+      });
+
       function syncSidebarToggleState() {
         if (!sidebarToggleButton) {
           return;

@@ -3450,11 +3450,32 @@ textarea.form-control {
   background: #f3f8f3 !important;
   color: #6b8f6b !important;
 }
-/* Select dropdowns */
+/* Hide all submission input placeholders — labels above already explain each field */
+#researcher-submission-panel .submission-text-input::placeholder,
+#researcher-submission-panel .submission-number-input::placeholder,
+#researcher-submission-panel .submission-time-input::placeholder,
+#researcher-submission-panel .submission-date-input::placeholder,
+#researcher-submission-panel .submission-textarea::placeholder,
+#researcher-submission-panel .submission-common-name-item::placeholder,
+#researcher-submission-panel .submission-local-name-item::placeholder,
+#researcher-submission-panel .submission-team-member-name::placeholder,
+#researcher-submission-panel .submission-team-member-role::placeholder,
+#researcher-submission-panel .submission-media-contributor::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+/* Select dropdowns — custom arrow so it's always visible */
 .submission-select {
   background-color: #ffffff !important;
   border-color: #c8ddc5 !important;
   color: #1a2e1a !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23145A1E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1rem !important;
+  padding-right: 2.2rem !important;
 }
 .submission-select option {
   background-color: #ffffff !important;
