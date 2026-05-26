@@ -3358,8 +3358,8 @@ textarea.form-control {
 }
 /* Header — cream with dark green text */
 #submission-modal-header {
-  background: #FFFFFF !important;
-  border-bottom: 1.5px solid #D8D0B8 !important;
+  background: #E8E2CB !important;
+  border-bottom: 1.5px solid #C8C0A4 !important;
 }
 #submission-modal-header h2 { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
 #submission-modal-header button[aria-label="Close submission form"] {
@@ -3378,11 +3378,15 @@ textarea.form-control {
 #researcher-submission-panel label { color: #145A1E !important; font-weight: 600 !important; -webkit-text-fill-color: #145A1E !important; }
 #researcher-submission-panel strong { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
 #researcher-submission-panel span { color: #3d6b42 !important; -webkit-text-fill-color: #3d6b42 !important; }
-/* Section header divs (e.g. "Basic Taxonomic Information" card) */
+/* Section header divs (e.g. "Basic Taxonomic Information" card) — slim left-border style */
 #researcher-submission-panel [style*="background:#f9fcfa"],
 #researcher-submission-panel [style*="background: #f9fcfa"] {
-  background: #EDE6CC !important;
-  border-color: #D8D0B8 !important;
+  background: transparent !important;
+  border: none !important;
+  border-left: 3px solid #145A1E !important;
+  border-radius: 0 !important;
+  padding: 0.3rem 0 0.3rem 0.65rem !important;
+  margin-bottom: 0.1rem !important;
   color: #145A1E !important;
 }
 /* White inline bg containers */
