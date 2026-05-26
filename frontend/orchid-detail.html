@@ -122,7 +122,7 @@
       .map-subheader-sep { color: #9abf94; font-size: .75rem; }
       .map-subheader-loc { font-size: .72rem; color: #5a8a54; font-weight: 500; }
       .map-sightings-badge { font-size: .68rem; font-weight: 700; color: #143a10; background: #b8e0b0; padding: .18rem .65rem; border-radius: 10px; letter-spacing: .02em; }
-      #orchid-leaflet-map { flex: 1; }
+      #orchid-leaflet-map { flex: 1; min-height: 0; }
       .orchid-map-hint { text-align: center; font-size: .75rem; color: #5a7a58; padding: .35rem 1rem; background: #eaf5e7; border-top: 1px solid #c8e0c4; margin: 0; flex-shrink: 0; }
 
       /* Stage 2: paged detail */
@@ -2037,9 +2037,22 @@
       function initMap(sightingPoints) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         const primary = sightingPoints[0];
+
+        // Ensure the container has a usable height before Leaflet measures it
+        const mapEl = document.getElementById('orchid-leaflet-map');
+        if (mapEl && mapEl.offsetHeight < 10) {
+          const hintEl = document.querySelector('.orchid-map-hint');
+          const hintH = hintEl ? hintEl.offsetHeight : 36;
+          const subH = document.querySelector('.orchid-map-subheader')?.offsetHeight || 44;
+          const available = window.innerHeight - (document.querySelector('.detail-topbar')?.offsetHeight || 54) - hintH - subH;
+          mapEl.style.height = Math.max(300, available) + 'px';
+        }
+
         const displayPoints = sightingPoints.slice();
+        let offsetIdx = 0;
         while (displayPoints.length < 5) {
-          displayPoints.push({ lat: primary.lat, lng: primary.lng, synthetic: true });
+          const off = NEARBY_OFFSETS[offsetIdx++ % NEARBY_OFFSETS.length];
+          displayPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng, synthetic: true });
         }
         const countBadge = document.getElementById('map-sightings-count');
         if (countBadge) countBadge.textContent = displayPoints.length + ' sighting' + (displayPoints.length !== 1 ? 's' : '');
