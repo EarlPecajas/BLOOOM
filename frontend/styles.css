@@ -3950,7 +3950,6 @@ body.researcher-theme select option { background: #FFFFFF; color: #1a3a1a; }
 body.researcher-theme #researcher-submission-panel input,
 body.researcher-theme #researcher-submission-panel textarea,
 body.researcher-theme #researcher-submission-panel select {
-  background: #FFFFFF !important;
   background-color: #FFFFFF !important;
   border-color: #c8ddc5 !important;
   color: #1a2e1a !important;
