@@ -2049,11 +2049,6 @@
         }
 
         const displayPoints = sightingPoints.slice();
-        let offsetIdx = 0;
-        while (displayPoints.length < 5) {
-          const off = NEARBY_OFFSETS[offsetIdx++ % NEARBY_OFFSETS.length];
-          displayPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng, synthetic: true });
-        }
         const countBadge = document.getElementById('map-sightings-count');
         if (countBadge) countBadge.textContent = displayPoints.length + ' sighting' + (displayPoints.length !== 1 ? 's' : '');
 
