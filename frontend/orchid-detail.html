@@ -1046,6 +1046,7 @@
         return {
           scientific_name: row.scientific_name || '',
           common_names: parseJsonArrayValue(row.common_names),
+          local_names: parseJsonArrayValue(row.local_names),
           identification_confidence: row.identification_confidence || '',
           observation_date: row.observation_date || '',
           observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
@@ -1079,7 +1080,9 @@
           fruit_present: row.fruit_present,
           fruit_type: row.fruit_type || '',
           population_status: row.population_status || '',
-          threat_level_generalized: row.threat_level_generalized || row.threat_level || '',
+          threat_level: row.threat_level || row.threat_level_generalized || '',
+          threat_level_generalized: row.threat_level || row.threat_level_generalized || '',
+          endemic_to_philippines: row.endemic_to_philippines || '',
           growth_substrate: row.growth_substrate || '',
           nearby_water_source: row.nearby_water_source || '',
           educational_notes: row.educational_notes || '',
@@ -1127,12 +1130,14 @@
         setField('oid-genus', genus);
         setField('oid-family', 'Orchidaceae');
 
-        // Local names (all common names joined)
-        const allCommonNames = Array.isArray(src.common_names) ? src.common_names.filter(Boolean) : [];
-        setField('oid-local-names', allCommonNames.length > 0 ? allCommonNames.join(', ') : null);
+        // Local names — prefer local_names field; fall back to common_names
+        const localNamesArr = Array.isArray(src.local_names) ? src.local_names.filter(Boolean) : [];
+        const commonNamesArr = Array.isArray(src.common_names) ? src.common_names.filter(Boolean) : [];
+        const displayNames = localNamesArr.length > 0 ? localNamesArr : commonNamesArr;
+        setField('oid-local-names', displayNames.length > 0 ? displayNames.join(', ') : null);
 
-        // Conservation status
-        setField('oid-conservation-status', src.threat_level_generalized || null);
+        // Conservation status — use actual threat_level value
+        setField('oid-conservation-status', src.threat_level || src.threat_level_generalized || null);
 
         // Habitat & morphology
         setField('oid-habitat', src.habitat_type || null);
@@ -1146,9 +1151,11 @@
           ? endemicity
           : (src.mountain_name ? 'Mindanao, Philippines' : 'Philippines');
         setField('oid-distribution', distrib);
-        if (endemicity) {
-          const isEndemic = endemicity.toLowerCase().includes('endemic');
-          setField('oid-endemic', isEndemic ? 'Yes' : endemicity);
+        const endemicSrc = src.endemic_to_philippines || '';
+        const endemicVal = endemicity || endemicSrc;
+        if (endemicVal) {
+          const isEndemic = endemicVal.toLowerCase().includes('yes') || endemicVal.toLowerCase().includes('endemic');
+          setField('oid-endemic', isEndemic ? 'Yes' : endemicVal);
         } else {
           setField('oid-endemic', null);
         }
@@ -1217,7 +1224,7 @@
         setDetailRow('row-flowering-stage', 'detail-flowering-stage', src.blooming_stage || src.flowering_stage || '');
         setDetailRow('row-fruit-present', 'detail-fruit-present', src.fruit_present ? 'Present' : 'Not observed');
         setDetailRow('row-fruit-type', 'detail-fruit-type', src.fruit_type || '');
-        setDetailRow('row-threat-level', 'detail-threat-level', src.threat_level_generalized || '');
+        setDetailRow('row-threat-level', 'detail-threat-level', src.threat_level || src.threat_level_generalized || '');
         setDetailRow('row-ethnobotanical', 'detail-ethnobotanical', src.educational_notes || '');
         setDetailRow('row-researcher', 'detail-researcher', src.researcher_name || '');
         setDetailRow('row-observation-summary', 'detail-observation-summary', src.researcher_notes || '');
@@ -2051,12 +2058,13 @@
 
         displayPoints.forEach((pt, idx) => {
           const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(orchidLeafletMap);
-          const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' - Click to view details';
+          const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' — click to view details';
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
-          marker.on('click', function() {
-            const src = currentSrc || {};
-            showDetailPaged(src);
-          });
+          marker.on('click', (function(ptSrc) {
+            return function() {
+              showDetailPaged(ptSrc || currentSrc || {});
+            };
+          })(pt.src || null));
         });
 
         if (sightingPoints.length === 1) {
@@ -2118,15 +2126,14 @@
           orchid = { name: nameFromUrl || 'Unknown Orchid', genus: '', common_name: '', image_url: '' };
         }
 
-        // Always fetch fresh sightings from Supabase so map reflects DB state
+        // Always fetch fresh sightings from the public view (accessible to anon)
         let allSightings = [];
         if (orchid.name && window.bloomSupabase) {
           try {
             const { data } = await window.bloomSupabase
-              .from('species_sightings')
+              .from('public_approved_sightings')
               .select('*')
               .ilike('scientific_name', orchid.name.trim())
-              .eq('review_status', 'approved')
               .order('observation_date', { ascending: false })
               .limit(10);
             if (data && data.length > 0) allSightings = data;
@@ -2143,10 +2150,10 @@
         resetDetailRows();
         renderDetailsFromSource(src, orchid);
 
-        // Build sighting points for map from fresh data
+        // Build sighting points for map, each carrying its full sighting data
         let sightingPoints = allSightings
-          .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude) }))
-          .filter(p => p.lat && p.lng);
+          .filter(s => s.latitude && s.longitude)
+          .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude), src: normalizePublicSightingRow(s) }));
 
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
