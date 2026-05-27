@@ -3449,6 +3449,7 @@
       };
       let orchidRows = [];
       let orchidCatalogLoaded = false;
+      let approvedSightingsByScientificName = new Map();
       let dashboardCatalogListView = false;
       let submissionRows = [];
       let activeStatusFilter = 'all';
@@ -4262,20 +4263,7 @@
           orchidRows = (overviewResult.data || []).map(normalizeOrchidRow);
           orchidCatalogLoaded = true;
 
-          // Enrich conservation_status from /api/orchids (authoritative source)
-          try {
-            const apiResp = await fetch('/api/orchids');
-            if (apiResp.ok) {
-              const apiData = await apiResp.json();
-              const statusByName = new Map(
-                (apiData || []).map(r => [(r.name || '').trim().toLowerCase(), r.conservation_status || ''])
-              );
-              orchidRows = orchidRows.map(o => ({
-                ...o,
-                conservation_status: statusByName.get((o.name || '').trim().toLowerCase()) || o.conservation_status || ''
-              }));
-            }
-          } catch {}
+          await loadApprovedSightings();
 
           console.log('✓ Orchid catalog ready with', orchidRows.length, 'species');
           renderOrchidCatalog(orchidRows);
@@ -4331,6 +4319,24 @@
           if (catalogLoadingMessage && catalogLoadingMessage.parentNode) {
             catalogLoadingMessage.remove();
           }
+        }
+      }
+
+      async function loadApprovedSightings() {
+        try {
+          const response = await fetch('/api/sightings');
+          if (!response.ok) return;
+          const data = await response.json();
+          const sightingsMap = new Map();
+          (data || []).forEach((row) => {
+            const key = String(row.scientific_name || '').trim().toLowerCase();
+            if (!key) return;
+            if (!sightingsMap.has(key)) sightingsMap.set(key, []);
+            sightingsMap.get(key).push(row);
+          });
+          approvedSightingsByScientificName = sightingsMap;
+        } catch {
+          approvedSightingsByScientificName = new Map();
         }
       }
 
@@ -4449,10 +4455,17 @@
         const filtered = orchidRows.filter((orchid) => {
           const name = (orchid.name || '').toLowerCase();
           const genus = (orchid.genus || '').toLowerCase();
-          const statusText = (orchid.conservation_status || '').toLowerCase().trim().replace(/_/g, ' ');
-          const statusKey = (orchid.conservation_status_key || '').toLowerCase().trim().replace(/_/g, ' ');
+          const scientificKey = name.trim();
+          const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          const rawStatus =
+            sighting?.threat_level_generalized ||
+            sighting?.threat_level ||
+            orchid.conservation_status ||
+            orchid.conservation_status_key ||
+            '';
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
 
-          if (conservationValue !== 'all' && statusText.trim() !== conservationValue && statusKey.trim() !== conservationValue) {
+          if (conservationValue !== 'all' && status !== conservationValue) {
             return false;
           }
 
