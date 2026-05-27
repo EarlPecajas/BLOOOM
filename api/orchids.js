@@ -35,9 +35,20 @@ module.exports = async function handler(req, res) {
       
       return res.status(200).json(result.rows[0]);
     } else {
-      // Get all orchids including conservation status
+      // Get all orchids with conservation status from the most recent approved sighting
       const result = await pool.query(
-        'SELECT id, name, genus, common_name, endemicity, image_url, conservation_status FROM orchid_overview ORDER BY name ASC'
+        `SELECT
+           o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url,
+           (SELECT s.threat_level
+            FROM species_sightings s
+            WHERE LOWER(TRIM(s.scientific_name)) = LOWER(TRIM(o.name))
+              AND s.review_status = 'approved'
+              AND s.threat_level IS NOT NULL
+              AND s.threat_level <> ''
+            ORDER BY s.observation_date DESC NULLS LAST, s.id DESC
+            LIMIT 1) AS conservation_status
+         FROM orchid_overview o
+         ORDER BY o.name ASC`
       );
 
       return res.status(200).json(result.rows);

@@ -1079,7 +1079,14 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = normalizeScientificKey(orchid.name);
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
-          const status = (orchid.conservation_status || sighting?.threat_level_generalized || '').toLowerCase().trim();
+          const status = (
+            sighting?.threat_level_generalized ||
+            sighting?.threat_level ||
+            orchid.conservation_status ||
+            orchid.threat_level_generalized ||
+            orchid.threat_level ||
+            ''
+          ).toLowerCase().trim();
 
           if (conservationValue !== 'all' && status !== conservationValue) {
             return false;
@@ -1268,13 +1275,8 @@
 
       (async () => {
         loadStorageImages(); // synchronous — populates map before any render
-        await loadCatalog();
-        try {
-          await loadApprovedSightings();
-          renderCatalog(orchids);
-        } catch (error) {
-          console.warn('Sightings load failed:', error?.message || error);
-        }
+        await Promise.all([loadCatalog(), loadApprovedSightings()]);
+        renderCatalog(orchids);
       })();
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
