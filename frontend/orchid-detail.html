@@ -293,7 +293,7 @@
             <div class="oid-field-row"><span class="oid-field-label">Flower Color</span><span class="oid-field-value" id="oid-flower-color">&mdash;</span></div>
             <div class="oid-field-row"><span class="oid-field-label">Flowering Season</span><span class="oid-field-value" id="oid-flowering-season">&mdash;</span></div>
             <div class="oid-field-row"><span class="oid-field-label">Distribution</span><span class="oid-field-value" id="oid-distribution">Philippines</span></div>
-            <div class="oid-field-row"><span class="oid-field-label">Endemic</span><span class="oid-field-value" id="oid-endemic">&mdash;</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Endemicity</span><span class="oid-field-value" id="oid-endemic">&mdash;</span></div>
           </div>
           <div class="oid-actions">
             <button type="button" id="orchid-detail-add-btn-identity" class="orchid-nav-btn orchid-nav-btn-fill">Add Sighting</button>
@@ -1046,14 +1046,16 @@
           ? endemicity
           : (src.mountain_name ? 'Mindanao, Philippines' : 'Philippines');
         setField('oid-distribution', distrib);
-        const endemicSrc = src.endemic_to_philippines || '';
-        const endemicVal = endemicity || endemicSrc;
-        if (endemicVal) {
-          const isEndemic = endemicVal.toLowerCase().includes('yes') || endemicVal.toLowerCase().includes('endemic');
-          setField('oid-endemic', isEndemic ? 'Yes' : endemicVal);
-        } else {
-          setField('oid-endemic', null);
+        const endemicRaw = src.endemic_to_philippines;
+        let endemicDisplay = null;
+        if (endemicRaw === true || String(endemicRaw || '').toLowerCase() === 'yes') {
+          endemicDisplay = 'Philippine Endemic';
+        } else if (endemicRaw === false || String(endemicRaw || '').toLowerCase() === 'no') {
+          endemicDisplay = 'Not Philippine Endemic';
+        } else if (endemicRaw && String(endemicRaw).trim()) {
+          endemicDisplay = String(endemicRaw).trim();
         }
+        setField('oid-endemic', endemicDisplay);
 
         // Photo
         const oidPhoto = document.getElementById('oid-photo');
