@@ -1021,7 +1021,7 @@ form {
   font-family: inherit;
   font-size: 0.92rem;
   color: #145A1E;
-  background: #fffefb;
+  background-color: #fffefb;
   cursor: pointer;
   transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
 }
@@ -2952,14 +2952,14 @@ textarea.form-control {
 .catalog-title { color: var(--dt-text) !important; }
 .catalog-search,
 .catalog-search-filter {
-  background: var(--dt-bg-input) !important;
+  background-color: var(--dt-bg-input) !important;
   border-color: var(--dt-border-md) !important;
   color: var(--dt-text) !important;
 }
 .catalog-search::placeholder { color: var(--dt-muted) !important; }
 .catalog-search:focus,
 .catalog-search-filter:focus {
-  background: var(--dt-bg-input) !important;
+  background-color: var(--dt-bg-input) !important;
   border-color: var(--dt-accent) !important;
   box-shadow: 0 0 0 3px rgba(77,184,106,.18) !important;
 }
@@ -3927,7 +3927,7 @@ body.researcher-theme .catalog-view-toggle:hover {
 }
 body.researcher-theme .catalog-search,
 body.researcher-theme .catalog-search-filter {
-  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
   border-color: #C8C0A8 !important;
   color: #1a3a1a !important;
   -webkit-text-fill-color: #1a3a1a !important;
