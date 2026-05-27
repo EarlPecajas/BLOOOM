@@ -1130,10 +1130,12 @@
         setField('oid-genus', genus);
         setField('oid-family', 'Orchidaceae');
 
-        // Local names — prefer local_names field; fall back to common_names
+        // Local names — prefer local_names → common_names → orchid.common_name (what the catalog card shows)
         const localNamesArr = Array.isArray(src.local_names) ? src.local_names.filter(Boolean) : [];
         const commonNamesArr = Array.isArray(src.common_names) ? src.common_names.filter(Boolean) : [];
-        const displayNames = localNamesArr.length > 0 ? localNamesArr : commonNamesArr;
+        const displayNames = localNamesArr.length > 0 ? localNamesArr
+          : commonNamesArr.length > 0 ? commonNamesArr
+          : (orchid.common_name ? [orchid.common_name] : []);
         setField('oid-local-names', displayNames.length > 0 ? displayNames.join(', ') : null);
 
         // Conservation status — use actual threat_level value
