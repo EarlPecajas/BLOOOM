@@ -794,8 +794,8 @@
       <!-- Title bar -->
       <div id="map-trail-bar" style="background:transparent;border-bottom:1px solid rgba(100,200,120,.22);flex-shrink:0;">
         <div style="padding:0.7rem 1.3rem 0.55rem;">
-          <div style="font-size:1.15rem;font-weight:800;color:#e8f8e0;font-family:Inter,Roboto,sans-serif;line-height:1.2;letter-spacing:0.01em;">Mt. Busa Orchid Distribution</div>
-          <div style="font-size:0.65rem;font-weight:700;color:rgba(200,240,190,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.15rem;">Catalog orchid sighting locations</div>
+          <div style="font-size:1.15rem;font-weight:800;color:#ffffff;font-family:Inter,Roboto,sans-serif;line-height:1.2;letter-spacing:0.01em;">Mt. Busa Orchid Distribution</div>
+          <div style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.15rem;">Catalog orchid sighting locations</div>
         </div>
       </div>
 
@@ -3793,21 +3793,6 @@
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19, opacity: 0.7
         }).addTo(leafletMap);
-
-        // Summit marker
-        L.marker(MT_BUSA_COORDS, {
-          icon: L.divIcon({
-            className: '',
-            html: '<div style="width:34px;height:34px;background:radial-gradient(circle at 40% 35%,#5de05d,#145A1E);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.55);"></div>',
-            iconSize: [34,34], iconAnchor: [17,34], popupAnchor: [0,-36]
-          })
-        }).bindPopup(
-          '<div style="text-align:center;min-width:180px;">' +
-          '<b style="font-size:1.05rem;color:#145A1E;">&#9968; Mt. Busa</b><br>' +
-          '<span style="color:#66786e;font-size:0.85rem;">Kiamba, Sarangani Province</span><br>' +
-          '<span style="color:#555;font-size:0.82rem;">6.1064°N, 124.6699°E</span><br>' +
-          '<span style="color:#34a853;font-size:0.82rem;margin-top:4px;display:block;">&#127808; Primary orchid survey area</span></div>'
-        ).openPopup().addTo(leafletMap);
 
         // Ensure storage photos are loaded
         if (storageImagesByGenus.size === 0) loadStorageImages();
