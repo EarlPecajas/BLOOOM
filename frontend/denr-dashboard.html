@@ -4262,22 +4262,18 @@
           orchidRows = (overviewResult.data || []).map(normalizeOrchidRow);
           orchidCatalogLoaded = true;
 
-          // Enrich conservation_status from approved sightings where missing
+          // Enrich conservation_status from /api/orchids (authoritative source)
           try {
-            const sResp = await fetch('/api/sightings');
-            if (sResp.ok) {
-              const sData = await sResp.json();
-              const threatByName = new Map();
-              (sData || []).forEach(s => {
-                const k = (s.scientific_name || '').trim().toLowerCase();
-                const tl = s.threat_level || s.threat_level_generalized || '';
-                if (k && tl && !threatByName.has(k)) threatByName.set(k, tl);
-              });
-              orchidRows = orchidRows.map(o => {
-                if (o.conservation_status) return o;
-                const tl = threatByName.get((o.name || '').trim().toLowerCase()) || '';
-                return tl ? { ...o, conservation_status: tl } : o;
-              });
+            const apiResp = await fetch('/api/orchids');
+            if (apiResp.ok) {
+              const apiData = await apiResp.json();
+              const statusByName = new Map(
+                (apiData || []).map(r => [(r.name || '').trim().toLowerCase(), r.conservation_status || ''])
+              );
+              orchidRows = orchidRows.map(o => ({
+                ...o,
+                conservation_status: o.conservation_status || statusByName.get((o.name || '').trim().toLowerCase()) || ''
+              }));
             }
           } catch {}
 
