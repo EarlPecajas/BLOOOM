@@ -3349,35 +3349,18 @@ textarea.form-control {
 #map-legend span { color: var(--dt-text) !important; }
 #map-legend > div > div { color: var(--dt-muted) !important; }
 
-/* ── Submission modal & form (warm cream theme) ── */
+/* ── Submission modal & form ── */
 #researcher-submission-modal { background: rgba(0,0,0,.45) !important; }
 #researcher-submission-panel {
-  background: #F0EAD2 !important;
-  border-color: #D8D0B8 !important;
-  box-shadow: 0 16px 48px rgba(0,0,0,.18) !important;
+  background: #ffffff !important;
+  border-color: #dfe7e2 !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.18) !important;
 }
-/* Header — cream with dark green text, no border so it merges seamlessly with step indicator */
-#submission-modal-header {
-  background: #E8E2CB !important;
-  border-bottom: none !important;
-}
-#submission-modal-header h2 { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
-#submission-modal-header button[aria-label="Close submission form"] {
-  background: rgba(20,90,30,0.08) !important;
-  border-color: rgba(20,90,30,0.25) !important;
-  color: #145A1E !important;
-}
-/* Step indicator — slightly darker cream band */
-#submission-step-indicator { background: #E8E2CB !important; border-color: #D0C9B0 !important; }
-#submission-step-indicator span { color: #1a3a1a !important; -webkit-text-fill-color: #1a3a1a !important; }
-#submission-step-indicator #submission-step-label { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; font-weight: 700 !important; }
-#submission-step-indicator #submission-step-count { color: #5a7a54 !important; -webkit-text-fill-color: #5a7a54 !important; }
-/* Form body — white card on cream bg */
+/* Form body — white */
 #researcher-submission-form { background: #FFFFFF !important; border-radius: 0 0 12px 12px; }
 #researcher-submission-panel h2 { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
-#researcher-submission-panel label { color: #145A1E !important; font-weight: 600 !important; -webkit-text-fill-color: #145A1E !important; }
+#researcher-submission-panel label { color: #334155 !important; font-weight: 600 !important; -webkit-text-fill-color: #334155 !important; }
 #researcher-submission-panel strong { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
-#researcher-submission-panel span { color: #3d6b42 !important; -webkit-text-fill-color: #3d6b42 !important; }
 /* Section header divs (e.g. "Basic Taxonomic Information" card) — slim left-border style */
 #researcher-submission-panel [style*="background:#f9fcfa"],
 #researcher-submission-panel [style*="background: #f9fcfa"] {
