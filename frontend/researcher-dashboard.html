@@ -3440,7 +3440,7 @@
               );
               orchidRows = orchidRows.map(o => ({
                 ...o,
-                conservation_status: o.conservation_status || statusByName.get((o.name || '').trim().toLowerCase()) || ''
+                conservation_status: statusByName.get((o.name || '').trim().toLowerCase()) || o.conservation_status || ''
               }));
             }
           } catch {}
