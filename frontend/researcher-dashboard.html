@@ -2912,7 +2912,8 @@
           ethnobotanical: row.ethnobotanical || '',
           horticulture_value: row.horticulture_value || '',
           cultural_importance: row.cultural_importance || '',
-          image_url: row.image_url || ''
+          image_url: row.image_url || '',
+          conservation_status: row.conservation_status || row.threat_level_generalized || row.threat_level || ''
         };
       }
 
@@ -3428,6 +3429,26 @@
 
           orchidRows = (data || []).map(normalizeOrchidRow);
           orchidCatalogLoaded = true;
+
+          // Enrich conservation_status from approved sightings where missing
+          try {
+            const sResp = await fetch('/api/sightings');
+            if (sResp.ok) {
+              const sData = await sResp.json();
+              const threatByName = new Map();
+              (sData || []).forEach(s => {
+                const k = (s.scientific_name || '').trim().toLowerCase();
+                const tl = s.threat_level || s.threat_level_generalized || '';
+                if (k && tl && !threatByName.has(k)) threatByName.set(k, tl);
+              });
+              orchidRows = orchidRows.map(o => {
+                if (o.conservation_status) return o;
+                const tl = threatByName.get((o.name || '').trim().toLowerCase()) || '';
+                return tl ? { ...o, conservation_status: tl } : o;
+              });
+            }
+          } catch {}
+
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
         } catch (error) {
