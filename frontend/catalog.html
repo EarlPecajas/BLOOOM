@@ -1079,14 +1079,14 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = normalizeScientificKey(orchid.name);
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
-          const status = (
+          const rawStatus =
             sighting?.threat_level_generalized ||
             sighting?.threat_level ||
             orchid.conservation_status ||
             orchid.threat_level_generalized ||
             orchid.threat_level ||
-            ''
-          ).toLowerCase().trim();
+            '';
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
 
           if (conservationValue !== 'all' && status !== conservationValue) {
             return false;

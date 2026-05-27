@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-  
+
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -28,28 +28,42 @@ module.exports = async function handler(req, res) {
         'SELECT * FROM orchid_overview WHERE id = $1',
         [id]
       );
-      
+
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Orchid not found' });
       }
-      
+
       return res.status(200).json(result.rows[0]);
     } else {
-      // Get all orchids with conservation status from the most recent approved sighting
-      const result = await pool.query(
-        `SELECT
-           o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url,
-           (SELECT s.threat_level
-            FROM species_sightings s
-            WHERE LOWER(TRIM(s.scientific_name)) = LOWER(TRIM(o.name))
-              AND s.review_status = 'approved'
-              AND s.threat_level IS NOT NULL
-              AND s.threat_level <> ''
-            ORDER BY s.observation_date DESC NULLS LAST, s.id DESC
-            LIMIT 1) AS conservation_status
-         FROM orchid_overview o
-         ORDER BY o.name ASC`
-      );
+      // Try to get conservation_status directly from orchid_overview (set by DENR admins)
+      let result;
+      try {
+        result = await pool.query(
+          `SELECT id, name, genus, common_name, endemicity, image_url,
+                  COALESCE(conservation_status, '') AS conservation_status
+           FROM orchid_overview
+           ORDER BY name ASC`
+        );
+      } catch {
+        // conservation_status column doesn't exist — derive from species_sightings
+        result = await pool.query(
+          `SELECT
+             o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url,
+             COALESCE(
+               (SELECT s.threat_level
+                FROM species_sightings s
+                WHERE LOWER(TRIM(s.scientific_name)) = LOWER(TRIM(o.name))
+                  AND s.review_status = 'approved'
+                  AND s.threat_level IS NOT NULL
+                  AND s.threat_level <> ''
+                ORDER BY s.observation_date DESC NULLS LAST, s.id DESC
+                LIMIT 1),
+               ''
+             ) AS conservation_status
+           FROM orchid_overview o
+           ORDER BY o.name ASC`
+        );
+      }
 
       return res.status(200).json(result.rows);
     }

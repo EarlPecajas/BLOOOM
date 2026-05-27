@@ -3598,7 +3598,7 @@
         const filtered = orchidRows.filter((orchid) => {
           const name = (orchid.name || '').toLowerCase();
           const genus = (orchid.genus || '').toLowerCase();
-          const status = (orchid.conservation_status || '').toLowerCase();
+          const status = (orchid.conservation_status || '').toLowerCase().trim().replace(/_/g, ' ');
 
           if (conservationValue !== 'all' && status.trim() !== conservationValue) {
             return false;

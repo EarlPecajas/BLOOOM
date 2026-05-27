@@ -4453,8 +4453,8 @@
         const filtered = orchidRows.filter((orchid) => {
           const name = (orchid.name || '').toLowerCase();
           const genus = (orchid.genus || '').toLowerCase();
-          const statusText = (orchid.conservation_status || '').toLowerCase();
-          const statusKey = (orchid.conservation_status_key || '').replace(/_/g, ' ').toLowerCase();
+          const statusText = (orchid.conservation_status || '').toLowerCase().trim().replace(/_/g, ' ');
+          const statusKey = (orchid.conservation_status_key || '').toLowerCase().trim().replace(/_/g, ' ');
 
           if (conservationValue !== 'all' && statusText.trim() !== conservationValue && statusKey.trim() !== conservationValue) {
             return false;
