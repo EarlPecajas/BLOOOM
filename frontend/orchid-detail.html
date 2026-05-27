@@ -939,7 +939,40 @@
         return null;
       }
 
+      // Same genus→filename map as catalog.html loadStorageImages()
+      const SEED_CLOSEUP_MAP = {
+        'aerides quinquevulnera':    'seed_closeup_aerides.jpg',
+        'bulbophyllum lobbii':       'seed_closeup_bulbophyllum.jpg',
+        'calanthe triplicata':       'seed_closeup_calanthe.jpg',
+        'coelogyne asperata':        'seed_closeup_coelogyne.jpg',
+        'dendrobium secundum':       'seed_closeup_dendrobium.jpg',
+        'paphiopedilum fowliei':     'seed_closeup_paphiopedilum.jpg',
+        'phalaenopsis schilleriana': 'seed_closeup_phalaenopsis.jpg',
+        'spathoglottis plicata':     'seed_closeup_spathoglottis.jpg',
+        'trichoglottis brachiata':   'seed_closeup_trichoglottis.jpg',
+        'vanda sanderiana':          'seed_closeup_vanda.jpg',
+        'aerides':       'seed_closeup_aerides.jpg',
+        'bulbophyllum':  'seed_closeup_bulbophyllum.jpg',
+        'calanthe':      'seed_closeup_calanthe.jpg',
+        'coelogyne':     'seed_closeup_coelogyne.jpg',
+        'dendrobium':    'seed_closeup_dendrobium.jpg',
+        'paphiopedilum': 'seed_closeup_paphiopedilum.jpg',
+        'phalaenopsis':  'seed_closeup_phalaenopsis.jpg',
+        'spathoglottis': 'seed_closeup_spathoglottis.jpg',
+        'trichoglottis': 'seed_closeup_trichoglottis.jpg',
+        'vanda':         'seed_closeup_vanda.jpg'
+      };
+
       function getBestPhotoUrl(src, orchid) {
+        // 1. Genus/species storage lookup — same source as catalog thumbnails
+        const sciName = (src?.scientific_name || orchid?.name || '').toLowerCase().trim();
+        const genus = sciName.split(' ')[0];
+        const seedFile = SEED_CLOSEUP_MAP[sciName] || SEED_CLOSEUP_MAP[genus];
+        if (seedFile) {
+          const url = resolvePhotoUrl(seedFile);
+          if (url) return url;
+        }
+        // 2. DB photo paths
         const paths = [
           ...(Array.isArray(src?.closeup_flower_photo_path) ? src.closeup_flower_photo_path : []),
           ...(Array.isArray(src?.whole_plant_photo_path) ? src.whole_plant_photo_path : []),
