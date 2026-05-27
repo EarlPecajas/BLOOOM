@@ -2156,17 +2156,46 @@
         const src = allSightings[0] ? normalizePublicSightingRow(allSightings[0]) : {};
         currentSrc = src;
 
-        populateIdentityPanel(orchid, src);
-        resetDetailRows();
-        renderDetailsFromSource(src, orchid);
+        try {
+          populateIdentityPanel(orchid, src);
+          resetDetailRows();
+          renderDetailsFromSource(src, orchid);
+        } catch (panelErr) {
+          console.warn('Panel render error:', panelErr);
+        }
+
+        // Known correct Mt. Busa coordinates per orchid (same as seed SQL).
+        // Used when DB has no lat/lng or has stale pre-migration coordinates.
+        const MT_BUSA_COORDS = {
+          'aerides quinquevulnera':      { lat: 6.0925, lng: 124.6853 },
+          'bulbophyllum lobbii':         { lat: 6.0978, lng: 124.6934 },
+          'calanthe triplicata':         { lat: 6.0812, lng: 124.6887 },
+          'coelogyne asperata':          { lat: 6.0795, lng: 124.6956 },
+          'dendrobium secundum':         { lat: 6.0947, lng: 124.6991 },
+          'paphiopedilum fowliei':       { lat: 6.1002, lng: 124.6968 },
+          'phalaenopsis schilleriana':   { lat: 6.0826, lng: 124.7012 },
+          'spathoglottis plicata':       { lat: 6.0865, lng: 124.7068 },
+          'trichoglottis brachiata':     { lat: 6.0898, lng: 124.6885 },
+          'vanda sanderiana':            { lat: 6.0768, lng: 124.6973 }
+        };
+        const orchidKey = (orchid.name || '').toLowerCase().trim();
+        const knownCoords = MT_BUSA_COORDS[orchidKey] || { lat: 6.084759, lng: 124.692110 };
+
+        function resolveCoords(dbLat, dbLng) {
+          const lat = Number(dbLat), lng = Number(dbLng);
+          // Accept DB coordinates only if they fall within the Mt. Busa area
+          if (lat >= 6.05 && lat <= 6.15 && lng >= 124.65 && lng <= 124.75) return { lat, lng };
+          return knownCoords;
+        }
 
         // Build sighting points for map, each carrying its full sighting data
         let sightingPoints = allSightings
           .filter(s => s.latitude && s.longitude)
-          .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude), src: normalizePublicSightingRow(s) }));
+          .map(s => ({ ...resolveCoords(s.latitude, s.longitude), src: normalizePublicSightingRow(s) }));
 
+        // Fallback: no sightings in DB yet — show the orchid's known Mt. Busa location
         if (sightingPoints.length === 0) {
-          sightingPoints.push({ lat: 6.109410, lng: 124.663094 });
+          sightingPoints.push({ lat: knownCoords.lat, lng: knownCoords.lng });
         }
 
         // Map always has natural height here — no modal sizing issue
