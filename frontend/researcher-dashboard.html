@@ -3579,7 +3579,7 @@
           const genus = (orchid.genus || '').toLowerCase();
           const status = (orchid.conservation_status || '').toLowerCase();
 
-          if (conservationValue !== 'all' && !status.includes(conservationValue)) {
+          if (conservationValue !== 'all' && status.trim() !== conservationValue) {
             return false;
           }
 

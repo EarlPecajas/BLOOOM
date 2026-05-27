@@ -35,11 +35,11 @@ module.exports = async function handler(req, res) {
       
       return res.status(200).json(result.rows[0]);
     } else {
-      // Get all orchids
+      // Get all orchids including conservation status
       const result = await pool.query(
-        'SELECT id, name, genus, common_name, endemicity, image_url FROM orchid_overview ORDER BY name ASC'
+        'SELECT id, name, genus, common_name, endemicity, image_url, conservation_status FROM orchid_overview ORDER BY name ASC'
       );
-      
+
       return res.status(200).json(result.rows);
     }
   } catch (error) {

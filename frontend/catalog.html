@@ -999,7 +999,8 @@
           genus: row.genus || '',
           common_name: row.common_name || '',
           endemicity: row.endemicity || '',
-          image_url: row.image_url || ''
+          image_url: row.image_url || '',
+          conservation_status: row.conservation_status || row.threat_level_generalized || row.threat_level || ''
         };
       }
 
@@ -1078,9 +1079,9 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = normalizeScientificKey(orchid.name);
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
-          const status = (orchid.conservation_status || sighting?.threat_level_generalized || '').toLowerCase();
+          const status = (orchid.conservation_status || sighting?.threat_level_generalized || '').toLowerCase().trim();
 
-          if (conservationValue !== 'all' && !status.includes(conservationValue)) {
+          if (conservationValue !== 'all' && status !== conservationValue) {
             return false;
           }
 
