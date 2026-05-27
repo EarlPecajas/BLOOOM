@@ -3442,8 +3442,9 @@
                 ...o,
                 conservation_status: statusByName.get((o.name || '').trim().toLowerCase()) || o.conservation_status || ''
               }));
+              console.log('[BLOOM] Sample conservation statuses:', orchidRows.slice(0, 5).map(o => `${o.name}: "${o.conservation_status}"`));
             }
-          } catch {}
+          } catch (enrichErr) { console.warn('[BLOOM] Enrichment failed:', enrichErr); }
 
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);

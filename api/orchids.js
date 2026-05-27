@@ -35,17 +35,29 @@ module.exports = async function handler(req, res) {
 
       return res.status(200).json(result.rows[0]);
     } else {
-      // Try to get conservation_status directly from orchid_overview (set by DENR admins)
+      // Always prefer orchid_overview.conservation_status; fall back to most recent
+      // approved sighting threat_level when the column is empty or NULL.
       let result;
       try {
         result = await pool.query(
-          `SELECT id, name, genus, common_name, endemicity, image_url,
-                  COALESCE(conservation_status, '') AS conservation_status
-           FROM orchid_overview
-           ORDER BY name ASC`
+          `SELECT o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url,
+                  COALESCE(
+                    NULLIF(TRIM(COALESCE(o.conservation_status, '')), ''),
+                    (SELECT s.threat_level
+                     FROM species_sightings s
+                     WHERE LOWER(TRIM(s.scientific_name)) = LOWER(TRIM(o.name))
+                       AND s.review_status = 'approved'
+                       AND s.threat_level IS NOT NULL
+                       AND s.threat_level <> ''
+                     ORDER BY s.observation_date DESC NULLS LAST, s.id DESC
+                     LIMIT 1),
+                    ''
+                  ) AS conservation_status
+           FROM orchid_overview o
+           ORDER BY o.name ASC`
         );
       } catch {
-        // conservation_status column doesn't exist — derive from species_sightings
+        // conservation_status column doesn't exist — derive purely from species_sightings
         result = await pool.query(
           `SELECT
              o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url,
