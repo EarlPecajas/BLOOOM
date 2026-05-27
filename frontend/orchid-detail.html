@@ -14,15 +14,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
       html, body { height: 100%; margin: 0; overflow: hidden; }
-      body { display: flex; flex-direction: column; background: #ffffff; font-family: Inter, Roboto, sans-serif; }
+      body { display: flex; flex-direction: column; font-family: Inter, Roboto, sans-serif; }
 
       /* Top nav */
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
         padding: 0 1.4rem; height: 54px; position: relative;
-        background: #F2F9F2;
-        box-shadow: 0 2px 8px rgba(0,0,0,.07); gap: 1rem; z-index: 10;
-        border-bottom: 1px solid #cde3c8;
+        background: #FFFFFF;
+        box-shadow: 0 2px 10px rgba(0,0,0,.07); gap: 1rem; z-index: 10;
+        border-bottom: 1px solid #D8D0B8;
       }
       .detail-brand { display: flex; align-items: center; gap: .5rem; text-decoration: none; flex-shrink: 0; }
       .detail-brand-logo { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(20,90,30,.2); object-fit: cover; }
@@ -265,7 +265,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js?v=3"></script>
   </head>
-  <body>
+  <body class="researcher-theme">
 
     <!-- STAGE 1: Identity panel + Map -->
     <div id="detail-overview">
