@@ -928,6 +928,30 @@
         ].filter(Boolean);
       }
 
+      function resolvePhotoUrl(filename) {
+        if (!filename) return null;
+        if (/^https?:\/\//.test(filename)) return filename;
+        const client = window.bloomSupabase;
+        if (client?.storage) {
+          const { data } = client.storage.from('bloom-uploads').getPublicUrl('sightings/' + filename);
+          if (data?.publicUrl) return data.publicUrl;
+        }
+        return null;
+      }
+
+      function getBestPhotoUrl(src, orchid) {
+        const paths = [
+          ...(Array.isArray(src?.closeup_flower_photo_path) ? src.closeup_flower_photo_path : []),
+          ...(Array.isArray(src?.whole_plant_photo_path) ? src.whole_plant_photo_path : []),
+          ...(Array.isArray(src?.habitat_photo_path) ? src.habitat_photo_path : [])
+        ].filter(Boolean);
+        for (const p of paths) {
+          const url = resolvePhotoUrl(p);
+          if (url) return url;
+        }
+        return orchid?.image_url || null;
+      }
+
       function normalizeObservationMonth(observationDate, fallbackMonth) {
         if (hasUsableValue(fallbackMonth)) return String(fallbackMonth).trim();
         if (!hasUsableValue(observationDate)) return '';
@@ -1057,16 +1081,12 @@
         }
         setField('oid-endemic', endemicDisplay);
 
-        // Photo
+        // Photo — same source as catalog thumbnail
         const oidPhoto = document.getElementById('oid-photo');
         const oidPhotoPlaceholder = document.getElementById('oid-photo-placeholder');
-        const images = getPublicSightingImages(src);
-        if (orchid.image_url && oidPhoto) {
-          oidPhoto.src = orchid.image_url;
-          oidPhoto.hidden = false;
-          if (oidPhotoPlaceholder) oidPhotoPlaceholder.hidden = true;
-        } else if (images.length > 0 && oidPhoto) {
-          oidPhoto.src = images[0];
+        const photoUrl = getBestPhotoUrl(src, orchid);
+        if (photoUrl && oidPhoto) {
+          oidPhoto.src = photoUrl;
           oidPhoto.hidden = false;
           if (oidPhotoPlaceholder) oidPhotoPlaceholder.hidden = true;
         } else if (oidPhoto && oidPhotoPlaceholder) {
@@ -1931,7 +1951,7 @@
       }
 
       // ── Map initialization ─────────────────────────────────────────
-      function initMap(sightingPoints) {
+      function initMap(sightingPoints, photoUrl) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         const primary = sightingPoints[0];
 
@@ -1954,11 +1974,13 @@
           attribution: 'Tiles &copy; Esri', maxZoom: 19
         }).addTo(orchidLeafletMap);
 
-        const icon = L.icon({
-          iconUrl: './catalogicon.png',
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
-          popupAnchor: [0, -22]
+        const imgSrc = photoUrl || './catalogicon.png';
+        const icon = L.divIcon({
+          html: `<div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.45);"><img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" /></div>`,
+          className: '',
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
+          popupAnchor: [0, -26]
         });
 
         displayPoints.forEach((pt, idx) => {
@@ -2050,6 +2072,7 @@
         currentOrchid = orchid;
         const src = allSightings[0] ? normalizePublicSightingRow(allSightings[0]) : {};
         currentSrc = src;
+        const orchidPhotoUrl = getBestPhotoUrl(src, orchid);
 
         try {
           populateIdentityPanel(orchid, src);
@@ -2071,7 +2094,7 @@
         }
 
         // Map always has natural height here — no modal sizing issue
-        initMap(sightingPoints);
+        initMap(sightingPoints, orchidPhotoUrl);
       }
 
       // ── Boot ───────────────────────────────────────────────────────
