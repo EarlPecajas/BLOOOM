@@ -931,6 +931,10 @@
       function resolvePhotoUrl(filename) {
         if (!filename) return null;
         if (/^https?:\/\//.test(filename)) return filename;
+        // Build URL directly from project URL — avoids relying on storage client at call time
+        const base = (window.BLOOM_SUPABASE_URL || '').replace(/\/$/, '');
+        if (base) return `${base}/storage/v1/object/public/bloom-uploads/sightings/${filename}`;
+        // Secondary fallback via storage client
         const client = window.bloomSupabase;
         if (client?.storage) {
           const { data } = client.storage.from('bloom-uploads').getPublicUrl('sightings/' + filename);
