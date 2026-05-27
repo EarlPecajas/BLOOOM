@@ -44,15 +44,15 @@
       /* Back button in topbar */
       .detail-back-link {
         display: inline-flex; align-items: center; gap: .3rem;
-        color: #c8ecc0; font-size: .72rem; font-weight: 700; text-decoration: none;
+        color: #2d5a27; font-size: .72rem; font-weight: 700; text-decoration: none;
         padding: .2rem .65rem; border-radius: 6px; flex-shrink: 0;
-        background: rgba(16,42,19,.90); border: 1px solid rgba(100,200,120,.3);
-        transition: border-color .15s, color .15s; white-space: nowrap;
+        background: #e8f3e6; border: 1px solid #b8d8b4;
+        transition: border-color .15s, background .15s; white-space: nowrap;
       }
-      .detail-back-link:hover { border-color: rgba(100,200,120,.65); color: #e8f8e0; }
+      .detail-back-link:hover { border-color: #2d5a27; background: #d4edce; }
 
       /* Stage 1 */
-      #detail-overview { flex: 1; min-height: 0; display: flex; overflow: hidden; }
+      #detail-overview { flex: 1; min-height: 0; display: flex; overflow: hidden; margin: 0 1rem 1rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
 
       /* Identity panel */
       .orchid-identity-panel {
@@ -64,10 +64,10 @@
       .oid-topbar {
         display: flex; align-items: center; gap: .7rem;
         padding: 0 .9rem; height: 36px;
-        background: rgba(16,42,19,.90);
-        flex-shrink: 0; border-bottom: 1px solid rgba(100,200,120,.18);
+        background: #F2F9F2;
+        flex-shrink: 0; border-bottom: 1px solid #d0e8cc;
       }
-      .oid-subtitle { font-size: .65rem; font-weight: 800; color: #a8d8a0; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
+      .oid-subtitle { font-size: .65rem; font-weight: 800; color: #4a7a44; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
       .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #daecd6; position: relative; }
       .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; }
       .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2.5rem; opacity: .4; }
@@ -104,8 +104,8 @@
       .orchid-map-name-bar {
         flex-shrink: 0; text-align: center;
         padding: .7rem 1.5rem .6rem;
-        background: linear-gradient(to bottom, #f0f9ed, #f8fcf7);
-        border-bottom: 1.5px solid #c8e0c4;
+        background: #ffffff;
+        border-bottom: 1px solid #D8D0B8;
       }
       .orchid-map-orchid-name {
         font-size: 1.45rem; font-style: italic; color: #0d2e0a;
@@ -115,7 +115,7 @@
       .orchid-map-subheader {
         flex-shrink: 0; display: flex; align-items: center;
         justify-content: space-between; padding: .38rem 1.1rem;
-        background: #eaf5e7; border-bottom: 1px solid #c8e0c4;
+        background: #ffffff; border-bottom: 1px solid #D8D0B8;
       }
       .map-subheader-left { display: flex; align-items: center; gap: .5rem; }
       .map-subheader-title { font-size: .68rem; font-weight: 700; color: #2a5224; text-transform: uppercase; letter-spacing: .1em; }
@@ -123,7 +123,7 @@
       .map-subheader-loc { font-size: .72rem; color: #5a8a54; font-weight: 500; }
       .map-sightings-badge { font-size: .68rem; font-weight: 700; color: #143a10; background: #b8e0b0; padding: .18rem .65rem; border-radius: 10px; letter-spacing: .02em; }
       #orchid-leaflet-map { flex: 1; min-height: 0; }
-      .orchid-map-hint { text-align: center; font-size: .75rem; color: #5a7a58; padding: .35rem 1rem; background: #eaf5e7; border-top: 1px solid #c8e0c4; margin: 0; flex-shrink: 0; }
+      .orchid-map-hint { text-align: center; font-size: .75rem; color: #5a7a58; padding: .35rem 1rem; background: #ffffff; border-top: 1px solid #D8D0B8; margin: 0; flex-shrink: 0; }
 
       /* Stage 2: paged detail */
       #detail-paged { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
@@ -266,6 +266,15 @@
     <script src="supabase-client.js?v=3"></script>
   </head>
   <body class="researcher-theme">
+
+    <!-- Top nav bar -->
+    <div id="detail-topbar-name" class="detail-topbar">
+      <a class="detail-brand" href="index.html">
+        <img src="loo.png" alt="BLOOM" class="detail-brand-logo" />
+        <span class="detail-brand-name">BLOOM</span>
+      </a>
+      <div class="detail-topbar-title"><span></span></div>
+    </div>
 
     <!-- STAGE 1: Identity panel + Map -->
     <div id="detail-overview">
