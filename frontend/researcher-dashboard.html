@@ -2944,6 +2944,7 @@
       let storageImagesByGenus = new Map();
       let dashboardCatalogListView = false;
       let submissionRows = [];
+      let draftRows = [];
       let conservationDonutChart = null;
       let conservationBarChart = null;
       let conservationHeatMap = null;
@@ -3189,7 +3190,7 @@
           const currentEmail = String(parsedActiveUser.email || '').trim();
           let query = window.bloomSupabase
             .from('species_sightings')
-            .select('sighting_id, entry_id, researcher_email, scientific_name, common_names, created_at, updated_at, review_status')
+            .select('*')
             .eq('review_status', 'draft')
             .order('updated_at', { ascending: false });
           if (isResearcherRole && currentEmail) {
@@ -3197,7 +3198,7 @@
           }
           const { data, error } = await query;
           if (error) throw new Error(error.message);
-          const rows = Array.isArray(data) ? data : [];
+          const rows = (Array.isArray(data) ? data : []).map(normalizeSubmissionRow);
           const searchValue = String(searchTerm || '').trim().toLowerCase();
           const filtered = rows.filter(r => {
             if (!searchValue) return true;
@@ -3210,6 +3211,7 @@
       }
 
       function renderDrafts(rows) {
+        draftRows = rows;
         const draftsTableBody = document.getElementById('drafts-table-body');
         if (!draftsTableBody) return;
         if (!rows.length) {
@@ -3727,6 +3729,18 @@
           } else {
             showDetailModal(selectedSubmission);
           }
+        });
+      }
+
+      const draftsTableBodyEl = document.getElementById('drafts-table-body');
+      if (draftsTableBodyEl) {
+        draftsTableBodyEl.addEventListener('click', function(e) {
+          const actionButton = e.target.closest('[data-submission-id]');
+          if (!actionButton) return;
+          const submissionId = actionButton.getAttribute('data-submission-id');
+          const selectedDraft = draftRows.find((item) => String(item.id) === String(submissionId));
+          if (!selectedDraft) return;
+          openDraftForEditing(selectedDraft);
         });
       }
 
