@@ -4020,3 +4020,38 @@ body.researcher-theme .card { background: #FFFFFF !important; border-color: #E0D
 body.researcher-theme .card-body { background: #FFFFFF !important; color: #1a3a1a !important; }
 body.researcher-theme hr { border-color: #D8D0B8 !important; }
 
+/* 12 ── Submissions: restore light-theme status badge colors */
+body.researcher-theme .submission-status-badge.status-pending {
+  background: #f1f5f9 !important; color: #334155 !important; border-color: #cbd5e1 !important;
+}
+body.researcher-theme .submission-status-badge.status-approved {
+  background: #ecfdf3 !important; color: #13683a !important; border-color: #b8ebcf !important;
+}
+body.researcher-theme .submission-status-badge.status-rejected {
+  background: #fef2f2 !important; color: #9f1d1d !important; border-color: #fecaca !important;
+}
+body.researcher-theme .submission-status-badge.status-revision {
+  background: #fffbeb !important; color: #9a6100 !important; border-color: #fde68a !important;
+}
+body.researcher-theme .submission-status-badge.status-draft {
+  background: #fefce8 !important; color: #7a5c00 !important; border-color: #fde68a !important;
+}
+/* Submissions table */
+body.researcher-theme .submissions-table-shell {
+  box-shadow: 0 2px 12px rgba(20,90,30,0.08) !important;
+}
+body.researcher-theme .submissions-table tbody tr:hover,
+body.researcher-theme .submissions-table tbody tr.submission-row:hover {
+  background: #f6fbf4 !important; background-color: #f6fbf4 !important;
+}
+/* Sub-filter tabs */
+body.researcher-theme .sub-filter-btn {
+  background: #FFFFFF !important; border: 1.5px solid rgba(20,90,30,0.2) !important; color: #577A5C !important;
+}
+body.researcher-theme .sub-filter-btn:hover {
+  background: #F0EAD2 !important; border-color: #145A1E !important; color: #145A1E !important;
+}
+body.researcher-theme .sub-filter-btn.sub-filter-active {
+  background: #145A1E !important; border-color: #145A1E !important; color: #fff !important;
+}
+

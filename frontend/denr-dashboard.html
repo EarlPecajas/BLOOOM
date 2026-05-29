@@ -3764,24 +3764,35 @@
         }
 
         const isApproved = (s) => String(s.review_status || '').toLowerCase() === 'approved';
+        const btnBase = 'display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;cursor:pointer;transition:all 160ms;flex-shrink:0;';
         submissionsTableBody.innerHTML = items.map((submission) => {
           const badgeClass = getSubmissionStatusBadgeClass(submission.review_status);
           const safeResearcher = escapeHtml(submission.researcher);
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
+          const sid = submission.id;
+
+          // Publish button — only when approved and NOT yet published
           let postBtn = '';
-          if (isAdminRole && isApproved(submission)) {
-            if (submission.catalog_published) {
-              postBtn = `<button type="button" class="sub-unpublish-btn" data-submission-id="${submission.id}" title="Unpublish from Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid rgba(245,158,11,0.6);background:rgba(245,158,11,0.14);color:#f59e0b;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7 7 7-7"/></svg>Unpublish
-              </button>`;
-            } else {
-              postBtn = `<button type="button" class="sub-post-btn" data-submission-id="${submission.id}" title="Publish to Catalog" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.75rem;border-radius:999px;border:1.5px solid var(--dt-accent);background:var(--dt-accent);color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 160ms;box-shadow:0 6px 14px rgba(20,90,30,0.2);">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>Publish
-              </button>`;
-            }
+          if (isAdminRole && isApproved(submission) && !submission.catalog_published) {
+            postBtn = `<button type="button" class="sub-post-btn" data-submission-id="${sid}" title="Publish to Catalog" style="${btnBase}border:1.5px solid #145A1E;background:#145A1E;color:#fff;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+            </button>`;
           }
+
+          // Quick-status buttons (DENR admin only)
+          const quickBtns = isAdminRole ? `
+            <button type="button" title="Approve" onclick="quickUpdateStatus(${sid},'approved')" style="${btnBase}border:1.5px solid rgba(22,163,74,0.4);background:rgba(22,163,74,0.1);color:#15803d;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button type="button" title="Reject" onclick="quickUpdateStatus(${sid},'rejected')" style="${btnBase}border:1.5px solid rgba(220,38,38,0.4);background:rgba(220,38,38,0.1);color:#dc2626;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <button type="button" title="For Revision" onclick="quickUpdateStatus(${sid},'revision')" style="${btnBase}border:1.5px solid rgba(217,119,6,0.4);background:rgba(217,119,6,0.1);color:#d97706;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
+            </button>` : '';
+
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">${safeResearcher}</td>
@@ -3789,10 +3800,13 @@
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
               <td class="submission-action-cell" style="white-space:nowrap;">
-                <button type="button" class="submission-action-btn" data-submission-id="${submission.id}" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.38rem 0.78rem;border-radius:999px;border:1.5px solid rgba(20,90,30,0.45);background:rgba(20,90,30,0.12);color:var(--dt-accent-lt);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 160ms;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Review
-                </button>
-                ${postBtn}
+                <div style="display:inline-flex;align-items:center;gap:4px;">
+                  <button type="button" class="submission-action-btn" data-submission-id="${sid}" title="View details" style="${btnBase}border:1.5px solid rgba(20,90,30,0.3);background:rgba(20,90,30,0.08);color:#145A1E;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  ${quickBtns}
+                  ${postBtn}
+                </div>
               </td>
             </tr>
           `;
@@ -5214,6 +5228,23 @@
         currentSubmission.review_status = nextStatus;
         document.getElementById('detailStatus').textContent = getStatusLabel(nextStatus);
         renderSubmissions(submissionRows);
+      }
+
+      async function quickUpdateStatus(submissionId, newStatus) {
+        if (!isAdminRole || !bloomSupabase) return;
+        try {
+          const { error } = await bloomSupabase
+            .from('species_sightings')
+            .update({ review_status: newStatus, updated_at: new Date().toISOString() })
+            .eq('sighting_id', submissionId);
+          if (error) throw error;
+          const row = submissionRows.find(r => String(r.id) === String(submissionId));
+          if (row) row.review_status = newStatus;
+          applySubmissionsFilter();
+          loadDenrStats();
+        } catch (e) {
+          alert('Failed to update status: ' + (e.message || e));
+        }
       }
 
       async function performDetailAction(action) {
