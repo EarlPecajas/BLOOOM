@@ -112,6 +112,26 @@
       .field-help.is-open::before { opacity:1; }
       .required-asterisk{color:#b42318 !important;margin-left:6px}
 
+      /* ── Submission action icon buttons ── */
+      .sub-action-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        transition: filter 150ms, transform 100ms !important;
+      }
+      .sub-action-btn:hover { filter: brightness(0.88) !important; transform: translateY(-1px) !important; }
+      .sub-action-btn.view  { background: #145A1E !important; }
+      .sub-action-btn.approve { background: #dcfce7 !important; }
+      .sub-action-btn.reject  { background: #fee2e2 !important; }
+      .sub-action-btn.revision { background: #fef3c7 !important; }
+      .sub-action-btn.publish { background: #145A1E !important; }
+
       /* ── Cream website theme for DENR overview ── */
       #dashboard-admin-overview {
         --dt-bg-input: #FFFFFF;
@@ -3780,24 +3800,20 @@
           // Publish button — only when approved AND species not yet in catalog
           let postBtn = '';
           if (isAdminRole && isApproved(submission) && !submission.catalog_published && !catalogNames.has(speciesKey)) {
-            postBtn = `<button type="button" class="sub-post-btn" data-submission-id="${sid}" title="Publish to Catalog"
-              style="${btnBase}background:#145A1E;color:#fff;" onmouseover="this.style.background='#0e3f14'" onmouseout="this.style.background='#145A1E'">
+            postBtn = `<button type="button" class="sub-action-btn publish sub-post-btn" data-submission-id="${sid}" title="Publish to Catalog">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><polyline points="5 12 12 5 19 12"/></svg>
             </button>`;
           }
 
           // Status buttons — only for pending/revision submissions
           const quickBtns = (isAdminRole && isPending(submission)) ? `
-            <button type="button" title="Approve" onclick="quickUpdateStatus(${sid},'approved')"
-              style="${btnBase}background:#dcfce7;color:#15803d;" onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">
+            <button type="button" class="sub-action-btn approve" title="Approve" onclick="quickUpdateStatus(${sid},'approved')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
-            <button type="button" title="Reject" onclick="quickUpdateStatus(${sid},'rejected')"
-              style="${btnBase}background:#fee2e2;color:#dc2626;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+            <button type="button" class="sub-action-btn reject" title="Reject" onclick="quickUpdateStatus(${sid},'rejected')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
-            <button type="button" title="For Revision" onclick="quickUpdateStatus(${sid},'revision')"
-              style="${btnBase}background:#fef3c7;color:#d97706;" onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">
+            <button type="button" class="sub-action-btn revision" title="For Revision" onclick="quickUpdateStatus(${sid},'revision')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
             </button>` : '';
 
@@ -3809,8 +3825,7 @@
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
               <td class="submission-action-cell" style="white-space:nowrap;">
                 <div style="display:inline-flex;align-items:center;gap:5px;">
-                  <button type="button" class="submission-action-btn" data-submission-id="${sid}" title="View details"
-                    style="${btnBase}background:#145A1E;color:#fff;" onmouseover="this.style.background='#0e3f14'" onmouseout="this.style.background='#145A1E'">
+                  <button type="button" class="sub-action-btn view submission-action-btn" data-submission-id="${sid}" title="View details">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
                   ${quickBtns}
