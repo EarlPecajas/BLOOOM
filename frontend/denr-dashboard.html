@@ -282,7 +282,7 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
             </div>
-            <p class="text-3xl font-black leading-none" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">14</p>
+            <p id="pending-sightings-count" class="text-3xl font-black leading-none" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
             <p class="text-xs text-gray-400">awaiting review</p>
           </div>
 
@@ -368,19 +368,19 @@
             <div class="grid grid-cols-2 gap-2">
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Reviewed</p>
-                <p class="text-xl font-black leading-none" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">86%</p>
+                <p id="exec-reviewed" class="text-xl font-black leading-none" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">—</p>
               </div>
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Pending</p>
-                <p class="text-xl font-black leading-none" style="color:#c47d0a;font-family:Inter,Roboto,sans-serif;">14</p>
+                <p id="exec-pending" class="text-xl font-black leading-none" style="color:#c47d0a;font-family:Inter,Roboto,sans-serif;">0</p>
               </div>
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Verified</p>
-                <p class="text-xl font-black leading-none" style="color:#1d6bbf;font-family:Inter,Roboto,sans-serif;">58</p>
+                <p id="exec-verified" class="text-xl font-black leading-none" style="color:#1d6bbf;font-family:Inter,Roboto,sans-serif;">0</p>
               </div>
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Last 7d</p>
-                <p class="text-xl font-black leading-none" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">27</p>
+                <p id="exec-last7d" class="text-xl font-black leading-none" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">0</p>
               </div>
             </div>
           </div>
@@ -6390,11 +6390,56 @@
         if (e.target.id === 'postToCatalogModal') closeModal('postToCatalogModal');
       });
       
+      async function loadDenrStats() {
+        if (!bloomSupabase) return;
+        try {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+          const [totalRes, pendingRes, approvedRes, last7dRes] = await Promise.all([
+            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }),
+            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }).eq('review_status', 'pending'),
+            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }).eq('review_status', 'approved'),
+            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo.toISOString()),
+          ]);
+
+          const total = totalRes.count ?? 0;
+          const pending = pendingRes.count ?? 0;
+          const approved = approvedRes.count ?? 0;
+          const last7d = last7dRes.count ?? 0;
+          const reviewedPct = total > 0 ? Math.round((approved / total) * 100) : 0;
+
+          // Stat strip
+          const recordedEl = document.getElementById('orchid-records-count');
+          if (recordedEl) recordedEl.textContent = total;
+
+          const pendingEl = document.getElementById('pending-sightings-count');
+          if (pendingEl) pendingEl.textContent = pending;
+
+          // Executive Snapshot
+          const execReviewed = document.getElementById('exec-reviewed');
+          if (execReviewed) execReviewed.textContent = reviewedPct + '%';
+
+          const execPending = document.getElementById('exec-pending');
+          if (execPending) execPending.textContent = pending;
+
+          const execVerified = document.getElementById('exec-verified');
+          if (execVerified) execVerified.textContent = approved;
+
+          const execLast7d = document.getElementById('exec-last7d');
+          if (execLast7d) execLast7d.textContent = last7d;
+
+        } catch (e) {
+          console.warn('loadDenrStats error:', e);
+        }
+      }
+
       // Initialize data panels on page load
       document.addEventListener('DOMContentLoaded', function() {
         loadOrchidCatalog();
         loadConservationSummary();
-        
+        loadDenrStats();
+
         // Add form submit handler for post to catalog
         document.getElementById('postToCatalogForm').addEventListener('submit', submitPostToCatalog);
       });
