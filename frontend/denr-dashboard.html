@@ -4550,7 +4550,7 @@
         renderOrchidCatalog(filtered);
       }
 
-      function initializeLeafletMap() {
+      async function initializeLeafletMap() {
         if (leafletMap !== null) {
           leafletMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_MAIN);
           leafletMap.invalidateSize();
@@ -4573,37 +4573,6 @@
         // Show all 5 trails by default
         Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
 
-        // Orchid hotspot markers (conservation-status-colored orchid icons)
-        MAP_ORCHID_HOTSPOTS.forEach(function(h) {
-          L.marker(h.c, {
-            icon: L.divIcon({
-              className: '',
-              html: `<div style="filter:drop-shadow(0 1px 4px rgba(0,0,0,0.55));">${orchidSvg(h.col, 22)}</div>`,
-              iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-13]
-            })
-          }).bindPopup(
-            `<div style="min-width:170px;"><b style="color:${h.col};font-size:0.95rem;">&#127800; ${h.sp}</b><br>` +
-            `<span style="color:#555;font-size:0.82rem;">Conservation: <b style="color:${h.col};">${h.st}</b></span><br>` +
-            `<span style="color:#777;font-size:0.78rem;">Mt. Busa, Sarangani</span></div>`
-          ).addTo(leafletMap);
-        });
-
-        // Orchid density markers (density-colored orchid icons)
-        MT_BUSA_DISTRIBUTION_POINTS.forEach(function(pt) {
-          const col = densityColor(pt[2]);
-          L.marker([pt[0],pt[1]], {
-            icon: L.divIcon({
-              className: '',
-              html: `<div style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4));opacity:0.82;">${orchidSvg(col, 17)}</div>`,
-              iconSize: [17,17], iconAnchor: [8,8], popupAnchor: [0,-10]
-            })
-          }).bindPopup(
-            `<div style="min-width:150px;"><b style="color:${col};font-size:0.9rem;">Orchid Density Zone</b><br>` +
-            `<span style="color:#555;font-size:0.82rem;">Intensity: <b>${Math.round(pt[2]*100)}%</b></span><br>` +
-            `<span style="color:#777;font-size:0.78rem;">Mt. Busa Survey Area</span></div>`
-          ).addTo(leafletMap);
-        });
-
         // Summit marker
         L.marker(MT_BUSA_COORDS, {
           icon: L.divIcon({
@@ -4618,6 +4587,43 @@
           '<span style="color:#555;font-size:0.82rem;">6.1064°N, 124.6699°E</span><br>' +
           '<span style="color:#34a853;font-size:0.82rem;margin-top:4px;display:block;">&#127808; Primary orchid survey area</span></div>'
         ).openPopup().addTo(leafletMap);
+
+        // Live orchid sighting markers from database
+        if (storageImagesByGenus.size === 0) loadStorageImages();
+        try {
+          const client = window.bloomSupabase;
+          if (!client) return;
+          const { data, error } = await client
+            .from('public_approved_sightings')
+            .select('scientific_name, latitude, longitude, local_names')
+            .not('latitude', 'is', null)
+            .not('longitude', 'is', null);
+          if (error || !data) return;
+          data.forEach(function(row) {
+            const sciName = (row.scientific_name || '').toLowerCase().trim();
+            const genus = sciName.split(' ')[0];
+            const photoUrl = storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
+            const displayName = row.scientific_name || 'Unknown';
+            let localName = '';
+            try {
+              const ln = typeof row.local_names === 'string' ? JSON.parse(row.local_names) : row.local_names;
+              if (Array.isArray(ln) && ln.length > 0) localName = ln[0];
+            } catch(e) {}
+            const circleHtml = photoUrl
+              ? `<div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.45);"><img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.background='#2d5a27';this.remove();" /></div>`
+              : `<div style="width:44px;height:44px;border-radius:50%;background:#2d5a27;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;font-size:20px;">&#127800;</div>`;
+            const icon = L.divIcon({ html: circleHtml, className: '', iconSize: [44,44], iconAnchor: [22,22], popupAnchor: [0,-26] });
+            L.marker([row.latitude, row.longitude], { icon })
+              .bindPopup(
+                `<div style="min-width:170px;text-align:center;">` +
+                (photoUrl ? `<img src="${photoUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:0.5rem;" />` : '') +
+                `<b style="color:#145A1E;font-size:0.95rem;display:block;font-style:italic;">${displayName}</b>` +
+                (localName ? `<span style="color:#555;font-size:0.82rem;">${localName}</span><br>` : '') +
+                `<span style="color:#777;font-size:0.78rem;">Mt. Busa, Sarangani</span></div>`
+              )
+              .addTo(leafletMap);
+          });
+        } catch(e) {}
       }
 
       function getConservationSummarySnapshot(rawData) {
