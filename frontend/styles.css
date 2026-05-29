@@ -1046,6 +1046,7 @@ form {
 
 .catalog-grid.list-view .orchid-card {
   display: flex;
+  flex-direction: row;
   align-items: center;
 }
 
@@ -1057,11 +1058,15 @@ form {
   width: 96px;
   height: 96px;
   flex-shrink: 0;
+  border-radius: 12px 0 0 12px;
 }
 
 .catalog-grid.list-view .orchid-card-info {
+  flex: 1;
   text-align: left;
   padding: 0.85rem 1rem;
+  min-height: unset;
+  background: white;
 }
 
 .orchid-card {
