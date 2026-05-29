@@ -35,6 +35,11 @@ WHERE lower(trim(u.gender_id::text)) = lower(g.gender_name);
 ALTER TABLE "user" DROP COLUMN IF EXISTS gender_id;
 ALTER TABLE "user" RENAME COLUMN gender_fk TO gender_id;
 
+-- ── 1b. affiliation — rename column to match 3NF schema ──────────────────
+-- Live DB has column 'affiliation'; 3NF schema uses 'affiliation_name'.
+ALTER TABLE affiliation
+  RENAME COLUMN affiliation TO affiliation_name;
+
 -- ── 2. conservation_status — remove status_desc (transitive dependency) ──
 -- status_desc was transitively determined by the conservation_status value
 -- column: conservation_id → conservation_status → status_desc.
