@@ -290,12 +290,15 @@ CREATE TABLE IF NOT EXISTS sighting_media (
 );
 
 -- Register file paths in picture then link via sighting_media.
--- Written as plain SQL (no dynamic loop) to avoid dollar-quote escaping issues.
+-- NULLIF(trim(col::text),'')::jsonb handles columns that are still
+-- text/varchar (migrate-alter-media-to-jsonb.sql not yet applied) as well
+-- as columns already cast to jsonb, and safely skips NULL / empty rows.
 
 -- whole_plant
 INSERT INTO picture (file_path)
 SELECT DISTINCT elem->>'src'
-FROM species_sightings, jsonb_array_elements(whole_plant_photo_path) AS elem
+FROM species_sightings,
+     jsonb_array_elements(NULLIF(trim(whole_plant_photo_path::text), '')::jsonb) AS elem
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
 ON CONFLICT (file_path) DO NOTHING;
 
@@ -303,14 +306,16 @@ INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographe
 SELECT ss.sighting_id, p.picture_id, 'whole_plant', elem->>'contributor',
        (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
 FROM species_sightings ss,
-     jsonb_array_elements(ss.whole_plant_photo_path) WITH ORDINALITY AS t(elem, ordinality)
+     jsonb_array_elements(NULLIF(trim(ss.whole_plant_photo_path::text), '')::jsonb)
+       WITH ORDINALITY AS t(elem, ordinality)
 JOIN picture p ON p.file_path = elem->>'src'
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
 
 -- closeup_flower
 INSERT INTO picture (file_path)
 SELECT DISTINCT elem->>'src'
-FROM species_sightings, jsonb_array_elements(closeup_flower_photo_path) AS elem
+FROM species_sightings,
+     jsonb_array_elements(NULLIF(trim(closeup_flower_photo_path::text), '')::jsonb) AS elem
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
 ON CONFLICT (file_path) DO NOTHING;
 
@@ -318,14 +323,16 @@ INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographe
 SELECT ss.sighting_id, p.picture_id, 'closeup_flower', elem->>'contributor',
        (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
 FROM species_sightings ss,
-     jsonb_array_elements(ss.closeup_flower_photo_path) WITH ORDINALITY AS t(elem, ordinality)
+     jsonb_array_elements(NULLIF(trim(ss.closeup_flower_photo_path::text), '')::jsonb)
+       WITH ORDINALITY AS t(elem, ordinality)
 JOIN picture p ON p.file_path = elem->>'src'
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
 
 -- habitat
 INSERT INTO picture (file_path)
 SELECT DISTINCT elem->>'src'
-FROM species_sightings, jsonb_array_elements(habitat_photo_path) AS elem
+FROM species_sightings,
+     jsonb_array_elements(NULLIF(trim(habitat_photo_path::text), '')::jsonb) AS elem
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
 ON CONFLICT (file_path) DO NOTHING;
 
@@ -333,14 +340,16 @@ INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographe
 SELECT ss.sighting_id, p.picture_id, 'habitat', elem->>'contributor',
        (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
 FROM species_sightings ss,
-     jsonb_array_elements(ss.habitat_photo_path) WITH ORDINALITY AS t(elem, ordinality)
+     jsonb_array_elements(NULLIF(trim(ss.habitat_photo_path::text), '')::jsonb)
+       WITH ORDINALITY AS t(elem, ordinality)
 JOIN picture p ON p.file_path = elem->>'src'
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
 
 -- video
 INSERT INTO picture (file_path)
 SELECT DISTINCT elem->>'src'
-FROM species_sightings, jsonb_array_elements(video_path) AS elem
+FROM species_sightings,
+     jsonb_array_elements(NULLIF(trim(video_path::text), '')::jsonb) AS elem
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
 ON CONFLICT (file_path) DO NOTHING;
 
@@ -348,7 +357,8 @@ INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographe
 SELECT ss.sighting_id, p.picture_id, 'video', NULL,
        (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
 FROM species_sightings ss,
-     jsonb_array_elements(ss.video_path) WITH ORDINALITY AS t(elem, ordinality)
+     jsonb_array_elements(NULLIF(trim(ss.video_path::text), '')::jsonb)
+       WITH ORDINALITY AS t(elem, ordinality)
 JOIN picture p ON p.file_path = elem->>'src'
 WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
 
