@@ -3047,7 +3047,8 @@ textarea.form-control {
 #orchids-view,
 #conservation-view,
 #report-view,
-#submissions-view {
+#submissions-view,
+#drafts-view {
   position: fixed !important;
   top: 84px !important;
   left: 0 !important;
@@ -3917,7 +3918,15 @@ body.researcher-theme .dashboard-container,
 body.researcher-theme #orchids-view,
 body.researcher-theme #conservation-view,
 body.researcher-theme #report-view,
-body.researcher-theme #submissions-view { background: #F0EAD2 !important; }
+body.researcher-theme #submissions-view,
+body.researcher-theme #drafts-view { background: #F0EAD2 !important; }
+
+/* Researcher-theme text color fixes — override dark-theme vars */
+body.researcher-theme .dashboard-user { color: #145A1E !important; }
+body.researcher-theme #submissions-view .catalog-title,
+body.researcher-theme #drafts-view .catalog-title { color: #145A1E !important; }
+body.researcher-theme #submissions-view .submissions-table-head th,
+body.researcher-theme #drafts-view .submissions-table-head th { color: #145A1E !important; }
 
 /* 6 ── Catalog controls */
 body.researcher-theme .catalog-view-toggle {
