@@ -289,54 +289,68 @@ CREATE TABLE IF NOT EXISTS sighting_media (
   sort_order        SMALLINT NOT NULL DEFAULT 0
 );
 
--- For each JSONB array column, register the file paths in picture and link
--- them via sighting_media.  The JSONB objects contain {src, contributor}.
+-- Register file paths in picture then link via sighting_media.
+-- Written as plain SQL (no dynamic loop) to avoid dollar-quote escaping issues.
 
-DO $$
-DECLARE
-  cats TEXT[] := ARRAY['whole_plant','closeup_flower','habitat','video'];
-  col  TEXT;
-BEGIN
-  FOREACH col IN ARRAY cats LOOP
-    EXECUTE format(
-      $q$
-        INSERT INTO picture (file_path)
-        SELECT DISTINCT elem->>''src''
-        FROM species_sightings,
-             jsonb_array_elements(
-               CASE %1$I
-                 WHEN ''whole_plant''    THEN whole_plant_photo_path
-                 WHEN ''closeup_flower'' THEN closeup_flower_photo_path
-                 WHEN ''habitat''        THEN habitat_photo_path
-                 ELSE                        video_path
-               END
-             ) AS elem
-        WHERE elem->>''src'' IS NOT NULL AND trim(elem->>''src'') <> ''''
-        ON CONFLICT (file_path) DO NOTHING;
+-- whole_plant
+INSERT INTO picture (file_path)
+SELECT DISTINCT elem->>'src'
+FROM species_sightings, jsonb_array_elements(whole_plant_photo_path) AS elem
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
+ON CONFLICT (file_path) DO NOTHING;
 
-        INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographer_name, sort_order)
-        SELECT
-          ss.sighting_id,
-          p.picture_id,
-          %1$L,
-          elem->>''contributor'',
-          (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
-        FROM species_sightings ss,
-             jsonb_array_elements(
-               CASE %1$I
-                 WHEN ''whole_plant''    THEN ss.whole_plant_photo_path
-                 WHEN ''closeup_flower'' THEN ss.closeup_flower_photo_path
-                 WHEN ''habitat''        THEN ss.habitat_photo_path
-                 ELSE                        ss.video_path
-               END
-             ) WITH ORDINALITY AS t(elem, ordinality)
-        JOIN picture p ON p.file_path = elem->>''src''
-        WHERE elem->>''src'' IS NOT NULL AND trim(elem->>''src'') <> '''';
-      $q$,
-      col
-    );
-  END LOOP;
-END $$;
+INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographer_name, sort_order)
+SELECT ss.sighting_id, p.picture_id, 'whole_plant', elem->>'contributor',
+       (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
+FROM species_sightings ss,
+     jsonb_array_elements(ss.whole_plant_photo_path) WITH ORDINALITY AS t(elem, ordinality)
+JOIN picture p ON p.file_path = elem->>'src'
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
+
+-- closeup_flower
+INSERT INTO picture (file_path)
+SELECT DISTINCT elem->>'src'
+FROM species_sightings, jsonb_array_elements(closeup_flower_photo_path) AS elem
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
+ON CONFLICT (file_path) DO NOTHING;
+
+INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographer_name, sort_order)
+SELECT ss.sighting_id, p.picture_id, 'closeup_flower', elem->>'contributor',
+       (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
+FROM species_sightings ss,
+     jsonb_array_elements(ss.closeup_flower_photo_path) WITH ORDINALITY AS t(elem, ordinality)
+JOIN picture p ON p.file_path = elem->>'src'
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
+
+-- habitat
+INSERT INTO picture (file_path)
+SELECT DISTINCT elem->>'src'
+FROM species_sightings, jsonb_array_elements(habitat_photo_path) AS elem
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
+ON CONFLICT (file_path) DO NOTHING;
+
+INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographer_name, sort_order)
+SELECT ss.sighting_id, p.picture_id, 'habitat', elem->>'contributor',
+       (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
+FROM species_sightings ss,
+     jsonb_array_elements(ss.habitat_photo_path) WITH ORDINALITY AS t(elem, ordinality)
+JOIN picture p ON p.file_path = elem->>'src'
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
+
+-- video
+INSERT INTO picture (file_path)
+SELECT DISTINCT elem->>'src'
+FROM species_sightings, jsonb_array_elements(video_path) AS elem
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> ''
+ON CONFLICT (file_path) DO NOTHING;
+
+INSERT INTO sighting_media (sighting_id, picture_id, media_category, photographer_name, sort_order)
+SELECT ss.sighting_id, p.picture_id, 'video', NULL,
+       (row_number() OVER (PARTITION BY ss.sighting_id ORDER BY ordinality))::smallint - 1
+FROM species_sightings ss,
+     jsonb_array_elements(ss.video_path) WITH ORDINALITY AS t(elem, ordinality)
+JOIN picture p ON p.file_path = elem->>'src'
+WHERE elem->>'src' IS NOT NULL AND trim(elem->>'src') <> '';
 
 ALTER TABLE species_sightings
   DROP COLUMN IF EXISTS whole_plant_photo_path,
