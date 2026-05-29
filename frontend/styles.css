@@ -4063,4 +4063,30 @@ body.researcher-theme .sub-filter-btn:hover {
 body.researcher-theme .sub-filter-btn.sub-filter-active {
   background: #145A1E !important; border-color: #145A1E !important; color: #fff !important;
 }
+/* Edit action button — restore green theme on cream background */
+body.researcher-theme .submission-action-btn {
+  background: #fff !important;
+  border: 1.5px solid rgba(20,90,30,0.45) !important;
+  color: #145A1E !important;
+  -webkit-text-fill-color: #145A1E !important;
+  box-shadow: 0 1px 2px rgba(20,90,30,0.08) !important;
+}
+body.researcher-theme .submission-action-btn:hover {
+  background: #eaf3ea !important;
+  border-color: #145A1E !important;
+  color: #0E4018 !important;
+  -webkit-text-fill-color: #0E4018 !important;
+  box-shadow: 0 2px 6px rgba(20,90,30,0.15) !important;
+}
+body.researcher-theme .submission-edit-btn {
+  border-color: rgba(20,90,30,0.45) !important;
+  color: #145A1E !important;
+  -webkit-text-fill-color: #145A1E !important;
+}
+body.researcher-theme .submission-edit-btn:hover {
+  background: #eaf3ea !important;
+  border-color: #145A1E !important;
+  color: #0E4018 !important;
+  -webkit-text-fill-color: #0E4018 !important;
+}
 
