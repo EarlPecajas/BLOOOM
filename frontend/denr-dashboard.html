@@ -6644,12 +6644,15 @@
           if (file) {
             const user = parsedActiveUser || JSON.parse(localStorage.getItem('bloomUser') || '{}');
             const ext = file.name.split('.').pop().toLowerCase();
-            const path = `avatars/${user.id}.${ext}`;
-            const { error: upErr } = await bloomSupabase.storage.from('avatars').upload(path, file, { upsert: true });
-            if (!upErr) {
-              const { data: urlData } = bloomSupabase.storage.from('avatars').getPublicUrl(path);
-              updates.data = { avatar_url: urlData.publicUrl };
+            const path = `${user.id}_${Date.now()}.${ext}`;
+            showEditProfileFeedback('Uploading photo…', 'info');
+            const { error: upErr } = await bloomSupabase.storage.from('avatars').upload(path, file);
+            if (upErr) {
+              showEditProfileFeedback(`Photo upload failed: ${upErr.message}`, 'error');
+              btn.disabled = false; btn.textContent = 'Save Changes'; return;
             }
+            const { data: urlData } = bloomSupabase.storage.from('avatars').getPublicUrl(path);
+            updates.data = { avatar_url: urlData.publicUrl };
           }
           if (newPw) updates.password = newPw;
           if (!Object.keys(updates).length) {
