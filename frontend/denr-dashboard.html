@@ -274,6 +274,9 @@
           <button class="user-profile" id="user-profile" type="button" title="Edit Profile" onclick="openEditProfileModal()">
             <img src="./DENR Logo.svg" alt="DENR" class="denr-logo-button" id="role-profile-icon" />
           </button>
+          <script>
+            (function(){try{var u=JSON.parse(localStorage.getItem('bloomUser')||'{}');if(u.avatar_url){var i=document.getElementById('role-profile-icon');if(i){i.src=u.avatar_url;i.style.borderRadius='50%';i.style.objectFit='cover';}}}catch(e){}})();
+          </script>
           <div id="user-dropdown" hidden></div>
         </div>
       </div>
