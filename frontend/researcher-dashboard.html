@@ -228,7 +228,13 @@
           <span class="sidebar-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16zm0-6h3v1.5H8V10z"/></svg>
           </span>
-          <span>Submissions</span>
+          <span>My Submissions</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="drafts">
+          <span class="sidebar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </span>
+          <span>My Drafts</span>
         </a>
       </nav>
     </aside>
@@ -866,8 +872,12 @@
 
     <!-- Submissions View -->
     <div id="submissions-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <div style="margin-bottom:2rem;">
-        <h1 class="catalog-title">My Submissions</h1>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
+        <h1 class="catalog-title" style="margin:0;">My Submissions</h1>
+        <button type="button" onclick="openDashboardView('drafts')" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 1rem;border-radius:999px;border:1.5px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-family:Inter,Roboto,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 150ms,border-color 150ms;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          My Drafts
+        </button>
       </div>
       <div id="submissions-admin-panel">
       <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
@@ -891,6 +901,37 @@
           </tbody>
         </table>
       </div>
+      </div>
+    </div>
+
+    <!-- Drafts View -->
+    <div id="drafts-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
+        <h1 class="catalog-title" style="margin:0;">My Drafts</h1>
+        <button type="button" onclick="openDashboardView('submissions')" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 1rem;border-radius:999px;border:1.5px solid #d1fae5;background:#f0fdf4;color:#15803d;font-family:Inter,Roboto,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 150ms,border-color 150ms;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16zm0-6h3v1.5H8V10z"/></svg>
+          My Submissions
+        </button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <input id="drafts-search-input" type="text" placeholder="Search drafts..." style="width:min(420px,100%);padding:0.75rem 0.9rem;border:1px solid #d3ddd5;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:#fff;" />
+      </div>
+      <div class="submissions-table-shell" style="background:white;border-radius:12px;padding:2rem;border:1px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow-x:auto;">
+        <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
+          <thead>
+            <tr class="submissions-table-head">
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Researcher Name</th>
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Species</th>
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Last Saved</th>
+              <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="drafts-table-body">
+            <tr>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Loading drafts...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -1694,8 +1735,8 @@
         try {
           const _initView = new URLSearchParams(window.location.search).get('view');
           const _allowed = isResearcherRole
-            ? new Set(['orchids', 'map', 'collection3d', 'submissions'])
-            : new Set(['orchids', 'conservation', 'report', 'map', 'submissions']);
+            ? new Set(['orchids', 'map', 'collection3d', 'submissions', 'drafts'])
+            : new Set(['orchids', 'conservation', 'report', 'map', 'submissions', 'drafts']);
           if (typeof switchView === 'function') {
             switchView((_initView && _allowed.has(_initView)) ? _initView : 'dashboard');
           } else if (typeof openDashboardView === 'function') {
@@ -1981,8 +2022,8 @@
                 entryId, currentEmail, commonNames, localNames, leafTextures, threatTypes, teamMembers,
                 reviewStatus: 'draft', editDraftId: editDraftId ? Number(editDraftId) : null
               });
-              if (feedback) { feedback.style.color = '#145A1E'; feedback.textContent = 'Draft saved. View it in My Submissions.'; }
-              await loadSubmissions('');
+              if (feedback) { feedback.style.color = '#145A1E'; feedback.textContent = 'Draft saved. View it in My Drafts.'; }
+              await loadDrafts('');
             } catch (err) {
               const feedback = document.getElementById('researcher-submission-feedback');
               if (feedback) { feedback.style.color = '#b42318'; feedback.textContent = err.message || 'Could not save draft.'; }
@@ -3108,6 +3149,8 @@
           const normalizedRows = rows.map(normalizeSubmissionRow);
 
           submissionRows = normalizedRows.filter((submission) => {
+            // Exclude drafts from submissions list
+            if (String(submission.review_status || '').toLowerCase() === 'draft') return false;
             const matchesResearcher = !isResearcherRole || !currentEmail ||
               String(submission.researcher_email || '').trim().toLowerCase() === currentEmail.toLowerCase();
             if (!matchesResearcher) return false;
@@ -3138,6 +3181,66 @@
           `;
         }
       }
+
+      async function loadDrafts(searchTerm = '') {
+        const draftsTableBody = document.getElementById('drafts-table-body');
+        if (!draftsTableBody) return;
+        try {
+          const currentEmail = String(parsedActiveUser.email || '').trim();
+          let query = window.bloomSupabase
+            .from('species_sightings')
+            .select('sighting_id, entry_id, researcher_email, scientific_name, common_names, created_at, updated_at, review_status')
+            .eq('review_status', 'draft')
+            .order('updated_at', { ascending: false });
+          if (isResearcherRole && currentEmail) {
+            query = query.eq('researcher_email', currentEmail);
+          }
+          const { data, error } = await query;
+          if (error) throw new Error(error.message);
+          const rows = Array.isArray(data) ? data : [];
+          const searchValue = String(searchTerm || '').trim().toLowerCase();
+          const filtered = rows.filter(r => {
+            if (!searchValue) return true;
+            return [r.scientific_name, r.researcher_email, r.entry_id].filter(Boolean).join(' ').toLowerCase().includes(searchValue);
+          });
+          renderDrafts(filtered);
+        } catch {
+          draftsTableBody.innerHTML = `<tr><td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Could not load drafts.</td></tr>`;
+        }
+      }
+
+      function renderDrafts(rows) {
+        const draftsTableBody = document.getElementById('drafts-table-body');
+        if (!draftsTableBody) return;
+        if (!rows.length) {
+          draftsTableBody.innerHTML = `<tr><td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">No drafts found.</td></tr>`;
+          return;
+        }
+        draftsTableBody.innerHTML = rows.map(row => {
+          const researcher = escapeHtml(String(row.researcher_email || '—'));
+          const species = escapeHtml(String(row.scientific_name || 'Unnamed draft'));
+          const saved = escapeHtml(row.updated_at ? new Date(row.updated_at).toLocaleDateString() : '—');
+          const sid = escapeHtml(String(row.sighting_id));
+          return `
+            <tr class="submission-row">
+              <td class="submission-researcher-cell">${researcher}</td>
+              <td class="submission-species-cell"><span class="scientific-name">${species}</span></td>
+              <td class="submission-date-cell">${saved}</td>
+              <td class="submission-action-cell">
+                <button type="button" class="submission-action-btn submission-edit-btn" data-submission-id="${sid}" data-action="edit">Edit</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Wire drafts search input
+      document.addEventListener('DOMContentLoaded', function() {
+        const draftsInput = document.getElementById('drafts-search-input');
+        if (draftsInput) {
+          draftsInput.addEventListener('input', function() { loadDrafts(this.value.trim()); });
+        }
+      });
 
       function syncDashboardCatalogViewState() {
         if (!catalogGrid) return;
@@ -4265,6 +4368,10 @@ function refreshConservationHeatMap(summary) {
           }
           if (viewName === 'submissions') {
             loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
+          }
+          if (viewName === 'drafts') {
+            const draftsInput = document.getElementById('drafts-search-input');
+            loadDrafts(draftsInput ? draftsInput.value.trim() : '');
           }
         } else if (viewName === 'dashboard') {
           dashboardContainer.style.display = 'block';
