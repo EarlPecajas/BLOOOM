@@ -26,7 +26,8 @@ async function resolveActiveUser() {
           email: session.user.email,
           role,
           first_name: session.user.user_metadata?.first_name || '',
-          last_name: session.user.user_metadata?.last_name || ''
+          last_name: session.user.user_metadata?.last_name || '',
+          avatar_url: session.user.user_metadata?.avatar_url || ''
         };
         localStorage.setItem('bloomUser', JSON.stringify(parsedUser));
         sessionStorage.setItem('bloomUser', JSON.stringify(parsedUser));
@@ -59,7 +60,8 @@ async function resolveActiveUser() {
               email: sessionUser.email,
               role,
               first_name: sessionUser.user_metadata?.first_name || '',
-              last_name: sessionUser.user_metadata?.last_name || ''
+              last_name: sessionUser.user_metadata?.last_name || '',
+              avatar_url: sessionUser.user_metadata?.avatar_url || ''
             };
             localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
             sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));

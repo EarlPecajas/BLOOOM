@@ -2877,10 +2877,16 @@
         dashboardUserLabel.textContent = isAdminRole ? 'DENR Dashboard' : 'Researcher Dashboard';
       }
 
-      if (roleProfileIcon && isResearcherRole) {
-        roleProfileIcon.src = './loo.png';
-        roleProfileIcon.alt = 'Researcher';
-        roleProfileIcon.classList.add('researcher-role-icon');
+      if (roleProfileIcon) {
+        const savedAvatar = parsedActiveUser?.avatar_url || null;
+        if (isResearcherRole) {
+          roleProfileIcon.src = savedAvatar || './loo.png';
+          roleProfileIcon.alt = 'Researcher';
+          roleProfileIcon.classList.add('researcher-role-icon');
+        } else {
+          roleProfileIcon.src = savedAvatar || './DENR Logo.svg';
+        }
+        if (savedAvatar) { roleProfileIcon.style.borderRadius = '50%'; roleProfileIcon.style.objectFit = 'cover'; }
       }
 
       if (researcherDataMenu) {

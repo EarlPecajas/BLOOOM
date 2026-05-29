@@ -1706,14 +1706,17 @@
 
         const roleProfileIcon = document.getElementById('role-profile-icon');
         if (roleProfileIcon) {
+          const savedAvatar = parsedActiveUser?.avatar_url || null;
           if (isResearcherRole) {
-            roleProfileIcon.src = './loo.png';
+            roleProfileIcon.src = savedAvatar || './loo.png';
             roleProfileIcon.alt = 'Researcher';
             roleProfileIcon.classList.add('researcher-role-icon');
+            if (savedAvatar) { roleProfileIcon.style.borderRadius = '50%'; roleProfileIcon.style.objectFit = 'cover'; }
           } else if (isAdminRole) {
-            roleProfileIcon.src = './DENR Logo.svg';
+            roleProfileIcon.src = savedAvatar || './DENR Logo.svg';
             roleProfileIcon.alt = 'DENR';
             roleProfileIcon.classList.remove('researcher-role-icon');
+            if (savedAvatar) { roleProfileIcon.style.borderRadius = '50%'; roleProfileIcon.style.objectFit = 'cover'; }
           }
         }
 
