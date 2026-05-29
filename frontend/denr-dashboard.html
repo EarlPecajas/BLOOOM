@@ -111,6 +111,27 @@
       .field-help.is-open::after,
       .field-help.is-open::before { opacity:1; }
       .required-asterisk{color:#b42318 !important;margin-left:6px}
+
+      /* ── Cream website theme for DENR overview ── */
+      #dashboard-admin-overview {
+        --dt-bg-input: #FFFFFF;
+        --dt-border-md: rgba(20,90,30,0.14);
+        --dt-text: #145A1E;
+        --dt-muted: #577A5C;
+        --dt-accent-lt: #1e7a30;
+      }
+      #dashboard-admin-overview .rounded-xl {
+        box-shadow: 0 2px 12px rgba(20,90,30,0.08) !important;
+      }
+      #dashboard-admin-overview .text-gray-400 {
+        color: #6a9370 !important;
+      }
+      #dashboard-admin-overview .text-gray-700 {
+        color: #145A1E !important;
+      }
+      #dashboard-admin-overview .text-gray-600 {
+        color: #3e6639 !important;
+      }
     </style>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -351,11 +372,11 @@
               </div>
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Pending</p>
-                <p class="text-xl font-black leading-none" style="color:rgba(255,175,90,.9);font-family:Inter,Roboto,sans-serif;">14</p>
+                <p class="text-xl font-black leading-none" style="color:#c47d0a;font-family:Inter,Roboto,sans-serif;">14</p>
               </div>
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Verified</p>
-                <p class="text-xl font-black leading-none" style="color:rgba(130,185,255,.9);font-family:Inter,Roboto,sans-serif;">58</p>
+                <p class="text-xl font-black leading-none" style="color:#1d6bbf;font-family:Inter,Roboto,sans-serif;">58</p>
               </div>
               <div class="rounded-xl p-3 text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Last 7d</p>
