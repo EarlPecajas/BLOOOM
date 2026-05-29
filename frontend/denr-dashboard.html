@@ -215,6 +215,14 @@
           <span>Submissions</span>
         </a>
       </nav>
+      <div class="sidebar-bottom">
+        <button type="button" class="sidebar-signout-btn" id="signout-button">
+          <span class="sidebar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          </span>
+          <span>Sign Out</span>
+        </button>
+      </div>
     </aside>
     <header class="dashboard-header navbar navbar-expand-lg px-3 px-md-4">
       <div class="dashboard-header-left">
@@ -263,12 +271,10 @@
           <span class="dashboard-user">DENR Dashboard</span>
         </div>
         <div class="user-menu">
-          <button class="user-profile" id="user-profile" aria-haspopup="true" aria-expanded="false" type="button">
+          <button class="user-profile" id="user-profile" type="button" title="Edit Profile" onclick="openEditProfileModal()">
             <img src="./DENR Logo.svg" alt="DENR" class="denr-logo-button" id="role-profile-icon" />
           </button>
-          <div class="user-dropdown" id="user-dropdown" hidden>
-            <button type="button" class="user-dropdown-item" id="signout-button" onclick="localStorage.removeItem('bloomUser');window.location.href='index.html';">Sign out</button>
-          </div>
+          <div id="user-dropdown" hidden></div>
         </div>
       </div>
     </header>
@@ -3039,7 +3045,7 @@
       const signOutButton = document.getElementById('signout-button');
 
       function closeUserDropdown() {
-        userDropdown.hidden = true;
+        if (userDropdown) userDropdown.hidden = true;
         userProfileButton.setAttribute('aria-expanded', 'false');
       }
 
@@ -3051,12 +3057,8 @@
 
       userProfileButton.addEventListener('click', function(e) {
         e.stopPropagation();
-        const shouldOpen = userDropdown.hidden;
-        userDropdown.hidden = !shouldOpen;
-        userProfileButton.setAttribute('aria-expanded', String(shouldOpen));
-        if (shouldOpen) {
-          closeResearcherDataDropdown();
-        }
+        closeResearcherDataDropdown();
+        // openEditProfileModal is called via onclick attribute on the button
       });
 
       if (researcherDataButton && researcherDataDropdown && !researcherDataButton.hasAttribute('onclick')) {
@@ -3348,10 +3350,6 @@
       });
 
       document.addEventListener('click', function(e) {
-        if (!userDropdown.contains(e.target) && !userProfileButton.contains(e.target)) {
-          closeUserDropdown();
-        }
-
         if (researcherDataDropdown && researcherDataButton && !researcherDataDropdown.contains(e.target) && !researcherDataButton.contains(e.target)) {
           closeResearcherDataDropdown();
         }
@@ -6539,5 +6537,138 @@
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ── Edit Profile Modal (DENR) ── -->
+    <div id="edit-profile-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+      <div style="background:#FFFFFF;border-radius:16px;width:min(460px,95vw);max-height:90vh;overflow-y:auto;padding:2rem 2rem 1.5rem;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.25);">
+        <button id="edit-profile-close" type="button" title="Close" style="position:absolute;top:1rem;right:1rem;border:none;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:#888;padding:0.2rem 0.4rem;">&times;</button>
+        <h2 style="color:#145A1E;font-size:1.25rem;font-weight:700;margin:0 0 1.5rem;">Edit Profile</h2>
+
+        <!-- Profile picture -->
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+          <img id="profile-preview" src="./DENR Logo.svg" alt="Profile" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #D8D0B8;flex-shrink:0;" />
+          <div>
+            <p style="font-size:0.82rem;color:#4a7a44;margin:0 0 0.4rem;font-weight:500;">Profile Picture</p>
+            <input type="file" id="profile-picture-input" accept="image/*" style="display:none;" />
+            <button type="button" onclick="document.getElementById('profile-picture-input').click()" style="padding:0.38rem 0.9rem;border:1.5px solid rgba(20,90,30,.4);border-radius:8px;background:#fff;color:#145A1E;font-size:0.82rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">Change Photo</button>
+          </div>
+        </div>
+
+        <!-- Change password -->
+        <div style="margin-bottom:1.25rem;">
+          <h4 style="color:#145A1E;font-size:0.9rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin:0 0 0.75rem;">Change Password</h4>
+          <input id="profile-new-password" type="password" placeholder="New password (leave blank to keep current)" style="width:100%;padding:0.55rem 0.8rem;border:1px solid #C8C0A8;border-radius:8px;font-size:0.9rem;font-family:Inter,Roboto,sans-serif;margin-bottom:0.5rem;outline:none;" onfocus="this.style.borderColor='#145A1E'" onblur="this.style.borderColor='#C8C0A8'" />
+          <input id="profile-confirm-password" type="password" placeholder="Confirm new password" style="width:100%;padding:0.55rem 0.8rem;border:1px solid #C8C0A8;border-radius:8px;font-size:0.9rem;font-family:Inter,Roboto,sans-serif;outline:none;" onfocus="this.style.borderColor='#145A1E'" onblur="this.style.borderColor='#C8C0A8'" />
+        </div>
+
+        <div id="edit-profile-feedback" style="display:none;padding:0.55rem 0.85rem;border-radius:8px;font-size:0.875rem;margin-bottom:0.75rem;"></div>
+
+        <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+          <button type="button" id="edit-profile-cancel" style="padding:0.55rem 1.2rem;border:1.5px solid #C8C0A8;border-radius:8px;background:#fff;color:#555;font-size:0.9rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">Cancel</button>
+          <button type="button" id="edit-profile-save" style="padding:0.55rem 1.4rem;border:1.5px solid #145A1E;border-radius:8px;background:#145A1E;color:#F0EAD2;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openEditProfileModal() {
+        const modal = document.getElementById('edit-profile-modal');
+        if (!modal) return;
+        const user = parsedActiveUser || JSON.parse(localStorage.getItem('bloomUser') || '{}');
+        const preview = document.getElementById('profile-preview');
+        if (preview) preview.src = user.avatar_url || './DENR Logo.svg';
+        const pwEl = document.getElementById('profile-new-password');
+        const cpEl = document.getElementById('profile-confirm-password');
+        if (pwEl) pwEl.value = '';
+        if (cpEl) cpEl.value = '';
+        const fileInput = document.getElementById('profile-picture-input');
+        if (fileInput) fileInput.value = '';
+        const fb = document.getElementById('edit-profile-feedback');
+        if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+        modal.style.display = 'flex';
+      }
+
+      function closeEditProfileModal() {
+        const modal = document.getElementById('edit-profile-modal');
+        if (modal) modal.style.display = 'none';
+      }
+
+      function showEditProfileFeedback(msg, type) {
+        const fb = document.getElementById('edit-profile-feedback');
+        if (!fb) return;
+        fb.textContent = msg;
+        fb.style.display = 'block';
+        if (type === 'success') { fb.style.background = '#f0fdf4'; fb.style.color = '#145A1E'; fb.style.border = '1px solid #bbf7d0'; }
+        else if (type === 'error') { fb.style.background = '#fdf0ee'; fb.style.color = '#b42318'; fb.style.border = '1px solid #fecaca'; }
+        else { fb.style.background = '#f8f9fa'; fb.style.color = '#555'; fb.style.border = '1px solid #dee2e6'; }
+      }
+
+      document.getElementById('edit-profile-close').addEventListener('click', closeEditProfileModal);
+      document.getElementById('edit-profile-cancel').addEventListener('click', closeEditProfileModal);
+      document.getElementById('edit-profile-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditProfileModal();
+      });
+
+      document.getElementById('profile-picture-input').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) { document.getElementById('profile-preview').src = e.target.result; };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById('edit-profile-save').addEventListener('click', async function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+        const newPw = (document.getElementById('profile-new-password')?.value || '');
+        const confirmPw = (document.getElementById('profile-confirm-password')?.value || '');
+        if (newPw && newPw !== confirmPw) {
+          showEditProfileFeedback('Passwords do not match.', 'error');
+          btn.disabled = false; btn.textContent = 'Save Changes'; return;
+        }
+        if (newPw && newPw.length < 6) {
+          showEditProfileFeedback('Password must be at least 6 characters.', 'error');
+          btn.disabled = false; btn.textContent = 'Save Changes'; return;
+        }
+        try {
+          const updates = {};
+          const fileInput = document.getElementById('profile-picture-input');
+          const file = fileInput?.files?.[0];
+          if (file) {
+            const user = parsedActiveUser || JSON.parse(localStorage.getItem('bloomUser') || '{}');
+            const ext = file.name.split('.').pop().toLowerCase();
+            const path = `avatars/${user.id}.${ext}`;
+            const { error: upErr } = await bloomSupabase.storage.from('avatars').upload(path, file, { upsert: true });
+            if (!upErr) {
+              const { data: urlData } = bloomSupabase.storage.from('avatars').getPublicUrl(path);
+              updates.data = { avatar_url: urlData.publicUrl };
+            }
+          }
+          if (newPw) updates.password = newPw;
+          if (!Object.keys(updates).length) {
+            showEditProfileFeedback('No changes to save.', 'info');
+            btn.disabled = false; btn.textContent = 'Save Changes'; return;
+          }
+          const { data: upData, error } = await bloomSupabase.auth.updateUser(updates);
+          if (error) throw error;
+          const meta = upData?.user?.user_metadata || {};
+          const stored = JSON.parse(localStorage.getItem('bloomUser') || '{}');
+          const merged = { ...stored };
+          if (meta.avatar_url) merged.avatar_url = meta.avatar_url;
+          localStorage.setItem('bloomUser', JSON.stringify(merged));
+          sessionStorage.setItem('bloomUser', JSON.stringify(merged));
+          if (meta.avatar_url) {
+            const icon = document.getElementById('role-profile-icon');
+            if (icon) { icon.src = meta.avatar_url; icon.style.borderRadius = '50%'; icon.style.objectFit = 'cover'; }
+          }
+          showEditProfileFeedback('Profile updated successfully!', 'success');
+          setTimeout(closeEditProfileModal, 1600);
+        } catch (err) {
+          showEditProfileFeedback(err.message || 'Could not save changes.', 'error');
+        }
+        btn.disabled = false; btn.textContent = 'Save Changes';
+      });
+    </script>
   </body>
 </html>
