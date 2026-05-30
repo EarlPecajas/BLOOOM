@@ -1693,21 +1693,12 @@
 
         </div><!-- /scrollable middle -->
 
-        <!-- Action footer -->
-        <div id="actionButtons" style="display:flex;gap:0.6rem;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:1rem 1.75rem;background:var(--dt-bg-panel);border-top:1px solid var(--dt-border-md);flex-shrink:0;border-radius:0 0 18px 18px;">
-          <button onclick="closeModal('detailModal')" style="padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid var(--dt-border-md);background:var(--dt-bg-input);color:var(--dt-muted);font-size:0.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 160ms;">Close</button>
-          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #145A1E;background:#145A1E;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;box-shadow:0 4px 12px rgba(20,90,30,0.22);">
+        <!-- Action footer — Close only; Approve/Reject/Revision are in the table row actions -->
+        <div id="actionButtons" style="display:flex;gap:0.6rem;align-items:center;justify-content:flex-end;padding:1rem 1.75rem;background:var(--dt-bg-panel);border-top:1px solid var(--dt-border-md);flex-shrink:0;border-radius:0 0 18px 18px;">
+          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #145A1E;background:#145A1E;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;gap:0.4rem;align-items:center;box-shadow:0 4px 12px rgba(20,90,30,0.22);">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 5v14M5 12l7-7 7 7"/></svg> Publish to Catalog
           </button>
-          <button id="revisionBtn" onclick="performDetailAction('revision')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #d97706;background:#fff8ed;color:#b45309;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> For Revision
-          </button>
-          <button id="denyBtn" onclick="performDetailAction('deny')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #dc2626;background:#fff1f1;color:#b91c1c;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
-          </button>
-          <button id="approveBtn" onclick="performDetailAction('approve')" style="display:none;padding:0.55rem 1.25rem;border-radius:999px;border:1.5px solid #16a34a;background:#16a34a;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><polyline points="20 6 9 17 4 12"/></svg> Approve
-          </button>
+          <button onclick="closeModal('detailModal')" style="padding:0.55rem 1.4rem;border-radius:999px;border:1.5px solid #C8C0A8;background:#fff;color:#145A1E;font-size:0.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 160ms;">Close</button>
         </div>
 
       </div>
@@ -5120,16 +5111,13 @@
         // Populate status badge in header
         const statusBadgeEl = document.getElementById('detailStatusBadge');
         if (statusBadgeEl) statusBadgeEl.textContent = getStatusLabel(submission.review_status);
-        // Show family only if the backend provided it; do not default to Orchidaceae
-        document.getElementById('detailLocation').textContent = submission.family || submission.location || '-';
+        document.getElementById('detailLocation').textContent = submission.family || 'Orchidaceae';
         document.getElementById('detailDate').textContent = submission.submission_date || '-';
         document.getElementById('detailStatus').textContent = getStatusLabel(submission.review_status);
         
         const habitatElement = document.getElementById('detailHabitat');
         if (habitatElement) {
-          const commonName = submission.common_name || '-';
-          const location = submission.location || '-';
-          habitatElement.textContent = `${commonName} / ${location}`;
+          habitatElement.textContent = submission.common_name || fmtArray(submission.common_names) || '-';
         }
         
         const threatTypesText = Array.isArray(submission.threat_types) && submission.threat_types.length

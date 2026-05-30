@@ -4603,16 +4603,13 @@ function refreshConservationHeatMap(summary) {
         document.getElementById('detailResearcher').textContent = `Researcher: ${submission.researcher}`;
         const statusBadgeEl = document.getElementById('detailStatusBadge');
         if (statusBadgeEl) statusBadgeEl.textContent = getStatusLabel(submission.review_status);
-        // Show family only if the backend provided it; do not default to Orchidaceae
-        document.getElementById('detailLocation').textContent = submission.family || submission.location || '-';
+        document.getElementById('detailLocation').textContent = submission.family || 'Orchidaceae';
         document.getElementById('detailDate').textContent = submission.submission_date || '-';
         document.getElementById('detailStatus').textContent = getStatusLabel(submission.review_status);
         
         const habitatElement = document.getElementById('detailHabitat');
         if (habitatElement) {
-          const commonName = submission.common_name || '-';
-          const location = submission.location || '-';
-          habitatElement.textContent = `${commonName} / ${location}`;
+          habitatElement.textContent = submission.common_name || fmtArray(submission.common_names) || '-';
         }
         
         const threatTypesText = Array.isArray(submission.threat_types) && submission.threat_types.length
