@@ -120,36 +120,40 @@
         width: 30px !important;
         height: 30px !important;
         border-radius: 6px !important;
-        border: none !important;
         cursor: pointer !important;
         flex-shrink: 0 !important;
-        transition: filter 150ms, transform 100ms !important;
+        padding: 0 !important;
+        transition: background-color 150ms, border-color 150ms, box-shadow 150ms, transform 100ms !important;
       }
-      .sub-action-btn:hover { filter: brightness(0.92) !important; transform: translateY(-1px) !important; }
+      /* View — identical to researcher .submission-view-btn */
       .sub-action-btn.view {
         background-color: #eff6ff !important;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232563eb' d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: center !important;
-        background-size: 17px 17px !important;
+        background-repeat: no-repeat !important; background-position: center !important; background-size: 17px 17px !important;
         border: 1.5px solid #bfdbfe !important;
         box-shadow: 0 1px 2px rgba(37,99,235,0.08) !important;
       }
       .sub-action-btn.view:hover {
         background-color: #dbeafe !important;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231d4ed8' d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important;
-        background-position: center !important;
-        background-size: 17px 17px !important;
-        border-color: #93c5fd !important;
-        box-shadow: 0 2px 6px rgba(37,99,235,0.15) !important;
-        filter: none !important;
-        transform: translateY(-1px) !important;
+        background-repeat: no-repeat !important; background-position: center !important; background-size: 17px 17px !important;
+        border-color: #93c5fd !important; box-shadow: 0 2px 6px rgba(37,99,235,0.15) !important; transform: translateY(-1px) !important;
       }
-      .sub-action-btn.approve { background: #dcfce7 !important; }
-      .sub-action-btn.reject  { background: #fee2e2 !important; }
-      .sub-action-btn.revision { background: #fef3c7 !important; }
-      .sub-action-btn.publish { background: #145A1E !important; }
+      /* Approve */
+      .sub-action-btn.approve { background: #f0fdf4 !important; border: 1.5px solid #86efac !important; box-shadow: 0 1px 2px rgba(22,163,74,0.08) !important; }
+      .sub-action-btn.approve:hover { background: #dcfce7 !important; border-color: #4ade80 !important; box-shadow: 0 2px 6px rgba(22,163,74,0.15) !important; transform: translateY(-1px) !important; }
+      .sub-action-btn.approve svg { stroke: #16a34a !important; }
+      /* Reject */
+      .sub-action-btn.reject { background: #fff1f2 !important; border: 1.5px solid #fca5a5 !important; box-shadow: 0 1px 2px rgba(220,38,38,0.08) !important; }
+      .sub-action-btn.reject:hover { background: #fee2e2 !important; border-color: #f87171 !important; box-shadow: 0 2px 6px rgba(220,38,38,0.15) !important; transform: translateY(-1px) !important; }
+      .sub-action-btn.reject svg { stroke: #dc2626 !important; }
+      /* Revision */
+      .sub-action-btn.revision { background: #fffbeb !important; border: 1.5px solid #fde68a !important; box-shadow: 0 1px 2px rgba(217,119,6,0.08) !important; }
+      .sub-action-btn.revision:hover { background: #fef3c7 !important; border-color: #fbbf24 !important; box-shadow: 0 2px 6px rgba(217,119,6,0.15) !important; transform: translateY(-1px) !important; }
+      .sub-action-btn.revision svg { stroke: #d97706 !important; }
+      /* Publish */
+      .sub-action-btn.publish { background: #145A1E !important; border: 1.5px solid #145A1E !important; box-shadow: 0 1px 2px rgba(20,90,30,0.18) !important; }
+      .sub-action-btn.publish:hover { background: #0E4018 !important; border-color: #0E4018 !important; box-shadow: 0 2px 6px rgba(20,90,30,0.25) !important; transform: translateY(-1px) !important; }
 
       /* ── Cream website theme for DENR overview ── */
       #dashboard-admin-overview {
@@ -5240,17 +5244,11 @@
         
         // Supporting documents removed from UI
         
-        // Only DENR/admin can review pending submissions.
-        const normalizedStatus = String(submission.review_status || 'pending').toLowerCase();
-        const canReview = isAdminRole && normalizedStatus === 'pending';
-        document.getElementById('approveBtn').style.display = canReview ? 'inline-flex' : 'none';
-        document.getElementById('denyBtn').style.display = canReview ? 'inline-flex' : 'none';
-        document.getElementById('revisionBtn').style.display = canReview ? 'inline-flex' : 'none';
-        
         // Show Post to Catalog button for approved submissions (admin only)
+        const normalizedStatus = String(submission.review_status || 'pending').toLowerCase();
         const postBtnEl = document.getElementById('postToCatalogBtn');
         const canPostToCatalog = isAdminRole && normalizedStatus === 'approved';
-        postBtnEl.style.display = canPostToCatalog ? 'inline-flex' : 'none';
+        if (postBtnEl) postBtnEl.style.display = canPostToCatalog ? 'inline-flex' : 'none';
 
         // If the submission has already been posted to the orchids catalog (an `orchids` record exists
         // for the same scientific name), hide the Post button — avoid reposting.
