@@ -13,154 +13,139 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-      html, body { height: 100%; margin: 0; overflow: hidden; }
-      body { display: flex; flex-direction: column; font-family: Inter, Roboto, sans-serif; }
+      html, body { height: 100%; margin: 0; }
+      body { display: flex; flex-direction: column; font-family: Inter, Roboto, sans-serif; background: #F0EAD2; }
 
-      /* Top nav */
+      /* ── Topbar ── */
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
-        padding: 0 1.4rem; height: 54px; position: relative;
-        background: #FFFFFF;
-        box-shadow: 0 2px 10px rgba(0,0,0,.07); gap: 1rem; z-index: 10;
-        border-bottom: 1px solid #D8D0B8;
+        padding: 0 1.25rem; height: 56px;
+        background: #FFFFFF; border-bottom: 1px solid #D8D0B8;
+        box-shadow: 0 2px 10px rgba(0,0,0,.07); gap: 1rem; z-index: 20;
       }
       .detail-brand { display: flex; align-items: center; gap: .5rem; text-decoration: none; flex-shrink: 0; }
-      .detail-brand-logo { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(20,90,30,.2); object-fit: cover; }
-      .detail-brand-name { font-size: .85rem; font-weight: 800; color: #145A1E; letter-spacing: .14em; text-transform: uppercase; }
-      /* Title centered over the map panel (identity panel = 320px) */
-      .detail-topbar-title {
-        position: absolute;
-        left: 320px; right: 0; top: 0; bottom: 0;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.35rem; font-style: italic; color: #145A1E;
-        font-family: Georgia, serif; font-weight: 700;
-        pointer-events: none; overflow: hidden;
-      }
-      .detail-topbar-title span {
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        max-width: calc(100% - 60px);
-      }
-      .detail-topbar-spacer { display: none; }
-      /* Back button in topbar */
+      .detail-brand-logo { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(20,90,30,.2); object-fit: cover; }
+      .detail-brand-name { font-size: .82rem; font-weight: 800; color: #145A1E; letter-spacing: .14em; text-transform: uppercase; }
       .detail-back-link {
         display: inline-flex; align-items: center; gap: .3rem;
-        color: #2d5a27; font-size: .72rem; font-weight: 700; text-decoration: none;
-        padding: .2rem .65rem; border-radius: 6px; flex-shrink: 0;
-        background: #e8f3e6; border: 1px solid #b8d8b4;
-        transition: border-color .15s, background .15s; white-space: nowrap;
+        color: #145A1E; font-size: .78rem; font-weight: 700; text-decoration: none;
+        padding: .3rem .85rem; border-radius: 8px; flex-shrink: 0;
+        background: #eaf3ea; border: 1.5px solid rgba(20,90,30,.3);
+        transition: background .15s, border-color .15s; white-space: nowrap;
       }
-      .detail-back-link:hover { border-color: #2d5a27; background: #d4edce; }
+      .detail-back-link:hover { background: #d4edce; border-color: #145A1E; }
+      .detail-topbar-title {
+        flex: 1; text-align: center;
+        font-size: 1.1rem; font-style: italic; color: #145A1E;
+        font-family: Georgia, serif; font-weight: 700;
+        overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+        padding: 0 1rem; pointer-events: none;
+      }
+      .detail-topbar-title span { display: inline; }
 
-      /* Stage 1 */
-      #detail-overview { flex: 1; min-height: 0; display: flex; overflow: hidden; margin: 1rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+      /* ── Stage 1: overview card ── */
+      #detail-overview {
+        flex: 1; min-height: 0; display: flex; overflow: hidden;
+        margin: 1rem; border-radius: 14px;
+        box-shadow: 0 4px 24px rgba(20,90,30,.12);
+        border: 1px solid #D8D0B8;
+      }
 
       /* Identity panel */
       .orchid-identity-panel {
-        width: 320px; min-width: 240px; flex-shrink: 0;
+        width: 300px; min-width: 220px; flex-shrink: 0;
         display: flex; flex-direction: column;
-        background: #ffffff; border-right: 1.5px solid #D8D0B8;
-        overflow-y: auto; box-shadow: 3px 0 16px rgba(0,0,0,.09);
+        background: #ffffff; border-right: 1px solid #D8D0B8; overflow-y: auto;
       }
       .oid-topbar {
         display: flex; align-items: center; gap: .7rem;
-        padding: 0 .9rem; height: 36px;
-        background: #F2F9F2;
-        flex-shrink: 0; border-bottom: 1px solid #d0e8cc;
+        padding: 0 .9rem; height: 34px;
+        background: #145A1E; flex-shrink: 0;
       }
-      .oid-subtitle { font-size: .65rem; font-weight: 800; color: #4a7a44; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
-      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #daecd6; position: relative; }
+      .oid-subtitle { font-size: .6rem; font-weight: 800; color: rgba(255,255,255,.75); letter-spacing: .15em; text-transform: uppercase; margin: 0; }
+      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #E8E2CB; position: relative; }
       .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; }
-      .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2.5rem; opacity: .4; }
-      .oid-info { padding: 1rem 1.1rem 1.4rem; flex: 1; }
-      .oid-sci-name { font-size: 1.12rem; font-style: italic; color: #0d2e0a; margin: 0 0 .1rem; line-height: 1.3; font-weight: 800; font-family: Georgia, serif; }
-      .oid-common-name { font-size: .82rem; color: #4a7a44; margin: 0 0 .9rem; font-weight: 500; }
-      .oid-field-list { display: flex; flex-direction: column; border: 1px solid #D8D0B8; border-radius: 8px; overflow: hidden; background: #F0EAD2; }
-      .oid-actions {
-        margin-top: 1rem;
-        display: flex;
-        justify-content: flex-end;
-      }
-      .oid-field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .42rem .75rem; border-bottom: 1px solid #D8D0B8; gap: .5rem; }
+      .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2rem; opacity: .3; }
+      .oid-info { padding: 1rem 1rem 1.2rem; flex: 1; }
+      .oid-sci-name { font-size: 1.05rem; font-style: italic; color: #0d2e0a; margin: 0 0 .12rem; line-height: 1.3; font-weight: 800; font-family: Georgia, serif; }
+      .oid-common-name { font-size: .78rem; color: #4a7a44; margin: 0 0 .85rem; font-weight: 500; }
+      .oid-field-list { display: flex; flex-direction: column; border: 1px solid #D8D0B8; border-radius: 10px; overflow: hidden; background: #FAFAF6; }
+      .oid-actions { margin-top: .9rem; display: flex; justify-content: flex-end; }
+      .oid-field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .4rem .7rem; border-bottom: 1px solid #EDE7D5; gap: .5rem; }
       .oid-field-row:last-child { border-bottom: none; }
-      .oid-field-sep { border-top: 2px solid #C8BFA8; }
-      .oid-field-label { font-size: .63rem; font-weight: 700; color: #4a7a44; text-transform: uppercase; letter-spacing: .09em; flex-shrink: 0; min-width: 44%; line-height: 1.4; padding-top: .08rem; }
-      .oid-field-value { font-size: .82rem; font-weight: 500; color: #1a3818; text-align: right; max-width: 56%; line-height: 1.4; }
-      .oid-meta-table { border: 1px solid #daecd6; border-radius: 10px; overflow: hidden; margin-bottom: 1.1rem; background: #f8fcf7; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-      .oid-meta-row { display: flex; justify-content: space-between; align-items: center; padding: .55rem .95rem; border-bottom: 1px solid #eaf3e8; }
-      .oid-meta-row:last-child { border-bottom: none; }
-      .oid-meta-label { color: #5a8a54; font-weight: 700; font-size: .68rem; text-transform: uppercase; letter-spacing: .09em; flex-shrink: 0; }
-      .oid-meta-value { color: #1c3d18; font-weight: 600; font-size: .85rem; text-align: right; max-width: 65%; }
-      .oid-badges { display: flex; gap: .45rem; flex-wrap: wrap; }
-      .oid-badge { padding: .32rem .9rem; border-radius: 20px; font-size: .74rem; font-weight: 700; letter-spacing: .04em; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+      .oid-field-sep { border-top: 1.5px solid #D0C9B0; }
+      .oid-field-label { font-size: .6rem; font-weight: 700; color: #4a7a44; text-transform: uppercase; letter-spacing: .09em; flex-shrink: 0; min-width: 42%; line-height: 1.4; padding-top: .06rem; }
+      .oid-field-value { font-size: .78rem; font-weight: 500; color: #1a3818; text-align: right; max-width: 58%; line-height: 1.4; }
+      .oid-badges { display: flex; gap: .4rem; flex-wrap: wrap; }
+      .oid-badge { padding: .28rem .8rem; border-radius: 20px; font-size: .7rem; font-weight: 700; letter-spacing: .03em; }
       .oid-badge-status { background: #fff3cd; color: #664d03; }
       .oid-badge-status.critical { background: #f8d7da; color: #842029; }
       .oid-badge-status.endangered { background: #fce4d6; color: #9c3a0a; }
       .oid-badge-status.vulnerable { background: #fff3cd; color: #664d03; }
       .oid-badge-status.least-concern { background: #d1e7dd; color: #0f5132; }
       .oid-badge-confidence { background: #dbeafe; color: #1e40af; }
-
       /* Map panel */
-      .orchid-map-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-      .orchid-map-name-bar {
-        flex-shrink: 0; text-align: center;
-        padding: .7rem 1.5rem .6rem;
-        background: #ffffff;
-        border-bottom: 1px solid #D8D0B8;
-      }
-      .orchid-map-orchid-name {
-        font-size: 1.45rem; font-style: italic; color: #0d2e0a;
-        font-family: Georgia, serif; font-weight: 800; margin: 0;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
+      .orchid-map-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #fff; }
       .orchid-map-subheader {
         flex-shrink: 0; display: flex; align-items: center;
-        justify-content: space-between; padding: .38rem 1.1rem;
-        background: #ffffff; border-bottom: 1px solid #D8D0B8;
+        justify-content: space-between; padding: .42rem 1rem;
+        background: #F8F5ED; border-bottom: 1px solid #E0D8C0;
       }
-      .map-subheader-left { display: flex; align-items: center; gap: .5rem; }
-      .map-subheader-title { font-size: .68rem; font-weight: 700; color: #2a5224; text-transform: uppercase; letter-spacing: .1em; }
-      .map-subheader-sep { color: #9abf94; font-size: .75rem; }
-      .map-subheader-loc { font-size: .72rem; color: #5a8a54; font-weight: 500; }
-      .map-sightings-badge { font-size: .68rem; font-weight: 700; color: #143a10; background: #b8e0b0; padding: .18rem .65rem; border-radius: 10px; letter-spacing: .02em; }
+      .map-subheader-left { display: flex; align-items: center; gap: .45rem; }
+      .map-subheader-title { font-size: .65rem; font-weight: 700; color: #2a5224; text-transform: uppercase; letter-spacing: .1em; }
+      .map-subheader-sep { color: #9abf94; font-size: .7rem; }
+      .map-subheader-loc { font-size: .68rem; color: #5a8a54; font-weight: 500; }
+      .map-sightings-badge { font-size: .66rem; font-weight: 700; color: #143a10; background: #c0e4b8; padding: .16rem .6rem; border-radius: 10px; }
       #orchid-leaflet-map { flex: 1; min-height: 0; }
-      .orchid-map-hint { text-align: center; font-size: .75rem; color: #5a7a58; padding: .35rem 1rem; background: #ffffff; border-top: 1px solid #D8D0B8; margin: 0; flex-shrink: 0; }
+      .orchid-map-hint { text-align: center; font-size: .72rem; color: #6a8a64; padding: .3rem 1rem; background: #F8F5ED; border-top: 1px solid #E0D8C0; margin: 0; flex-shrink: 0; }
 
-      /* Stage 2: paged detail */
-      #detail-paged { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+      /* ── Stage 2: paged detail — modal overlay ── */
+      #detail-paged { display: none; }
+      #detail-paged:not([hidden]) {
+        display: flex; position: fixed; inset: 0; z-index: 2000;
+        background: rgba(10,30,12,0.55);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        align-items: center; justify-content: center; padding: 1.25rem;
+      }
+      .detail-paged-inner {
+        background: #ffffff; border-radius: 16px;
+        width: min(700px, 100%); max-height: calc(100vh - 2.5rem);
+        display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 20px 64px rgba(0,0,0,.35);
+        border: 1px solid rgba(20,90,30,.18);
+      }
       .orchid-detail-header-bar {
         display: flex; align-items: center; justify-content: space-between;
-        padding: .75rem 1.3rem; border-bottom: 1.5px solid #d8ecd6;
-        background: linear-gradient(to right, #f0f9ed, #f8fcf7);
-        flex-shrink: 0; gap: .75rem; box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        padding: 1rem 1.4rem; background: #145A1E;
+        flex-shrink: 0; gap: .75rem; border-radius: 16px 16px 0 0;
       }
       .orchid-detail-back-btn {
-        background: #fff; border: 1.5px solid #b8d8b4; border-radius: 8px;
-        padding: .32rem .9rem; font-size: .82rem; font-weight: 700; color: #2d5a27;
-        cursor: pointer; white-space: nowrap; transition: all .15s; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3);
+        border-radius: 8px; padding: .3rem .85rem; font-size: .78rem; font-weight: 700;
+        color: #fff; cursor: pointer; white-space: nowrap; transition: all .15s;
       }
-      .orchid-detail-back-btn:hover { background: #e8f3e6; border-color: #2d5a27; }
-      .orchid-detail-header-name { font-size: 1rem; font-style: italic; color: #143a10; font-weight: 700; margin: 0; flex: 1; text-align: center; font-family: Georgia, serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .orchid-step-bar { display: flex; align-items: center; justify-content: space-between; padding: .5rem 1.3rem; background: #fff; border-bottom: 1px solid #ecf3eb; flex-shrink: 0; }
-      .orchid-step-label-text { font-size: .8rem; font-weight: 600; color: #3e6639; }
-      .orchid-step-badge { font-size: .73rem; font-weight: 700; color: #2d5a27; background: #d4eed0; padding: .18rem .7rem; border-radius: 12px; }
-      .orchid-detail-pages-wrap { flex: 1; overflow-y: auto; min-height: 0; }
-      .detail-step-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b8d9b2; transition: all .2s; }
-      .detail-step-dot.active { background: #2d5a27; transform: scale(1.4); }
-      .orchid-detail-page .orchid-detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .8rem 1.4rem; border-bottom: 1px solid #f0f5ef; gap: 1.5rem; }
-      .orchid-detail-page .orchid-detail-row:nth-child(even) { background: #f9fcf8; }
+      .orchid-detail-back-btn:hover { background: rgba(255,255,255,.25); }
+      .orchid-detail-header-name { font-size: 1rem; font-style: italic; color: #fff; font-weight: 700; margin: 0; flex: 1; text-align: center; font-family: Georgia, serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .orchid-step-bar { display: flex; align-items: center; justify-content: space-between; padding: .5rem 1.3rem; background: #F5F0E8; border-bottom: 1px solid #E8E2CB; flex-shrink: 0; }
+      .orchid-step-label-text { font-size: .78rem; font-weight: 700; color: #145A1E; }
+      .orchid-step-badge { font-size: .7rem; font-weight: 700; color: #145A1E; background: #D4EDD0; padding: .16rem .65rem; border-radius: 12px; }
+      .orchid-detail-pages-wrap { flex: 1; overflow-y: auto; min-height: 0; background: #fff; }
+      .detail-step-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #C8D9C4; transition: all .2s; }
+      .detail-step-dot.active { background: #145A1E; transform: scale(1.4); }
+      .orchid-detail-page .orchid-detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .75rem 1.3rem; border-bottom: 1px solid #F0EAD2; gap: 1.5rem; }
+      .orchid-detail-page .orchid-detail-row:nth-child(even) { background: #FAFAF6; }
       .orchid-detail-page .orchid-detail-row[hidden] { display: none; }
-      .orchid-detail-page .orchid-detail-label { color: #4a7a44; font-weight: 700; font-size: .72rem; min-width: 150px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .07em; line-height: 1.35; padding-top: .1rem; }
-      .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label) { color: #162b14; font-weight: 500; font-size: .95rem; text-align: right; line-height: 1.5; }
-      .orchid-nav-bar { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1.3rem; border-top: 1.5px solid #d8ecd6; background: linear-gradient(to right, #f0f9ed, #f8fcf7); flex-shrink: 0; }
+      .orchid-detail-page .orchid-detail-label { color: #4a7a44; font-weight: 700; font-size: .68rem; min-width: 150px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .07em; line-height: 1.35; padding-top: .1rem; }
+      .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label) { color: #162b14; font-weight: 500; font-size: .9rem; text-align: right; line-height: 1.5; }
+      .orchid-nav-bar { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1.3rem; border-top: 1px solid #E8E2CB; background: #F5F0E8; flex-shrink: 0; border-radius: 0 0 16px 16px; }
       .orchid-nav-actions { display: flex; align-items: center; gap: .6rem; }
-      .orchid-nav-btn { padding: .45rem 1.3rem; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; border: 1.5px solid #2d5a27; transition: all .15s; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+      .orchid-nav-btn { padding: .42rem 1.2rem; border-radius: 8px; font-size: .82rem; font-weight: 700; cursor: pointer; border: 1.5px solid #2d5a27; transition: all .15s; }
       .orchid-nav-btn-outline { background: #fff; color: #2d5a27; }
-      .orchid-nav-btn-outline:hover { background: #e8f3e6; }
-      .orchid-nav-btn-fill { background: #2d5a27; color: #fff; border-color: #2d5a27; }
-      .orchid-nav-btn-fill:hover { background: #1e3d1a; }
+      .orchid-nav-btn-outline:hover { background: #eaf3ea; }
+      .orchid-nav-btn-fill { background: #145A1E; color: #F0EAD2; border-color: #145A1E; }
+      .orchid-nav-btn-fill:hover { background: #0E4018; }
       .orchid-nav-btn-cream { background: #E8E2CB; color: #145A1E; border-color: #C8BFA8; }
       .orchid-nav-btn-cream:hover { background: #D8D2BA; border-color: #145A1E; }
-
       .submission-select {
         padding: 0.72rem 0.8rem;
         border: 1px solid #d4ddd7;
@@ -269,13 +254,28 @@
   </head>
   <body class="researcher-theme">
 
+    <!-- Topbar -->
+    <header class="detail-topbar">
+      <a id="detail-back-link" href="catalog.html" class="detail-back-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Catalog
+      </a>
+      <div class="detail-brand">
+        <img src="./loo.png" alt="BLOOM" class="detail-brand-logo" />
+        <span class="detail-brand-name">BLOOM</span>
+      </div>
+      <div class="detail-topbar-title"><span id="topbar-species-name"></span></div>
+      <div style="min-width:80px;display:flex;justify-content:flex-end;">
+        <button type="button" id="orchid-detail-add-btn-header" class="orchid-nav-btn orchid-nav-btn-cream" style="display:none;font-size:.78rem;padding:.3rem .85rem;">Add Sighting</button>
+      </div>
+    </header>
+
     <!-- STAGE 1: Identity panel + Map -->
     <div id="detail-overview">
 
       <!-- Left: Orchid Identity Panel -->
       <div class="orchid-identity-panel">
         <div class="oid-topbar">
-          <a id="detail-back-link" href="catalog.html" class="detail-back-link">&larr; Catalog</a>
           <span class="oid-subtitle">Orchid Identity</span>
         </div>
         <div class="oid-photo-wrap">
@@ -321,8 +321,11 @@
 
     <!-- STAGE 2: Paged sighting details -->
     <div id="detail-paged" hidden>
+      <div class="detail-paged-inner">
       <div class="orchid-detail-header-bar">
-        <button type="button" id="detail-to-map-btn" class="orchid-detail-back-btn">&larr; Map</button>
+        <button type="button" id="detail-to-map-btn" class="orchid-detail-back-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px;"><polyline points="15 18 9 12 15 6"/></svg>Map
+        </button>
         <h3 id="orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">-</h3>
         <div style="min-width:80px;"></div>
       </div>
@@ -422,6 +425,7 @@
           <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &rarr;</button>
         </div>
       </div>
+      </div><!-- /.detail-paged-inner -->
     </div>
 
     <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
@@ -1269,15 +1273,16 @@
           else showOverview();
         });
         document.getElementById('detail-to-map-btn').addEventListener('click', showOverview);
-        const addIdentityBtn = document.getElementById('orchid-detail-add-btn-identity');
-        if (addIdentityBtn) {
-          addIdentityBtn.addEventListener('click', function() {
-            const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
-              ? currentOrchid.name
-              : (document.getElementById('oid-sci-name')?.textContent || '').trim();
-            openResearcherSubmissionModal(orchidName);
-          });
+        function handleAddSighting() {
+          const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
+            ? currentOrchid.name
+            : (document.getElementById('oid-sci-name')?.textContent || '').trim();
+          openResearcherSubmissionModal(orchidName);
         }
+        const addIdentityBtn = document.getElementById('orchid-detail-add-btn-identity');
+        if (addIdentityBtn) addIdentityBtn.addEventListener('click', handleAddSighting);
+        const addHeaderBtn = document.getElementById('orchid-detail-add-btn-header');
+        if (addHeaderBtn) addHeaderBtn.addEventListener('click', handleAddSighting);
       }
 
       function showOverview() {
@@ -1303,6 +1308,14 @@
         const storedUser = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
         if (storedUser) parsedActiveUser = JSON.parse(storedUser);
       } catch {}
+
+      // Show Add Sighting button in header for logged-in researchers
+      (function() {
+        const role = String(parsedActiveUser.role || '').trim().toLowerCase();
+        const isResearcher = role === 'researcher' || (role !== 'admin' && role !== 'denr' && !!parsedActiveUser.email);
+        const headerBtn = document.getElementById('orchid-detail-add-btn-header');
+        if (headerBtn && isResearcher) headerBtn.style.display = '';
+      })();
 
       let currentSubmissionPage = 1;
       const SUBMISSION_TOTAL_PAGES = 9;
