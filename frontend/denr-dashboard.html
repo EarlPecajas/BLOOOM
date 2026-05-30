@@ -3746,6 +3746,11 @@
       }
 
       function normalizeSubmissionRow(row) {
+        // Flatten 3NF sub-tables embedded by the joined select
+        const hab  = (row.sighting_habitat    && typeof row.sighting_habitat    === 'object') ? row.sighting_habitat    : {};
+        const mor  = (row.sighting_morphology && typeof row.sighting_morphology === 'object') ? row.sighting_morphology : {};
+        const con  = (row.sighting_conservation && typeof row.sighting_conservation === 'object') ? row.sighting_conservation : {};
+
         const commonNames = parseJsonArrayValue(row.common_names);
         const wholePlantPhotos = normalizeMediaEntries(row.whole_plant_photo_path);
         const closeupFlowerPhotos = normalizeMediaEntries(row.closeup_flower_photo_path);
@@ -3765,17 +3770,60 @@
           team_members_display: formatTeamMembersValue(row.team_members),
           submission_date: row.submission_date || row.observation_date || row.created_at?.slice(0, 10) || '-',
           review_status: row.review_status || 'pending',
-          habitat: row.habitat || row.habitat_type || '-',
-          endemicity: row.endemicity || row.population_status || '-',
-          conservation_status: row.conservation_status || row.threat_level || 'Unassigned',
-          ethnobotanical: row.ethnobotanical || row.researcher_notes || '-',
-          horticulture_value: row.horticulture_value || row.institution || '-',
-          cultural_importance: row.cultural_importance || '-',
           location,
           whole_plant_photos: wholePlantPhotos,
           closeup_flower_photos: closeupFlowerPhotos,
           habitat_photos: habitatPhotos,
-          video_files: videoFiles
+          video_files: videoFiles,
+          // ── Habitat sub-table ──
+          habitat_type:          row.habitat_type          || hab.habitat_type,
+          microhabitat:          row.microhabitat           || hab.microhabitat,
+          growth_substrate:      row.growth_substrate       || hab.growth_substrate,
+          host_tree_species:     row.host_tree_species      || hab.host_tree_species,
+          host_tree_dbh_cm:      row.host_tree_dbh_cm       ?? hab.host_tree_dbh_cm,
+          canopy_cover_percent:  row.canopy_cover_percent   ?? hab.canopy_cover_percent,
+          light_exposure:        row.light_exposure         || hab.light_exposure,
+          soil_type:             row.soil_type              || hab.soil_type,
+          nearby_water_source:   row.nearby_water_source    || hab.nearby_water_source,
+          // ── Morphology sub-table ──
+          plant_height_cm:       row.plant_height_cm        ?? mor.plant_height_cm,
+          pseudobulb_present:    row.pseudobulb_present     ?? mor.pseudobulb_present,
+          stem_length_cm:        row.stem_length_cm         ?? mor.stem_length_cm,
+          root_length_cm:        row.root_length_cm         ?? mor.root_length_cm,
+          leaf_count:            row.leaf_count             ?? mor.leaf_count,
+          leaf_shape:            row.leaf_shape             || mor.leaf_shape,
+          leaf_shape_other:      row.leaf_shape_other       || mor.leaf_shape_other,
+          leaf_length_cm:        row.leaf_length_cm         ?? mor.leaf_length_cm,
+          leaf_width_cm:         row.leaf_width_cm          ?? mor.leaf_width_cm,
+          leaf_textures:         row.leaf_textures          || mor.leaf_textures,
+          leaf_arrangement:      row.leaf_arrangement       || mor.leaf_arrangement,
+          flower_color:          row.flower_color           || mor.flower_color,
+          flower_count:          row.flower_count           ?? mor.flower_count,
+          flower_diameter_cm:    row.flower_diameter_cm     ?? mor.flower_diameter_cm,
+          inflorescence_type:    row.inflorescence_type     || mor.inflorescence_type,
+          petal_characteristics: row.petal_characteristics  || mor.petal_characteristics,
+          sepal_characteristics: row.sepal_characteristics  || mor.sepal_characteristics,
+          labellum_lip_description: row.labellum_lip_description || mor.labellum_lip_description,
+          fragrance:             row.fragrance              || mor.fragrance,
+          blooming_stage:        row.blooming_stage         || mor.blooming_stage,
+          flowering_season:      row.flowering_season       || mor.flowering_season,
+          fruit_present:         row.fruit_present          ?? mor.fruit_present,
+          fruit_type:            row.fruit_type             || mor.fruit_type,
+          seed_capsule_condition:row.seed_capsule_condition || mor.seed_capsule_condition,
+          life_stage:            row.life_stage             || mor.life_stage,
+          phenology:             row.phenology              || mor.phenology,
+          population_count:      row.population_count       ?? mor.population_count,
+          // ── Conservation sub-table ──
+          population_status:     row.population_status      || con.population_status,
+          threat_level:          row.threat_level           || con.threat_level,
+          threat_types:          row.threat_types           || con.threat_types,
+          // ── Derived display fields ──
+          habitat:               row.habitat || hab.habitat_type || '-',
+          endemicity:            row.endemicity || con.population_status || '-',
+          conservation_status:   row.conservation_status || con.threat_level || 'Unassigned',
+          ethnobotanical:        row.ethnobotanical || row.researcher_notes || '-',
+          horticulture_value:    row.horticulture_value || row.institution || '-',
+          cultural_importance:   row.cultural_importance || '-',
         };
       }
 
@@ -5749,7 +5797,7 @@
 
         const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
           bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
-          bloomSupabase.from('species_sightings').select('*').order('created_at', { ascending: false }),
+          bloomSupabase.from('species_sightings').select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*)').order('created_at', { ascending: false }),
           bloomSupabase.from('orchid_overview').select('conservation_status_key')
         ]);
 
