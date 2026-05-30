@@ -2963,40 +2963,81 @@
         }
       }
 
-      // Chart for Orchids Uploaded per Month
+      // Chart for Orchids Uploaded per Month — real data from approved sightings
       let orchidChartInstance = null;
-      const orchidChartDataByYear = {
-        2024: [12, 8, 15, 10, 18, 14, 20, 16, 22, 12, 14, 18],
-        2025: [10, 14, 11, 16, 20, 22, 17, 19, 14, 21, 15, 22],
-        2026: [14, 20, 18, 22, 25, null, null, null, null, null, null, null]
-      };
+      let orchidChartDataByYear = {};
+      let orchidChartActiveYear = new Date().getFullYear();
 
       function setOrchidChartYear(year) {
+        orchidChartActiveYear = year;
         document.querySelectorAll('.orchid-year-btn').forEach(function(btn) {
           var active = Number(btn.getAttribute('data-year')) === year;
-          btn.style.background = active ? '#145A1E' : '#fff';
-          btn.style.color = active ? '#fff' : '#64748b';
-          btn.style.borderColor = active ? '#145A1E' : '#e2e8f0';
+          btn.style.background = active ? '#145A1E' : '';
+          btn.style.color = active ? '#fff' : '';
+          btn.style.borderColor = active ? '#145A1E' : '';
         });
         if (!orchidChartInstance) return;
-        var data = orchidChartDataByYear[year] || orchidChartDataByYear[2026];
+        var data = orchidChartDataByYear[year] || Array(12).fill(0);
         orchidChartInstance.data.datasets[0].data = data;
-        var validMax = Math.max.apply(null, data.filter(function(d) { return d != null; }));
-        orchidChartInstance.options.scales.y.suggestedMax = validMax + Math.ceil(validMax * 0.15);
+        var validMax = Math.max.apply(null, data.filter(function(d) { return d != null && d > 0; }));
+        orchidChartInstance.options.scales.y.suggestedMax = validMax > 0 ? validMax + Math.ceil(validMax * 0.2) : 5;
         orchidChartInstance.update();
+      }
+
+      async function loadOrchidChartData() {
+        if (!bloomSupabase) return;
+        try {
+          const { data, error } = await bloomSupabase
+            .from('species_sightings')
+            .select('observation_date')
+            .eq('review_status', 'approved');
+          if (error || !data) return;
+
+          // Build counts grouped by year → month
+          const byYear = {};
+          data.forEach(function(row) {
+            const d = row.observation_date ? new Date(row.observation_date) : null;
+            if (!d || isNaN(d)) return;
+            const y = d.getFullYear();
+            const m = d.getMonth(); // 0-based
+            if (!byYear[y]) byYear[y] = Array(12).fill(0);
+            byYear[y][m]++;
+          });
+
+          orchidChartDataByYear = byYear;
+
+          // Rebuild year buttons from actual data years
+          const years = Object.keys(byYear).map(Number).sort();
+          const filterEl = document.getElementById('orchid-chart-year-filter');
+          if (filterEl && years.length) {
+            filterEl.innerHTML = years.map(function(y) {
+              return `<button onclick="setOrchidChartYear(${y})" data-year="${y}" class="orchid-year-btn text-xs font-bold px-2.5 py-1 rounded-lg border transition-all" style="cursor:pointer;font-family:Inter,Roboto,sans-serif;">${y}</button>`;
+            }).join('');
+          }
+
+          // Show most recent year with data
+          const defaultYear = years.includes(new Date().getFullYear())
+            ? new Date().getFullYear()
+            : years[years.length - 1];
+
+          if (orchidChartInstance) {
+            setOrchidChartYear(defaultYear || new Date().getFullYear());
+          }
+        } catch (e) {
+          console.warn('loadOrchidChartData error:', e);
+        }
       }
 
       const orchidChartCanvas = document.getElementById('orchidChart');
       if (orchidChartCanvas && typeof Chart !== 'undefined') {
         const ctx = orchidChartCanvas.getContext('2d');
-        const initialYear2026 = orchidChartDataByYear[2026];
         orchidChartInstance = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
-              label: 'Orchids Uploaded',
-              data: initialYear2026,
+              label: 'Approved Sightings',
+              data: Array(12).fill(0),
               backgroundColor: '#145A1E',
               borderRadius: 5,
               borderSkipped: false
@@ -3010,7 +3051,7 @@
               tooltip: {
                 callbacks: {
                   label: function(ctx) {
-                    return ctx.raw != null ? ctx.raw + ' orchids' : 'No data';
+                    return ctx.raw != null ? ctx.raw + ' approved sightings' : 'No data';
                   }
                 }
               }
@@ -3018,7 +3059,7 @@
             scales: {
               y: {
                 beginAtZero: true,
-                suggestedMax: 32,
+                suggestedMax: 5,
                 ticks: { font: { size: 11 }, color: 'rgba(200,240,190,0.55)' },
                 grid: { color: 'rgba(100,200,120,0.12)' }
               },
@@ -3029,6 +3070,7 @@
             }
           }
         });
+        loadOrchidChartData();
       }
 
       const userProfileButton = document.getElementById('user-profile');
