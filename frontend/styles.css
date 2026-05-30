@@ -3327,11 +3327,15 @@ textarea.form-control {
   box-shadow: 0 24px 60px rgba(0,0,0,0.6) !important;
   border: 1px solid var(--dt-border-md) !important;
 }
-/* Header — matches submissions table header */
+/* Header — dark theme makes it dark-input-bg; researcher-theme restores green */
 #detailModalCard > div:first-child {
   background: var(--dt-bg-input) !important;
   border-bottom: 1px solid var(--dt-border-md) !important;
   border-radius: 18px 18px 0 0 !important;
+}
+body.researcher-theme #detailModalCard > div:first-child {
+  background: #145A1E !important;
+  border-bottom-color: rgba(255,255,255,0.15) !important;
 }
 /* Quick-facts strip */
 #detailContent {

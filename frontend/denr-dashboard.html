@@ -3762,7 +3762,7 @@
           researcher: row.researcher_name || row.researcher_email || 'Unknown Researcher',
           species: row.scientific_name,
           family: row.family || '',
-          genus: row.genus || '',
+          genus: row.genus || (row.scientific_name ? row.scientific_name.trim().split(/\s+/)[0] : '') || '',
           common_name: commonNames[0] || row.common_name || '-',
           common_names: commonNames,
           team_members_display: formatTeamMembersValue(row.team_members),
