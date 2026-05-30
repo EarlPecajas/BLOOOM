@@ -3036,10 +3036,22 @@
         const con  = (row.sighting_conservation && typeof row.sighting_conservation === 'object') ? row.sighting_conservation : {};
 
         const commonNames = parseJsonArrayValue(row.common_names);
-        const wholePlantPhotos = parseJsonArrayValue(row.whole_plant_photo_path);
-        const closeupFlowerPhotos = parseJsonArrayValue(row.closeup_flower_photo_path);
-        const habitatPhotos = parseJsonArrayValue(row.habitat_photo_path);
-        const videoFiles = parseJsonArrayValue(row.video_path);
+
+        // Extract photos from sighting_media sub-table (3NF), fallback to legacy columns
+        const mediaEntries = Array.isArray(row.sighting_media) ? row.sighting_media : [];
+        function mediaByCategory(cat) {
+          const urls = mediaEntries
+            .filter(m => m.media_category === cat)
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .map(m => m.picture?.file_path)
+            .filter(Boolean);
+          return urls;
+        }
+        const wholePlantPhotos   = mediaByCategory('whole_plant').length   ? mediaByCategory('whole_plant')   : parseJsonArrayValue(row.whole_plant_photo_path);
+        const closeupFlowerPhotos= mediaByCategory('closeup_flower').length ? mediaByCategory('closeup_flower'): parseJsonArrayValue(row.closeup_flower_photo_path);
+        const habitatPhotos      = mediaByCategory('habitat').length       ? mediaByCategory('habitat')       : parseJsonArrayValue(row.habitat_photo_path);
+        const videoFiles         = mediaByCategory('video').length         ? mediaByCategory('video')         : parseJsonArrayValue(row.video_path);
+
         const location = row.location || [row.mountain_name || 'Mt. Busa', row.specific_site_zone || row.specific_site_other].filter(Boolean).join(', ') || 'Mt. Busa';
 
         return {
@@ -3177,7 +3189,7 @@
           if (window.bloomSupabase) {
             let query = window.bloomSupabase
               .from('species_sightings')
-              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*)')
+              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
               .order('created_at', { ascending: false });
 
             // Researchers only see their own submissions
@@ -3242,7 +3254,7 @@
           const currentEmail = String(parsedActiveUser.email || '').trim();
           let query = window.bloomSupabase
             .from('species_sightings')
-            .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*)')
+            .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
             .eq('review_status', 'draft')
             .order('updated_at', { ascending: false });
           if (isResearcherRole && currentEmail) {
