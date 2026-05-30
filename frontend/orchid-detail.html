@@ -70,7 +70,12 @@
       .oid-sci-name { font-size: 1.05rem; font-style: italic; color: #0d2e0a; margin: 0 0 .12rem; line-height: 1.3; font-weight: 800; font-family: Georgia, serif; }
       .oid-common-name { font-size: .78rem; color: #4a7a44; margin: 0 0 .85rem; font-weight: 500; }
       .oid-field-list { display: flex; flex-direction: column; border: 1px solid #D8D0B8; border-radius: 10px; overflow: hidden; background: #FAFAF6; }
-      .oid-actions { margin-top: .9rem; display: flex; justify-content: flex-end; }
+      .oid-actions { display: none; } /* moved into footer */
+      .oid-footer {
+        flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end;
+        padding: 0 .9rem; height: 40px;
+        background: #145A1E; border-top: 1px solid rgba(255,255,255,.12);
+      }
       .oid-field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .4rem .7rem; border-bottom: 1px solid #EDE7D5; gap: .5rem; }
       .oid-field-row:last-child { border-bottom: none; }
       .oid-field-sep { border-top: 1.5px solid #D0C9B0; }
@@ -297,10 +302,13 @@
             <div class="oid-field-row"><span class="oid-field-label">Distribution</span><span class="oid-field-value" id="oid-distribution">Philippines</span></div>
             <div class="oid-field-row"><span class="oid-field-label">Endemicity</span><span class="oid-field-value" id="oid-endemic">&mdash;</span></div>
           </div>
-          <div class="oid-actions">
-            <button type="button" id="orchid-detail-add-btn-identity" class="orchid-nav-btn orchid-nav-btn-cream">Add Sighting</button>
-          </div>
         </div>
+      </div>
+      <div class="oid-footer" id="oid-footer-add" style="display:none;">
+        <button type="button" id="orchid-detail-add-btn-identity" style="display:flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;padding:.35rem .9rem;cursor:pointer;transition:background .15s;font-family:Inter,Roboto,sans-serif;" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Sighting
+        </button>
       </div>
 
       <!-- Right: Map Panel -->
@@ -1315,6 +1323,8 @@
         const isResearcher = role === 'researcher' || (role !== 'admin' && role !== 'denr' && !!parsedActiveUser.email);
         const headerBtn = document.getElementById('orchid-detail-add-btn-header');
         if (headerBtn && isResearcher) headerBtn.style.display = '';
+        const footerEl = document.getElementById('oid-footer-add');
+        if (footerEl && isResearcher) footerEl.style.display = 'flex';
       })();
 
       let currentSubmissionPage = 1;
