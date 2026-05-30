@@ -292,6 +292,18 @@
           </div>
           <span class="dashboard-user">Researcher Dashboard</span>
         </div>
+        <div class="notif-bell-wrap">
+          <button type="button" class="notif-bell-btn" id="notif-bell-btn" title="Notifications" onclick="toggleNotifPanel()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notif-badge" hidden>0</span>
+          </button>
+          <div class="notif-panel" id="notif-panel" hidden>
+            <div class="notif-panel-header">
+              <span class="notif-panel-title">Notifications</span>
+            </div>
+            <div class="notif-list" id="notif-list"><div class="notif-empty">Loading…</div></div>
+          </div>
+        </div>
         <div class="user-menu">
           <button class="user-profile" id="user-profile" type="button" title="Edit Profile" onclick="openEditProfileModal()">
             <img src="./DENR Logo.svg" alt="DENR" class="denr-logo-button" id="role-profile-icon" />
@@ -309,25 +321,12 @@
         <!-- Notifications Panel -->
         <div class="dashboard-card notifications-card card shadow-sm border-0">
           <h3 class="card-title">Notifications</h3>
-          <div class="notification-item">
-            <div class="notification-icon">G��</div>
-            <div class="notification-content">
-              <p class="notification-text">2 new submissions are awaiting DENR review.</p>
-              <span class="notification-time">Updated just now</span>
-            </div>
-          </div>
-          <div class="notification-item">
-            <div class="notification-icon">G��</div>
-            <div class="notification-content">
-              <p class="notification-text">Orchid records increased by 12% this month.</p>
-              <span class="notification-time">Monthly analytics</span>
-            </div>
-          </div>
-          <div class="notification-item">
-            <div class="notification-icon">G��</div>
-            <div class="notification-content">
-              <p class="notification-text">Map hotspots were refreshed with latest field data.</p>
-              <span class="notification-time">Today, 09:40 AM</span>
+          <div id="notif-card-list">
+            <div class="notification-item">
+              <div class="notification-icon">&#x1F514;</div>
+              <div class="notification-content">
+                <p class="notification-text">Loading notifications&hellip;</p>
+              </div>
             </div>
           </div>
         </div>
@@ -5486,6 +5485,103 @@ function refreshConservationHeatMap(summary) {
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+      // ── Notification Bell (Researcher) ────────────────────────────────
+      function toggleNotifPanel() {
+        const panel = document.getElementById('notif-panel');
+        if (!panel) return;
+        const opening = panel.hidden;
+        panel.hidden = !opening;
+        if (opening) loadNotifItems();
+      }
+
+      async function loadNotifItems() {
+        const list = document.getElementById('notif-list');
+        if (!list || !window.bloomSupabase) return;
+        list.innerHTML = '<div class="notif-empty">Loading…</div>';
+        try {
+          const email = String(parsedActiveUser?.email || '').trim();
+          if (!email) { list.innerHTML = '<div class="notif-empty">Sign in to see notifications.</div>'; return; }
+          const { data: subs } = await bloomSupabase.from('species_sightings')
+            .select('review_status, scientific_name, updated_at')
+            .eq('researcher_email', email)
+            .neq('review_status', 'draft')
+            .order('updated_at', { ascending: false })
+            .limit(50);
+          const rows = Array.isArray(subs) ? subs : [];
+          const pending  = rows.filter(s => s.review_status === 'pending').length;
+          const approved = rows.filter(s => s.review_status === 'approved').length;
+          const rejected = rows.filter(s => s.review_status === 'rejected').length;
+          const revision = rows.filter(s => s.review_status === 'revision').length;
+
+          const items = [];
+          if (pending > 0)  items.push({ type:'info',    svg:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', text:`${pending} submission${pending!==1?'s':''} under review`, time:'Awaiting DENR decision' });
+          if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Action needed' });
+          if (approved > 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>', text:`${approved} submission${approved!==1?'s':''} approved`, time:'Published to catalog' });
+          if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', text:`${rejected} submission${rejected!==1?'s':''} rejected`, time:'See submission details' });
+          if (items.length === 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>', text:'No submissions yet. Start by adding a sighting!', time:'' });
+
+          list.innerHTML = items.map(it => `
+            <div class="notif-item">
+              <span class="notif-icon ${it.type}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg></span>
+              <div><p class="notif-text">${it.text}</p>${it.time ? `<span class="notif-time">${it.time}</span>` : ''}</div>
+            </div>`).join('');
+
+          const badge = document.getElementById('notif-badge');
+          const urgentCount = revision + rejected;
+          if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
+          updateNotifCard(pending, approved, rejected, revision);
+        } catch { list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>'; }
+      }
+
+      function updateNotifCard(pending, approved, rejected, revision) {
+        const card = document.getElementById('notif-card-list');
+        if (!card) return;
+        const items = [];
+        if (revision > 0) items.push({ icon:'G', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Action needed' });
+        if (rejected > 0) items.push({ icon:'G', text:`${rejected} submission${rejected!==1?'s':''} rejected by DENR`, time:'See My Submissions' });
+        if (pending > 0)  items.push({ icon:'G', text:`${pending} submission${pending!==1?'s':''} under DENR review`, time:'Awaiting decision' });
+        if (approved > 0) items.push({ icon:'G', text:`${approved} submission${approved!==1?'s':''} approved`, time:'Published to catalog' });
+        if (items.length === 0) items.push({ icon:'G', text:'No submissions yet.', time:'Add your first sighting' });
+        card.innerHTML = items.map(it => `
+          <div class="notification-item">
+            <div class="notification-icon">${it.icon}</div>
+            <div class="notification-content">
+              <p class="notification-text">${it.text}</p>
+              <span class="notification-time">${it.time}</span>
+            </div>
+          </div>`).join('');
+      }
+
+      document.addEventListener('click', function(e) {
+        const panel = document.getElementById('notif-panel');
+        const btn = document.getElementById('notif-bell-btn');
+        if (panel && btn && !panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) panel.hidden = true;
+      });
+
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.bloomSupabase) {
+          setTimeout(function() {
+            const email = String(window.parsedActiveUser?.email || '').trim();
+            if (!email) return;
+            bloomSupabase.from('species_sightings').select('review_status')
+              .eq('researcher_email', email).neq('review_status','draft')
+              .then(({ data }) => {
+                const rows = Array.isArray(data) ? data : [];
+                const urgentCount = rows.filter(r => r.review_status === 'revision' || r.review_status === 'rejected').length;
+                const badge = document.getElementById('notif-badge');
+                if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
+                const p = rows.filter(r=>r.review_status==='pending').length;
+                const a = rows.filter(r=>r.review_status==='approved').length;
+                const rej = rows.filter(r=>r.review_status==='rejected').length;
+                const rev = rows.filter(r=>r.review_status==='revision').length;
+                updateNotifCard(p,a,rej,rev);
+              }).catch(()=>{});
+          }, 800);
+        }
+      });
+    </script>
+
     <!-- ── Edit Profile Modal ── -->
     <div id="edit-profile-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
       <div style="background:#FFFFFF;border-radius:16px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;padding:2rem 2rem 1.5rem;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.25);">
@@ -5653,5 +5749,4 @@ function refreshConservationHeatMap(summary) {
     </script>
   </body>
 </html>
-
 

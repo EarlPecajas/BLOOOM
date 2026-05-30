@@ -4133,3 +4133,40 @@ body.researcher-theme .submission-edit-btn:hover {
   -webkit-text-fill-color: #0E4018 !important;
 }
 
+/* ── Notification Bell ── */
+.notif-bell-wrap { position: relative; }
+.notif-bell-btn {
+  position: relative; background: transparent; border: none; cursor: pointer;
+  padding: 6px; border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; transition: background 150ms; color: #145A1E;
+}
+.notif-bell-btn:hover { background: rgba(20,90,30,0.08); }
+.notif-badge {
+  position: absolute; top: 1px; right: 1px; min-width: 16px; height: 16px;
+  border-radius: 999px; background: #dc2626; color: #fff; font-size: 0.6rem;
+  font-weight: 800; display: flex; align-items: center; justify-content: center;
+  padding: 0 3px; pointer-events: none; border: 2px solid #fff; line-height: 1;
+}
+.notif-badge[hidden] { display: none !important; }
+.notif-panel {
+  position: absolute; top: calc(100% + 8px); right: 0; width: min(340px,92vw);
+  background: #fff; border: 1px solid #D8D0B8; border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15); z-index: 600; overflow: hidden;
+}
+.notif-panel-header {
+  padding: 0.75rem 1rem 0.6rem; border-bottom: 1px solid #E8E2CB;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.notif-panel-title { font-size: 0.78rem; font-weight: 700; color: #145A1E; letter-spacing: 0.06em; text-transform: uppercase; }
+.notif-list { max-height: 340px; overflow-y: auto; }
+.notif-item { display: flex; gap: 0.75rem; padding: 0.7rem 1rem; border-bottom: 1px solid #F5F0E8; align-items: flex-start; }
+.notif-item:last-child { border-bottom: none; }
+.notif-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.notif-icon.urgent  { background: #fee2e2; color: #dc2626; }
+.notif-icon.success { background: #dcfce7; color: #16a34a; }
+.notif-icon.warning { background: #fef3c7; color: #d97706; }
+.notif-icon.info    { background: #eff6ff; color: #2563eb; }
+.notif-text  { font-size: 0.82rem; color: #1a3a1c; font-weight: 500; line-height: 1.4; margin: 0 0 0.12rem; }
+.notif-time  { font-size: 0.72rem; color: #7a8a6a; }
+.notif-empty { padding: 1.25rem 1rem; text-align: center; font-size: 0.84rem; color: #7a8a6a; }
+

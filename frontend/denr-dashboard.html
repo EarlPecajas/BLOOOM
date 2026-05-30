@@ -270,6 +270,18 @@
           </div>
           <span class="dashboard-user">DENR Dashboard</span>
         </div>
+        <div class="notif-bell-wrap">
+          <button type="button" class="notif-bell-btn" id="notif-bell-btn" title="Notifications" onclick="toggleNotifPanel()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notif-badge" hidden>0</span>
+          </button>
+          <div class="notif-panel" id="notif-panel" hidden>
+            <div class="notif-panel-header">
+              <span class="notif-panel-title">Notifications</span>
+            </div>
+            <div class="notif-list" id="notif-list"><div class="notif-empty">Loading…</div></div>
+          </div>
+        </div>
         <div class="user-menu">
           <button class="user-profile" id="user-profile" type="button" title="Edit Profile" onclick="openEditProfileModal()">
             <img src="./DENR Logo.svg" alt="DENR" class="denr-logo-button" id="role-profile-icon" />
@@ -358,40 +370,15 @@
             <div class="flex items-center gap-2 mb-4">
               <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
               <h3 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Notifications</h3>
-              <span class="ml-auto text-xs font-bold text-white px-2 py-0.5 rounded-full" style="background:#dc2626;">3</span>
+              <span id="notif-card-badge" class="ml-auto text-xs font-bold text-white px-2 py-0.5 rounded-full" style="background:#dc2626;display:none;">0</span>
             </div>
-            <div class="space-y-0">
-
-              <div class="flex gap-3 py-3 border-b border-gray-50">
-                <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#fee2e2;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                </span>
-                <div>
-                  <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">2 new submissions awaiting DENR review.</p>
-                  <span class="text-xs text-gray-400">Updated just now</span>
-                </div>
-              </div>
-
-              <div class="flex gap-3 py-3 border-b border-gray-50">
-                <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#dcfce7;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                </span>
-                <div>
-                  <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">Orchid records increased by 12% this month.</p>
-                  <span class="text-xs text-gray-400">Monthly analytics</span>
-                </div>
-              </div>
-
+            <div class="space-y-0" id="notif-card-list">
               <div class="flex gap-3 py-3">
                 <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#eff6ff;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </span>
-                <div>
-                  <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">Map hotspots refreshed with latest field data.</p>
-                  <span class="text-xs text-gray-400">Today, 09:40 AM</span>
-                </div>
+                <div><p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">Loading notifications…</p></div>
               </div>
-
             </div>
           </div>
         </div>
@@ -1709,16 +1696,16 @@
         <!-- Action footer -->
         <div id="actionButtons" style="display:flex;gap:0.6rem;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:1rem 1.75rem;background:var(--dt-bg-panel);border-top:1px solid var(--dt-border-md);flex-shrink:0;border-radius:0 0 18px 18px;">
           <button onclick="closeModal('detailModal')" style="padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid var(--dt-border-md);background:var(--dt-bg-input);color:var(--dt-muted);font-size:0.84rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 160ms;">Close</button>
-          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;display:inline-flex;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid var(--dt-accent);background:var(--dt-accent);color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;box-shadow:0 6px 14px rgba(20,90,30,0.22);">
+          <button id="postToCatalogBtn" onclick="openPostToCatalogModal()" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #145A1E;background:#145A1E;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;box-shadow:0 4px 12px rgba(20,90,30,0.22);">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M12 5v14M5 12l7-7 7 7"/></svg> Publish to Catalog
           </button>
-          <button id="revisionBtn" onclick="performDetailAction('revision')" style="display:none;display:inline-flex;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid rgba(217,119,6,.6);background:rgba(120,60,0,.35);color:#fbbf24;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+          <button id="revisionBtn" onclick="performDetailAction('revision')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #d97706;background:#fff8ed;color:#b45309;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> For Revision
           </button>
-          <button id="denyBtn" onclick="performDetailAction('deny')" style="display:none;display:inline-flex;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid rgba(220,38,38,.6);background:rgba(100,15,15,.35);color:#f87171;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+          <button id="denyBtn" onclick="performDetailAction('deny')" style="display:none;padding:0.55rem 1.1rem;border-radius:999px;border:1.5px solid #dc2626;background:#fff1f1;color:#b91c1c;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
           </button>
-          <button id="approveBtn" onclick="performDetailAction('approve')" style="display:none;display:inline-flex;padding:0.55rem 1.25rem;border-radius:999px;border:1.5px solid #16a34a;background:#16a34a;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
+          <button id="approveBtn" onclick="performDetailAction('approve')" style="display:none;padding:0.55rem 1.25rem;border-radius:999px;border:1.5px solid #16a34a;background:#16a34a;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 160ms;gap:0.4rem;align-items:center;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><polyline points="20 6 9 17 4 12"/></svg> Approve
           </button>
         </div>
@@ -6605,6 +6592,101 @@
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // ── Notification Bell ──────────────────────────────────────────────
+      function toggleNotifPanel() {
+        const panel = document.getElementById('notif-panel');
+        if (!panel) return;
+        const opening = panel.hidden;
+        panel.hidden = !opening;
+        if (opening) loadNotifItems();
+      }
+
+      async function loadNotifItems() {
+        const list = document.getElementById('notif-list');
+        if (!list || !window.bloomSupabase) return;
+        list.innerHTML = '<div class="notif-empty">Loading…</div>';
+        try {
+          const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+          const [pendingRes, approvedRes, rejectedRes, revisionRes] = await Promise.all([
+            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','pending'),
+            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','approved').gte('updated_at',weekAgo),
+            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','rejected').gte('updated_at',weekAgo),
+            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','revision'),
+          ]);
+          const pending  = pendingRes.count  ?? 0;
+          const approved = approvedRes.count ?? 0;
+          const rejected = rejectedRes.count ?? 0;
+          const revision = revisionRes.count ?? 0;
+          const items = [];
+          if (pending > 0)  items.push({ type:'urgent',  svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',  text: `${pending} submission${pending!==1?'s':''} awaiting DENR review`, time: 'Action needed' });
+          if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', text: `${revision} submission${revision!==1?'s':''} sent for revision`, time: 'Pending researcher response' });
+          if (approved > 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>',  text: `${approved} submission${approved!==1?'s':''} approved this week`, time: 'This week' });
+          if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',  text: `${rejected} submission${rejected!==1?'s':''} rejected this week`, time: 'This week' });
+          if (items.length === 0) items.push({ type:'info', svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12.01" y2="16"/><line x1="12" y1="8" x2="12" y2="12"/>', text: 'No pending submissions — all clear.', time: '' });
+
+          list.innerHTML = items.map(it => `
+            <div class="notif-item">
+              <span class="notif-icon ${it.type}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg></span>
+              <div><p class="notif-text">${it.text}</p>${it.time ? `<span class="notif-time">${it.time}</span>` : ''}</div>
+            </div>`).join('');
+
+          const badge = document.getElementById('notif-badge');
+          const urgentCount = pending + revision;
+          if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
+          updateNotifCard(pending, approved, rejected, revision);
+        } catch { list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>'; }
+      }
+
+      function updateNotifCard(pending, approved, rejected, revision) {
+        const card = document.getElementById('notif-card-list');
+        if (!card) return;
+        const items = [];
+        if (pending > 0)  items.push({ type:'urgent',  svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', bg:'#fee2e2', stroke:'#dc2626', text:`${pending} submission${pending!==1?'s':''} awaiting DENR review`, time:'Action needed' });
+        if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', bg:'#fef3c7', stroke:'#d97706', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} researcher revision`, time:'Pending response' });
+        if (approved > 0) items.push({ type:'success', svg:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', bg:'#dcfce7', stroke:'#16a34a', text:`${approved} submission${approved!==1?'s':''} approved this week`, time:'This week' });
+        if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', bg:'#fee2e2', stroke:'#dc2626', text:`${rejected} submission${rejected!==1?'s':''} rejected this week`, time:'This week' });
+        if (items.length === 0) items.push({ svg:'<polyline points="20 6 9 17 4 12"/>', bg:'#dcfce7', stroke:'#16a34a', text:'No pending items — all submissions reviewed.', time:'Up to date' });
+
+        const badgeEl = document.getElementById('notif-card-badge');
+        const urgentCount = pending + revision;
+        if (badgeEl) { badgeEl.textContent = urgentCount; badgeEl.style.display = urgentCount > 0 ? '' : 'none'; }
+
+        card.innerHTML = items.map(it => `
+          <div class="flex gap-3 py-3 ${items.indexOf(it) < items.length-1 ? 'border-b border-gray-50' : ''}">
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:${it.bg};">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${it.stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg>
+            </span>
+            <div><p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">${it.text}</p><span class="text-xs text-gray-400">${it.time}</span></div>
+          </div>`).join('');
+      }
+
+      // Close panel on outside click
+      document.addEventListener('click', function(e) {
+        const panel = document.getElementById('notif-panel');
+        const btn = document.getElementById('notif-bell-btn');
+        if (panel && btn && !panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) {
+          panel.hidden = true;
+        }
+      });
+
+      // Load badge count on startup
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.bloomSupabase) {
+          const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+          Promise.all([
+            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','pending'),
+            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','revision'),
+          ]).then(([p, r]) => {
+            const count = (p.count ?? 0) + (r.count ?? 0);
+            const badge = document.getElementById('notif-badge');
+            if (badge) { badge.hidden = count === 0; badge.textContent = count > 9 ? '9+' : count; }
+            loadNotifItems();
+          }).catch(() => {});
+        }
+      });
+    </script>
 
     <!-- ── Edit Profile Modal (DENR) ── -->
     <div id="edit-profile-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
