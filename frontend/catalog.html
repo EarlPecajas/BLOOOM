@@ -84,11 +84,93 @@
       .orchid-nav-btn-fill{background:#2d5a27;color:#fff;border-color:#2d5a27;}
       .orchid-nav-btn-fill:hover{background:#1e3d1a;}
     </style>
+    <style>
+      /* ── Cream/green theme for public catalog ── */
+      body.catalog-light {
+        background: #F0EAD2 !important;
+        background-image: none !important;
+        animation: none !important;
+        color: #1a3a1c !important;
+      }
+      body.catalog-light .top-nav {
+        background: #FFFFFF !important;
+        background-image: none !important;
+        border-bottom: 1px solid #D8D0B8 !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,.07) !important;
+      }
+      body.catalog-light .bloom-text { color: #145A1E !important; }
+      body.catalog-light .brand-tagline span { color: rgba(20,90,30,.6) !important; }
+      /* Sign In button */
+      body.catalog-light .btn-ghost,
+      body.catalog-light .btn-ghost:hover,
+      body.catalog-light .btn-ghost:focus,
+      body.catalog-light .btn-outline-secondary {
+        background: transparent !important;
+        border: 1.5px solid rgba(20,90,30,.45) !important;
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .btn-ghost:hover,
+      body.catalog-light .btn-outline-secondary:hover {
+        background: #eaf3ea !important;
+        border-color: #145A1E !important;
+      }
+      /* Register button */
+      body.catalog-light .btn-solid,
+      body.catalog-light .btn-success {
+        background: #145A1E !important;
+        border: 1.5px solid #145A1E !important;
+        color: #F0EAD2 !important;
+        -webkit-text-fill-color: #F0EAD2 !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .btn-solid:hover,
+      body.catalog-light .btn-success:hover {
+        background: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+      }
+      /* Catalog title and search */
+      body.catalog-light .catalog-title { color: #145A1E !important; }
+      body.catalog-light .catalog-search,
+      body.catalog-light .catalog-search-filter {
+        background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        border-color: #C8C0A8 !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
+      body.catalog-light .catalog-search::placeholder { color: rgba(20,90,30,.45) !important; }
+      body.catalog-light .catalog-search:focus,
+      body.catalog-light .catalog-search-filter:focus {
+        border-color: #145A1E !important;
+        box-shadow: 0 0 0 3px rgba(20,90,30,.1) !important;
+      }
+      /* View toggle button */
+      body.catalog-light .catalog-view-toggle {
+        background: #FFFFFF !important;
+        border-color: #C8C0A8 !important;
+        color: #145A1E !important;
+      }
+      /* Orchid cards — keep white on cream bg */
+      body.catalog-light .orchid-card {
+        background: #FFFFFF !important;
+        box-shadow: 0 2px 10px rgba(20,90,30,.09) !important;
+        border: 1px solid #E8E2CB !important;
+      }
+      body.catalog-light .orchid-card:hover {
+        box-shadow: 0 8px 24px rgba(20,90,30,.16) !important;
+        border-color: rgba(20,90,30,.25) !important;
+      }
+      body.catalog-light .orchid-card-info { background: #FFFFFF !important; }
+    </style>
     <script src="config.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js?v=3"></script>
   </head>
-  <body class="signin-page">
+  <body class="signin-page catalog-light">
     <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
       <a href="index.html" class="brand-link" id="catalog-brand-link">
         <div class="brand-container">
