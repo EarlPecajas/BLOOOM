@@ -4704,20 +4704,43 @@ function refreshConservationHeatMap(summary) {
         // Populate image gallery
         const imageGallery = document.getElementById('imageGallery');
         if (imageGallery) {
-          imageGallery.innerHTML = '';
-          if (evidence.images.length > 0) {
-            evidence.images.forEach((img) => {
+          function renderGallery(images) {
+            imageGallery.innerHTML = '';
+            if (!images || !images.length) {
+              imageGallery.innerHTML = '<p style="margin:0;color:var(--dt-muted);font-size:0.9rem;">No field photos were attached to this record.</p>';
+              return;
+            }
+            images.forEach((img) => {
               const thumbnail = document.createElement('button');
               thumbnail.type = 'button';
-              thumbnail.style.cssText = 'cursor:pointer;overflow:hidden;border-radius:12px;background:var(--dt-bg-panel);display:grid;gap:0.55rem;padding:0;border:1px solid var(--dt-border-md);transition:transform 200ms ease,box-shadow 200ms ease;text-align:left;';
-              thumbnail.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4)'; };
+              thumbnail.style.cssText = 'cursor:pointer;overflow:hidden;border-radius:12px;background:#fff;display:grid;gap:0.55rem;padding:0;border:1px solid #d8e3dc;transition:transform 200ms ease,box-shadow 200ms ease;text-align:left;';
+              thumbnail.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)'; };
               thumbnail.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; };
-              thumbnail.innerHTML = `<div style="aspect-ratio:1;overflow:hidden;background:var(--dt-bg-input);"><img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.name)}" style="width:100%;height:100%;object-fit:cover;display:block;" /></div><div style="padding:0 0.75rem 0.75rem;"><div style="font-size:0.82rem;font-weight:600;color:var(--dt-accent-lt);">${escapeHtml(img.name)}</div></div>`;
+              thumbnail.innerHTML = `<div style="aspect-ratio:1;overflow:hidden;background:#f5f5f5;border-bottom:1px solid #e5ece7;"><img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.name)}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div style=padding:1rem;color:#999;font-size:0.8rem;text-align:center;>Image unavailable</div>'" /></div><div style="padding:0 0.75rem 0.75rem;"><div style="font-size:0.82rem;font-weight:600;color:#145A1E;">${escapeHtml(img.name)}</div></div>`;
               thumbnail.onclick = () => openLightbox(img.src);
               imageGallery.appendChild(thumbnail);
             });
+          }
+
+          if (evidence.images.length > 0) {
+            renderGallery(evidence.images);
+          } else if (submission.id && bloomSupabase) {
+            imageGallery.innerHTML = '<p style="margin:0;color:#aaa;font-size:0.85rem;">Loading photos…</p>';
+            bloomSupabase.from('sighting_media')
+              .select('media_category, sort_order, picture(file_path)')
+              .eq('sighting_id', submission.id)
+              .order('sort_order')
+              .then(({ data }) => {
+                if (!data || !data.length) { renderGallery([]); return; }
+                const catLabels = { whole_plant: 'Whole Plant Photo', closeup_flower: 'Close-up Flower Photo', habitat: 'Habitat Photo', photo_3d: '3D Photo', video: 'Video' };
+                const imgs = data
+                  .map((m, i) => ({ src: m.picture?.file_path || '', name: `${catLabels[m.media_category] || 'Photo'} ${i+1}` }))
+                  .filter(m => m.src);
+                renderGallery(imgs);
+              })
+              .catch(() => renderGallery([]));
           } else {
-            imageGallery.innerHTML = '<p style="margin:0;color:var(--dt-muted);font-size:0.9rem;">No field photos were attached to this record.</p>';
+            renderGallery([]);
           }
         }
 
