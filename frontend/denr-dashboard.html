@@ -6549,9 +6549,9 @@
           const last7d = last7dRes.count ?? 0;
           const reviewedPct = total > 0 ? Math.round((approved / total) * 100) : 0;
 
-          // Stat strip
+          // Stat strip — only approved sightings count as "recorded"
           const recordedEl = document.getElementById('orchid-records-count');
-          if (recordedEl) recordedEl.textContent = total;
+          if (recordedEl) recordedEl.textContent = approved;
 
           const pendingEl = document.getElementById('pending-sightings-count');
           if (pendingEl) pendingEl.textContent = pending;
