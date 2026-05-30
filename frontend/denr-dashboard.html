@@ -335,7 +335,7 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
               </span>
             </div>
-            <p id="orchid-records-count" class="text-3xl font-black leading-none" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
+            <p id="orchid-records-count" class="text-3xl font-black leading-none" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">—</p>
             <p class="text-xs text-gray-400">species recorded</p>
           </div>
 
@@ -4324,11 +4324,10 @@
 
         const totalOrchidsCount = document.getElementById('total-orchids-count');
         const totalGenusCount = document.getElementById('total-genus-count');
-        const orchidRecordsCount = document.getElementById('orchid-records-count');
 
         if (totalOrchidsCount) totalOrchidsCount.textContent = orchidCount;
         if (totalGenusCount) totalGenusCount.textContent = uniqueGenus;
-        if (orchidRecordsCount) orchidRecordsCount.textContent = orchidCount;
+        // orchid-records-count is set exclusively by loadDenrStats (species_sightings count)
       }
 
       async function loadOrchidCatalog() {
