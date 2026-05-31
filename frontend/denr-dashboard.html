@@ -6564,7 +6564,9 @@
 
           closeModal('postToCatalogModal');
           showToast(`"${scientificName}" has been published to the orchid catalog.`);
-          loadOrchidCatalog();
+          orchidCatalogLoaded = false;       // force fresh fetch so Publish column updates
+          await loadOrchidCatalog();         // updates orchidRows
+          renderSubmissions(submissionRows); // re-renders with updated catalogNames
 
         } catch (error) {
           console.error('Failed to post to catalog:', error);
@@ -6624,8 +6626,9 @@
             currentSubmission.catalog_published = false;
           }
 
-          renderSubmissions(submissionRows);
-          loadOrchidCatalog();
+          orchidCatalogLoaded = false;          // force fresh fetch
+          await loadOrchidCatalog();            // updates orchidRows
+          renderSubmissions(submissionRows);    // re-renders with updated catalogNames
           showToast(`"${sciName}" has been unpublished from the catalog.`);
         } catch (error) {
           console.error('Failed to unpublish catalog entry:', error);
