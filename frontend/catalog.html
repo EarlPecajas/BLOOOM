@@ -175,10 +175,15 @@
         color: #3e6639 !important;
         -webkit-text-fill-color: #3e6639 !important;
       }
-      /* Nav buttons — dark theme uses .top-nav .auth-actions .btn-* (3 classes);
-         match depth so later source-order wins */
+      /* Nav buttons — dark theme has 3-class and 4-class selectors in styles.css;
+         we need at least 4 classes + body element (0,4,1) to reliably win */
       body.catalog-light .top-nav .btn-ghost,
-      body.catalog-light .top-nav .btn-outline-secondary {
+      body.catalog-light .top-nav .btn-outline-secondary,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:hover,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:focus,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:focus-visible,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:active {
         background: transparent !important;
         border: 1.5px solid rgba(20,90,30,.45) !important;
         color: #145A1E !important;
@@ -186,7 +191,8 @@
         box-shadow: none !important;
       }
       body.catalog-light .top-nav .btn-ghost:hover,
-      body.catalog-light .top-nav .btn-outline-secondary:hover {
+      body.catalog-light .top-nav .btn-outline-secondary:hover,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:hover {
         background: #eaf3ea !important;
         border-color: #145A1E !important;
         color: #145A1E !important;
@@ -1232,30 +1238,6 @@
         renderCatalog(filtered);
       }
 
-      async function loadStaticCatalogFallback() {
-        try {
-          const response = await fetch('./orchid-fallback.json', { cache: 'no-store' });
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const fallbackRows = await response.json();
-          orchids = (fallbackRows || []).map((row, index) => normalizeOrchidRow({
-            id: row.id || index + 1,
-            name: row.name || '',
-            genus: row.genus || '',
-            common_name: row.common_name || '',
-            endemicity: row.endemicity || '',
-            image_url: row.image_url || ''
-          }));
-          renderCatalog(orchids);
-          return true;
-        } catch (error) {
-          console.warn('Local orchid fallback failed:', error?.message || error);
-          return false;
-        }
-      }
-
       // getPublicUrl is synchronous - no auth or network call needed
       function loadStorageImages() {
         const client = window.bloomSupabase;
@@ -1298,11 +1280,10 @@
         });
       }
 
-      async function loadCatalog() {
-        const fallbackRendered = await loadStaticCatalogFallback();
-
-        // 1. Try Supabase JS client directly — same as researcher/DENR dashboards
-        //    This ensures orchid.image_url is always populated from orchid_overview.
+      // Populates orchids[] from the best available source — never renders.
+      // Priority: Supabase JS → REST API → local JSON fallback.
+      async function fetchOrchidData() {
+        // 1. Supabase JS client (same path as researcher/DENR dashboards)
         const client = window.bloomSupabase;
         if (client && typeof client.from === 'function') {
           try {
@@ -1312,36 +1293,38 @@
               .order('name', { ascending: true });
             if (!error && data && data.length > 0) {
               orchids = data.map(normalizeOrchidRow);
-              renderCatalog(orchids);
               return;
             }
-          } catch (supabaseErr) {
-            console.warn('Supabase direct query failed, trying REST API:', supabaseErr?.message || supabaseErr);
+          } catch (e) {
+            console.warn('Supabase direct query failed, trying REST API:', e?.message || e);
           }
         }
 
-        // 2. Fallback: REST API endpoint
+        // 2. REST API fallback
         try {
           const response = await fetch('/api/orchids');
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const data = await response.json();
-          const liveRows = (data || []).map(normalizeOrchidRow);
-          if (liveRows.length > 0) {
-            orchids = liveRows;
-            renderCatalog(orchids);
-          }
-        } catch (error) {
-          console.warn('orchid_overview REST API also failed, keeping local fallback catalog:', error?.message || error);
-          if (!fallbackRendered) {
-            catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
-          }
+          const rows = (data || []).map(normalizeOrchidRow);
+          if (rows.length > 0) { orchids = rows; return; }
+        } catch (e) {
+          console.warn('REST API also failed, using local JSON:', e?.message || e);
         }
-      }
 
-      async function loadCatalogFallback() {
-        return loadStaticCatalogFallback();
+        // 3. Local JSON as last resort
+        try {
+          const response = await fetch('./orchid-fallback.json', { cache: 'no-store' });
+          if (response.ok) {
+            const fallbackRows = await response.json();
+            orchids = (fallbackRows || []).map((row, index) => normalizeOrchidRow({
+              id: row.id || index + 1, name: row.name || '', genus: row.genus || '',
+              common_name: row.common_name || '', endemicity: row.endemicity || '',
+              image_url: row.image_url || ''
+            }));
+          }
+        } catch (e) {
+          console.warn('Local orchid fallback failed:', e?.message || e);
+        }
       }
 
       async function loadApprovedSightings() {
@@ -1422,9 +1405,14 @@
       syncCatalogViewState();
 
       (async () => {
-        loadStorageImages(); // synchronous — populates map before any render
-        await Promise.all([loadCatalog(), loadApprovedSightings()]);
-        renderCatalog(orchids);
+        loadStorageImages(); // synchronous — populates storageImagesByGenus before any render
+        catalogGrid.innerHTML = '<p style="padding:2rem 1rem;color:#6a8a64;text-align:center;">Loading orchids…</p>';
+        await Promise.all([fetchOrchidData(), loadApprovedSightings()]);
+        if (orchids.length > 0) {
+          renderCatalog(orchids); // single render, all data ready
+        } else {
+          catalogGrid.innerHTML = '<p style="padding:2rem 1rem;color:#666;text-align:center;">Could not load orchids from database.</p>';
+        }
       })();
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
