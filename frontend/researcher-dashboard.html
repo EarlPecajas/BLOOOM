@@ -2030,7 +2030,7 @@
                 return name ? { name, role } : null;
               }).filter(Boolean);
               await submitNormalizedSighting({
-                entryId, currentEmail, commonNames, localNames, leafTextures, threatTypes, teamMembers,
+                entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers,
                 reviewStatus: 'draft', editDraftId: editDraftId ? Number(editDraftId) : null
               });
               if (feedback) { feedback.style.color = '#145A1E'; feedback.textContent = 'Draft saved. View it in My Drafts.'; }
@@ -2408,7 +2408,7 @@
       // Writes a sighting to the 3NF schema: inserts/updates sub-tables first,
       // then the main species_sightings row, team members, and media.
       async function submitNormalizedSighting({
-        entryId, currentEmail,
+        entryId, currentEmail, currentName = null,
         commonNames, localNames, leafTextures, threatTypes, teamMembers,
         wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [],
         photo3dUrls = [], videoUrls = [], relatedStudyFileUrls = [],
@@ -2525,6 +2525,7 @@
           entry_id:                 entryId,
           user_id:                  null,
           researcher_email:         currentEmail,
+          researcher_name:          currentName,
           scientific_name:          (document.getElementById('submission-scientific-name')?.value || '').trim(),
           common_names:             commonNames,
           local_names:              localNames,
@@ -2754,7 +2755,7 @@
             ]);
 
             const data = await submitNormalizedSighting({
-              entryId, currentEmail,
+              entryId, currentEmail, currentName,
               commonNames, localNames, leafTextures, threatTypes, teamMembers,
               wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls,
               relatedStudyFileUrls,
