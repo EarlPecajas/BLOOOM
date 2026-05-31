@@ -3154,7 +3154,7 @@
 
         submissionsTableBody.innerHTML = items.map((submission) => {
           const badgeClass = getSubmissionStatusBadgeClass(submission.review_status);
-          const safeResearcher = escapeHtml(submission.researcher);
+          const safeResearcher = escapeHtml(submission.researcher_name || submission.researcher || '');
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
@@ -3282,7 +3282,7 @@
           return;
         }
         draftsTableBody.innerHTML = rows.map(row => {
-          const researcher = escapeHtml(String(row.researcher_email || '—'));
+          const researcher = escapeHtml(String(row.researcher_name || row.researcher_email || '—'));
           const species = escapeHtml(String(row.scientific_name || 'Unnamed draft'));
           const saved = escapeHtml(row.updated_at ? new Date(row.updated_at).toLocaleDateString() : '—');
           const sid = escapeHtml(String(row.sighting_id));
