@@ -3910,19 +3910,19 @@
           const speciesKey = (submission.species || '').trim().toLowerCase();
 
           // Publish / Unpublish cell — approved submissions only
-          let publishCell = '<td class="submission-action-cell"></td>';
+          let publishCell = '<td style="text-align:center;padding:.6rem .95rem;"></td>';
           if (isAdminRole && isApproved(submission)) {
             if (submission.catalog_published) {
-              publishCell = `<td class="submission-action-cell" style="text-align:center;">
-                <button type="button" class="sub-action-btn sub-unpublish-btn" data-submission-id="${sid}" title="Unpublish from Catalog"
-                  style="background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;border-radius:8px;padding:.28rem .7rem;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+              publishCell = `<td style="text-align:center;padding:.6rem .95rem;">
+                <button type="button" class="sub-unpublish-btn" data-submission-id="${sid}"
+                  style="background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;border-radius:8px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;">
                   Unpublish
                 </button>
               </td>`;
             } else {
-              publishCell = `<td class="submission-action-cell" style="text-align:center;">
-                <button type="button" class="sub-action-btn sub-post-btn" data-submission-id="${sid}" title="Publish to Catalog"
-                  style="background:#145A1E;border:1.5px solid #145A1E;color:#fff;border-radius:8px;padding:.28rem .7rem;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+              publishCell = `<td style="text-align:center;padding:.6rem .95rem;">
+                <button type="button" class="sub-post-btn" data-submission-id="${sid}"
+                  style="background:#145A1E;border:1.5px solid #145A1E;color:#fff;border-radius:8px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;">
                   Publish
                 </button>
               </td>`;
