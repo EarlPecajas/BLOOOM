@@ -1158,24 +1158,30 @@
         }
 
         catalogGrid.innerHTML = items.map((orchid) => {
-          // Try to find an approved sighting with images for this orchid
+          const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
+          const fullName = (orchid.name || '').toLowerCase();
+
+          // Mirror the researcher/DENR dashboard thumbnail logic:
+          // seed images by species name → seed images by genus → DB image_url → sighting photos → fallback
           const scientificKey = normalizeScientificKey(orchid.name);
           const approvedSighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
 
-          let thumbnailImage = null;
-          if (approvedSighting) {
-            const allImages = [
+          let thumbnailImage = storageImagesByGenus.get(fullName)
+            || storageImagesByGenus.get(genus)
+            || orchid.image_url
+            || null;
+
+          // If no seed/DB image found, try approved sighting photos (full public URLs only)
+          if (!thumbnailImage && approvedSighting) {
+            const sightingPhotos = [
               ...(approvedSighting.whole_plant_photo_path || []),
               ...(approvedSighting.closeup_flower_photo_path || []),
               ...(approvedSighting.habitat_photo_path || [])
-            ].filter(Boolean);
-            if (allImages.length > 0) thumbnailImage = allImages[0];
+            ].filter(p => p && String(p).startsWith('http'));
+            if (sightingPhotos.length > 0) thumbnailImage = sightingPhotos[0];
           }
-          if (!thumbnailImage) {
-            const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
-            const fullName = (orchid.name || '').toLowerCase();
-            thumbnailImage = storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchid.image_url || catalogImage;
-          }
+
+          thumbnailImage = thumbnailImage || catalogImage;
 
           const localName = approvedSighting
             ? (parseJsonArrayValue(approvedSighting.local_names)[0] || parseJsonArrayValue(approvedSighting.common_names)[0] || orchid.common_name || '')
@@ -1295,13 +1301,31 @@
       async function loadCatalog() {
         const fallbackRendered = await loadStaticCatalogFallback();
 
+        // 1. Try Supabase JS client directly — same as researcher/DENR dashboards
+        //    This ensures orchid.image_url is always populated from orchid_overview.
+        const client = window.bloomSupabase;
+        if (client && typeof client.from === 'function') {
+          try {
+            const { data, error } = await client
+              .from('orchid_overview')
+              .select('id, name, genus, common_name, endemicity, image_url, conservation_status')
+              .order('name', { ascending: true });
+            if (!error && data && data.length > 0) {
+              orchids = data.map(normalizeOrchidRow);
+              renderCatalog(orchids);
+              return;
+            }
+          } catch (supabaseErr) {
+            console.warn('Supabase direct query failed, trying REST API:', supabaseErr?.message || supabaseErr);
+          }
+        }
+
+        // 2. Fallback: REST API endpoint
         try {
-          // Try backend API first (uses free Session Pooler - IPv4 compatible)
           const response = await fetch('/api/orchids');
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
           }
-
           const data = await response.json();
           const liveRows = (data || []).map(normalizeOrchidRow);
           if (liveRows.length > 0) {
@@ -1309,7 +1333,7 @@
             renderCatalog(orchids);
           }
         } catch (error) {
-          console.warn('orchid_overview query failed, keeping local fallback catalog:', error?.message || error);
+          console.warn('orchid_overview REST API also failed, keeping local fallback catalog:', error?.message || error);
           if (!fallbackRendered) {
             catalogGrid.innerHTML = '<p>Could not load orchids from database.</p>';
           }
