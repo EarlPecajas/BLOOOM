@@ -1734,6 +1734,27 @@
     </div>
 
     <!-- Post to Catalog Modal -->
+    <!-- Confirm modal (used for Publish/Unpublish confirmations) -->
+    <div id="denr-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:4000;align-items:center;justify-content:center;padding:1.5rem;">
+      <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.28);padding:1.75rem 1.75rem 1.4rem;font-family:Inter,Roboto,sans-serif;">
+        <h3 id="denr-confirm-title" style="margin:0 0 .55rem;font-size:1.05rem;font-weight:700;color:#1a3a1c;"></h3>
+        <p id="denr-confirm-message" style="margin:0 0 1.4rem;font-size:.9rem;color:#4a5a4c;line-height:1.55;"></p>
+        <div style="display:flex;justify-content:flex-end;gap:.65rem;">
+          <button id="denr-confirm-cancel" onclick="closeModal('denr-confirm-modal')"
+            style="padding:.48rem 1.2rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background 150ms;">
+            Cancel
+          </button>
+          <button id="denr-confirm-ok"
+            style="padding:.48rem 1.2rem;border-radius:8px;border:none;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background 150ms;">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="denr-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:5000;background:#1a3a1c;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;font-family:Inter,Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:340px;line-height:1.45;"></div>
+
     <div id="postToCatalogModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;">
       <div style="background:#fff;border-radius:16px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.28);margin:auto;">
         <!-- Header -->
@@ -5449,6 +5470,31 @@
         }
       }
 
+      function showToast(message, isError = false) {
+        const el = document.getElementById('denr-toast');
+        if (!el) return;
+        el.textContent = message;
+        el.style.background = isError ? '#7f1d1d' : '#1a3a1c';
+        el.style.display = 'block';
+        clearTimeout(el._toastTimer);
+        el._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+      }
+
+      function showConfirm({ title, message, confirmLabel = 'Confirm', danger = false, onConfirm }) {
+        const modal = document.getElementById('denr-confirm-modal');
+        document.getElementById('denr-confirm-title').textContent = title;
+        document.getElementById('denr-confirm-message').textContent = message;
+        const okBtn = document.getElementById('denr-confirm-ok');
+        okBtn.textContent = confirmLabel;
+        okBtn.style.background = danger ? '#dc2626' : '#145A1E';
+        okBtn.style.color = '#fff';
+        okBtn.onclick = function() {
+          closeModal('denr-confirm-modal');
+          onConfirm();
+        };
+        modal.style.display = 'flex';
+      }
+
       function closeModal(modalId) {
         const modal = document.getElementById(modalId);
         modal.style.display = 'none';
@@ -6517,12 +6563,12 @@
           }
 
           closeModal('postToCatalogModal');
-          alert(`"${scientificName}" has been published to the orchid catalog and is now visible in all catalogs.`);
+          showToast(`"${scientificName}" has been published to the orchid catalog.`);
           loadOrchidCatalog();
 
         } catch (error) {
           console.error('Failed to post to catalog:', error);
-          alert('Failed to publish: ' + (error.message || 'Unknown error'));
+          showToast('Failed to publish: ' + (error.message || 'Unknown error'), true);
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Publish to Catalog';
@@ -6542,9 +6588,16 @@
           return;
         }
 
-        const confirmed = confirm(`Unpublish "${sciName}" from the catalog? This removes it from the public catalog.`);
-        if (!confirmed) return;
+        showConfirm({
+          title: 'Unpublish from Catalog',
+          message: `Remove "${sciName}" from the orchid catalog? It will no longer appear in the public or researcher catalog.`,
+          confirmLabel: 'Unpublish',
+          danger: true,
+          onConfirm: () => doUnpublish(submission, sciName)
+        });
+      }
 
+      async function doUnpublish(submission, sciName) {
         try {
           const { data: orchidRow, error: orchidError } = await bloomSupabase
             .from('orchids')
@@ -6573,10 +6626,10 @@
 
           renderSubmissions(submissionRows);
           loadOrchidCatalog();
-          alert(`"${sciName}" has been unpublished from the catalog.`);
+          showToast(`"${sciName}" has been unpublished from the catalog.`);
         } catch (error) {
           console.error('Failed to unpublish catalog entry:', error);
-          alert('Failed to unpublish: ' + (error.message || 'Unknown error'));
+          showToast('Failed to unpublish: ' + (error.message || 'Unknown error'), true);
         }
       }
 
@@ -6586,6 +6639,7 @@
         if (e.target.id === 'imageLightbox') closeLightbox();
         if (e.target.id === 'conservationModal') closeModal('conservationModal');
         if (e.target.id === 'postToCatalogModal') closeModal('postToCatalogModal');
+        if (e.target.id === 'denr-confirm-modal') closeModal('denr-confirm-modal');
       });
       
       async function loadDenrStats() {
