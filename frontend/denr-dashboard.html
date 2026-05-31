@@ -6607,17 +6607,11 @@
 
       async function doUnpublish(submission, sciName) {
         try {
-          const { data: orchidRow, error: orchidError } = await bloomSupabase
-            .from('orchids')
-            .select('orchid_id')
-            .eq('sci_name', sciName)
-            .maybeSingle();
-          if (orchidError) throw orchidError;
-
-          if (orchidRow?.orchid_id) {
-            await bloomSupabase.from('biogeography').delete().eq('orchid_id', orchidRow.orchid_id);
-            await bloomSupabase.from('orchids').delete().eq('orchid_id', orchidRow.orchid_id);
-          }
+          // Direct client-side deletes are silently blocked by RLS (no DELETE policy).
+          // Use a SECURITY DEFINER function instead so the delete actually runs.
+          const { data: rpcData, error: rpcError } = await bloomSupabase
+            .rpc('unpublish_orchid', { p_sci_name: sciName });
+          if (rpcError) throw rpcError;
 
           if (submission.id) {
             await bloomSupabase
