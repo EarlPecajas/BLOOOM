@@ -6511,11 +6511,16 @@
           let orchidId;
           if (existingOrchid) {
             orchidId = existingOrchid.orchid_id;
-            await bloomSupabase.from('orchids').update({ genus_id: genusId, image_url: thumbnailUrl }).eq('orchid_id', orchidId);
+            // Re-publishing a hidden orchid — restore visibility and update thumbnail
+            const { error: updErr } = await bloomSupabase.from('orchids')
+              .update({ genus_id: genusId, image_url: thumbnailUrl, is_published: true })
+              .eq('orchid_id', orchidId);
+            if (updErr) throw updErr;
           } else {
             const { data: newOrchid, error: orchidError } = await bloomSupabase
               .from('orchids')
-              .insert({ sci_name: scientificName, genus_id: genusId, image_url: thumbnailUrl, date_discovered: new Date().toISOString() })
+              .insert({ sci_name: scientificName, genus_id: genusId, image_url: thumbnailUrl,
+                        is_published: true, date_discovered: new Date().toISOString() })
               .select('orchid_id').single();
             if (orchidError) throw orchidError;
             orchidId = newOrchid.orchid_id;
