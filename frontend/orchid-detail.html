@@ -1317,17 +1317,8 @@
         if (storedUser) parsedActiveUser = JSON.parse(storedUser);
       } catch {}
 
-      // Show Add Sighting button in header for logged-in researchers
-      (function() {
-        const role = String(parsedActiveUser.role || '').trim().toLowerCase();
-        const isResearcher = role === 'researcher' || (role !== 'admin' && role !== 'denr' && !!parsedActiveUser.email);
-        // Header topbar button — hide it (button lives in footer instead)
-        const headerBtn = document.getElementById('orchid-detail-add-btn-header');
-        if (headerBtn) headerBtn.style.display = 'none';
-        // Footer button — show for researchers
-        const footerAddBtn = document.getElementById('orchid-detail-add-btn-identity');
-        if (footerAddBtn && isResearcher) footerAddBtn.style.display = 'inline-flex';
-      })();
+      // Add Sighting belongs only in the researcher dashboard — never shown on the public detail page.
+      // Both buttons default to display:none in HTML so no action needed here.
 
       let currentSubmissionPage = 1;
       const SUBMISSION_TOTAL_PAGES = 9;
