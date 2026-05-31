@@ -1281,16 +1281,6 @@
           else showOverview();
         });
         document.getElementById('detail-to-map-btn').addEventListener('click', showOverview);
-        function handleAddSighting() {
-          const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
-            ? currentOrchid.name
-            : (document.getElementById('oid-sci-name')?.textContent || '').trim();
-          openResearcherSubmissionModal(orchidName);
-        }
-        const addIdentityBtn = document.getElementById('orchid-detail-add-btn-identity');
-        if (addIdentityBtn) addIdentityBtn.addEventListener('click', handleAddSighting);
-        const addHeaderBtn = document.getElementById('orchid-detail-add-btn-header');
-        if (addHeaderBtn) addHeaderBtn.addEventListener('click', handleAddSighting);
       }
 
       function showOverview() {
@@ -1317,8 +1307,24 @@
         if (storedUser) parsedActiveUser = JSON.parse(storedUser);
       } catch {}
 
-      // Add Sighting belongs only in the researcher dashboard — never shown on the public detail page.
-      // Both buttons default to display:none in HTML so no action needed here.
+      // Show Add Sighting button only when opened from the researcher dashboard
+      (function() {
+        const from = new URLSearchParams(location.search).get('from');
+        if (from !== 'researcher-dashboard') return;
+        function handleAddSighting() {
+          const orchidName = (currentOrchid && hasUsableValue(currentOrchid.name))
+            ? currentOrchid.name
+            : (document.getElementById('oid-sci-name')?.textContent || '').trim();
+          openResearcherSubmissionModal(orchidName);
+        }
+        const footerBtn = document.getElementById('orchid-detail-add-btn-identity');
+        if (footerBtn) {
+          footerBtn.style.display = 'inline-flex';
+          footerBtn.addEventListener('click', handleAddSighting);
+        }
+        const headerBtn = document.getElementById('orchid-detail-add-btn-header');
+        if (headerBtn) headerBtn.addEventListener('click', handleAddSighting);
+      })();
 
       let currentSubmissionPage = 1;
       const SUBMISSION_TOTAL_PAGES = 9;
