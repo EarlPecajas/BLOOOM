@@ -3910,9 +3910,11 @@
           const speciesKey = (submission.species || '').trim().toLowerCase();
 
           // Publish / Unpublish cell — approved submissions only
+          // Base publish state on whether the species is in the orchid catalog
+          const inCatalog = catalogNames.has(speciesKey);
           let publishCell = '<td style="text-align:center;padding:.6rem .95rem;"></td>';
           if (isAdminRole && isApproved(submission)) {
-            if (submission.catalog_published) {
+            if (inCatalog) {
               publishCell = `<td style="text-align:center;padding:.6rem .95rem;">
                 <button type="button" class="sub-unpublish-btn" data-submission-id="${sid}"
                   style="background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;border-radius:8px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;">
