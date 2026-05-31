@@ -3960,6 +3960,7 @@
             let query = bloomSupabase
               .from('species_sightings')
               .select('*')
+              .neq('review_status', 'draft')
               .order('created_at', { ascending: false });
 
             // Researchers only see their own; DENR/admin sees all
@@ -4570,6 +4571,7 @@
         const searchVal = (document.getElementById('submissions-search-input')?.value || '').trim().toLowerCase();
         const statusFilter = activeStatusFilter || 'all';
         const filtered = submissionRows.filter(function(s) {
+          if (String(s.review_status || '').toLowerCase() === 'draft') return false;
           const matchStatus = statusFilter === 'all' || String(s.review_status || '').toLowerCase() === statusFilter;
           if (!matchStatus) return false;
           if (!searchVal) return true;
