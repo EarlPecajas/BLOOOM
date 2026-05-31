@@ -1131,6 +1131,7 @@
           <thead>
             <tr class="submissions-table-head">
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Researcher</th>
+              <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Email</th>
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Species</th>
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Date</th>
               <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Status</th>
@@ -1139,7 +1140,7 @@
           </thead>
           <tbody id="submissions-table-body">
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions…</td>
+              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions…</td>
             </tr>
           </tbody>
         </table>
@@ -3886,7 +3887,7 @@
         if (!items.length) {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
+              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
             </tr>
           `;
           return;
@@ -3900,6 +3901,7 @@
         submissionsTableBody.innerHTML = items.map((submission) => {
           const badgeClass = getSubmissionStatusBadgeClass(submission.review_status);
           const safeResearcher = escapeHtml(submission.researcher);
+          const safeEmail = escapeHtml(submission.researcher_email || '');
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
@@ -3929,6 +3931,7 @@
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">${safeResearcher}</td>
+              <td class="submission-researcher-cell" style="font-size:0.83rem;color:var(--dt-muted);">${safeEmail}</td>
               <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
@@ -3982,7 +3985,7 @@
         } catch {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
+              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
             </tr>
           `;
         }
