@@ -1755,65 +1755,213 @@
     <!-- Toast notification -->
     <div id="denr-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:5000;background:#1a3a1c;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;font-family:Inter,Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:340px;line-height:1.45;"></div>
 
-    <div id="postToCatalogModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;">
-      <div style="background:#fff;border-radius:16px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.28);margin:auto;">
+    <!-- ══ Publish to Catalog Modal ══════════════════════════════════════ -->
+    <div id="postToCatalogModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:3000;align-items:flex-start;justify-content:center;padding:1.25rem;overflow-y:auto;backdrop-filter:blur(3px);">
+      <div style="background:var(--dt-bg);border-radius:18px;max-width:1100px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.55);border:1px solid var(--dt-border-md);display:flex;flex-direction:column;margin:auto;overflow:hidden;">
+
         <!-- Header -->
-        <div style="background:#145A1E;padding:1.25rem 1.5rem;color:#fff;display:flex;justify-content:space-between;align-items:center;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1;">
-          <div>
-            <p style="margin:0;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;opacity:0.75;">DENR · Catalog Publishing</p>
-            <h2 style="margin:0.2rem 0 0;font-size:1.15rem;font-family:Inter,Roboto,sans-serif;font-weight:700;">Post to Orchid Catalog</h2>
+        <div style="background:#145A1E;padding:1.4rem 1.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-shrink:0;border-radius:18px 18px 0 0;">
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.35rem;">
+              <span style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.6);">DENR · Catalog Publishing</span>
+              <span id="ptc-status-badge" style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;padding:0.18rem 0.6rem;border-radius:999px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.3);"></span>
+            </div>
+            <h2 id="ptc-species-name" class="scientific-name" style="margin:0 0 0.25rem;color:#fff;font-size:1.55rem;font-weight:800;line-height:1.2;"></h2>
+            <p id="ptc-researcher" style="margin:0;color:rgba(255,255,255,0.7);font-size:0.84rem;"></p>
           </div>
-          <button onclick="closeModal('postToCatalogModal')" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.3rem;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">×</button>
+          <button onclick="closeModal('postToCatalogModal')" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 160ms;" onmouseover="this.style.background='rgba(255,255,255,0.24)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">&times;</button>
         </div>
-        <div style="padding:1.5rem;">
-          <form id="postToCatalogForm">
-            <!-- Species info -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:1.25rem;">
+
+        <!-- Scrollable body -->
+        <div style="overflow-y:auto;flex:1;min-height:0;max-height:calc(100vh - 10rem);">
+          <form id="postToCatalogForm" onsubmit="submitPostToCatalog(event)">
+
+            <!-- Quick-edit strip: sci name + genus -->
+            <div style="background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);padding:1rem 1.75rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
               <div>
-                <label for="catalogScientificName" style="display:block;margin-bottom:0.4rem;font-size:0.84rem;font-weight:700;color:#1e293b;">Scientific Name <span style="color:#b42318;">*</span></label>
-                <input type="text" id="catalogScientificName" required placeholder="e.g. Dendrobium anosmum" style="width:100%;padding:0.65rem 0.8rem;border:1.5px solid #d1d5db;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;outline:none;" onfocus="this.style.borderColor='#145A1E'" onblur="this.style.borderColor='#d1d5db'">
+                <label for="catalogScientificName" style="display:block;margin-bottom:0.35rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-muted);">Scientific Name <span style="color:#f87171;">*</span></label>
+                <input type="text" id="catalogScientificName" required placeholder="e.g. Dendrobium anosmum"
+                  style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;font-style:italic;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;"
+                  onfocus="this.style.borderColor='#4db86a'" onblur="this.style.borderColor='var(--dt-border-md)'">
               </div>
               <div>
-                <label for="catalogGenus" style="display:block;margin-bottom:0.4rem;font-size:0.84rem;font-weight:700;color:#1e293b;">Genus <span style="color:#b42318;">*</span></label>
-                <select id="catalogGenus" required style="width:100%;padding:0.65rem 0.8rem;border:1.5px solid #d1d5db;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:#fff;outline:none;" onfocus="this.style.borderColor='#145A1E'" onblur="this.style.borderColor='#d1d5db'">
+                <label for="catalogGenus" style="display:block;margin-bottom:0.35rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-muted);">Genus <span style="color:#f87171;">*</span></label>
+                <select id="catalogGenus" required
+                  style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;"
+                  onfocus="this.style.borderColor='#4db86a'" onblur="this.style.borderColor='var(--dt-border-md)'">
                   <option value="">Select Genus</option>
                 </select>
               </div>
             </div>
 
-            <!-- Thumbnail section -->
-            <div style="margin-bottom:1.4rem;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;">
-                <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">Catalog Thumbnail <span style="color:#b42318;">*</span></label>
-                <span style="font-size:0.75rem;color:#64748b;">Choose one photo as the catalog card image</span>
+            <!-- All detail sections -->
+            <div style="padding:1.25rem 1.75rem;display:flex;flex-direction:column;gap:1rem;">
+
+              <!-- helper macro: each section is data-ptc-section=name -->
+              <!-- ── Basic Taxonomic ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-taxonomy" checked onchange="ptcToggleSection(this,'taxonomy')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Basic Taxonomic Information</h4>
+                  <span style="font-size:0.7rem;color:var(--dt-muted);">Check all to confirm review</span>
+                </div>
+                <div class="ptc-section" data-section="taxonomy" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);grid-column:1/-1;">
+                    <input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Common Names</span><span id="ptc-common-names" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span>
+                  </div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);">
+                    <input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Local Names</span><span id="ptc-local-names" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span>
+                  </div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);">
+                    <input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Endemicity</span><span id="ptc-endemicity" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span>
+                  </div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);">
+                    <input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">ID Confidence</span><span id="ptc-id-confidence" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span>
+                  </div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;">
+                    <input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Observation Type</span><span id="ptc-obs-type" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span>
+                  </div>
+                </div>
               </div>
-              <!-- Submission photos for thumbnail -->
-              <div id="thumbnailOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.6rem;margin-bottom:0.75rem;"></div>
-              <!-- Upload custom thumbnail -->
-              <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed #C4BC84;border-radius:10px;cursor:pointer;background:#EAF5EA;font-size:0.84rem;color:#145A1E;font-weight:600;transition:background 160ms;" onmouseover="this.style.background='#EAF5EA'" onmouseout="this.style.background='#EAF5EA'">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload custom thumbnail
-                <input type="file" id="catalogThumbnailUpload" accept="image/*" style="display:none;" onchange="previewCustomThumbnail(this)">
-              </label>
-              <div id="customThumbnailPreview" style="display:none;margin-top:0.65rem;"></div>
+
+              <!-- ── Observation Details ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-obs" checked onchange="ptcToggleSection(this,'obs')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Observation / Collection Details</h4>
+                </div>
+                <div class="ptc-section" data-section="obs" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Date</span><span id="ptc-obs-date" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Time</span><span id="ptc-obs-time" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Collection Method</span><span id="ptc-collection-method" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Voucher Collected</span><span id="ptc-voucher" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                </div>
+              </div>
+
+              <!-- ── Location ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-loc" checked onchange="ptcToggleSection(this,'loc')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Geographical / Location Data</h4>
+                </div>
+                <div class="ptc-section" data-section="loc" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Mountain</span><span id="ptc-mountain" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Specific Site</span><span id="ptc-site" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Elevation (m)</span><span id="ptc-elevation" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Coordinates</span><span id="ptc-coords" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                </div>
+              </div>
+
+              <!-- ── Habitat ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-hab" checked onchange="ptcToggleSection(this,'hab')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 22"/><path d="M9.5 8c-1.9 0-3.45 1.57-3.45 3.5C6.05 16.13 11 19 11 22"/><path d="M19.5 8c1.9 0 3.45 1.57 3.45 3.5C22.95 16.13 18 19 18 22"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Habitat Information</h4>
+                </div>
+                <div class="ptc-section" data-section="hab" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Habitat Type</span><span id="ptc-habitat-type" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Microhabitat</span><span id="ptc-microhabitat" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Growth Substrate</span><span id="ptc-substrate" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Host Tree</span><span id="ptc-host-tree" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Light Exposure</span><span id="ptc-light" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Nearby Water</span><span id="ptc-water" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                </div>
+              </div>
+
+              <!-- ── Morphology ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-morph" checked onchange="ptcToggleSection(this,'morph')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Morphological Characteristics</h4>
+                </div>
+                <div class="ptc-section" data-section="morph" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Plant Height (cm)</span><span id="ptc-height" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Flower Color</span><span id="ptc-flower-color" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Flower Count</span><span id="ptc-flower-count" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Inflorescence</span><span id="ptc-inflorescence" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Fragrance</span><span id="ptc-fragrance" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Flowering Season</span><span id="ptc-flowering-season" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Leaf Shape</span><span id="ptc-leaf-shape" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Blooming Stage</span><span id="ptc-blooming" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                </div>
+              </div>
+
+              <!-- ── Conservation ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-con" checked onchange="ptcToggleSection(this,'con')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Conservation & Threat Data</h4>
+                </div>
+                <div class="ptc-section" data-section="con" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><span id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Level</span><span id="ptc-threat" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Population Status</span><span id="ptc-pop-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Types</span><span id="ptc-threat-types" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span></div>
+                </div>
+              </div>
+
+              <!-- ── Researchers ── -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <input type="checkbox" id="ptc-sec-res" checked onchange="ptcToggleSection(this,'res')" style="width:15px;height:15px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Researchers & Notes</h4>
+                </div>
+                <div class="ptc-section" data-section="res" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Researcher</span><span id="ptc-researcher-name" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Institution</span><span id="ptc-institution" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;grid-column:1/-1;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex-shrink:0;">Team Members</span><span id="ptc-team" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;flex:1;margin-left:1rem;"></span></div>
+                </div>
+              </div>
+
+              <!-- ══ PHOTOS SECTION ══ -->
+              <!-- Thumbnail -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Catalog Thumbnail <span style="color:#f87171;">*</span></h4>
+                  <span style="font-size:0.72rem;color:var(--dt-muted);">Select one — shown as the card image in all catalogs</span>
+                </div>
+                <div style="padding:1rem;">
+                  <div id="thumbnailOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;margin-bottom:0.85rem;"></div>
+                  <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed var(--dt-border-md);border-radius:10px;cursor:pointer;background:rgba(77,184,106,0.06);font-size:0.84rem;color:var(--dt-accent-lt);font-weight:600;transition:background 150ms;" onmouseover="this.style.background='rgba(77,184,106,0.12)'" onmouseout="this.style.background='rgba(77,184,106,0.06)'">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload custom thumbnail
+                    <input type="file" id="catalogThumbnailUpload" accept="image/*" style="display:none;" onchange="previewCustomThumbnail(this)">
+                  </label>
+                  <div id="customThumbnailPreview" style="display:none;margin-top:0.65rem;"></div>
+                </div>
+              </div>
+
+              <!-- Gallery -->
+              <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;margin-bottom:0.5rem;">
+                <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>
+                  <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Orchid Gallery</h4>
+                  <span style="font-size:0.72rem;color:var(--dt-muted);">Check photos to include in the orchid's gallery</span>
+                </div>
+                <div style="padding:1rem;">
+                  <div id="galleryOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;"></div>
+                  <p id="galleryOptionsEmpty" style="display:none;color:var(--dt-muted);font-size:0.85rem;margin:0;">No submission photos available.</p>
+                </div>
+              </div>
+
+            </div><!-- end sections padding -->
+
+            <!-- Sticky footer -->
+            <div style="position:sticky;bottom:0;background:var(--dt-bg-panel);border-top:1px solid var(--dt-border-md);padding:1rem 1.75rem;display:flex;gap:0.75rem;justify-content:flex-end;z-index:2;">
+              <button type="button" onclick="closeModal('postToCatalogModal')" class="dashboard-btn dashboard-btn-secondary" style="border-radius:999px;min-width:90px;">Cancel</button>
+              <button type="submit" id="ptc-submit-btn" class="dashboard-btn dashboard-btn-primary" style="border-radius:999px;background:#145A1E;border-color:#145A1E;min-width:160px;">Publish to Catalog</button>
             </div>
 
-            <!-- Gallery section -->
-            <div style="margin-bottom:1.5rem;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;">
-                <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">Gallery Photos</label>
-                <span style="font-size:0.75rem;color:#64748b;">Check photos to include in the orchid gallery</span>
-              </div>
-              <div id="galleryOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.6rem;"></div>
-              <p id="galleryOptionsEmpty" style="display:none;color:#94a3b8;font-size:0.85rem;margin:0.5rem 0 0;">No submission photos available.</p>
-            </div>
-
-            <div style="display:flex;gap:0.75rem;justify-content:flex-end;padding-top:1rem;border-top:1px solid #e5e7eb;">
-              <button type="button" onclick="closeModal('postToCatalogModal')" class="dashboard-btn dashboard-btn-secondary" style="border-radius:999px;">Cancel</button>
-              <button type="submit" class="dashboard-btn dashboard-btn-primary" style="border-radius:999px;background:#145A1E;border-color:#145A1E;">Publish to Catalog</button>
-            </div>
           </form>
-        </div>
+        </div><!-- end scrollable body -->
       </div>
     </div>
 
@@ -6412,6 +6560,17 @@
         if (badge) badge.style.display = cb.checked ? 'flex' : 'none';
       }
 
+      function ptcToggleSection(secCheckbox, sectionKey) {
+        const container = secCheckbox.closest('[style*="border-radius:12px"]');
+        if (!container) return;
+        container.querySelectorAll('.ptc-field-check').forEach(cb => { cb.checked = secCheckbox.checked; });
+      }
+
+      function ptcSet(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val || '—';
+      }
+
       async function openPostToCatalogModal() {
         if (!currentSubmission) return;
         catalogCustomThumbnailFile = null;
@@ -6420,38 +6579,93 @@
         const uploadInput = document.getElementById('catalogThumbnailUpload');
         if (uploadInput) uploadInput.value = '';
 
-        const scientificNameInput = document.getElementById('catalogScientificName');
+        const s = currentSubmission;
+
+        // Header
+        document.getElementById('ptc-species-name').textContent = s.species || s.scientific_name || '';
+        document.getElementById('ptc-researcher').textContent = (s.researcher_name || s.researcher || '') + (s.institution ? ' · ' + s.institution : '');
+        const badge = document.getElementById('ptc-status-badge');
+        if (badge) badge.textContent = s.review_status || '';
+
+        // Reset all section checkboxes
+        document.querySelectorAll('[id^="ptc-sec-"]').forEach(cb => { cb.checked = true; });
+        document.querySelectorAll('.ptc-field-check').forEach(cb => { cb.checked = true; });
+
+        // Populate fields
+        const commonNames = Array.isArray(s.common_names) ? s.common_names.join(', ') : (s.common_name || '');
+        const localNames  = Array.isArray(s.local_names)  ? s.local_names.join(', ')  : '';
+        ptcSet('ptc-common-names',     commonNames);
+        ptcSet('ptc-local-names',      localNames);
+        ptcSet('ptc-endemicity',       s.endemicity || s.endemic_to_philippines);
+        ptcSet('ptc-id-confidence',    s.identification_confidence);
+        ptcSet('ptc-obs-type',         s.observation_type);
+
+        ptcSet('ptc-obs-date',         s.submission_date || s.observation_date);
+        ptcSet('ptc-obs-time',         s.observation_time);
+        ptcSet('ptc-collection-method',s.collection_method);
+        ptcSet('ptc-voucher',          s.voucher_collected ? 'Yes' : 'No');
+
+        ptcSet('ptc-mountain',         s.mountain_name);
+        ptcSet('ptc-site',             s.specific_site_zone || s.specific_site);
+        ptcSet('ptc-elevation',        s.elevation_meters ? s.elevation_meters + ' m' : '');
+        ptcSet('ptc-coords',           (s.latitude && s.longitude) ? s.latitude + ', ' + s.longitude : '');
+
+        ptcSet('ptc-habitat-type',     s.habitat_type);
+        ptcSet('ptc-microhabitat',     s.microhabitat);
+        ptcSet('ptc-substrate',        s.growth_substrate);
+        ptcSet('ptc-host-tree',        s.host_tree_species);
+        ptcSet('ptc-light',            s.light_exposure);
+        ptcSet('ptc-water',            s.nearby_water_source);
+
+        ptcSet('ptc-height',           s.plant_height_cm ? s.plant_height_cm + ' cm' : '');
+        ptcSet('ptc-flower-color',     s.flower_color);
+        ptcSet('ptc-flower-count',     s.flower_count);
+        ptcSet('ptc-inflorescence',    s.inflorescence_type);
+        ptcSet('ptc-fragrance',        s.fragrance);
+        ptcSet('ptc-flowering-season', s.flowering_season);
+        ptcSet('ptc-leaf-shape',       s.leaf_shape);
+        ptcSet('ptc-blooming',         s.blooming_stage);
+
+        ptcSet('ptc-con-status',       s.conservation_status);
+        ptcSet('ptc-threat',           s.threat_level);
+        ptcSet('ptc-pop-status',       s.population_status);
+        const threatTypes = Array.isArray(s.threat_types) ? s.threat_types.join(', ') : (s.threat_types || '');
+        ptcSet('ptc-threat-types',     threatTypes);
+
+        ptcSet('ptc-researcher-name',  s.researcher_name || s.researcher);
+        ptcSet('ptc-institution',      s.institution);
+        ptcSet('ptc-team',             s.team_members_display || s.team_members || '');
+
+        // Genus select
         const genusSelect = document.getElementById('catalogGenus');
-        const thumbnailOptions = document.getElementById('thumbnailOptions');
-        const galleryOptions = document.getElementById('galleryOptions');
-        const galleryEmpty = document.getElementById('galleryOptionsEmpty');
-
-        scientificNameInput.value = currentSubmission.species || currentSubmission.scientific_name || '';
-
+        document.getElementById('catalogScientificName').value = s.species || s.scientific_name || '';
         try {
           const { data: genusData, error } = await bloomSupabase.from('genus').select('genus_name').order('genus_name');
           if (!error && genusData) {
             genusSelect.innerHTML = '<option value="">Select Genus</option>' +
               genusData.map(g => `<option value="${g.genus_name}">${g.genus_name}</option>`).join('');
-            const currentGenus = (currentSubmission.species || '').split(' ')[0];
+            const currentGenus = (s.species || s.scientific_name || '').split(' ')[0];
             if (currentGenus && genusData.some(g => g.genus_name === currentGenus)) genusSelect.value = currentGenus;
           }
         } catch(e) { console.error('Genus load error:', e); }
 
+        // Photos
+        const thumbnailOptions = document.getElementById('thumbnailOptions');
+        const galleryOptions   = document.getElementById('galleryOptions');
+        const galleryEmpty     = document.getElementById('galleryOptionsEmpty');
         const allImages = [
-          ...(currentSubmission.whole_plant_photos || []),
-          ...(currentSubmission.closeup_flower_photos || []),
-          ...(currentSubmission.habitat_photos || [])
+          ...(s.whole_plant_photos   || []),
+          ...(s.closeup_flower_photos|| []),
+          ...(s.habitat_photos       || [])
         ].filter(Boolean);
 
         if (allImages.length === 0) {
-          thumbnailOptions.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;margin:0;">No submission photos available. Upload a custom thumbnail above.</p>';
+          thumbnailOptions.innerHTML = '<p style="color:var(--dt-muted);font-size:0.85rem;margin:0;">No submission photos. Upload a custom thumbnail above.</p>';
           galleryOptions.innerHTML = '';
           if (galleryEmpty) galleryEmpty.style.display = 'block';
         } else {
           thumbnailOptions.innerHTML = allImages.map((img, i) => makeThumbnailCard(img, i)).join('');
-          // Wire thumbnail click for visual update
-          thumbnailOptions.querySelectorAll && thumbnailOptions.querySelectorAll('label').forEach(function(lbl) {
+          thumbnailOptions.querySelectorAll('label').forEach(function(lbl) {
             lbl.addEventListener('click', function() { setTimeout(updateThumbSelection, 10); });
           });
           galleryOptions.innerHTML = allImages.map((img, i) => makeGalleryCard(img, i)).join('');
@@ -6459,6 +6673,9 @@
         }
 
         document.getElementById('postToCatalogModal').style.display = 'flex';
+        // Scroll to top
+        const scrollEl = document.querySelector('#postToCatalogModal > div > div[style*="overflow-y"]');
+        if (scrollEl) scrollEl.scrollTop = 0;
       }
       
       async function submitPostToCatalog(event) {
