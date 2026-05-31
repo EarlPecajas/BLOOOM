@@ -165,6 +165,48 @@
         border-color: rgba(20,90,30,.25) !important;
       }
       body.catalog-light .orchid-card-info { background: #FFFFFF !important; }
+      /* Card text — dark theme sets these via !important with class-only selectors;
+         use body + nav chain (higher specificity) to reliably override */
+      body.catalog-light .orchid-card-name {
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+      }
+      body.catalog-light .orchid-card-genus {
+        color: #3e6639 !important;
+        -webkit-text-fill-color: #3e6639 !important;
+      }
+      /* Nav buttons — dark theme uses .top-nav .auth-actions .btn-* (3 classes);
+         match depth so later source-order wins */
+      body.catalog-light .top-nav .btn-ghost,
+      body.catalog-light .top-nav .btn-outline-secondary {
+        background: transparent !important;
+        border: 1.5px solid rgba(20,90,30,.45) !important;
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .top-nav .btn-ghost:hover,
+      body.catalog-light .top-nav .btn-outline-secondary:hover {
+        background: #eaf3ea !important;
+        border-color: #145A1E !important;
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+      }
+      body.catalog-light .top-nav .btn-solid,
+      body.catalog-light .top-nav .btn-success {
+        background: #145A1E !important;
+        border: 1.5px solid #145A1E !important;
+        color: #F0EAD2 !important;
+        -webkit-text-fill-color: #F0EAD2 !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .top-nav .btn-solid:hover,
+      body.catalog-light .top-nav .btn-success:hover {
+        background: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+      }
     </style>
     <script src="config.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1141,7 +1183,7 @@
 
           return `
             <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">
-              <img src="${thumbnailImage}" alt="${orchid.name}" class="orchid-card-image" />
+              <img src="${thumbnailImage}" alt="${escapeHtml(orchid.name)}" class="orchid-card-image" onerror="this.onerror=null;this.src='./catalogicon.png';" />
               <div class="orchid-card-info">
                 <p class="orchid-card-name scientific-name">${orchid.name}</p>
                 <p class="orchid-card-genus">${escapeHtml(localName)}</p>
