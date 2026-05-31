@@ -1135,12 +1135,13 @@
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Species</th>
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Date</th>
               <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Status</th>
+              <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Publish</th>
               <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Actions</th>
             </tr>
           </thead>
           <tbody id="submissions-table-body">
             <tr>
-              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions…</td>
+              <td colspan="7" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions…</td>
             </tr>
           </tbody>
         </table>
@@ -3887,7 +3888,7 @@
         if (!items.length) {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
+              <td colspan="7" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
             </tr>
           `;
           return;
@@ -3908,12 +3909,24 @@
           const sid = submission.id;
           const speciesKey = (submission.species || '').trim().toLowerCase();
 
-          // Publish button — only when approved AND species not yet in catalog
-          let postBtn = '';
-          if (isAdminRole && isApproved(submission) && !submission.catalog_published && !catalogNames.has(speciesKey)) {
-            postBtn = `<button type="button" class="sub-action-btn publish sub-post-btn" data-submission-id="${sid}" title="Publish to Catalog">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><polyline points="5 12 12 5 19 12"/></svg>
-            </button>`;
+          // Publish / Unpublish cell — approved submissions only
+          let publishCell = '<td class="submission-action-cell"></td>';
+          if (isAdminRole && isApproved(submission)) {
+            if (submission.catalog_published) {
+              publishCell = `<td class="submission-action-cell" style="text-align:center;">
+                <button type="button" class="sub-action-btn sub-unpublish-btn" data-submission-id="${sid}" title="Unpublish from Catalog"
+                  style="background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;border-radius:8px;padding:.28rem .7rem;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                  Unpublish
+                </button>
+              </td>`;
+            } else {
+              publishCell = `<td class="submission-action-cell" style="text-align:center;">
+                <button type="button" class="sub-action-btn sub-post-btn" data-submission-id="${sid}" title="Publish to Catalog"
+                  style="background:#145A1E;border:1.5px solid #145A1E;color:#fff;border-radius:8px;padding:.28rem .7rem;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                  Publish
+                </button>
+              </td>`;
+            }
           }
 
           // Status buttons — only for pending/revision submissions
@@ -3935,11 +3948,11 @@
               <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
+              ${publishCell}
               <td class="submission-action-cell" style="white-space:nowrap;">
                 <div style="display:inline-flex;align-items:center;gap:5px;">
                   <button type="button" class="sub-action-btn view" data-submission-id="${sid}" title="View details"></button>
                   ${quickBtns}
-                  ${postBtn}
                 </div>
               </td>
             </tr>
@@ -3986,7 +3999,7 @@
         } catch {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
+              <td colspan="7" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
             </tr>
           `;
         }
