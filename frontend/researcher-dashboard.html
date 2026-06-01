@@ -3287,10 +3287,14 @@
           const species = escapeHtml(String(row.scientific_name || 'Unnamed draft'));
           const saved = escapeHtml(row.updated_at ? new Date(row.updated_at).toLocaleDateString() : '—');
           const sid = escapeHtml(String(row.sighting_id));
+          const isMobile = String(row.entry_id || '').startsWith('MOBILE-DRAFT-');
+          const mobileBadge = isMobile
+            ? `<span style="display:inline-block;margin-left:0.4rem;padding:0.1rem 0.45rem;border-radius:999px;background:#e0f0ff;color:#1a5fa8;font-size:0.72rem;font-weight:700;vertical-align:middle;letter-spacing:0.02em;">Mobile</span>`
+            : '';
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">${researcher}</td>
-              <td class="submission-species-cell"><span class="scientific-name">${species}</span></td>
+              <td class="submission-species-cell"><span class="scientific-name">${species}</span>${mobileBadge}</td>
               <td class="submission-date-cell">${saved}</td>
               <td class="submission-action-cell">
                 <button type="button" class="submission-action-btn submission-edit-btn" data-submission-id="${sid}" data-action="edit">Edit</button>
@@ -3815,45 +3819,181 @@
           form.dataset.editDraftId = String(draft.id || '');
           form.dataset.editDraftEntryId = String(draft.entry_id || '');
         }
+
         const setVal = (id, val) => {
           if (val == null || val === '') return;
           const el = document.getElementById(id);
           if (el) el.value = String(val);
         };
-        setVal('submission-scientific-name', draft.scientific_name || draft.species);
+
+        // Convert a Supabase boolean (true/false) or existing 'yes'/'no' string to select value
+        const boolToYesNo = (v) => v === true ? 'yes' : v === false ? 'no' : (v || '');
+
+        // ── Identity ──
+        const sciName = draft.scientific_name || draft.species || '';
+        setVal('submission-scientific-name', sciName);
         setVal('submission-genus', draft.genus || '');
+        // Derive species epithet from scientific_name minus genus prefix
+        if (sciName && draft.genus && sciName.toLowerCase().startsWith(draft.genus.toLowerCase())) {
+          const epithet = sciName.slice(draft.genus.length).trim();
+          if (epithet) setVal('submission-species-epithet', epithet);
+        }
+        setVal('submission-identification-confidence', draft.identification_confidence || '');
+        setVal('submission-endemic-philippines', boolToYesNo(draft.endemic_to_philippines));
+
+        // ── Common / Local names (dynamic list) ──
+        const commonNamesWrap = document.getElementById('submission-common-names-wrap');
+        if (commonNamesWrap) {
+          commonNamesWrap.innerHTML = '';
+          const names = parseJsonArrayValue(draft.common_names);
+          (names.length ? names : ['']).slice(0, 5).forEach((name, i) => {
+            const row = createCommonNameInput(i + 1);
+            const input = row.querySelector('.submission-common-name-item');
+            if (input && name) input.value = name;
+            commonNamesWrap.appendChild(row);
+          });
+        }
+        const localNamesWrap = document.getElementById('submission-local-names-wrap');
+        if (localNamesWrap) {
+          localNamesWrap.innerHTML = '';
+          const names = parseJsonArrayValue(draft.local_names);
+          (names.length ? names : ['']).slice(0, 5).forEach((name, i) => {
+            const row = createLocalNameInput(i + 1);
+            const input = row.querySelector('.submission-local-name-item');
+            if (input && name) input.value = name;
+            localNamesWrap.appendChild(row);
+          });
+        }
+
+        // ── Observation ──
         setVal('submission-observation-date', draft.observation_date || '');
-        setVal('submission-microhabitat', draft.microhabitat || '');
-        setVal('submission-growth-substrate', draft.growth_substrate || '');
-        setVal('submission-flower-color', draft.flower_color || '');
-        setVal('submission-flower-count', draft.flower_count || '');
-        setVal('submission-leaf-count', draft.leaf_count || '');
         setVal('submission-observation-time', draft.observation_time || '');
+        setVal('submission-collection-method', draft.collection_method || '');
+        setVal('submission-observation-type', draft.observation_type || '');
+        setVal('submission-voucher-collected', boolToYesNo(draft.voucher_collected));
+
+        // ── Location ──
         setVal('submission-specific-site-zone', draft.specific_site_zone || '');
         setVal('submission-specific-site-other', draft.specific_site_other || '');
+        if (draft.latitude) setVal('submission-latitude', draft.latitude);
+        if (draft.longitude) setVal('submission-longitude', draft.longitude);
+        if (draft.elevation_meters) setVal('submission-elevation', draft.elevation_meters);
+        // Trigger site zone change to show/hide 'Others' text field
+        const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
+        if (specificSiteZoneEl) specificSiteZoneEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // ── Habitat ──
+        const habitatEl = document.getElementById('submission-habitat-type');
+        if (habitatEl && draft.habitat_type) {
+          habitatEl.value = draft.habitat_type;
+          habitatEl.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        setVal('submission-microhabitat', draft.microhabitat || '');
+        setVal('submission-growth-substrate', draft.growth_substrate || '');
+        const growthSubEl = document.getElementById('submission-growth-substrate');
+        if (growthSubEl) growthSubEl.dispatchEvent(new Event('change', { bubbles: true }));
+        setVal('submission-host-tree-species', draft.host_tree_species || '');
+        if (draft.host_tree_dbh_cm) setVal('submission-host-tree-dbh', draft.host_tree_dbh_cm);
+        if (draft.canopy_cover_percent) setVal('submission-canopy-cover', draft.canopy_cover_percent);
+        setVal('submission-light-exposure', draft.light_exposure || '');
+        setVal('submission-soil-type', draft.soil_type || '');
+        setVal('submission-nearby-water-source', draft.nearby_water_source || '');
+
+        // ── Morphology ──
+        if (draft.plant_height_cm) setVal('submission-plant-height', draft.plant_height_cm);
+        setVal('submission-pseudobulb-present', boolToYesNo(draft.pseudobulb_present));
+        if (draft.stem_length_cm) setVal('submission-stem-length', draft.stem_length_cm);
+        if (draft.root_length_cm) setVal('submission-root-length', draft.root_length_cm);
+        if (draft.leaf_count) setVal('submission-leaf-count', draft.leaf_count);
+        setVal('submission-leaf-shape', draft.leaf_shape || '');
+        if (draft.leaf_length_cm) setVal('submission-leaf-length', draft.leaf_length_cm);
+        if (draft.leaf_width_cm) setVal('submission-leaf-width', draft.leaf_width_cm);
+        setVal('submission-leaf-arrangement', draft.leaf_arrangement || '');
+        setVal('submission-flower-color', draft.flower_color || '');
+        if (draft.flower_count) setVal('submission-flower-count', draft.flower_count);
+        if (draft.flower_diameter_cm) setVal('submission-flower-diameter', draft.flower_diameter_cm);
+        setVal('submission-inflorescence-type', draft.inflorescence_type || '');
+        setVal('submission-petal-characteristics', draft.petal_characteristics || '');
+        setVal('submission-sepal-characteristics', draft.sepal_characteristics || '');
+        setVal('submission-labellum-description', draft.labellum_lip_description || '');
+        setVal('submission-fragrance', draft.fragrance || '');
+        setVal('submission-blooming-stage', draft.blooming_stage || '');
+        setVal('submission-fruit-present', boolToYesNo(draft.fruit_present));
+        setVal('submission-fruit-type', draft.fruit_type || '');
+        setVal('submission-seed-capsule-condition', draft.seed_capsule_condition || '');
+
+        // Flowering season — stored as "Month – Month" or "Month–Month"
+        const seasonStr = String(draft.flowering_season || '').trim();
+        if (seasonStr === 'Unknown') {
+          const unknownCb = document.getElementById('submission-flowering-season-unknown');
+          if (unknownCb) { unknownCb.checked = true; updateFloweringSeasonValue(); }
+        } else if (seasonStr) {
+          const parts = seasonStr.split(/\s*[–\-]\s*/);
+          if (parts.length >= 2) {
+            setVal('submission-flowering-season-start', parts[0].trim());
+            setVal('submission-flowering-season-end', parts[1].trim());
+          }
+          updateFloweringSeasonValue();
+        }
+
+        // ── Phenology / Population ──
+        setVal('submission-life-stage', draft.life_stage || '');
+        setVal('submission-phenology', draft.phenology || '');
+        if (draft.population_count) setVal('submission-population-count', draft.population_count);
+
+        // ── Conservation ──
         setVal('submission-population-status', draft.population_status || '');
         setVal('submission-threat-level', draft.threat_level || '');
+        // Threat type checkboxes
+        const threatArr = parseJsonArrayValue(draft.threat_types);
+        document.querySelectorAll('.submission-threat-type-option').forEach(function(cb) {
+          cb.checked = threatArr.map(function(t) { return String(t).toLowerCase(); })
+                                .includes(String(cb.value).toLowerCase());
+        });
+
+        // ── Team & Notes ──
         setVal('submission-head-observer', draft.researcher_name || '');
         setVal('submission-institution', draft.institution || '');
+
+        const teamMembersWrap = document.getElementById('submission-team-members-wrap');
+        if (teamMembersWrap) {
+          teamMembersWrap.innerHTML = '';
+          let members = [];
+          const rawTeam = draft.team_members;
+          if (rawTeam) {
+            try {
+              const parsed = typeof rawTeam === 'string' ? JSON.parse(rawTeam) : rawTeam;
+              if (Array.isArray(parsed)) {
+                members = parsed.map(function(m) {
+                  return typeof m === 'string' ? { name: m, role: '' } : { name: m.name || '', role: m.role || '' };
+                });
+              }
+            } catch (_) {
+              // Plain text from mobile — comma-separated names
+              members = String(rawTeam).split(',').map(function(n) { return { name: n.trim(), role: '' }; }).filter(function(m) { return m.name; });
+            }
+          }
+          if (!members.length) members = [{ name: '', role: '' }];
+          members.slice(0, 8).forEach(function(m, i) {
+            const row = createTeamMemberInput(i + 1);
+            const nameInput = row.querySelector('.submission-team-member-name');
+            const roleSelect = row.querySelector('.submission-team-member-role');
+            if (nameInput && m.name) nameInput.value = m.name;
+            if (roleSelect && m.role) roleSelect.value = m.role;
+            teamMembersWrap.appendChild(row);
+          });
+        }
+
         setVal('submission-researcher-notes', draft.researcher_notes || '');
-        // Restore related study fields from draft
+
+        // Related study
         try {
           const rs = draft.related_study ? JSON.parse(draft.related_study) : null;
           if (rs) {
             setVal('submission-related-study-title', rs.title || '');
             setVal('submission-related-study-link', rs.link || '');
           }
-        } catch (e) { /* ignore parse errors */ }
-        // habitat-type and microhabitat are selects — set via direct property
-        const habitatEl = document.getElementById('submission-habitat-type');
-        if (habitatEl && draft.habitat_type) habitatEl.value = draft.habitat_type;
-        const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
-        const specificSiteOtherWrapEl = document.getElementById('submission-specific-site-other-wrap');
-        if (specificSiteZoneEl) {
-          specificSiteZoneEl.dispatchEvent(new Event('change', { bubbles: true }));
-        } else if (specificSiteOtherWrapEl && draft.specific_site_other) {
-          specificSiteOtherWrapEl.style.display = 'grid';
-        }
+        } catch (_) { /* ignore parse errors */ }
       }
 
       if (catalogGrid) {
