@@ -1233,6 +1233,83 @@
         .d3-badge.rejected { color:#991B1B;background:#FEF2F2;border-color:#FECACA; }
         .d3-badge.revision { color:#92400E;background:#FEF3C7;border-color:#FDE68A; }
         .d3-actions { display:flex;gap:6px;margin-top:12px;align-items:center;flex-wrap:wrap; }
+
+        /* ── D3 VIEWER OVERLAY ──────────────────────── */
+        #d3v-vov{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s;backdrop-filter:blur(3px);}
+        #d3v-vov.open{opacity:1;pointer-events:all;}
+        #d3v-vm{background:#fff;border-radius:12px;width:100%;max-width:880px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.22);display:flex;flex-direction:column;transform:translateY(14px);transition:transform .22s;}
+        #d3v-vov.open #d3v-vm{transform:translateY(0);}
+        .d3v-vh{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid #E4E7EC;flex-shrink:0;}
+        .d3v-vh-info{flex:1;min-width:0;}
+        .d3v-vh-name{font-size:15px;font-weight:600;color:#111827;font-style:italic;font-family:Inter,Roboto,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .d3v-vh-sub{font-size:11.5px;color:#6B7280;margin-top:1px;font-family:Inter,Roboto,sans-serif;}
+        .d3v-close{width:30px;height:30px;border-radius:6px;border:1px solid #E4E7EC;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280;transition:all .12s;flex-shrink:0;}
+        .d3v-close:hover{background:#FEF2F2;border-color:#FECACA;color:#991B1B;}
+        .d3v-vbody{padding:16px 20px;flex:1;}
+        .d3v-vmode-bar{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+        .d3v-vmode-btn{padding:4px 12px;border-radius:5px;border:1px solid #E4E7EC;background:#fff;font-size:12.5px;font-weight:500;color:#6B7280;cursor:pointer;transition:all .12s;font-family:Inter,Roboto,sans-serif;}
+        .d3v-vmode-btn:hover{border-color:#CED4DA;color:#374151;}
+        .d3v-vmode-btn.active{background:#0C4C0D;border-color:#0C4C0D;color:#fff;font-weight:600;}
+        .d3v-vmode-sep{margin-left:auto;font-size:11.5px;color:#9CA3AF;font-family:Inter,Roboto,sans-serif;}
+        #d3v-vstage{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;border-radius:10px;background:#111;cursor:crosshair;box-shadow:0 8px 40px rgba(0,0,0,0.28);user-select:none;}
+        #d3v-vstage:hover .d3v-hint{opacity:0;pointer-events:none;}
+        .d3v-ang-lbl{position:absolute;top:11px;left:11px;z-index:2;background:rgba(0,0,0,0.54);color:rgba(255,255,255,0.92);font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:5px;letter-spacing:0.2px;pointer-events:none;backdrop-filter:blur(4px);}
+        .d3v-compass{position:absolute;top:11px;right:11px;width:46px;height:46px;pointer-events:none;z-index:2;}
+        .d3v-comp-ring{width:100%;height:100%;border:1.5px solid rgba(255,255,255,0.22);border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);position:relative;}
+        .d3v-comp-dot{width:7px;height:7px;background:rgba(255,255,255,0.85);border-radius:50%;position:absolute;transition:transform .08s ease-out;}
+        .d3v-comp-txt{font-size:7px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:0.5px;}
+        .d3v-hint{position:absolute;bottom:11px;left:0;right:0;z-index:2;text-align:center;pointer-events:none;transition:opacity .35s;}
+        .d3v-hint-inner{display:inline-block;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.8);font-size:11px;padding:5px 12px;border-radius:5px;backdrop-filter:blur(4px);}
+        .d3v-prog-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+        .d3v-prog-l,.d3v-prog-r{font-size:11px;color:#9CA3AF;width:64px;flex-shrink:0;font-family:Inter,Roboto,sans-serif;}
+        .d3v-prog-r{text-align:left;}
+        .d3v-prog-l{text-align:right;}
+        .d3v-prog-bar{flex:1;height:3px;background:#E4E7EC;border-radius:2px;position:relative;}
+        .d3v-prog-fill{position:absolute;top:0;bottom:0;left:50%;background:#247120;border-radius:2px;transition:left .06s,width .06s;width:0;}
+        .d3v-prog-ctr{position:absolute;top:50%;left:50%;width:1.5px;height:7px;background:#CED4DA;transform:translate(-50%,-50%);border-radius:1px;}
+        .d3v-thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px;}
+        .d3v-th{border-radius:6px;overflow:hidden;aspect-ratio:4/3;position:relative;cursor:pointer;border:1.5px solid transparent;transition:border-color .12s;}
+        .d3v-th:hover{border-color:#CED4DA;}
+        .d3v-th.active{border-color:#0C4C0D;}
+        .d3v-th img{width:100%;height:100%;object-fit:cover;display:block;}
+        .d3v-th-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.88);font-size:7.5px;font-weight:600;text-align:center;padding:2px 0 3px;}
+        #d3v-vgrid{display:none;}
+        #d3v-vgrid.vis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+        .d3v-g-item{border-radius:6px;overflow:hidden;aspect-ratio:4/3;position:relative;}
+        .d3v-g-item img{width:100%;height:100%;object-fit:cover;display:block;}
+        .d3v-g-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.9);font-size:10px;font-weight:600;text-align:center;padding:4px 0 5px;}
+        .d3v-rev-panel{border-top:1px solid #E4E7EC;padding:14px 20px;flex-shrink:0;}
+        .d3v-rev-ttl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6B7280;margin-bottom:10px;font-family:Inter,Roboto,sans-serif;}
+        .d3v-rev-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+        .d3v-rev-cur{margin-left:auto;font-size:12px;color:#6B7280;font-family:Inter,Roboto,sans-serif;}
+        .d3v-rev-notes{width:100%;margin-top:10px;padding:8px 11px;border:1px solid #E4E7EC;border-radius:6px;font-size:12.5px;color:#111827;background:#F4F6F8;resize:none;outline:none;font-family:Inter,Roboto,sans-serif;transition:border-color .12s;box-sizing:border-box;}
+        .d3v-rev-notes:focus{border-color:#0C4C0D;background:#fff;}
+        #d3v-proc-overlay{position:absolute;inset:0;z-index:10;background:rgba(0,0,0,0.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .25s;}
+        #d3v-proc-overlay.show{opacity:1;pointer-events:all;}
+        .d3v-proc-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);border-top-color:#10B981;border-radius:50%;animation:d3-spin .65s linear infinite;}
+        .d3v-proc-txt{font-size:13px;color:rgba(255,255,255,0.85);font-weight:500;font-family:Inter,Roboto,sans-serif;}
+        .d3v-proc-step{font-size:11px;color:rgba(255,255,255,0.45);font-family:Inter,Roboto,sans-serif;}
+        #d3v-pub-badge{position:absolute;bottom:11px;right:11px;z-index:3;background:#065F46;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:5px;letter-spacing:0.3px;display:none;backdrop-filter:blur(4px);}
+        #d3v-depth-strip{display:none;margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid #E4E7EC;}
+        #d3v-depth-strip.vis{display:block;}
+        .d3v-depth-strip-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#F4F6F8;border-bottom:1px solid #E4E7EC;font-size:11.5px;font-weight:600;color:#374151;font-family:Inter,Roboto,sans-serif;}
+        .d3v-ds-dot{width:7px;height:7px;border-radius:50%;background:#247120;flex-shrink:0;}
+        .d3v-depth-strip-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+        .d3v-ds-side{position:relative;aspect-ratio:16/10;overflow:hidden;background:#111;}
+        .d3v-ds-side img,.d3v-ds-side canvas{width:100%;height:100%;object-fit:cover;display:block;}
+        .d3v-ds-lbl{position:absolute;top:0;left:0;right:0;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.85);font-size:9.5px;font-weight:600;text-align:center;padding:4px 0 5px;}
+        .d3v-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid;transition:all .12s;white-space:nowrap;font-family:Inter,Roboto,sans-serif;}
+        .d3v-btn-ok{background:#065F46;border-color:#065F46;color:#fff;}
+        .d3v-btn-ok:hover{background:#047857;}
+        .d3v-btn-bad{background:#991B1B;border-color:#991B1B;color:#fff;}
+        .d3v-btn-bad:hover{background:#B91C1C;}
+        .d3v-btn-out{background:#fff;border-color:#E4E7EC;color:#374151;}
+        .d3v-btn-out:hover{border-color:#CED4DA;background:#F4F6F8;}
+        .d3v-bdg{flex-shrink:0;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;border:1px solid;}
+        .d3v-bdg.pending{color:#B45309;background:#FFFBEB;border-color:#FDE68A;}
+        .d3v-bdg.approved{color:#065F46;background:#ECFDF5;border-color:#A7F3D0;}
+        .d3v-bdg.rejected{color:#991B1B;background:#FEF2F2;border-color:#FECACA;}
+        .d3v-bdg.revision{color:#92400E;background:#FEF3C7;border-color:#FDE68A;}
       </style>
     </div>
 
@@ -2058,6 +2135,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script>
       const bloomSupabase = window.bloomSupabase;
 
@@ -4405,7 +4483,7 @@
             return '';
           })() : '';
           return `
-          <div class="d3-card">
+          <div class="d3-card" onclick="d3vOpen('${escapeHtml(s.id)}')">
             <div class="d3-hero">${heroHtml}</div>
             <div class="d3-card-body">
               <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
@@ -4420,7 +4498,14 @@
               <div style="font-size:11px;color:#9CA3AF;">${dt}</div>
               <div style="font-size:10.5px;color:#6B7280;margin-top:2px;">ID: ${escapeHtml(s.id)}</div>
               ${s.notes ? `<div style="margin-top:6px;font-size:11.5px;color:#6B7280;padding-left:8px;border-left:2px solid #E4E7EC;font-style:italic;">${escapeHtml(s.notes)}</div>` : ''}
-              <div class="d3-actions">${actionBtns}</div>
+              <div class="d3-actions">
+                <button onclick="event.stopPropagation();d3vOpen('${escapeHtml(s.id)}')"
+                  style="padding:5px 12px;background:#0C4C0D;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 5.5C1.5 5.5 3 2.5 5.5 2.5S9.5 5.5 9.5 5.5 8 8.5 5.5 8.5 1.5 5.5 1.5 5.5Z"/><circle cx="5.5" cy="5.5" r="1.5"/></svg>
+                  View 3D
+                </button>
+                ${actionBtns}
+              </div>
             </div>
           </div>`;
         }).join('');
@@ -4440,6 +4525,561 @@
           apply3DFilter();
         } catch (err) {
           alert('Could not update status: ' + (err.message || err));
+        }
+      }
+
+      // ── 3D VIEWER ─────────────────────────────────────────────────
+      let d3vIsOpen = false, d3vMode = '3d', d3vPinned = -1;
+      let d3vDepthCanvas = null;
+      let d3vViewSub = null;
+      const d3vMou = { tx:0, ty:0, cx:0, cy:0 };
+
+      // Three.js refs
+      let d3vThreeR = null, d3vThreeScene = null, d3vThreeCamera = null;
+      let d3vThreeAF = null, d3vThreeCanvas = null, d3vThreeMouseU = null;
+      let d3vAutoSweep = true, d3vAutoSweepT = 0;
+
+      const D3V_LABELS = ['Front View','Left Side','Right Side','Top View','Back / Bottom'];
+
+      function d3vOpen(id) {
+        const s = d3SubmissionRows.find(x => x.id === id);
+        if (!s) return;
+        d3vViewSub = s;
+
+        const nameEl   = document.getElementById('d3v-name');
+        const subEl    = document.getElementById('d3v-sub');
+        const badgeEl  = document.getElementById('d3v-badge');
+        const notesEl  = document.getElementById('d3v-rev-notes');
+        const curTxtEl = document.getElementById('d3v-rev-cur-txt');
+        const cntEl    = document.getElementById('d3v-cnt');
+        const stripEl  = document.getElementById('d3v-depth-strip');
+        const pubEl    = document.getElementById('d3v-pub-badge');
+        const vovEl    = document.getElementById('d3v-vov');
+
+        if (nameEl) nameEl.textContent = s.name;
+        if (subEl) {
+          const parts = [`ID #${s.id}`, s.location || null,
+            s.researcher !== 'Unknown' ? `by ${s.researcher}` : null,
+            s.date ? `Uploaded ${new Date(s.date).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})}` : null
+          ].filter(Boolean);
+          subEl.textContent = parts.join(' · ');
+        }
+        const stNorm = (s.status || 'pending').toLowerCase();
+        const stLabel = {pending:'Pending',approved:'Approved',rejected:'Rejected',revision:'For Revision'}[stNorm] || 'Pending';
+        if (badgeEl) { badgeEl.className = 'd3v-bdg ' + stNorm; badgeEl.textContent = stLabel; }
+        if (notesEl) notesEl.value = s.notes || '';
+        if (curTxtEl) curTxtEl.textContent = stLabel;
+        d3vUpdateButtons(stNorm);
+
+        const cnt = (s.imgs || []).filter(Boolean).length;
+        if (cntEl) cntEl.textContent = `${cnt} angle${cnt !== 1 ? 's' : ''} available`;
+
+        d3vBuildLayers(s);
+        d3vBuildThumbs(s);
+        d3vBuildGrid(s);
+        d3vSetMode('3d');
+
+        const isApproved = stNorm === 'approved';
+        if (stripEl) stripEl.classList.toggle('vis', isApproved);
+        if (pubEl)   pubEl.style.display = isApproved ? 'block' : 'none';
+        if (isApproved) d3vFillDepthStrip(s);
+
+        if (vovEl) vovEl.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        d3vIsOpen = true; d3vPinned = -1;
+        d3vMou.tx = 0; d3vMou.ty = 0; d3vMou.cx = 0; d3vMou.cy = 0;
+      }
+
+      function d3vClose() {
+        document.getElementById('d3v-vov')?.classList.remove('open');
+        document.body.style.overflow = '';
+        d3vIsOpen = false;
+        d3vDisposeThree();
+      }
+
+      function d3vOvClick(e) {
+        if (e.target === document.getElementById('d3v-vov')) d3vClose();
+      }
+
+      function d3vBuildLayers(s) {
+        const stage = document.getElementById('d3v-vstage');
+        if (!stage) return;
+        stage.querySelectorAll('img.d3v-al, canvas.d3v-three-canvas').forEach(el => el.remove());
+        d3vDisposeThree();
+        d3vDepthCanvas = null;
+
+        const front = (s.imgs || [])[0] || (s.imgs || []).find(Boolean);
+        if (!front) return;
+
+        if ((s.status || '').toLowerCase() === 'approved') {
+          if (typeof THREE !== 'undefined') {
+            d3vInitThree(stage, front.url, null);
+          } else {
+            d3vShowStatic(stage, front.url);
+          }
+          d3vSetHint('Move mouse to explore depth · Arrow keys · Click angle to pin');
+        } else {
+          d3vShowStatic(stage, front.url);
+          d3vSetHint('Approve this submission to enable the 3D preview');
+        }
+      }
+
+      function d3vShowStatic(stage, url) {
+        const img = document.createElement('img');
+        img.className = 'd3v-al';
+        img.src = url;
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;';
+        stage.insertBefore(img, stage.querySelector('.d3v-ang-lbl'));
+      }
+
+      function d3vSetHint(text) {
+        const h = document.getElementById('d3v-hint');
+        if (!h) return;
+        h.style.opacity = '1'; h.style.transition = 'none';
+        const inner = h.querySelector('.d3v-hint-inner');
+        if (inner) inner.textContent = text;
+      }
+
+      function d3vBuildThumbs(s) {
+        const el = document.getElementById('d3v-thumbs');
+        if (!el) return;
+        el.innerHTML = (s.imgs || []).map((a, i) => {
+          const lbl = a?.label || D3V_LABELS[i] || `Photo ${i+1}`;
+          if (!a) return '';
+          return `<div class="d3v-th" data-i="${i}" onclick="d3vPinAngle(${i})" title="${lbl}">
+            <img src="${escapeHtml(a.url)}" alt="${escapeHtml(lbl)}" loading="lazy"/>
+            <div class="d3v-th-lbl">${escapeHtml(lbl)}</div>
+          </div>`;
+        }).join('');
+      }
+
+      function d3vBuildGrid(s) {
+        const el = document.getElementById('d3v-vgrid');
+        if (!el) return;
+        el.innerHTML = (s.imgs || []).filter(Boolean).map(a =>
+          `<div class="d3v-g-item"><img src="${escapeHtml(a.url)}" alt="${escapeHtml(a.label)}" loading="lazy"/>
+           <div class="d3v-g-lbl">${escapeHtml(a.label)}</div></div>`
+        ).join('');
+      }
+
+      function d3vSetMode(m) {
+        d3vMode = m;
+        document.getElementById('d3v-mb-3d')?.classList.toggle('active', m === '3d');
+        document.getElementById('d3v-mb-grid')?.classList.toggle('active', m === 'grid');
+        const sw = document.getElementById('d3v-stage-wrap');
+        const th = document.getElementById('d3v-thumbs');
+        const gr = document.getElementById('d3v-vgrid');
+        if (sw) sw.style.display = m === '3d' ? '' : 'none';
+        if (th) th.style.display = m === '3d' ? '' : 'none';
+        if (gr) gr.classList.toggle('vis', m === 'grid');
+      }
+
+      // ── THREE.JS UV PARALLAX VIEWER ──────────────────────────────
+      async function d3vInitThree(stage, photoUrl, depthUrl) {
+        d3vDisposeThree();
+        const W = stage.clientWidth || 640;
+        const H = stage.clientHeight || 400;
+        const aspect = W / H;
+
+        d3vThreeCanvas = document.createElement('canvas');
+        d3vThreeCanvas.className = 'd3v-three-canvas';
+        d3vThreeCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;';
+        stage.insertBefore(d3vThreeCanvas, stage.firstChild);
+
+        d3vThreeR = new THREE.WebGLRenderer({ canvas: d3vThreeCanvas, antialias: true, alpha: false });
+        d3vThreeR.setSize(W, H, false);
+        d3vThreeR.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        d3vThreeR.setClearColor(0x111111, 1);
+
+        d3vThreeScene  = new THREE.Scene();
+        d3vThreeCamera = new THREE.OrthographicCamera(-aspect, aspect, 1, -1, 0.01, 10);
+        d3vThreeCamera.position.z = 1;
+
+        const loader = new THREE.TextureLoader();
+        loader.crossOrigin = 'anonymous';
+        let tex, depthTex, focus = { x:0.5, y:0.5 };
+        try {
+          tex = await d3vTexLoad(loader, photoUrl);
+          tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+          tex.minFilter = tex.magFilter = THREE.LinearFilter;
+          const dm = await d3vBuildDepthMap(photoUrl, depthUrl);
+          depthTex = dm.texture; focus = dm.focus;
+          d3vDepthCanvas = dm.canvas || null;
+        } catch(err) {
+          console.warn('d3v Three.js texture error:', err);
+          const fb = d3vFallbackDepth();
+          depthTex = fb.texture; focus = fb.focus;
+        }
+
+        const geo = new THREE.PlaneGeometry(2 * aspect, 2);
+        const mouseUniform = { value: new THREE.Vector2(0, 0) };
+        d3vThreeMouseU = mouseUniform;
+
+        const mat = tex
+          ? new THREE.ShaderMaterial({
+              uniforms: {
+                uPhoto:    { value: tex },
+                uDepth:    { value: depthTex },
+                uMouse:    mouseUniform,
+                uFocus:    { value: new THREE.Vector2(focus.x, focus.y) },
+                uStrength: { value: 0.048 },
+                uZoom:     { value: 0.12  },
+              },
+              vertexShader: `
+                varying vec2 vUv;
+                void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+              `,
+              fragmentShader: `
+                uniform sampler2D uPhoto;
+                uniform sampler2D uDepth;
+                uniform vec2      uMouse;
+                uniform vec2      uFocus;
+                uniform float     uStrength;
+                uniform float     uZoom;
+                varying vec2      vUv;
+                vec4 dofSample(sampler2D tex, vec2 uv, float r) {
+                  if (r < 0.0003) return texture2D(tex, uv);
+                  vec4 acc = texture2D(tex, uv) * 4.0; float tot = 4.0;
+                  for (int i=0;i<8;i++) {
+                    float a=float(i)*0.7854; vec2 dir=vec2(cos(a),sin(a));
+                    acc += texture2D(tex, clamp(uv+dir*r,0.001,0.999));
+                    acc += texture2D(tex, clamp(uv+dir*r*0.5,0.001,0.999)); tot+=2.0;
+                  }
+                  return acc/tot;
+                }
+                void main() {
+                  float depth = texture2D(uDepth, vUv).r;
+                  vec2 scaled = (vUv - uFocus) * (1.0 - uZoom) + uFocus;
+                  vec2 shift  = uMouse * depth * uStrength;
+                  vec2 uv     = clamp(scaled + shift, 0.001, 0.999);
+                  float blurR = pow(max(0.0, 0.78 - depth), 2.2) * 0.008;
+                  vec4 color  = dofSample(uPhoto, uv, blurR);
+                  float haze  = pow(max(0.0, 0.62 - depth), 2.5) * 0.20;
+                  color.rgb   = mix(color.rgb, vec3(0.73,0.78,0.88), haze);
+                  vec2 vc     = vUv - 0.5;
+                  color.rgb  *= max(0.58, 1.0 - dot(vc,vc)*0.48);
+                  gl_FragColor = vec4(color.rgb, 1.0);
+                }
+              `,
+              side: THREE.FrontSide,
+            })
+          : new THREE.MeshBasicMaterial({ color: 0x1a3a1a });
+
+        d3vThreeScene.add(new THREE.Mesh(geo, mat));
+        d3vAutoSweep = true; d3vAutoSweepT = 0;
+
+        function renderLoop() {
+          d3vThreeAF = requestAnimationFrame(renderLoop);
+          if (!d3vIsOpen) return;
+          if (d3vAutoSweep) {
+            d3vAutoSweepT += 0.009;
+            d3vMou.tx = Math.sin(d3vAutoSweepT * 0.70) * 0.92;
+            d3vMou.ty = Math.sin(d3vAutoSweepT * 0.43) * 0.48;
+          }
+          const k = 0.07;
+          d3vMou.cx += (d3vMou.tx - d3vMou.cx) * k;
+          d3vMou.cy += (d3vMou.ty - d3vMou.cy) * k;
+          if (d3vThreeMouseU) d3vThreeMouseU.value.set(d3vMou.cx, d3vMou.cy);
+          d3vThreeR.render(d3vThreeScene, d3vThreeCamera);
+          d3vUpdateViewerUI();
+        }
+        renderLoop();
+      }
+
+      function d3vUpdateViewerUI() {
+        const s = d3vViewSub;
+        if (!s) return;
+        const dot = document.getElementById('d3v-cdot');
+        if (dot) dot.style.transform = `translate(${d3vMou.cx*17}px,${d3vMou.cy*17}px)`;
+        const domI = d3vPinned >= 0 ? d3vPinned : 0;
+        const a = (s.imgs || [])[domI];
+        const lbl = a?.label || D3V_LABELS[domI] || 'Front View';
+        const lblEl = document.getElementById('d3v-albl');
+        if (lblEl && lblEl.textContent !== lbl) lblEl.textContent = lbl;
+        const pf = document.getElementById('d3v-vpf');
+        if (pf) {
+          const pct = (d3vMou.cx + 1) / 2;
+          pf.style.left  = Math.min(pct*100, 50) + '%';
+          pf.style.width = Math.abs(pct*100 - 50) + '%';
+        }
+        document.querySelectorAll('#d3v-thumbs .d3v-th').forEach((el,i) =>
+          el.classList.toggle('active', i === domI));
+      }
+
+      function d3vTexLoad(loader, url) {
+        return new Promise((res, rej) => loader.load(url, res, undefined, rej));
+      }
+
+      async function d3vBuildDepthMap(url, depthUrl) {
+        const W = 384, H = 240;
+        if (depthUrl) {
+          try {
+            const depthImg = await new Promise((res,rej) => {
+              const i = new Image(); i.crossOrigin = 'anonymous';
+              i.onload = () => res(i); i.onerror = rej; i.src = depthUrl;
+            });
+            const c = document.createElement('canvas'); c.width=W; c.height=H;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(depthImg, 0, 0, W, H);
+            const id = ctx.getImageData(0,0,W,H);
+            for (let i=0;i<W*H;i++) {
+              const g = Math.round(id.data[i*4]*0.299+id.data[i*4+1]*0.587+id.data[i*4+2]*0.114);
+              id.data[i*4]=id.data[i*4+1]=id.data[i*4+2]=g;
+            }
+            ctx.putImageData(id,0,0);
+            const d2=ctx.getImageData(0,0,W,H).data;
+            let sx=0,sy=0,sw=0;
+            for (let y=0;y<H;y++) for (let x=0;x<W;x++) {
+              const v=d2[(y*W+x)*4]/255;
+              const w=Math.max(0,Math.pow(v,1.35)-0.08); if (!w) continue;
+              sx+=(x+0.5)*w; sy+=(y+0.5)*w; sw+=w;
+            }
+            const focus=sw?{x:Math.min(0.82,Math.max(0.18,sx/sw/W)),y:Math.min(0.82,Math.max(0.18,sy/sw/H))}:{x:0.5,y:0.46};
+            d3vDepthCanvas=c;
+            return {texture:new THREE.CanvasTexture(c),focus,canvas:c};
+          } catch(e) { console.warn('depth url load failed',e); }
+        }
+        try {
+          const img = await new Promise((res,rej) => {
+            const i=new Image(); i.crossOrigin='anonymous';
+            i.onload=()=>res(i); i.onerror=rej; i.src=url;
+          });
+          const c=document.createElement('canvas'); c.width=W; c.height=H;
+          const ctx=c.getContext('2d');
+          ctx.drawImage(img,0,0,W,H);
+          const px=ctx.getImageData(0,0,W,H).data;
+          const d=new Float32Array(W*H);
+          for (let i=0;i<W*H;i++) {
+            const r=px[i*4]/255,g=px[i*4+1]/255,b=px[i*4+2]/255;
+            const lum=r*0.299+g*0.587+b*0.114;
+            const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+            const sat=mx>0.02?(mx-mn)/mx:0;
+            const warmth=(r-b+1.0)*0.5;
+            const neutral=1.0-sat;
+            const xi=(i%W)/W*2-1,yi=Math.floor(i/W)/H*2-1;
+            const ctr=Math.max(0,1-(xi*xi*0.9+yi*yi*1.1)*0.62);
+            d[i]=lum*0.08+sat*0.32+warmth*0.22+ctr*0.30+(1-neutral)*0.08;
+          }
+          for (let pass=0;pass<18;pass++) {
+            for (let y=1;y<H-1;y++) for (let x=1;x<W-1;x++) {
+              const i=y*W+x;
+              d[i]=(d[i]*3+d[i-1]+d[i+1]+d[i-W]+d[i+W])/7;
+            }
+          }
+          const sorted=Array.from(d).sort((a,b)=>a-b);
+          const lo=sorted[Math.floor(W*H*0.05)],hi=sorted[Math.floor(W*H*0.95)],rng=hi-lo||1;
+          for (let i=0;i<W*H;i++) { d[i]=Math.max(0,Math.min(1,(d[i]-lo)/rng)); d[i]=Math.pow(d[i],0.72); }
+          let sx=0,sy=0,sw=0;
+          for (let y=0;y<H;y++) for (let x=0;x<W;x++) {
+            const i=y*W+x; const w=Math.max(0,Math.pow(d[i],1.3)-0.08); if (!w) continue;
+            sx+=(x+0.5)*w; sy+=(y+0.5)*w; sw+=w;
+          }
+          const focus=sw?{x:Math.min(0.80,Math.max(0.20,sx/sw/W)),y:Math.min(0.80,Math.max(0.20,sy/sw/H))}:{x:0.5,y:0.46};
+          const out=document.createElement('canvas'); out.width=W; out.height=H;
+          const oc=out.getContext('2d'),id2=oc.createImageData(W,H);
+          for (let i=0;i<W*H;i++) { const v=Math.round(d[i]*255); id2.data[i*4]=id2.data[i*4+1]=id2.data[i*4+2]=v; id2.data[i*4+3]=255; }
+          oc.putImageData(id2,0,0);
+          d3vDepthCanvas=out;
+          return {texture:new THREE.CanvasTexture(out),focus,canvas:out};
+        } catch(e) { d3vDepthCanvas=null; return d3vFallbackDepth(); }
+      }
+
+      function d3vFallbackDepth() {
+        const W=384,H=240;
+        const c=document.createElement('canvas'); c.width=W; c.height=H;
+        const ctx=c.getContext('2d');
+        const g=ctx.createRadialGradient(W*.5,H*.44,0,W*.5,H*.5,W*.60);
+        g.addColorStop(0,'#ffffff');g.addColorStop(0.30,'#dddddd');
+        g.addColorStop(0.55,'#888888');g.addColorStop(0.78,'#333333');g.addColorStop(1,'#080808');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+        return {texture:new THREE.CanvasTexture(c),focus:{x:0.5,y:0.44},canvas:c};
+      }
+
+      function d3vDisposeThree() {
+        if (d3vThreeAF) { cancelAnimationFrame(d3vThreeAF); d3vThreeAF=null; }
+        if (d3vThreeScene) {
+          d3vThreeScene.traverse(o => {
+            o.geometry?.dispose();
+            if (o.material) { Object.values(o.material).forEach(v=>v?.isTexture&&v.dispose()); o.material.dispose(); }
+          });
+          d3vThreeScene=null;
+        }
+        if (d3vThreeR) { d3vThreeR.dispose(); d3vThreeR=null; }
+        if (d3vThreeCanvas) { d3vThreeCanvas.remove(); d3vThreeCanvas=null; }
+        d3vThreeCamera=null; d3vThreeMouseU=null;
+      }
+
+      // ── DEPTH STRIP ────────────────────────────────────────────
+      function d3vFillDepthStrip(s) {
+        const angle = (s.imgs||[])[0] || (s.imgs||[]).find(Boolean);
+        if (!angle) return;
+        const colorImg = document.getElementById('d3v-ds-color-img');
+        if (colorImg) colorImg.src = angle.url;
+        const renderDepth = () => {
+          const dc = document.getElementById('d3v-ds-depth-canvas');
+          if (!dc) return;
+          if (d3vDepthCanvas) {
+            dc.width=d3vDepthCanvas.width; dc.height=d3vDepthCanvas.height;
+            dc.getContext('2d').drawImage(d3vDepthCanvas,0,0);
+          } else {
+            d3vBuildDepthMap(angle.url,null).then(() => {
+              if (!d3vDepthCanvas) return;
+              dc.width=d3vDepthCanvas.width; dc.height=d3vDepthCanvas.height;
+              dc.getContext('2d').drawImage(d3vDepthCanvas,0,0);
+            });
+          }
+        };
+        setTimeout(renderDepth, 300);
+      }
+
+      // ── MOUSE / TOUCH ──────────────────────────────────────────
+      function d3vSmMove(e) {
+        d3vAutoSweep=false;
+        const r=e.currentTarget.getBoundingClientRect();
+        d3vMou.tx=(e.clientX-r.left)/r.width*2-1;
+        d3vMou.ty=-((e.clientY-r.top)/r.height*2-1);
+      }
+      function d3vSmLeave() { d3vMou.tx=0; d3vMou.ty=0; }
+      function d3vStStart(e) { d3vAutoSweep=false; e.preventDefault(); }
+      function d3vStMove(e) {
+        const t=e.touches[0];
+        const r=e.currentTarget.getBoundingClientRect();
+        d3vMou.tx=(t.clientX-r.left)/r.width*2-1;
+        d3vMou.ty=-((t.clientY-r.top)/r.height*2-1);
+        e.preventDefault();
+      }
+      function d3vStEnd() { d3vMou.tx=0; d3vMou.ty=0; }
+
+      function d3vPinAngle(i) {
+        d3vPinned = (d3vPinned===i) ? -1 : i;
+        document.querySelectorAll('#d3v-thumbs .d3v-th').forEach((el,j) =>
+          el.classList.toggle('active', j===i && d3vPinned>=0));
+      }
+
+      document.addEventListener('keydown', e => {
+        if (!d3vIsOpen) return;
+        if (e.key==='Escape') { d3vClose(); return; }
+        if (e.key==='g'||e.key==='G') { d3vSetMode(d3vMode==='3d'?'grid':'3d'); return; }
+        d3vAutoSweep=false;
+        const s=0.15;
+        if (e.key==='ArrowLeft')  { d3vMou.tx=Math.max(-1,d3vMou.tx-s); e.preventDefault(); }
+        if (e.key==='ArrowRight') { d3vMou.tx=Math.min( 1,d3vMou.tx+s); e.preventDefault(); }
+        if (e.key==='ArrowUp')    { d3vMou.ty=Math.min( 1,d3vMou.ty+s); e.preventDefault(); }
+        if (e.key==='ArrowDown')  { d3vMou.ty=Math.max(-1,d3vMou.ty-s); e.preventDefault(); }
+      });
+
+      // ── REVIEW ────────────────────────────────────────────────
+      function d3vDoRev(st) {
+        const s = d3vViewSub;
+        if (!s) return;
+        if (!isAdminRole) { showToast('Only admins can review submissions.', true); return; }
+        const notes = (document.getElementById('d3v-rev-notes')?.value||'').trim();
+        if (st==='approved') { d3vRunProcess(s, notes); return; }
+        d3vCommitRev(s, st, notes);
+      }
+
+      async function d3vRunProcess(s, notes) {
+        const angle = (s.imgs||[])[0] || (s.imgs||[]).find(Boolean);
+        const btn = document.getElementById('d3v-btn-approve');
+        if (btn) { btn.disabled=true; btn.textContent='Processing…'; }
+        const ov    = document.getElementById('d3v-proc-overlay');
+        const ptxt  = document.getElementById('d3v-proc-txt');
+        const pstep = document.getElementById('d3v-proc-step');
+        if (ov) ov.classList.add('show');
+
+        const setStep = (txt, sub) => {
+          if (ptxt)  ptxt.textContent=txt;
+          if (pstep) pstep.textContent=sub;
+        };
+
+        setStep('Processing 3D…','Loading photo');
+        await new Promise(r=>setTimeout(r,350));
+
+        setStep('Processing 3D…','Generating depth map');
+        if (angle?.url) { try { await d3vBuildDepthMap(angle.url,null); } catch{} }
+        await new Promise(r=>setTimeout(r,400));
+
+        setStep('Processing 3D…','Applying 3D parallax');
+        await new Promise(r=>setTimeout(r,350));
+
+        setStep('Processing 3D…','Saving result');
+        await d3vSaveToSupabase(s.id,'approved',notes);
+        await new Promise(r=>setTimeout(r,250));
+
+        if (ov) ov.classList.remove('show');
+        d3vCommitRev(s,'approved',notes);
+
+        // Activate live 3D viewer
+        const stage = document.getElementById('d3v-vstage');
+        if (stage) {
+          stage.querySelectorAll('img.d3v-al').forEach(el=>el.remove());
+          if (typeof THREE!=='undefined' && angle?.url) d3vInitThree(stage,angle.url,null);
+        }
+        d3vSetHint('Move mouse to explore depth · Arrow keys · Click angle to pin');
+
+        const pubBadge = document.getElementById('d3v-pub-badge');
+        if (pubBadge) pubBadge.style.display='block';
+        const strip = document.getElementById('d3v-depth-strip');
+        if (strip) strip.classList.add('vis');
+        d3vFillDepthStrip(s);
+
+        if (btn) {
+          btn.disabled=false;
+          btn.innerHTML='<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg> Approve &amp; Process 3D';
+        }
+        showToast(`3D published: ${s.name}`);
+      }
+
+      function d3vCommitRev(s, st, notes) {
+        s.status=st; s.notes=notes;
+        const stLabel={pending:'Pending',approved:'Approved',rejected:'Rejected',revision:'For Revision'}[st]||'Pending';
+        const b=document.getElementById('d3v-badge');
+        if (b) { b.className='d3v-bdg '+st; b.textContent=stLabel; }
+        const curTxt=document.getElementById('d3v-rev-cur-txt');
+        if (curTxt) curTxt.textContent=stLabel;
+        d3vUpdateButtons(st);
+        // Sync back into d3SubmissionRows
+        const idx=d3SubmissionRows.findIndex(x=>x.id===s.id);
+        if (idx>=0) { d3SubmissionRows[idx].status=st; d3SubmissionRows[idx].notes=notes; }
+        apply3DFilter();
+        d3vSaveToSupabase(s.id, st, notes);
+        if (st!=='approved') showToast(stLabel+': '+s.name, st==='rejected');
+      }
+
+      async function d3vSaveToSupabase(entryId, status, notes) {
+        if (!bloomSupabase) return;
+        try {
+          await bloomSupabase.from('species_sightings')
+            .update({ review_status:status, review_notes:notes||null, reviewed_at:new Date().toISOString() })
+            .eq('entry_id', entryId);
+        } catch(e) { console.warn('d3v save failed:', e); }
+      }
+
+      function d3vUpdateButtons(st) {
+        const approve = document.getElementById('d3v-btn-approve');
+        const reject  = document.getElementById('d3v-btn-reject');
+        const reset   = document.getElementById('d3v-btn-reset');
+        if (!approve) return;
+        if (!isAdminRole) {
+          if (approve) approve.style.display='none';
+          if (reject)  reject.style.display='none';
+          if (reset)   reset.style.display='none';
+          return;
+        }
+        if (st==='approved') {
+          approve.style.display='none';
+          if (reject) reject.style.display='none';
+          if (reset)  reset.style.display='';
+        } else if (st==='rejected') {
+          approve.style.display='';
+          approve.innerHTML='<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg> Approve';
+          if (reject) reject.style.display='none';
+          if (reset)  reset.style.display='';
+        } else {
+          approve.style.display='';
+          approve.innerHTML='<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg> Approve &amp; Process 3D';
+          if (reject) reject.style.display='';
+          if (reset)  reset.style.display='none';
         }
       }
 
@@ -7458,5 +8098,97 @@
         btn.disabled = false; btn.textContent = 'Save Changes';
       });
     </script>
+
+    <!-- ── 3D VIEWER MODAL ──────────────────────────────────────────── -->
+    <div id="d3v-vov" onclick="d3vOvClick(event)">
+      <div id="d3v-vm">
+        <!-- Header -->
+        <div class="d3v-vh">
+          <div class="d3v-vh-info">
+            <div class="d3v-vh-name" id="d3v-name">—</div>
+            <div class="d3v-vh-sub"  id="d3v-sub">—</div>
+          </div>
+          <span class="d3v-bdg pending" id="d3v-badge">Pending</span>
+          <div class="d3v-close" onclick="d3vClose()" title="Close (Esc)">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M1 1L12 12M12 1L1 12"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="d3v-vbody">
+          <div class="d3v-vmode-bar">
+            <button class="d3v-vmode-btn active" id="d3v-mb-3d"   onclick="d3vSetMode('3d')">3D Viewer</button>
+            <button class="d3v-vmode-btn"        id="d3v-mb-grid" onclick="d3vSetMode('grid')">All Angles</button>
+            <span class="d3v-vmode-sep" id="d3v-cnt">—</span>
+          </div>
+
+          <div id="d3v-stage-wrap">
+            <div id="d3v-vstage"
+              onmousemove="d3vSmMove(event)" onmouseleave="d3vSmLeave()"
+              ontouchstart="d3vStStart(event)" ontouchmove="d3vStMove(event)" ontouchend="d3vStEnd()">
+              <div class="d3v-ang-lbl" id="d3v-albl">Front View</div>
+              <div class="d3v-compass">
+                <div class="d3v-comp-ring">
+                  <div class="d3v-comp-dot" id="d3v-cdot"></div>
+                  <span class="d3v-comp-txt">3D</span>
+                </div>
+              </div>
+              <div class="d3v-hint" id="d3v-hint">
+                <div class="d3v-hint-inner">Move mouse to explore depth &nbsp;·&nbsp; Arrow keys &nbsp;·&nbsp; Click angle to pin</div>
+              </div>
+              <div id="d3v-proc-overlay">
+                <div class="d3v-proc-spin"></div>
+                <div class="d3v-proc-txt"  id="d3v-proc-txt">Processing 3D…</div>
+                <div class="d3v-proc-step" id="d3v-proc-step">Generating depth map</div>
+              </div>
+              <div id="d3v-pub-badge">&#10003; Published</div>
+            </div>
+            <div class="d3v-prog-row">
+              <span class="d3v-prog-l">Left</span>
+              <div class="d3v-prog-bar">
+                <div class="d3v-prog-fill" id="d3v-vpf"></div>
+                <div class="d3v-prog-ctr"></div>
+              </div>
+              <span class="d3v-prog-r">Right</span>
+            </div>
+          </div>
+
+          <div id="d3v-vgrid"></div>
+          <div class="d3v-thumbs" id="d3v-thumbs"></div>
+
+          <div id="d3v-depth-strip">
+            <div class="d3v-depth-strip-hd"><span class="d3v-ds-dot"></span>3D Processing Result</div>
+            <div class="d3v-depth-strip-body">
+              <div class="d3v-ds-side">
+                <img id="d3v-ds-color-img" src="" alt="Color"/>
+                <div class="d3v-ds-lbl">Color Photo</div>
+              </div>
+              <div class="d3v-ds-side">
+                <canvas id="d3v-ds-depth-canvas"></canvas>
+                <div class="d3v-ds-lbl">Generated Depth Map</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review panel -->
+        <div class="d3v-rev-panel">
+          <div class="d3v-rev-ttl">Review</div>
+          <div class="d3v-rev-row" id="d3v-rev-row">
+            <button class="d3v-btn d3v-btn-ok" id="d3v-btn-approve" onclick="d3vDoRev('approved')">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg>
+              Approve &amp; Process 3D
+            </button>
+            <button class="d3v-btn d3v-btn-bad" id="d3v-btn-reject" onclick="d3vDoRev('rejected')">Reject</button>
+            <button class="d3v-btn d3v-btn-out" id="d3v-btn-reset"  onclick="d3vDoRev('pending')" style="display:none;">Reset</button>
+            <div class="d3v-rev-cur">Status: <strong id="d3v-rev-cur-txt">Pending</strong></div>
+          </div>
+          <textarea class="d3v-rev-notes" id="d3v-rev-notes" rows="2" placeholder="Add review notes (optional)…"></textarea>
+        </div>
+      </div>
+    </div>
+
   </body>
 </html>
