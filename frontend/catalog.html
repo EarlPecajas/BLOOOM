@@ -758,6 +758,9 @@
 
       function orchidInitMap(sightingPoints) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
+        var mapEl = document.getElementById('orchid-leaflet-map');
+        if (!mapEl) return;
+        if (mapEl.offsetHeight < 10) mapEl.style.height = '195px';
         var primary = sightingPoints[0];
         var allPoints = sightingPoints.slice();
         for (var i = 0; allPoints.length < 5; i++) {
@@ -786,7 +789,8 @@
           L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
           { padding: [30, 30] }
         );
-        setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 120);
+        setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 200);
+        setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 600);
       }
 
       async function openOrchidDetails(orchid) {
@@ -839,7 +843,7 @@
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094, date: null });
         }
-        setTimeout(function(){ orchidInitMap(sightingPoints); }, 100);
+        setTimeout(function(){ orchidInitMap(sightingPoints); }, 300);
         var closeBtn = document.getElementById('orchid-detail-close-btn');
         if (closeBtn && !closeBtn._odmBound) {
           closeBtn._odmBound = true;
