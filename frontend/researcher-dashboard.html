@@ -3310,7 +3310,7 @@
                 .from('species_sightings')
                 .select('*')
                 .eq('review_status', 'draft')
-                .eq('user_uuid', currentUserId)
+                .eq('user_id', currentUserId)
                 .order('created_at', { ascending: false });
               if (Array.isArray(uuidData) && uuidData.length > 0) {
                 const seen = new Set(combined.map(r => r.sighting_id));
@@ -3318,7 +3318,7 @@
                   if (!seen.has(r.sighting_id)) combined.push(r);
                 }
               }
-            } catch (_) { /* user_uuid column may not exist — ignore */ }
+            } catch (_) { /* user_id fallback failed — ignore */ }
           }
 
           const rows = combined.map(normalizeSubmissionRow);
