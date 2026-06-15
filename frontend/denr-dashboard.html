@@ -4240,6 +4240,7 @@
               .from('species_sightings')
               .select('*')
               .neq('review_status', 'draft')
+              .not('entry_id', 'like', 'BLOOM-3D-%')
               .order('created_at', { ascending: false });
 
             // Researchers only see their own; DENR/admin sees all
@@ -5604,6 +5605,7 @@
         const statusFilter = activeStatusFilter || 'all';
         const filtered = submissionRows.filter(function(s) {
           if (String(s.review_status || '').toLowerCase() === 'draft') return false;
+          if (String(s.id || s.entry_id || '').startsWith('BLOOM-3D-')) return false;
           const matchStatus = statusFilter === 'all' || String(s.review_status || '').toLowerCase() === statusFilter;
           if (!matchStatus) return false;
           if (!searchVal) return true;

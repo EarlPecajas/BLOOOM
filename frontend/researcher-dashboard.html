@@ -886,6 +886,10 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
           My Drafts
         </button>
+        <button type="button" onclick="openDashboardView('my3d')" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 1rem;border-radius:999px;border:1.5px solid rgba(20,90,30,0.3);background:#eaf3ea;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 150ms,border-color 150ms;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          My 3D Submissions
+        </button>
       </div>
       <div id="submissions-admin-panel">
       <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
@@ -938,6 +942,35 @@
             <tr>
               <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Loading drafts...</td>
             </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- My 3D Submissions View -->
+    <div id="my3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
+        <h1 class="catalog-title" style="margin:0;">My 3D Submissions</h1>
+        <button type="button" onclick="openDashboardView('submissions')" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 1rem;border-radius:999px;border:1.5px solid rgba(20,90,30,0.3);background:#eaf3ea;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16zm0-6h3v1.5H8V10z"/></svg>
+          My Submissions
+        </button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <input id="my3d-search-input" type="text" placeholder="Search 3D submissions..." style="width:min(420px,100%);padding:0.75rem 0.9rem;border:1px solid #d3ddd5;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:#fff;" oninput="loadMy3DSubmissions(this.value.trim())" />
+      </div>
+      <div class="submissions-table-shell" style="background:white;border-radius:12px;padding:2rem;border:1px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow-x:auto;">
+        <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
+          <thead>
+            <tr class="submissions-table-head">
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Entry ID</th>
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Species</th>
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Submitted</th>
+              <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="my3d-table-body">
+            <tr><td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Loading 3D submissions...</td></tr>
           </tbody>
         </table>
       </div>
@@ -3190,6 +3223,7 @@
             let query = window.bloomSupabase
               .from('species_sightings')
               .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
+              .not('entry_id', 'like', 'BLOOM-3D-%')
               .order('created_at', { ascending: false });
 
             // Researchers only see their own submissions
@@ -3214,8 +3248,9 @@
           const normalizedRows = rows.map(normalizeSubmissionRow);
 
           submissionRows = normalizedRows.filter((submission) => {
-            // Exclude drafts from submissions list
+            // Exclude drafts and 3D submissions from the regular list
             if (String(submission.review_status || '').toLowerCase() === 'draft') return false;
+            if (String(submission.id || submission.entry_id || '').startsWith('BLOOM-3D-')) return false;
             const matchesResearcher = !isResearcherRole || !currentEmail ||
               String(submission.researcher_email || '').trim().toLowerCase() === currentEmail.toLowerCase();
             if (!matchesResearcher) return false;
@@ -3252,13 +3287,20 @@
         if (!draftsTableBody) return;
         try {
           const currentEmail = String(parsedActiveUser.email || '').trim();
+          const currentUserId = String(parsedActiveUser.id || '').trim();
           let query = window.bloomSupabase
             .from('species_sightings')
-            .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
+            .select('*')
             .eq('review_status', 'draft')
-            .order('updated_at', { ascending: false });
-          if (isResearcherRole && currentEmail) {
-            query = query.eq('researcher_email', currentEmail);
+            .order('created_at', { ascending: false });
+          if (isResearcherRole) {
+            if (currentEmail && currentUserId) {
+              query = query.or(`researcher_email.eq.${currentEmail},user_uuid.eq.${currentUserId}`);
+            } else if (currentEmail) {
+              query = query.eq('researcher_email', currentEmail);
+            } else if (currentUserId) {
+              query = query.eq('user_uuid', currentUserId);
+            }
           }
           const { data, error } = await query;
           if (error) throw new Error(error.message);
@@ -3311,6 +3353,59 @@
           draftsInput.addEventListener('input', function() { loadDrafts(this.value.trim()); });
         }
       });
+
+      async function loadMy3DSubmissions(searchTerm = '') {
+        const body = document.getElementById('my3d-table-body');
+        if (!body) return;
+        try {
+          const currentEmail = String(parsedActiveUser.email || '').trim();
+          let query = window.bloomSupabase
+            .from('species_sightings')
+            .select('entry_id, scientific_name, created_at, review_status, researcher_name, researcher_email')
+            .like('entry_id', 'BLOOM-3D-%')
+            .order('created_at', { ascending: false });
+          if (isResearcherRole && currentEmail) {
+            query = query.eq('researcher_email', currentEmail);
+          }
+          const { data, error } = await query;
+          if (error) throw new Error(error.message);
+          const rows = Array.isArray(data) ? data : [];
+          const sv = String(searchTerm || '').trim().toLowerCase();
+          const filtered = sv
+            ? rows.filter(r => [r.scientific_name, r.entry_id, r.review_status].filter(Boolean).join(' ').toLowerCase().includes(sv))
+            : rows;
+          renderMy3DSubmissions(filtered);
+        } catch {
+          body.innerHTML = `<tr><td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Could not load 3D submissions.</td></tr>`;
+        }
+      }
+
+      function renderMy3DSubmissions(rows) {
+        const body = document.getElementById('my3d-table-body');
+        if (!body) return;
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">No 3D submissions found.</td></tr>`;
+          return;
+        }
+        const statusStyle = {
+          approved: 'background:#e8f5e9;color:#2e7d32',
+          rejected: 'background:#fce4ec;color:#c62828',
+          pending:  'background:#fff8e1;color:#f57f17',
+          revision: 'background:#e3f2fd;color:#1565c0'
+        };
+        body.innerHTML = rows.map(r => {
+          const status = String(r.review_status || 'pending').toLowerCase();
+          const sc = statusStyle[status] || statusStyle.pending;
+          const sl = status.charAt(0).toUpperCase() + status.slice(1);
+          const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : '—';
+          return `<tr class="submission-row">
+            <td style="padding:1rem 1.2rem;font-size:0.82rem;font-family:monospace;">${escapeHtml(r.entry_id || '—')}</td>
+            <td style="padding:1rem 1.2rem;font-style:italic;">${escapeHtml(r.scientific_name || '—')}</td>
+            <td style="padding:1rem 1.2rem;">${date}</td>
+            <td style="padding:1rem 1.2rem;text-align:center;"><span style="display:inline-block;padding:0.18rem 0.75rem;border-radius:999px;font-size:0.78rem;font-weight:700;${sc};">${sl}</span></td>
+          </tr>`;
+        }).join('');
+      }
 
       function syncDashboardCatalogViewState() {
         if (!catalogGrid) return;
@@ -4500,6 +4595,10 @@ function refreshConservationHeatMap(summary) {
           if (viewName === 'drafts') {
             const draftsInput = document.getElementById('drafts-search-input');
             loadDrafts(draftsInput ? draftsInput.value.trim() : '');
+          }
+          if (viewName === 'my3d') {
+            const my3dInput = document.getElementById('my3d-search-input');
+            loadMy3DSubmissions(my3dInput ? my3dInput.value.trim() : '');
           }
         } else if (viewName === 'dashboard') {
           dashboardContainer.style.display = 'block';
