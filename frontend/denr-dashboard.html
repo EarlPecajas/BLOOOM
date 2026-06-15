@@ -3940,25 +3940,6 @@
         return '#34d399';
       }
 
-      const MAP_ORCHID_HOTSPOTS = [
-        { c:[6.1264,124.6849], sp:'Vanda sanderiana', st:'Critically Endangered', col:'#ff3b3b' },
-        { c:[6.0964,124.6899], sp:'Paphiopedilum hennisianum', st:'Endangered', col:'#ff8c00' },
-        { c:[6.1364,124.6549], sp:'Bulbophyllum lobbii', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.1164,124.7249], sp:'Dendrobium crumenatum', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.0864,124.7049], sp:'Aerides quinquevulnera', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.1464,124.6949], sp:'Coelogyne rumphii', st:'Least Concern', col:'#4caf50' },
-        { c:[6.0764,124.6599], sp:'Cymbidium bicolor', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.1564,124.6749], sp:'Grammatophyllum speciosum', st:'Endangered', col:'#ff8c00' },
-        { c:[6.0964,124.7149], sp:'Liparis nervosa', st:'Least Concern', col:'#4caf50' },
-        { c:[6.1264,124.7049], sp:'Thrixspermum merguense', st:'Least Concern', col:'#4caf50' },
-        { c:[6.0664,124.6849], sp:'Oberonia iridifolia', st:'Least Concern', col:'#4caf50' },
-        { c:[6.1064,124.6499], sp:'Eria ornata', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.1364,124.7349], sp:'Trichoglottis philippinensis', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.0764,124.7249], sp:'Appendicula cornuta', st:'Least Concern', col:'#4caf50' },
-        { c:[6.1464,124.7049], sp:'Spathoglottis plicata', st:'Least Concern', col:'#4caf50' },
-        { c:[6.1164,124.6649], sp:'Calanthe triplicata', st:'Vulnerable', col:'#f5c518' },
-        { c:[6.0964,124.6649], sp:'Coelogyne cristata', st:'Endangered', col:'#ff8c00' }
-      ];
 
       let conservationDonutChart = null;
       let conservationBarChart = null;
@@ -6104,24 +6085,21 @@
 
       // Initialize dashboard map on page load
       let dashboardMapInitialized = false;
-      function initializeDashboardMap() {
+      async function initializeDashboardMap() {
         if (dashboardMapInitialized) return;
-        
+
         const dashboardMapEl = document.getElementById('dashboard-map');
         if (!dashboardMapEl) return;
-        
+
         dashboardMapInitialized = true;
-        
-        // Initialize small map
+
         const dashboardMap = L.map('dashboard-map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_HOTSPOTS);
-        
-        // Add satellite imagery base layer
+
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles © Esri',
           maxZoom: 19
         }).addTo(dashboardMap);
-        
-        // Add center marker
+
         L.marker(MT_BUSA_COORDS, {
           icon: L.icon({
             iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
@@ -6132,19 +6110,55 @@
         .bindPopup('<b>Mt. Busa</b><br>Kiamba, Sarangani Province')
         .addTo(dashboardMap);
 
+        // Fetch real approved sightings from Supabase
+        let sightings = [];
+        if (bloomSupabase) {
+          try {
+            const { data } = await bloomSupabase
+              .from('species_sightings')
+              .select('latitude, longitude, scientific_name, conservation_status')
+              .eq('review_status', 'approved');
+            sightings = (data || []).filter(r => r.latitude != null && r.longitude != null);
+          } catch (e) {
+            console.warn('Dashboard map: could not load sightings', e);
+          }
+        }
+
+        // Build heatmap — use real coords or fall back to Mt. Busa distribution baseline
+        const heatPoints = sightings.length > 0
+          ? sightings.map(r => [parseFloat(r.latitude), parseFloat(r.longitude), 1.0])
+          : MT_BUSA_DISTRIBUTION_POINTS;
+
         if (typeof L.heatLayer === 'function') {
-          L.heatLayer(MT_BUSA_DISTRIBUTION_POINTS, {
+          L.heatLayer(heatPoints, {
             radius: 24,
             blur: 18,
             maxZoom: 15,
-            gradient: {
-              0.2: '#34d399',
-              0.45: '#facc15',
-              0.75: '#f97316',
-              1.0: '#dc2626'
-            }
+            gradient: { 0.2: '#34d399', 0.45: '#facc15', 0.75: '#f97316', 1.0: '#dc2626' }
           }).addTo(dashboardMap);
         }
+
+        // Plot real orchid markers
+        sightings.forEach(r => {
+          const lat = parseFloat(r.latitude);
+          const lng = parseFloat(r.longitude);
+          if (isNaN(lat) || isNaN(lng)) return;
+          const statusKey = String(r.conservation_status || 'unassigned').toLowerCase().replace(/[\s-]+/g, '_');
+          const col = CONSERVATION_STATUS_COLORS[statusKey] || '#388e3c';
+          const icon = L.divIcon({
+            html: orchidSvg(col, 22),
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+            className: ''
+          });
+          L.marker([lat, lng], { icon })
+            .bindPopup(
+              `<b style="color:${col};">${r.scientific_name || 'Unknown Species'}</b>` +
+              `<br><span style="font-size:0.82rem;color:#555;">${r.conservation_status || 'Unassigned'}</span>` +
+              `<br><span style="font-size:0.75rem;color:#888;">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`
+            )
+            .addTo(dashboardMap);
+        });
       }
 
       // Initialize dashboard map when page loads
