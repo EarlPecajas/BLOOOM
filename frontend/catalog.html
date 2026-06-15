@@ -29,7 +29,7 @@
 
       /* Map */
       .odm-map-wrap{height:195px;flex-shrink:0;}
-      #orchid-leaflet-map{width:100%;height:100%;}
+      #orchid-leaflet-map{width:100%;height:195px;}
       .odm-map-foot{display:flex;align-items:center;gap:.35rem;padding:.3rem .9rem;background:#f6fbf4;border-bottom:1px solid #e4ede3;font-size:.73rem;color:#5a8a54;flex-shrink:0;}
 
       /* Sighting bar */
@@ -760,30 +760,21 @@
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         var mapEl = document.getElementById('orchid-leaflet-map');
         if (!mapEl) return;
-        if (mapEl.offsetHeight < 10) mapEl.style.height = '195px';
+        mapEl.style.height = '195px';
         var primary = sightingPoints[0];
         var allPoints = sightingPoints.slice();
         for (var i = 0; allPoints.length < 5; i++) {
           var off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
           allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng, date: null });
         }
-        orchidLeafletMap = L.map('orchid-leaflet-map', { zoomControl: false })
+        orchidLeafletMap = L.map('orchid-leaflet-map', { zoomControl: false, dragging: true, scrollWheelZoom: false })
           .setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles &copy; Esri', maxZoom: 19
         }).addTo(orchidLeafletMap);
         var icon = L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
-        sightingPoints.forEach(function(pt, idx) {
-          var marker = L.marker([pt.lat, pt.lng], { icon: icon }).addTo(orchidLeafletMap);
-          var label = 'Sighting #' + (idx + 1);
-          marker.bindTooltip(label, { permanent: false, direction: 'top' });
-          marker.on('click', function() {
-            document.getElementById('odm-sighting-num').textContent = label;
-            var d = pt.date
-              ? new Date(pt.date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
-              : '—';
-            document.getElementById('odm-sighting-date').textContent = d;
-          });
+        sightingPoints.forEach(function(pt) {
+          L.marker([pt.lat, pt.lng], { icon: icon, interactive: false }).addTo(orchidLeafletMap);
         });
         orchidLeafletMap.fitBounds(
           L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
@@ -802,7 +793,7 @@
           'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
         var count = allSightings.length;
         document.getElementById('odm-map-hint-text').textContent =
-          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · tap a pin to explore';
+          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · recorded locations';
         var firstSighting = allSightings[0];
         var sightingBar = document.getElementById('odm-sighting-bar');
         if (firstSighting) {
@@ -843,7 +834,17 @@
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094, date: null });
         }
-        setTimeout(function(){ orchidInitMap(sightingPoints); }, 300);
+        var _pts = sightingPoints;
+        var _mapDiv = document.getElementById('orchid-leaflet-map');
+        if (_mapDiv) {
+          var _obs = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting) {
+              _obs.disconnect();
+              orchidInitMap(_pts);
+            }
+          }, { threshold: 0.1 });
+          _obs.observe(_mapDiv);
+        }
         var closeBtn = document.getElementById('orchid-detail-close-btn');
         if (closeBtn && !closeBtn._odmBound) {
           closeBtn._odmBound = true;
