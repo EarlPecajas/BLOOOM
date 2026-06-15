@@ -3288,23 +3288,40 @@
         try {
           const currentEmail = String(parsedActiveUser.email || '').trim();
           const currentUserId = String(parsedActiveUser.id || '').trim();
-          let query = window.bloomSupabase
+
+          // Primary query — by researcher_email (works for both web and mobile drafts)
+          let emailQuery = window.bloomSupabase
             .from('species_sightings')
             .select('*')
             .eq('review_status', 'draft')
             .order('created_at', { ascending: false });
-          if (isResearcherRole) {
-            if (currentEmail && currentUserId) {
-              query = query.or(`researcher_email.eq.${currentEmail},user_uuid.eq.${currentUserId}`);
-            } else if (currentEmail) {
-              query = query.eq('researcher_email', currentEmail);
-            } else if (currentUserId) {
-              query = query.eq('user_uuid', currentUserId);
-            }
+          if (isResearcherRole && currentEmail) {
+            emailQuery = emailQuery.eq('researcher_email', currentEmail);
           }
-          const { data, error } = await query;
-          if (error) throw new Error(error.message);
-          const rows = (Array.isArray(data) ? data : []).map(normalizeSubmissionRow);
+          const { data: emailData, error: emailErr } = await emailQuery;
+          if (emailErr) throw new Error(emailErr.message);
+          let combined = Array.isArray(emailData) ? [...emailData] : [];
+
+          // Secondary query — by user_uuid for mobile drafts that may have a null
+          // researcher_email or a mismatched email. Fails silently if column absent.
+          if (isResearcherRole && currentUserId) {
+            try {
+              const { data: uuidData } = await window.bloomSupabase
+                .from('species_sightings')
+                .select('*')
+                .eq('review_status', 'draft')
+                .eq('user_uuid', currentUserId)
+                .order('created_at', { ascending: false });
+              if (Array.isArray(uuidData) && uuidData.length > 0) {
+                const seen = new Set(combined.map(r => r.sighting_id));
+                for (const r of uuidData) {
+                  if (!seen.has(r.sighting_id)) combined.push(r);
+                }
+              }
+            } catch (_) { /* user_uuid column may not exist — ignore */ }
+          }
+
+          const rows = combined.map(normalizeSubmissionRow);
           const searchValue = String(searchTerm || '').trim().toLowerCase();
           const filtered = rows.filter(r => {
             if (!searchValue) return true;
@@ -3327,7 +3344,8 @@
         draftsTableBody.innerHTML = rows.map(row => {
           const researcher = escapeHtml(String(row.researcher_name || row.researcher_email || '—'));
           const species = escapeHtml(String(row.scientific_name || 'Unnamed draft'));
-          const saved = escapeHtml(row.updated_at ? new Date(row.updated_at).toLocaleDateString() : '—');
+          const savedTs = row.updated_at || row.created_at;
+          const saved = escapeHtml(savedTs ? new Date(savedTs).toLocaleDateString() : '—');
           const sid = escapeHtml(String(row.sighting_id));
           const isMobile = String(row.entry_id || '').startsWith('MOBILE-DRAFT-');
           const mobileBadge = isMobile
