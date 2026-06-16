@@ -7454,11 +7454,13 @@
         const thumbnailOptions = document.getElementById('thumbnailOptions');
         const galleryOptions   = document.getElementById('galleryOptions');
         const galleryEmpty     = document.getElementById('galleryOptionsEmpty');
+        // whole_plant_photos/etc. can hold plain string URLs (3NF sighting_media path)
+        // or {src, contributor} objects (legacy column fallback) — normalize both to URLs.
         const allImages = [
           ...(s.whole_plant_photos   || []),
           ...(s.closeup_flower_photos|| []),
           ...(s.habitat_photos       || [])
-        ].filter(Boolean);
+        ].map(item => normalizeMediaItem(item).src).filter(Boolean);
 
         if (allImages.length === 0) {
           thumbnailOptions.innerHTML = '<p style="color:var(--dt-muted);font-size:0.85rem;margin:0;">No submission photos. Upload a custom thumbnail above.</p>';
