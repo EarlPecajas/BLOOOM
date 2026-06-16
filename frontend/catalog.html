@@ -32,6 +32,8 @@
       #orchid-leaflet-map{width:100%;height:195px;}
       /* Bootstrap resets max-width on all <img> which breaks Leaflet tile images */
       .leaflet-container img{max-width:none!important;}
+      .odm-map-marker-inner{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);overflow:hidden;background:#145A1E;}
+      .odm-map-marker-inner img{width:100%;height:100%;object-fit:cover;display:block;}
       .odm-map-foot{display:flex;align-items:center;gap:.35rem;padding:.3rem .9rem;background:#f6fbf4;border-bottom:1px solid #e4ede3;font-size:.73rem;color:#5a8a54;flex-shrink:0;}
 
       /* Sighting bar */
@@ -717,6 +719,31 @@
         }).join('');
       }
 
+      function getOrchidThumbnailUrl(orchid, allSightings) {
+        var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
+        var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
+        if (seedImg) return seedImg;
+        if (orchid.image_url) return orchid.image_url;
+        for (var i = 0; i < allSightings.length; i++) {
+          var photos = getPublicSightingImages(allSightings[i]).filter(function(u){ return u && String(u).indexOf('http') === 0; });
+          if (photos.length) return photos[0];
+        }
+        return null;
+      }
+
+      function buildOrchidMarkerIcon(thumbnailUrl) {
+        if (!thumbnailUrl) {
+          return L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
+        }
+        return L.divIcon({
+          className: 'odm-map-marker',
+          html: '<div class="odm-map-marker-inner"><img src="' + escapeHtml(thumbnailUrl) + '" alt=""></div>',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -22]
+        });
+      }
+
       function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
         var imgs = [];
@@ -764,7 +791,7 @@
         el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
       }
 
-      function orchidInitMap(sightingPoints) {
+      function orchidInitMap(sightingPoints, thumbnailUrl) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         var mapEl = document.getElementById('orchid-leaflet-map');
         if (!mapEl) return;
@@ -782,7 +809,7 @@
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles &copy; Esri', maxZoom: 19
         }).addTo(orchidLeafletMap);
-        var icon = L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
+        var icon = buildOrchidMarkerIcon(thumbnailUrl);
         sightingPoints.forEach(function(pt) {
           L.marker([pt.lat, pt.lng], { icon: icon, interactive: false }).addTo(orchidLeafletMap);
         });
@@ -844,7 +871,7 @@
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094, date: null });
         }
-        orchidInitMap(sightingPoints);
+        orchidInitMap(sightingPoints, getOrchidThumbnailUrl(orchid, allSightings));
         var closeBtn = document.getElementById('orchid-detail-close-btn');
         if (closeBtn && !closeBtn._odmBound) {
           closeBtn._odmBound = true;
