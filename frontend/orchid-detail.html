@@ -117,12 +117,6 @@
       .odm-breadcrumb{font-size:.72rem;color:#5a8a54;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
       .odm-close-btn{background:none;border:1.5px solid #c8ddc5;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:#3e6639;flex-shrink:0;transition:background .15s;}
       .odm-close-btn:hover{background:#e8f3e6;}
-      .odm-map-wrap{height:195px;flex-shrink:0;}
-      #odm-leaflet-map{width:100%;height:195px;}
-      .leaflet-container img{max-width:none!important;}
-      .odm-map-marker-inner{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);overflow:hidden;background:#145A1E;}
-      .odm-map-marker-inner img{width:100%;height:100%;object-fit:cover;display:block;}
-      .odm-map-foot{display:flex;align-items:center;gap:.35rem;padding:.3rem .9rem;background:#f6fbf4;border-bottom:1px solid #e4ede3;font-size:.73rem;color:#5a8a54;flex-shrink:0;}
       .odm-sighting-bar{display:flex;align-items:center;gap:.35rem;padding:.45rem .9rem;background:#fff;border-bottom:1px solid #e4ede3;font-size:.84rem;color:#162b14;flex-shrink:0;}
       .odm-sighting-bar b{color:#145A1E;}
       .odm-tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1.5px solid #d8ecd6;flex-shrink:0;background:#fff;}
@@ -342,15 +336,6 @@
           <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
         </div>
 
-        <!-- Map -->
-        <div class="odm-map-wrap">
-          <div id="odm-leaflet-map"></div>
-        </div>
-        <div class="odm-map-foot">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-8-6.5-8-12a8 8 0 1 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
-          <span id="odm-map-hint-text">recorded sightings</span>
-        </div>
-
         <!-- Active sighting indicator -->
         <div class="odm-sighting-bar" id="odm-sighting-bar">
           <svg viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2" width="14" height="14"><path d="M12 21s-8-6.5-8-12a8 8 0 1 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
@@ -395,6 +380,10 @@
             <div class="odm-section">
               <div class="odm-section-title">Taxonomy &amp; Identification</div>
               <div class="odm-rows-wrap" id="odm-rows-taxonomy"></div>
+            </div>
+            <div class="odm-section">
+              <div class="odm-section-title">Morphological Characteristics</div>
+              <div class="odm-rows-wrap" id="odm-rows-morphology"></div>
             </div>
             <div class="odm-section">
               <div class="odm-section-title">Location &amp; Habitat</div>
@@ -870,16 +859,7 @@
     </div>
 
     <script>
-      // ── Constants ──────────────────────────────────────────────────
-      const NEARBY_OFFSETS = [
-        { dlat:  0.0072, dlng:  0.0105 },
-        { dlat: -0.0128, dlng:  0.0054 },
-        { dlat:  0.0175, dlng: -0.0083 },
-        { dlat: -0.0061, dlng: -0.0157 }
-      ];
-
       let orchidLeafletMap = null;
-      let odmLeafletMap = null;
       let currentOrchid = null;
       let currentSrc = null;
       let currentAllSightings = [];
@@ -1176,16 +1156,43 @@
           odmRow('Common Name(s)', commonNames) +
           odmRow('Endemic to Philippines', endemic) +
           odmRow('Genus', genus) +
-          odmRow('Confidence', src.identification_confidence) +
-          odmRow('Population Status', src.population_status);
+          odmRow('Confidence', src.identification_confidence);
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
+
+        var leafTextures = Array.isArray(src.leaf_textures) ? src.leaf_textures.join(', ') : (src.leaf_textures || '');
+        var flowerDiameter = src.flower_diameter_cm ? '~' + Math.round(Number(src.flower_diameter_cm)) + ' cm' : '';
+        var plantHeight = src.plant_height_cm ? src.plant_height_cm + ' cm' : '';
+        var floweringStage = src.blooming_stage || src.flowering_stage || '';
+        var fruitPresent = src.fruit_present === true ? 'Present' : (src.fruit_present === false ? 'Not observed' : '');
+        var morphHtml = odmRow('Plant Height', plantHeight) +
+          odmRow('Leaf Shape', src.leaf_shape) +
+          odmRow('Leaf Count', src.leaf_count) +
+          odmRow('Leaf Textures', leafTextures) +
+          odmRow('Leaf Arrangement', src.leaf_arrangement) +
+          odmRow('Flower Color', src.flower_color) +
+          odmRow('Flower Count', src.flower_count) +
+          odmRow('Flower Size', flowerDiameter) +
+          odmRow('Inflorescence Type', src.inflorescence_type) +
+          odmRow('Petal Characteristics', src.petal_characteristics) +
+          odmRow('Labellum / Lip', src.labellum_lip_description) +
+          odmRow('Fragrance', src.fragrance) +
+          odmRow('Flowering Season', src.flowering_season) +
+          odmRow('Flowering Stage', floweringStage) +
+          odmRow('Fruit Present', fruitPresent) +
+          odmRow('Fruit Type', src.fruit_type);
+        document.getElementById('odm-rows-morphology').innerHTML = morphHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No morphological data</span></div>';
+
         var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
         var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa') +
           odmRow('Site / Zone', src.specific_site_zone) +
           odmRow('Elevation', elev) +
           odmRow('Habitat', src.habitat_type) +
-          odmRow('Microhabitat', src.microhabitat);
+          odmRow('Microhabitat', src.microhabitat) +
+          odmRow('Growth Substrate', src.growth_substrate) +
+          odmRow('Nearby Water Source', src.nearby_water_source) +
+          odmRow('Population Status', src.population_status);
         document.getElementById('odm-rows-location').innerHTML = locHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
       }
@@ -1220,19 +1227,6 @@
               }).join('') +
             '</div></div>';
         }).join('');
-      }
-
-      function buildOrchidMarkerIcon(thumbnailUrl) {
-        if (!thumbnailUrl) {
-          return L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
-        }
-        return L.divIcon({
-          className: 'odm-map-marker',
-          html: '<div class="odm-map-marker-inner"><img src="' + escapeHtml(thumbnailUrl) + '" alt=""></div>',
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
-          popupAnchor: [0, -22]
-        });
       }
 
       function odmPopulateImages(orchid, allSightings) {
@@ -1282,36 +1276,6 @@
         el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
       }
 
-      function odmInitMap(sightingPoints, thumbnailUrl) {
-        if (odmLeafletMap) { odmLeafletMap.remove(); odmLeafletMap = null; }
-        var mapEl = document.getElementById('odm-leaflet-map');
-        if (!mapEl) return;
-        mapEl.style.height = '195px';
-        var primary = sightingPoints[0];
-        var allPoints = sightingPoints.slice();
-        for (var i = 0; allPoints.length < 5; i++) {
-          var off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
-          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng });
-        }
-        odmLeafletMap = L.map('odm-leaflet-map', {
-          zoomControl: false, dragging: true, scrollWheelZoom: false,
-          zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false
-        }).setView([primary.lat, primary.lng], 13);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles &copy; Esri', maxZoom: 19
-        }).addTo(odmLeafletMap);
-        var icon = buildOrchidMarkerIcon(thumbnailUrl);
-        sightingPoints.forEach(function(pt) {
-          L.marker([pt.lat, pt.lng], { icon: icon, interactive: false }).addTo(odmLeafletMap);
-        });
-        odmLeafletMap.fitBounds(
-          L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
-          { padding: [30, 30], animate: false }
-        );
-        setTimeout(function(){ if (odmLeafletMap) odmLeafletMap.invalidateSize(); }, 200);
-        setTimeout(function(){ if (odmLeafletMap) odmLeafletMap.invalidateSize(); }, 600);
-      }
-
       function openOrchidDetailsModal(clickedSrc) {
         var orchid = currentOrchid || {};
         var allSightings = currentAllSightings || [];
@@ -1319,9 +1283,6 @@
         var genus = orchid.genus || orchidName.split(' ')[0] || '';
         document.getElementById('odm-breadcrumb').textContent =
           'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
-        var count = allSightings.length;
-        document.getElementById('odm-map-hint-text').textContent =
-          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · recorded locations';
 
         // Highlight whichever sighting's marker was actually clicked, falling back to the first.
         var activeIndex = 0;
@@ -1350,14 +1311,6 @@
         orchidDetailModal.hidden = false;
         document.body.style.overflow = 'hidden';
 
-        var sightingPoints = allSightings
-          .filter(function(s){ return s.latitude != null && s.longitude != null; })
-          .map(function(s){ return { lat: Number(s.latitude), lng: Number(s.longitude), date: s.observation_date }; });
-        if (sightingPoints.length === 0) {
-          sightingPoints.push({ lat: 6.084759, lng: 124.692110, date: null });
-        }
-        odmInitMap(sightingPoints, getBestPhotoUrl(activeSighting || allSightings[0] || {}, orchid));
-
         var closeBtn = document.getElementById('orchid-detail-close-btn');
         if (closeBtn && !closeBtn._odmBound) {
           closeBtn._odmBound = true;
@@ -1374,7 +1327,6 @@
       function closeOrchidDetailsModal() {
         orchidDetailModal.hidden = true;
         document.body.style.overflow = '';
-        if (odmLeafletMap) { odmLeafletMap.remove(); odmLeafletMap = null; }
       }
 
       function updateFloweringSeasonValue() {
