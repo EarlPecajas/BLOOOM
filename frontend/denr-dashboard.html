@@ -2061,10 +2061,9 @@
                 <div style="display:flex;align-items:center;gap:0.65rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ee8a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                   <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Catalog Thumbnail <span style="color:#f87171;">*</span></h4>
-                  <span style="font-size:0.72rem;color:var(--dt-muted);">Select one — shown as the card image in all catalogs</span>
+                  <span style="font-size:0.72rem;color:var(--dt-muted);">Shown as the card image in all catalogs</span>
                 </div>
                 <div style="padding:1rem;">
-                  <div id="thumbnailOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;margin-bottom:0.85rem;"></div>
                   <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed var(--dt-border-md);border-radius:10px;cursor:pointer;background:rgba(77,184,106,0.06);font-size:0.84rem;color:var(--dt-accent-lt);font-weight:600;transition:background 150ms;" onmouseover="this.style.background='rgba(77,184,106,0.12)'" onmouseout="this.style.background='rgba(77,184,106,0.06)'">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     Upload custom thumbnail
@@ -7292,30 +7291,8 @@
               <img src="${e.target.result}" alt="Custom thumbnail" style="width:110px;height:110px;object-fit:cover;border-radius:10px;border:2.5px solid #145A1E;">
               <span style="position:absolute;top:4px;right:4px;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:700;padding:0.2rem 0.4rem;border-radius:999px;">SELECTED</span>
             </div>`;
-          // Mark this as the selected thumbnail by deselecting radio buttons
-          document.querySelectorAll('input[name="thumbnail"]').forEach(r => r.checked = false);
         };
         reader.readAsDataURL(file);
-      }
-
-      function makeThumbnailCard(img, index) {
-        return `<label style="position:relative;cursor:pointer;display:block;" onclick="this.querySelector('input').checked=true;document.getElementById('catalogThumbnailUpload').value='';catalogCustomThumbnailFile=null;document.getElementById('customThumbnailPreview').style.display='none';document.getElementById('customThumbnailPreview').innerHTML='';updateThumbSelection();">
-          <input type="radio" name="thumbnail" value="${img}" ${index === 0 ? 'checked' : ''} style="position:absolute;opacity:0;width:0;height:0;">
-          <img src="${img}" alt="Photo ${index+1}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2.5px solid ${index === 0 ? '#145A1E' : '#e2e8f0'};transition:border-color 150ms;">
-          <span class="thumb-sel-badge" style="display:${index===0?'flex':'none'};position:absolute;top:5px;right:5px;background:#145A1E;color:#fff;font-size:0.62rem;font-weight:800;padding:0.18rem 0.45rem;border-radius:999px;text-transform:uppercase;letter-spacing:0.04em;align-items:center;">✓</span>
-        </label>`;
-      }
-
-      function updateThumbSelection() {
-        document.querySelectorAll('#thumbnailOptions label').forEach(function(lbl) {
-          const radio = lbl.querySelector('input[type="radio"]');
-          const badge = lbl.querySelector('.thumb-sel-badge');
-          const img = lbl.querySelector('img');
-          if (radio && img) {
-            img.style.borderColor = radio.checked ? '#145A1E' : '#e2e8f0';
-            if (badge) badge.style.display = radio.checked ? 'flex' : 'none';
-          }
-        });
       }
 
       function makeGalleryCard(img, index) {
@@ -7450,10 +7427,10 @@
           }
         } catch(e) { console.error('Genus load error:', e); }
 
-        // Photos
-        const thumbnailOptions = document.getElementById('thumbnailOptions');
-        const galleryOptions   = document.getElementById('galleryOptions');
-        const galleryEmpty     = document.getElementById('galleryOptionsEmpty');
+        // Photos — the catalog thumbnail is always a manual upload (see Upload custom
+        // thumbnail above); only the gallery picker offers the submission's own photos.
+        const galleryOptions = document.getElementById('galleryOptions');
+        const galleryEmpty   = document.getElementById('galleryOptionsEmpty');
         // whole_plant_photos/etc. can hold plain string URLs (3NF sighting_media path)
         // or {src, contributor} objects (legacy column fallback) — normalize both to URLs.
         const allImages = [
@@ -7463,14 +7440,9 @@
         ].map(item => normalizeMediaItem(item).src).filter(Boolean);
 
         if (allImages.length === 0) {
-          thumbnailOptions.innerHTML = '<p style="color:var(--dt-muted);font-size:0.85rem;margin:0;">No submission photos. Upload a custom thumbnail above.</p>';
           galleryOptions.innerHTML = '';
           if (galleryEmpty) galleryEmpty.style.display = 'block';
         } else {
-          thumbnailOptions.innerHTML = allImages.map((img, i) => makeThumbnailCard(img, i)).join('');
-          thumbnailOptions.querySelectorAll('label').forEach(function(lbl) {
-            lbl.addEventListener('click', function() { setTimeout(updateThumbSelection, 10); });
-          });
           galleryOptions.innerHTML = allImages.map((img, i) => makeGalleryCard(img, i)).join('');
           if (galleryEmpty) galleryEmpty.style.display = 'none';
         }
@@ -7486,20 +7458,19 @@
 
         const scientificName = document.getElementById('catalogScientificName').value.trim();
         const genusName = document.getElementById('catalogGenus').value;
-        const selectedRadio = document.querySelector('input[name="thumbnail"]:checked');
         const galleryImages = Array.from(document.querySelectorAll('input[name="gallery"]:checked')).map(cb => cb.value);
         const submitBtn = event.target.querySelector('[type="submit"]');
 
-        // Determine thumbnail: uploaded file takes priority over radio selection
-        let thumbnailUrl = selectedRadio ? selectedRadio.value : null;
-        if (catalogCustomThumbnailFile) thumbnailUrl = '__upload__';
+        // The catalog thumbnail is always a manual upload — never auto-suggested from
+        // submission photos, since those don't necessarily represent the species well.
+        let thumbnailUrl = catalogCustomThumbnailFile ? '__upload__' : null;
 
         if (!scientificName || !genusName) {
           alert('Please fill in Scientific Name and Genus.');
           return;
         }
         if (!thumbnailUrl) {
-          alert('Please select or upload a catalog thumbnail.');
+          alert('Please upload a catalog thumbnail.');
           return;
         }
 
