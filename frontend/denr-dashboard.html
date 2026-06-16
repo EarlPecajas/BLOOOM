@@ -4210,7 +4210,7 @@
           if (bloomSupabase) {
             let query = bloomSupabase
               .from('species_sightings')
-              .select('*')
+              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
               .neq('review_status', 'draft')
               .not('entry_id', 'like', 'BLOOM-3D-%')
               .order('created_at', { ascending: false });
