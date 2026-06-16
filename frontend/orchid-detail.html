@@ -104,53 +104,58 @@
       #orchid-leaflet-map { flex: 1; min-height: 0; }
       .orchid-map-hint { text-align: center; font-size: .72rem; color: #6a8a64; padding: .3rem 1rem; background: #F8F5ED; border-top: 1px solid #E0D8C0; margin: 0; flex-shrink: 0; }
 
-      /* ── Stage 2: paged detail — modal overlay ── */
-      #detail-paged { display: none; }
-      #detail-paged:not([hidden]) {
-        display: flex; position: fixed; inset: 0; z-index: 2000;
-        background: rgba(10,30,12,0.55);
-        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-        align-items: center; justify-content: center; padding: 1.25rem;
-      }
-      .detail-paged-inner {
-        background: #ffffff; border-radius: 16px;
-        width: min(700px, 100%); max-height: calc(100vh - 2.5rem);
-        display: flex; flex-direction: column; overflow: hidden;
-        box-shadow: 0 20px 64px rgba(0,0,0,.35);
-        border: 1px solid rgba(20,90,30,.18);
-      }
-      .orchid-detail-header-bar {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 1rem 1.4rem; background: #145A1E;
-        flex-shrink: 0; gap: .75rem; border-radius: 16px 16px 0 0;
-      }
-      .orchid-detail-back-btn {
-        background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3);
-        border-radius: 8px; padding: .3rem .85rem; font-size: .78rem; font-weight: 700;
-        color: #fff; cursor: pointer; white-space: nowrap; transition: all .15s;
-      }
-      .orchid-detail-back-btn:hover { background: rgba(255,255,255,.25); }
-      .orchid-detail-header-name { font-size: 1rem; font-style: italic; color: #fff; font-weight: 700; margin: 0; flex: 1; text-align: center; font-family: Georgia, serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .orchid-step-bar { display: flex; align-items: center; justify-content: space-between; padding: .5rem 1.3rem; background: #F5F0E8; border-bottom: 1px solid #E8E2CB; flex-shrink: 0; }
-      .orchid-step-label-text { font-size: .78rem; font-weight: 700; color: #145A1E; }
-      .orchid-step-badge { font-size: .7rem; font-weight: 700; color: #145A1E; background: #D4EDD0; padding: .16rem .65rem; border-radius: 12px; }
-      .orchid-detail-pages-wrap { flex: 1; overflow-y: auto; min-height: 0; background: #fff; }
-      .detail-step-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #C8D9C4; transition: all .2s; }
-      .detail-step-dot.active { background: #145A1E; transform: scale(1.4); }
-      .orchid-detail-page .orchid-detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .75rem 1.3rem; border-bottom: 1px solid #F0EAD2; gap: 1.5rem; }
-      .orchid-detail-page .orchid-detail-row:nth-child(even) { background: #FAFAF6; }
-      .orchid-detail-page .orchid-detail-row[hidden] { display: none; }
-      .orchid-detail-page .orchid-detail-label { color: #4a7a44; font-weight: 700; font-size: .68rem; min-width: 150px; flex-shrink: 0; text-transform: uppercase; letter-spacing: .07em; line-height: 1.35; padding-top: .1rem; }
-      .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label) { color: #162b14; font-weight: 500; font-size: .9rem; text-align: right; line-height: 1.5; }
-      .orchid-nav-bar { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1.3rem; border-top: 1px solid #E8E2CB; background: #F5F0E8; flex-shrink: 0; border-radius: 0 0 16px 16px; }
-      .orchid-nav-actions { display: flex; align-items: center; gap: .6rem; }
       .orchid-nav-btn { padding: .42rem 1.2rem; border-radius: 8px; font-size: .82rem; font-weight: 700; cursor: pointer; border: 1.5px solid #2d5a27; transition: all .15s; }
-      .orchid-nav-btn-outline { background: #fff; color: #2d5a27; }
-      .orchid-nav-btn-outline:hover { background: #eaf3ea; }
-      .orchid-nav-btn-fill { background: #145A1E; color: #F0EAD2; border-color: #145A1E; }
-      .orchid-nav-btn-fill:hover { background: #0E4018; }
       .orchid-nav-btn-cream { background: #E8E2CB; color: #145A1E; border-color: #C8BFA8; }
       .orchid-nav-btn-cream:hover { background: #D8D2BA; border-color: #145A1E; }
+
+      /* ── Tabbed sighting detail modal — mirrors catalog.html's visitor-facing design ── */
+      .orchid-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+      @media(min-width:640px){.orchid-detail-modal{align-items:center;padding:1.5vh 2vw;}}
+      .orchid-detail-card{background:#fff;width:100%;max-width:520px;height:94vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -6px 48px rgba(0,0,0,.32);}
+      @media(min-width:640px){.orchid-detail-card{border-radius:22px;height:92vh;}}
+      .odm-topbar{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem .5rem;border-bottom:1px solid #e4ede3;flex-shrink:0;gap:.5rem;}
+      .odm-breadcrumb{font-size:.72rem;color:#5a8a54;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+      .odm-close-btn{background:none;border:1.5px solid #c8ddc5;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:#3e6639;flex-shrink:0;transition:background .15s;}
+      .odm-close-btn:hover{background:#e8f3e6;}
+      .odm-map-wrap{height:195px;flex-shrink:0;}
+      #odm-leaflet-map{width:100%;height:195px;}
+      .leaflet-container img{max-width:none!important;}
+      .odm-map-marker-inner{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);overflow:hidden;background:#145A1E;}
+      .odm-map-marker-inner img{width:100%;height:100%;object-fit:cover;display:block;}
+      .odm-map-foot{display:flex;align-items:center;gap:.35rem;padding:.3rem .9rem;background:#f6fbf4;border-bottom:1px solid #e4ede3;font-size:.73rem;color:#5a8a54;flex-shrink:0;}
+      .odm-sighting-bar{display:flex;align-items:center;gap:.35rem;padding:.45rem .9rem;background:#fff;border-bottom:1px solid #e4ede3;font-size:.84rem;color:#162b14;flex-shrink:0;}
+      .odm-sighting-bar b{color:#145A1E;}
+      .odm-tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1.5px solid #d8ecd6;flex-shrink:0;background:#fff;}
+      .odm-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.18rem;padding:.55rem .2rem .45rem;font-size:.62rem;font-weight:600;color:#5a8a54;background:transparent;border:none;border-bottom:2.5px solid transparent;cursor:pointer;transition:all .13s;letter-spacing:.01em;}
+      .odm-tab svg{width:18px;height:18px;flex-shrink:0;}
+      .odm-tab.odm-tab--active{color:#145A1E;border-bottom-color:#145A1E;background:#f6fbf4;}
+      .odm-body{flex:1;overflow-y:auto;min-height:0;background:#f1f5ef;}
+      .odm-panel{display:block;}
+      .odm-panel--hidden{display:none;}
+      .odm-conservation-card{margin:1rem 1rem .75rem;border-radius:14px;background:#145A1E;color:#fff;padding:1.1rem 1.2rem 1rem;}
+      .odm-con-head{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:600;opacity:.82;margin-bottom:.55rem;}
+      .odm-con-head svg{width:15px;height:15px;flex-shrink:0;}
+      .odm-con-status{font-size:1.7rem;font-weight:800;margin:.05rem 0 .2rem;line-height:1.15;}
+      .odm-con-desc{font-size:.8rem;opacity:.78;}
+      .odm-section{margin:0 1rem .85rem;}
+      .odm-section-title{font-size:.8rem;font-weight:800;color:#162b14;margin:.7rem 0 .4rem;letter-spacing:.01em;}
+      .odm-rows-wrap{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e0e9df;}
+      .odm-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.6rem .9rem;border-bottom:1px solid #e9f0e8;gap:.75rem;}
+      .odm-row:last-child{border-bottom:none;}
+      .odm-row-label{font-size:.68rem;font-weight:700;color:#3e6639;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;min-width:95px;line-height:1.3;padding-top:.08rem;}
+      .odm-row-value{font-size:.88rem;color:#162b14;font-weight:500;text-align:right;line-height:1.4;}
+      .odm-sighting-item{background:#fff;margin:.75rem 1rem;border-radius:12px;border:1px solid #e0e9df;overflow:hidden;}
+      .odm-sighting-item-hd{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem .5rem;border-bottom:1px solid #e9f0e8;}
+      .odm-sighting-item-num{font-weight:700;color:#145A1E;font-size:.88rem;}
+      .odm-sighting-item-date{font-size:.76rem;color:#5a8a54;}
+      .odm-sighting-item-rows{padding:.2rem 0 .3rem;}
+      .odm-sighting-item-row{display:flex;gap:.5rem;font-size:.81rem;color:#3e3e3e;padding:.22rem 1rem;}
+      .odm-sighting-item-row-lbl{color:#5a8a54;font-weight:600;min-width:70px;flex-shrink:0;}
+      .odm-images-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;padding:1rem;}
+      .odm-img-wrap{border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#e4ede3;}
+      .odm-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;}
+      .odm-empty{text-align:center;color:#7a9a78;font-size:.88rem;padding:2.5rem 1rem;font-style:italic;}
+      .odm-study-note{margin:.75rem 1rem;background:#fff;border-radius:12px;padding:1rem;border:1px solid #e0e9df;font-size:.87rem;color:#162b14;line-height:1.58;}
       .submission-select {
         padding: 0.72rem 0.8rem;
         border: 1px solid #d4ddd7;
@@ -327,113 +332,93 @@
 
     </div>
 
-    <!-- STAGE 2: Paged sighting details -->
-    <div id="detail-paged" hidden>
-      <div class="detail-paged-inner">
-      <div class="orchid-detail-header-bar">
-        <button type="button" id="detail-to-map-btn" class="orchid-detail-back-btn">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px;"><polyline points="15 18 9 12 15 6"/></svg>Map
-        </button>
-        <h3 id="orchid-detail-stage-name" class="orchid-detail-header-name scientific-name">-</h3>
-        <div style="min-width:80px;"></div>
-      </div>
-      <div class="orchid-step-bar">
-        <span id="orchid-step-label" class="orchid-step-label-text">Basic Taxonomic Information</span>
-        <span id="orchid-step-count" class="orchid-step-badge">1 / 7</span>
-      </div>
+    <!-- Sighting detail modal — tabbed, matches the visitor catalog's design -->
+    <div class="orchid-detail-modal" id="orchid-detail-modal" hidden>
+      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="odm-breadcrumb">
 
-      <div class="orchid-detail-pages-wrap">
-
-        <div id="orchid-detail-page-1" class="orchid-detail-page">
-          <div class="orchid-detail-row" id="row-scientific-name"><span class="orchid-detail-label">Scientific Name</span><span id="detail-scientific-name" class="scientific-name">-</span></div>
-          <div class="orchid-detail-row" id="row-genus"><span class="orchid-detail-label">Genus</span><span id="detail-genus">-</span></div>
-          <div class="orchid-detail-row" id="row-common-name"><span class="orchid-detail-label">Common Name</span><span id="detail-common-name">-</span></div>
-          <div class="orchid-detail-row" id="row-endemicity"><span class="orchid-detail-label">Endemicity</span><span id="detail-endemicity">-</span></div>
-          <div class="orchid-detail-row" id="row-identification-status"><span class="orchid-detail-label">Identification</span><span id="detail-identification-status">-</span></div>
-          <div class="orchid-detail-row" id="row-identification-confidence"><span class="orchid-detail-label">Confidence Level</span><span id="detail-identification-confidence">-</span></div>
+        <!-- Breadcrumb + close -->
+        <div class="odm-topbar">
+          <span class="odm-breadcrumb" id="odm-breadcrumb">Orchidaceae</span>
+          <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
         </div>
 
-        <div id="orchid-detail-page-2" class="orchid-detail-page" hidden>
-          <div class="orchid-detail-row" id="row-observation-summary"><span class="orchid-detail-label">Summary</span><span id="detail-observation-summary">-</span></div>
-          <div class="orchid-detail-row" id="row-observation-type"><span class="orchid-detail-label">Observation Type</span><span id="detail-observation-type">-</span></div>
-          <div class="orchid-detail-row" id="row-observation-month"><span class="orchid-detail-label">Observation Month</span><span id="detail-observation-month">-</span></div>
-          <div class="orchid-detail-row" id="row-observation-date"><span class="orchid-detail-label">Observation Date</span><span id="detail-observation-date">-</span></div>
-          <div class="orchid-detail-row" id="row-observation-time"><span class="orchid-detail-label">Observation Time</span><span id="detail-observation-time">-</span></div>
-          <div class="orchid-detail-row" id="row-collection-method"><span class="orchid-detail-label">Collection Method</span><span id="detail-collection-method">-</span></div>
-          <div class="orchid-detail-row" id="row-voucher"><span class="orchid-detail-label">Voucher Collected</span><span id="detail-voucher">-</span></div>
+        <!-- Map -->
+        <div class="odm-map-wrap">
+          <div id="odm-leaflet-map"></div>
+        </div>
+        <div class="odm-map-foot">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-8-6.5-8-12a8 8 0 1 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span id="odm-map-hint-text">recorded sightings</span>
         </div>
 
-        <div id="orchid-detail-page-3" class="orchid-detail-page" hidden>
-          <div class="orchid-detail-row" id="row-mountain"><span class="orchid-detail-label">Mountain</span><span id="detail-mountain">-</span></div>
-          <div class="orchid-detail-row" id="row-specific-site"><span class="orchid-detail-label">Specific Site / Zone</span><span id="detail-specific-site">-</span></div>
-          <div class="orchid-detail-row" id="row-latitude"><span class="orchid-detail-label">Latitude</span><span id="detail-latitude">-</span></div>
-          <div class="orchid-detail-row" id="row-longitude"><span class="orchid-detail-label">Longitude</span><span id="detail-longitude">-</span></div>
-          <div class="orchid-detail-row" id="row-elevation"><span class="orchid-detail-label">Elevation (m)</span><span id="detail-elevation">-</span></div>
-          <div class="orchid-detail-row" id="row-location-visibility"><span class="orchid-detail-label">Location Note</span><span id="detail-location-visibility">-</span></div>
+        <!-- Active sighting indicator -->
+        <div class="odm-sighting-bar" id="odm-sighting-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2" width="14" height="14"><path d="M12 21s-8-6.5-8-12a8 8 0 1 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <b id="odm-sighting-num">Sighting #1</b>
+          <span style="color:#aaa;">&middot;</span>
+          <span id="odm-sighting-date">&mdash;</span>
         </div>
 
-        <div id="orchid-detail-page-4" class="orchid-detail-page" hidden>
-          <div class="orchid-detail-row" id="row-habitat-type"><span class="orchid-detail-label">Habitat Type</span><span id="detail-habitat-type">-</span></div>
-          <div class="orchid-detail-row" id="row-microhabitat"><span class="orchid-detail-label">Microhabitat</span><span id="detail-microhabitat">-</span></div>
-          <div class="orchid-detail-row" id="row-growth-substrate"><span class="orchid-detail-label">Growth Substrate</span><span id="detail-growth-substrate">-</span></div>
-          <div class="orchid-detail-row" id="row-host-tree"><span class="orchid-detail-label">Host Tree Species</span><span id="detail-host-tree">-</span></div>
-          <div class="orchid-detail-row" id="row-canopy-cover"><span class="orchid-detail-label">Canopy Cover (%)</span><span id="detail-canopy-cover">-</span></div>
-          <div class="orchid-detail-row" id="row-light-exposure"><span class="orchid-detail-label">Light Exposure</span><span id="detail-light-exposure">-</span></div>
-          <div class="orchid-detail-row" id="row-soil-type"><span class="orchid-detail-label">Soil Type</span><span id="detail-soil-type">-</span></div>
-          <div class="orchid-detail-row" id="row-nearby-water"><span class="orchid-detail-label">Nearby Water Source</span><span id="detail-nearby-water">-</span></div>
+        <!-- 4 tabs -->
+        <div class="odm-tabs">
+          <button class="odm-tab odm-tab--active" data-tab="value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Species Value</span>
+          </button>
+          <button class="odm-tab" data-tab="sightings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="10" ry="6"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Sightings</span>
+          </button>
+          <button class="odm-tab" data-tab="images">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Images</span>
+          </button>
+          <button class="odm-tab" data-tab="study">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Related Study</span>
+          </button>
         </div>
 
-        <div id="orchid-detail-page-5" class="orchid-detail-page" hidden>
-          <div class="orchid-detail-row" id="row-plant-height"><span class="orchid-detail-label">Plant Height (cm)</span><span id="detail-plant-height">-</span></div>
-          <div class="orchid-detail-row" id="row-pseudobulb"><span class="orchid-detail-label">Pseudobulb Present</span><span id="detail-pseudobulb">-</span></div>
-          <div class="orchid-detail-row" id="row-stem-length"><span class="orchid-detail-label">Stem Length (cm)</span><span id="detail-stem-length">-</span></div>
-          <div class="orchid-detail-row" id="row-root-length"><span class="orchid-detail-label">Root Length (cm)</span><span id="detail-root-length">-</span></div>
-          <div class="orchid-detail-row" id="row-leaf-count"><span class="orchid-detail-label">Leaf Count</span><span id="detail-leaf-count">-</span></div>
-          <div class="orchid-detail-row" id="row-leaf-shape"><span class="orchid-detail-label">Leaf Shape</span><span id="detail-leaf-shape">-</span></div>
-          <div class="orchid-detail-row" id="row-leaf-textures"><span class="orchid-detail-label">Leaf Textures</span><span id="detail-leaf-textures">-</span></div>
-          <div class="orchid-detail-row" id="row-leaf-arrangement"><span class="orchid-detail-label">Leaf Arrangement</span><span id="detail-leaf-arrangement">-</span></div>
-          <div class="orchid-detail-row" id="row-flower-color"><span class="orchid-detail-label">Flower Color</span><span id="detail-flower-color">-</span></div>
-          <div class="orchid-detail-row" id="row-flower-count"><span class="orchid-detail-label">Flower Count</span><span id="detail-flower-count">-</span></div>
-          <div class="orchid-detail-row" id="row-flower-diameter"><span class="orchid-detail-label">Flower Size (cm)</span><span id="detail-flower-diameter">-</span></div>
-          <div class="orchid-detail-row" id="row-inflorescence-type"><span class="orchid-detail-label">Inflorescence Type</span><span id="detail-inflorescence-type">-</span></div>
-          <div class="orchid-detail-row" id="row-petal-characteristics"><span class="orchid-detail-label">Petal Characteristics</span><span id="detail-petal-characteristics">-</span></div>
-          <div class="orchid-detail-row" id="row-sepal-characteristics"><span class="orchid-detail-label">Sepal Characteristics</span><span id="detail-sepal-characteristics">-</span></div>
-          <div class="orchid-detail-row" id="row-labellum"><span class="orchid-detail-label">Labellum / Lip</span><span id="detail-labellum">-</span></div>
-          <div class="orchid-detail-row" id="row-fragrance"><span class="orchid-detail-label">Fragrance</span><span id="detail-fragrance">-</span></div>
-          <div class="orchid-detail-row" id="row-flowering-stage"><span class="orchid-detail-label">Flowering Stage</span><span id="detail-flowering-stage">-</span></div>
-          <div class="orchid-detail-row" id="row-flowering-season"><span class="orchid-detail-label">Flowering Season</span><span id="detail-flowering-season">-</span></div>
-          <div class="orchid-detail-row" id="row-fruit-present"><span class="orchid-detail-label">Fruit Present</span><span id="detail-fruit-present">-</span></div>
-          <div class="orchid-detail-row" id="row-fruit-type"><span class="orchid-detail-label">Fruit Type</span><span id="detail-fruit-type">-</span></div>
-          <div class="orchid-detail-row" id="row-seed-capsule"><span class="orchid-detail-label">Seed Capsule</span><span id="detail-seed-capsule">-</span></div>
-        </div>
+        <!-- Tab panels -->
+        <div class="odm-body">
 
-        <div id="orchid-detail-page-6" class="orchid-detail-page" hidden>
-          <div class="orchid-detail-row" id="row-life-stage"><span class="orchid-detail-label">Life Stage</span><span id="detail-life-stage">-</span></div>
-          <div class="orchid-detail-row" id="row-phenology"><span class="orchid-detail-label">Phenology</span><span id="detail-phenology">-</span></div>
-          <div class="orchid-detail-row" id="row-population-count"><span class="orchid-detail-label">Population Count</span><span id="detail-population-count">-</span></div>
-          <div class="orchid-detail-row" id="row-population-status"><span class="orchid-detail-label">Population Status</span><span id="detail-population-status">-</span></div>
-          <div class="orchid-detail-row" id="row-threat-level"><span class="orchid-detail-label">Threat Level</span><span id="detail-threat-level">-</span></div>
-          <div class="orchid-detail-row" id="row-threat-types"><span class="orchid-detail-label">Threat Types</span><span id="detail-threat-types">-</span></div>
-          <div class="orchid-detail-row" id="row-institution"><span class="orchid-detail-label">Institution</span><span id="detail-institution">-</span></div>
-        </div>
+          <!-- Species Value -->
+          <div class="odm-panel" id="odm-panel-value">
+            <div class="odm-conservation-card" id="odm-conservation-card">
+              <div class="odm-con-head">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Conservation Status
+              </div>
+              <div class="odm-con-status" id="odm-con-status">&mdash;</div>
+              <div class="odm-con-desc" id="odm-con-desc">&mdash;</div>
+            </div>
+            <div class="odm-section">
+              <div class="odm-section-title">Taxonomy &amp; Identification</div>
+              <div class="odm-rows-wrap" id="odm-rows-taxonomy"></div>
+            </div>
+            <div class="odm-section">
+              <div class="odm-section-title">Location &amp; Habitat</div>
+              <div class="odm-rows-wrap" id="odm-rows-location"></div>
+            </div>
+          </div>
 
-        <div id="orchid-detail-page-7" class="orchid-detail-page" hidden>
-          <div class="orchid-detail-row" id="row-ethnobotanical"><span class="orchid-detail-label">Ethnobotanical Info</span><span id="detail-ethnobotanical">-</span></div>
-          <div class="orchid-detail-row" id="row-cultural"><span class="orchid-detail-label">Educational Notes</span><span id="detail-cultural">-</span></div>
-          <div class="orchid-detail-row" id="row-researcher"><span class="orchid-detail-label">Researcher</span><span id="detail-researcher">-</span></div>
-          <div class="orchid-detail-row" id="row-team-members"><span class="orchid-detail-label">Team Members</span><span id="detail-team-members">-</span></div>
-        </div>
+          <!-- Sightings -->
+          <div class="odm-panel odm-panel--hidden" id="odm-panel-sightings">
+            <div id="odm-sightings-list"></div>
+          </div>
 
-      </div>
+          <!-- Images -->
+          <div class="odm-panel odm-panel--hidden" id="odm-panel-images">
+            <div id="odm-images-inner"></div>
+          </div>
 
-      <div class="orchid-nav-bar">
-        <button type="button" id="orchid-detail-prev-btn" hidden class="orchid-nav-btn orchid-nav-btn-outline">&larr; Back</button>
-        <div id="orchid-detail-step-dots" style="display:flex;align-items:center;gap:7px;flex:1;justify-content:center;"></div>
-        <div class="orchid-nav-actions">
-          <button type="button" id="orchid-detail-next-btn" class="orchid-nav-btn orchid-nav-btn-fill">Next &rarr;</button>
+          <!-- Related Study -->
+          <div class="odm-panel odm-panel--hidden" id="odm-panel-study">
+            <div id="odm-study-inner"></div>
+          </div>
+
         </div>
       </div>
-      </div><!-- /.detail-paged-inner -->
     </div>
 
     <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
@@ -886,16 +871,6 @@
 
     <script>
       // ── Constants ──────────────────────────────────────────────────
-      const ORCHID_DETAIL_PAGES = 7;
-      const ORCHID_PAGE_LABELS = [
-        'Basic Taxonomic Information',
-        'Observation / Collection Details',
-        'Geographical / Location Data',
-        'Habitat Information',
-        'Morphological Characteristics',
-        'Conservation & Threat Data',
-        'Notes and Remarks'
-      ];
       const NEARBY_OFFSETS = [
         { dlat:  0.0072, dlng:  0.0105 },
         { dlat: -0.0128, dlng:  0.0054 },
@@ -904,9 +879,10 @@
       ];
 
       let orchidLeafletMap = null;
-      let orchidDetailPage = 1;
+      let odmLeafletMap = null;
       let currentOrchid = null;
       let currentSrc = null;
+      let currentAllSightings = [];
 
       // ── Helpers ────────────────────────────────────────────────────
       function hasUsableValue(value) {
@@ -914,6 +890,15 @@
         const n = String(value).trim().toLowerCase();
         if (n === '') return false;
         return !new Set(['none','n/a','na','not available','null','unknown','-']).has(n);
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
       }
 
       function parseJsonArrayValue(value) {
@@ -1084,9 +1069,8 @@
       function populateIdentityPanel(orchid, src) {
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
 
-        const topbarNameEl = document.getElementById('detail-topbar-name');
-        if (topbarNameEl) { const sp = topbarNameEl.querySelector('span'); if (sp) sp.textContent = orchidName; }
-        document.getElementById('orchid-detail-stage-name').textContent = orchidName;
+        const topbarNameEl = document.getElementById('topbar-species-name');
+        if (topbarNameEl) topbarNameEl.textContent = orchidName;
         document.getElementById('oid-sci-name').textContent = orchidName;
 
         const commonName = getPrimaryCommonName(src.common_names) || orchid.common_name || '';
@@ -1146,112 +1130,251 @@
         }
       }
 
-      // ── Detail rows ────────────────────────────────────────────────
-      function setDetailRow(rowId, valueId, value) {
-        const rowEl = document.getElementById(rowId);
-        const valueEl = document.getElementById(valueId);
-        if (!rowEl || !valueEl) return;
-        const available = hasUsableValue(value);
-        rowEl.hidden = !available;
-        valueEl.textContent = available ? String(value).trim() : '';
-      }
+      // ── Tabbed sighting detail modal ───────────────────────────────
+      const orchidDetailModal = document.getElementById('orchid-detail-modal');
 
-      function resetDetailRows() {
-        document.querySelectorAll('.orchid-detail-page .orchid-detail-row').forEach(r => {
-          r.hidden = true;
-          const v = r.querySelector('[id^="detail-"]');
-          if (v) v.textContent = '';
+      function odmSwitchTab(tab) {
+        document.querySelectorAll('.odm-tab').forEach(function(btn) {
+          btn.classList.toggle('odm-tab--active', btn.dataset.tab === tab);
+        });
+        ['value', 'sightings', 'images', 'study'].forEach(function(t) {
+          var p = document.getElementById('odm-panel-' + t);
+          if (p) p.classList.toggle('odm-panel--hidden', t !== tab);
         });
       }
 
-      function renderDetailsFromSource(src, orchid) {
-        setDetailRow('row-scientific-name', 'detail-scientific-name', orchid.name);
-        setDetailRow('row-genus', 'detail-genus', orchid.genus);
-        setDetailRow('row-common-name', 'detail-common-name', getPrimaryCommonName(src.common_names) || src.common_name || orchid.common_name);
-        setDetailRow('row-identification-status', 'detail-identification-status', formatSimplifiedConfidence(src.identification_confidence));
-        setDetailRow('row-identification-confidence', 'detail-identification-confidence', src.identification_confidence || '');
-        setDetailRow('row-mountain', 'detail-mountain', src.mountain_name || 'Mt. Busa');
-        setDetailRow('row-specific-site', 'detail-specific-site', src.specific_site_zone || 'ridge area');
-        setDetailRow('row-elevation', 'detail-elevation', src.elevation_meters ? '~' + Math.round(Number(src.elevation_meters)) + ' m' : '');
-        setDetailRow('row-habitat-type', 'detail-habitat-type', src.habitat_type || '');
-        setDetailRow('row-microhabitat', 'detail-microhabitat', src.microhabitat || '');
-        setDetailRow('row-growth-substrate', 'detail-growth-substrate', src.growth_substrate || '');
-        setDetailRow('row-plant-height', 'detail-plant-height', src.plant_height_cm ?? '');
-        setDetailRow('row-leaf-shape', 'detail-leaf-shape', src.leaf_shape || '');
-        setDetailRow('row-leaf-count', 'detail-leaf-count', src.leaf_count ?? '');
-        setDetailRow('row-leaf-textures', 'detail-leaf-textures', Array.isArray(src.leaf_textures) ? src.leaf_textures.join(', ') : src.leaf_textures || '');
-        setDetailRow('row-leaf-arrangement', 'detail-leaf-arrangement', src.leaf_arrangement || '');
-        setDetailRow('row-flower-color', 'detail-flower-color', src.flower_color || '');
-        setDetailRow('row-flower-count', 'detail-flower-count', src.flower_count ?? '');
-        setDetailRow('row-flower-diameter', 'detail-flower-diameter', src.flower_diameter_cm ? '~' + Math.round(Number(src.flower_diameter_cm)) + ' cm' : '');
-        setDetailRow('row-inflorescence-type', 'detail-inflorescence-type', src.inflorescence_type || '');
-        setDetailRow('row-petal-characteristics', 'detail-petal-characteristics', src.petal_characteristics || '');
-        setDetailRow('row-labellum', 'detail-labellum', src.labellum_lip_description || '');
-        setDetailRow('row-fragrance', 'detail-fragrance', src.fragrance || '');
-        setDetailRow('row-flowering-season', 'detail-flowering-season', src.flowering_season || '');
-        setDetailRow('row-flowering-stage', 'detail-flowering-stage', src.blooming_stage || src.flowering_stage || '');
-        setDetailRow('row-fruit-present', 'detail-fruit-present', src.fruit_present ? 'Present' : 'Not observed');
-        setDetailRow('row-fruit-type', 'detail-fruit-type', src.fruit_type || '');
-        setDetailRow('row-threat-level', 'detail-threat-level', src.threat_level || src.threat_level_generalized || '');
-        setDetailRow('row-ethnobotanical', 'detail-ethnobotanical', src.educational_notes || '');
-        setDetailRow('row-researcher', 'detail-researcher', src.researcher_name || '');
-        setDetailRow('row-observation-summary', 'detail-observation-summary', src.researcher_notes || '');
-        setDetailRow('row-observation-type', 'detail-observation-type', src.observation_type || '');
-        setDetailRow('row-observation-month', 'detail-observation-month', src.observation_month || '');
-        setDetailRow('row-observation-date', 'detail-observation-date', src.observation_date || '');
-        setDetailRow('row-observation-time', 'detail-observation-time', src.observation_time || '');
-        setDetailRow('row-collection-method', 'detail-collection-method', src.collection_method || '');
-        setDetailRow('row-voucher', 'detail-voucher', src.voucher_collected === true ? 'Yes' : src.voucher_collected === false ? 'No' : '');
-        // hide rows not relevant for public view
-        ['row-endemicity',
-         'row-location-visibility','row-latitude','row-longitude',
-         'row-host-tree','row-canopy-cover','row-pseudobulb','row-stem-length',
-         'row-root-length','row-sepal-characteristics','row-life-stage','row-phenology',
-         'row-population-count','row-threat-types','row-institution','row-team-members',
-         'row-light-exposure','row-soil-type',
-         'row-population-status'].forEach(id => {
-          const el = document.getElementById(id); if (el) el.hidden = true;
+      function odmRow(label, value) {
+        if (value === null || value === undefined || value === '') return '';
+        return '<div class="odm-row"><span class="odm-row-label">' + label +
+          '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
+      }
+
+      function odmPopulateValue(orchid, allSightings) {
+        var src = allSightings[0] || {};
+        var count = allSightings.length;
+        var status = src.threat_level_generalized || src.threat_level ||
+          orchid.conservation_status || '—';
+        var card = document.getElementById('odm-conservation-card');
+        var sl = status.toLowerCase();
+        card.style.background = sl.indexOf('critical') >= 0 ? '#9c2929'
+          : sl.indexOf('endanger') >= 0 ? '#b84a1a'
+          : sl.indexOf('vulnerable') >= 0 ? '#145A1E'
+          : sl.indexOf('concern') >= 0 ? '#1a6b3c'
+          : '#145A1E';
+        document.getElementById('odm-con-status').textContent = status;
+        document.getElementById('odm-con-desc').textContent = count > 0
+          ? 'Recorded ' + count + ' time' + (count === 1 ? '' : 's') + ' in the wild'
+          : 'No recorded sightings';
+        var genus = orchid.genus || (orchid.name || '').split(' ')[0] || '';
+        var commonNames = Array.isArray(src.common_names) && src.common_names.length
+          ? src.common_names.join(', ') : (orchid.common_name || '');
+        var localNames = Array.isArray(src.local_names) && src.local_names.length
+          ? src.local_names.join(', ') : '';
+        var endemic = src.endemic_to_philippines == null || src.endemic_to_philippines === ''
+          ? '' : (src.endemic_to_philippines === true || /^y/i.test(String(src.endemic_to_philippines)) ? 'Yes' : 'No');
+        var taxHtml = odmRow('Local Name(s)', localNames) +
+          odmRow('Common Name(s)', commonNames) +
+          odmRow('Endemic to Philippines', endemic) +
+          odmRow('Genus', genus) +
+          odmRow('Confidence', src.identification_confidence) +
+          odmRow('Population Status', src.population_status);
+        document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
+        var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
+        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa') +
+          odmRow('Site / Zone', src.specific_site_zone) +
+          odmRow('Elevation', elev) +
+          odmRow('Habitat', src.habitat_type) +
+          odmRow('Microhabitat', src.microhabitat);
+        document.getElementById('odm-rows-location').innerHTML = locHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
+      }
+
+      function odmPopulateSightings(allSightings) {
+        var el = document.getElementById('odm-sightings-list');
+        if (!allSightings.length) {
+          el.innerHTML = '<p class="odm-empty">No recorded sightings yet.</p>';
+          return;
+        }
+        el.innerHTML = allSightings.map(function(s, i) {
+          var date = s.observation_date
+            ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+          var rows = [
+            ['Location', s.mountain_name || ''],
+            ['Site', s.specific_site_zone || ''],
+            ['Elevation', s.elevation_meters ? s.elevation_meters + ' m' : ''],
+            ['Researcher', s.researcher_name || ''],
+            ['Institution', s.institution || ''],
+          ].filter(function(r){ return r[1]; });
+          return '<div class="odm-sighting-item">' +
+            '<div class="odm-sighting-item-hd">' +
+              '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
+              '<span class="odm-sighting-item-date">' + date + '</span>' +
+            '</div>' +
+            '<div class="odm-sighting-item-rows">' +
+              rows.map(function(r){
+                return '<div class="odm-sighting-item-row">' +
+                  '<span class="odm-sighting-item-row-lbl">' + r[0] + '</span>' +
+                  '<span>' + escapeHtml(r[1]) + '</span></div>';
+              }).join('') +
+            '</div></div>';
+        }).join('');
+      }
+
+      function buildOrchidMarkerIcon(thumbnailUrl) {
+        if (!thumbnailUrl) {
+          return L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
+        }
+        return L.divIcon({
+          className: 'odm-map-marker',
+          html: '<div class="odm-map-marker-inner"><img src="' + escapeHtml(thumbnailUrl) + '" alt=""></div>',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -22]
         });
       }
 
-      // ── Paged navigation ───────────────────────────────────────────
-      function orchidGoToDetailPage(n) {
-        orchidDetailPage = n;
-        for (let i = 1; i <= ORCHID_DETAIL_PAGES; i++) {
-          const p = document.getElementById('orchid-detail-page-' + i);
-          if (p) p.hidden = (i !== n);
+      function odmPopulateImages(orchid, allSightings) {
+        var el = document.getElementById('odm-images-inner');
+        var imgs = [];
+        var seedImg = getBestPhotoUrl(allSightings[0] || {}, orchid);
+        if (seedImg) imgs.push(seedImg);
+        if (orchid.image_url && imgs.indexOf(orchid.image_url) < 0) imgs.push(orchid.image_url);
+        allSightings.forEach(function(s) {
+          getPublicSightingImages(s).forEach(function(path) {
+            var url = resolvePhotoUrl(path);
+            if (url && imgs.indexOf(url) < 0) imgs.push(url);
+          });
+        });
+        if (!imgs.length) {
+          el.innerHTML = '<p class="odm-empty">No images available for this species.</p>';
+          return;
         }
-        const labelEl = document.getElementById('orchid-step-label');
-        const countEl = document.getElementById('orchid-step-count');
-        if (labelEl) labelEl.textContent = ORCHID_PAGE_LABELS[n - 1] || '';
-        if (countEl) countEl.textContent = n + ' / ' + ORCHID_DETAIL_PAGES;
-        const prevBtn = document.getElementById('orchid-detail-prev-btn');
-        const nextBtn = document.getElementById('orchid-detail-next-btn');
-        if (prevBtn) prevBtn.hidden = (n === 1);
-        if (nextBtn) nextBtn.textContent = n === ORCHID_DETAIL_PAGES ? 'Done' : 'Next →';
-        const dotsEl = document.getElementById('orchid-detail-step-dots');
-        if (dotsEl) {
-          dotsEl.innerHTML = Array.from({length: ORCHID_DETAIL_PAGES}, (_, i) =>
-            '<span class="detail-step-dot' + (i + 1 === n ? ' active' : '') + '"></span>'
-          ).join('');
+        el.innerHTML = '<div class="odm-images-grid">' + imgs.map(function(url){
+          return '<div class="odm-img-wrap"><img src="' + escapeHtml(url) +
+            '" alt="Orchid photo" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+        }).join('') + '</div>';
+      }
+
+      function odmPopulateStudy(allSightings) {
+        var el = document.getElementById('odm-study-inner');
+        var src = allSightings[0] || {};
+        var parts = [];
+        if (src.researcher_notes) {
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Researcher Notes</b>' +
+            escapeHtml(src.researcher_notes) + '</div>');
         }
-        const pageEl = document.getElementById('orchid-detail-page-' + n);
-        if (pageEl) {
-          const visible = pageEl.querySelectorAll('.orchid-detail-row:not([hidden])').length;
-          let msg = pageEl.querySelector('.detail-empty-msg');
-          if (visible === 0) {
-            if (!msg) {
-              msg = document.createElement('p');
-              msg.className = 'detail-empty-msg';
-              msg.style.cssText = 'text-align:center;color:#888;font-style:italic;padding:2rem 1rem;font-size:.85rem;';
-              msg.textContent = 'No data available for this section.';
-              pageEl.appendChild(msg);
-            }
-            msg.hidden = false;
-          } else if (msg) {
-            msg.hidden = true;
+        if (src.educational_notes) {
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Educational Notes</b>' +
+            escapeHtml(src.educational_notes) + '</div>');
+        }
+        var team = Array.isArray(src.team_members) ? src.team_members.filter(Boolean).join(', ') : (src.team_members || '');
+        var detailRows = odmRow('Institution', src.institution) +
+          odmRow('Team Members', team) +
+          odmRow('Collection Method', src.collection_method) +
+          odmRow('Observation Type', src.observation_type) +
+          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No') : '');
+        if (detailRows) {
+          parts.push('<div class="odm-section"><div class="odm-section-title">Research Details</div>' +
+            '<div class="odm-rows-wrap">' + detailRows + '</div></div>');
+        }
+        el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
+      }
+
+      function odmInitMap(sightingPoints, thumbnailUrl) {
+        if (odmLeafletMap) { odmLeafletMap.remove(); odmLeafletMap = null; }
+        var mapEl = document.getElementById('odm-leaflet-map');
+        if (!mapEl) return;
+        mapEl.style.height = '195px';
+        var primary = sightingPoints[0];
+        var allPoints = sightingPoints.slice();
+        for (var i = 0; allPoints.length < 5; i++) {
+          var off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
+          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng });
+        }
+        odmLeafletMap = L.map('odm-leaflet-map', {
+          zoomControl: false, dragging: true, scrollWheelZoom: false,
+          zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false
+        }).setView([primary.lat, primary.lng], 13);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri', maxZoom: 19
+        }).addTo(odmLeafletMap);
+        var icon = buildOrchidMarkerIcon(thumbnailUrl);
+        sightingPoints.forEach(function(pt) {
+          L.marker([pt.lat, pt.lng], { icon: icon, interactive: false }).addTo(odmLeafletMap);
+        });
+        odmLeafletMap.fitBounds(
+          L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
+          { padding: [30, 30], animate: false }
+        );
+        setTimeout(function(){ if (odmLeafletMap) odmLeafletMap.invalidateSize(); }, 200);
+        setTimeout(function(){ if (odmLeafletMap) odmLeafletMap.invalidateSize(); }, 600);
+      }
+
+      function openOrchidDetailsModal(clickedSrc) {
+        var orchid = currentOrchid || {};
+        var allSightings = currentAllSightings || [];
+        var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
+        var genus = orchid.genus || orchidName.split(' ')[0] || '';
+        document.getElementById('odm-breadcrumb').textContent =
+          'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
+        var count = allSightings.length;
+        document.getElementById('odm-map-hint-text').textContent =
+          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · recorded locations';
+
+        // Highlight whichever sighting's marker was actually clicked, falling back to the first.
+        var activeIndex = 0;
+        if (clickedSrc) {
+          var idx = allSightings.indexOf(clickedSrc);
+          if (idx >= 0) activeIndex = idx;
+        }
+        var activeSighting = allSightings[activeIndex] || clickedSrc || null;
+        var sightingBar = document.getElementById('odm-sighting-bar');
+        if (activeSighting) {
+          sightingBar.style.display = '';
+          document.getElementById('odm-sighting-num').textContent = 'Sighting #' + (activeIndex + 1);
+          var d0 = activeSighting.observation_date
+            ? new Date(activeSighting.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+          document.getElementById('odm-sighting-date').textContent = d0;
+        } else {
+          sightingBar.style.display = 'none';
+        }
+
+        odmSwitchTab('value');
+        odmPopulateValue(orchid, allSightings);
+        odmPopulateSightings(allSightings);
+        odmPopulateImages(orchid, allSightings);
+        odmPopulateStudy(allSightings);
+        orchidDetailModal.hidden = false;
+        document.body.style.overflow = 'hidden';
+
+        var sightingPoints = allSightings
+          .filter(function(s){ return s.latitude != null && s.longitude != null; })
+          .map(function(s){ return { lat: Number(s.latitude), lng: Number(s.longitude), date: s.observation_date }; });
+        if (sightingPoints.length === 0) {
+          sightingPoints.push({ lat: 6.084759, lng: 124.692110, date: null });
+        }
+        odmInitMap(sightingPoints, getBestPhotoUrl(activeSighting || allSightings[0] || {}, orchid));
+
+        var closeBtn = document.getElementById('orchid-detail-close-btn');
+        if (closeBtn && !closeBtn._odmBound) {
+          closeBtn._odmBound = true;
+          closeBtn.addEventListener('click', closeOrchidDetailsModal);
+        }
+        document.querySelectorAll('.odm-tab').forEach(function(btn) {
+          if (!btn._odmBound) {
+            btn._odmBound = true;
+            btn.addEventListener('click', function(){ odmSwitchTab(this.dataset.tab); });
           }
-        }
+        });
+      }
+
+      function closeOrchidDetailsModal() {
+        orchidDetailModal.hidden = true;
+        document.body.style.overflow = '';
+        if (odmLeafletMap) { odmLeafletMap.remove(); odmLeafletMap = null; }
       }
 
       function updateFloweringSeasonValue() {
@@ -1272,31 +1395,6 @@
         }
       }
 
-      function bindDetailNav() {
-        document.getElementById('orchid-detail-prev-btn').addEventListener('click', function() {
-          if (orchidDetailPage > 1) orchidGoToDetailPage(orchidDetailPage - 1);
-        });
-        document.getElementById('orchid-detail-next-btn').addEventListener('click', function() {
-          if (orchidDetailPage < ORCHID_DETAIL_PAGES) orchidGoToDetailPage(orchidDetailPage + 1);
-          else showOverview();
-        });
-        document.getElementById('detail-to-map-btn').addEventListener('click', showOverview);
-      }
-
-      function showOverview() {
-        document.getElementById('detail-overview').hidden = false;
-        document.getElementById('detail-paged').hidden = true;
-        if (orchidLeafletMap) setTimeout(() => orchidLeafletMap.invalidateSize(), 60);
-      }
-
-      function showDetailPaged(src) {
-        currentSrc = src;
-        resetDetailRows();
-        renderDetailsFromSource(src, currentOrchid);
-        orchidGoToDetailPage(1);
-        document.getElementById('detail-overview').hidden = true;
-        document.getElementById('detail-paged').hidden = false;
-      }
 
       // ── Submission modal (researcher) ───────────────────────────
       const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
@@ -2050,7 +2148,7 @@
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
           marker.on('click', (function(ptSrc) {
             return function() {
-              showDetailPaged(ptSrc || currentSrc || {});
+              openOrchidDetailsModal(ptSrc || currentSrc || null);
             };
           })(pt.src || null));
         });
@@ -2131,22 +2229,23 @@
         if (allSightings.length === 0) allSightings = cachedSightings;
 
         currentOrchid = orchid;
-        const src = allSightings[0] ? normalizePublicSightingRow(allSightings[0]) : {};
+        currentAllSightings = allSightings.map(normalizePublicSightingRow);
+        const src = currentAllSightings[0] || {};
         currentSrc = src;
         const orchidPhotoUrl = getBestPhotoUrl(src, orchid);
 
         try {
           populateIdentityPanel(orchid, src);
-          resetDetailRows();
-          renderDetailsFromSource(src, orchid);
         } catch (panelErr) {
           console.warn('Panel render error:', panelErr);
         }
 
-        // Build sighting points from DB coordinates only
-        let sightingPoints = allSightings
-          .filter(s => s.latitude && s.longitude)
-          .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude), src: normalizePublicSightingRow(s) }));
+        // Build sighting points from DB coordinates only — src references the same
+        // normalized object stored in currentAllSightings so marker clicks can find
+        // the exact sighting that was clicked.
+        let sightingPoints = currentAllSightings
+          .filter(s => s.latitude != null && s.longitude != null)
+          .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude), src: s }));
 
         if (sightingPoints.length === 0) {
           // No location data in DB yet — show a placeholder at Mt. Busa center
@@ -2159,7 +2258,6 @@
       }
 
       // ── Boot ───────────────────────────────────────────────────────
-      bindDetailNav();
       loadPage().catch(err => console.warn('Detail page load error:', err));
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
