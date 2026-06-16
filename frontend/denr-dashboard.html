@@ -850,31 +850,6 @@
             <ul id="conservation-bar-insights" class="hidden"></ul>
           </section>
 
-          <!-- Heat Map — full width -->
-          <section class="rounded-xl p-6 md:col-span-2 xl:col-span-3" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
-            <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
-              <div class="flex items-center gap-2">
-                <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
-                <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Conservation Risk Heat Map — Mt. Busa</h2>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-gray-400">
-                <span>Lower risk</span>
-                <span class="inline-block w-24 h-1.5 rounded-full" style="background:linear-gradient(90deg,#34d399,#facc15,#f97316,#dc2626);"></span>
-                <span>Higher risk</span>
-              </div>
-            </div>
-            <div id="conservation-heat-map" class="w-full rounded-xl overflow-hidden" style="height:440px;background:var(--dt-bg-input);border:1px solid var(--dt-border-md);"></div>
-          </section>
-
-          <!-- Heat Map Insights -->
-          <section class="rounded-xl p-6" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
-              <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Heat Map Insights</h2>
-            </div>
-            <ul id="conservation-heat-insights" class="list-disc pl-4 text-gray-500 text-sm leading-loose space-y-0.5"></ul>
-          </section>
-
         </div>
       </div>
     </div>
@@ -3837,7 +3812,6 @@
       const MT_BUSA_ZOOM_MAIN = 11;
       const MT_BUSA_ZOOM_DASHBOARD = 11;
       const MT_BUSA_ZOOM_HOTSPOTS = 13;
-      const MT_BUSA_ZOOM_CONSERVATION = 13;
       const MT_BUSA_DISTRIBUTION_POINTS = [
         [6.1064, 124.6699, 1.0],
         [6.1264, 124.6849, 0.95],
@@ -3943,8 +3917,6 @@
 
       let conservationDonutChart = null;
       let conservationBarChart = null;
-      let conservationHeatMap = null;
-      let conservationHeatLayer = null;
 
       function getConservationBadgeStyle(statusValue) {
         const normalized = String(statusValue || '').trim().toLowerCase();
@@ -5868,72 +5840,6 @@
         });
       }
 
-      function buildConservationHeatPoints(summary) {
-        const total = CONSERVATION_STATUS_ORDER.reduce((sum, key) => sum + (summary[key] || 0), 0);
-        if (total <= 0) {
-          return MT_BUSA_DISTRIBUTION_POINTS;
-        }
-
-        const riskScale = (
-          (summary.critically_endangered || 0) * 1.0 +
-          (summary.endangered || 0) * 0.8 +
-          (summary.vulnerable || 0) * 0.55 +
-          (summary.least_concern || 0) * 0.25
-        ) / total;
-
-        return MT_BUSA_DISTRIBUTION_POINTS.map((point) => {
-          const [lat, lng, base] = point;
-          const weightedIntensity = Math.min(1, base * (0.55 + riskScale));
-          return [lat, lng, weightedIntensity];
-        });
-      }
-
-      function refreshConservationHeatMap(summary) {
-        const mapEl = document.getElementById('conservation-heat-map');
-        if (!mapEl || typeof L === 'undefined') return;
-        const conservationView = document.getElementById('conservation-view');
-        const isVisible = conservationView && conservationView.style.display !== 'none';
-        if (!isVisible) return;
-
-        if (conservationHeatMap === null) {
-          conservationHeatMap = L.map('conservation-heat-map').setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
-          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles © Esri',
-            maxZoom: 19
-          }).addTo(conservationHeatMap);
-
-          L.circleMarker(MT_BUSA_COORDS, {
-            radius: 6,
-            color: '#145A1E',
-            fillColor: '#145A1E',
-            fillOpacity: 0.85
-          }).bindPopup('Mt. Busa monitoring center').addTo(conservationHeatMap);
-        }
-
-        if (conservationHeatLayer) {
-          conservationHeatMap.removeLayer(conservationHeatLayer);
-        }
-
-        const heatPoints = buildConservationHeatPoints(summary);
-        if (typeof L.heatLayer === 'function') {
-          conservationHeatLayer = L.heatLayer(heatPoints, {
-            radius: 28,
-            blur: 22,
-            maxZoom: 16,
-            gradient: {
-              0.2: '#34d399',
-              0.45: '#facc15',
-              0.75: '#f97316',
-              1.0: '#dc2626'
-            }
-          });
-        }
-
-        conservationHeatMap.setView(MT_BUSA_COORDS, MT_BUSA_ZOOM_CONSERVATION);
-        setTimeout(() => conservationHeatMap.invalidateSize(), 50);
-        setTimeout(() => conservationHeatMap.invalidateSize(), 220);
-      }
-
       function refreshConservationInsights(summary) {
         const total = CONSERVATION_STATUS_ORDER.reduce((sum, key) => sum + (summary[key] || 0), 0);
         const threatenedCount = (summary.critically_endangered || 0) + (summary.endangered || 0) + (summary.vulnerable || 0);
@@ -5943,8 +5849,6 @@
           .map((key) => ({ key, count: summary[key] || 0 }))
           .sort((a, b) => b.count - a.count)[0];
 
-        const highestRisk = (summary.critically_endangered || 0) + (summary.endangered || 0);
-        const highestRiskRatio = total > 0 ? ((highestRisk / total) * 100).toFixed(1) : '0.0';
         const rank = CONSERVATION_STATUS_ORDER
           .map((key) => ({ key, count: summary[key] || 0 }))
           .sort((a, b) => b.count - a.count);
@@ -5955,27 +5859,20 @@
         const criticalRatio = total > 0 ? (((summary.critically_endangered || 0) / total) * 100).toFixed(1) : '0.0';
 
         const barInsightList = document.getElementById('conservation-bar-insights');
-        const heatInsightList = document.getElementById('conservation-heat-insights');
-        if (!barInsightList || !heatInsightList) return;
+        if (!barInsightList) return;
 
         barInsightList.innerHTML = '';
-        heatInsightList.innerHTML = '';
 
         barInsightList.appendChild(createConservationInsightItem(`${CONSERVATION_STATUS_LABELS[mostCommon.key]} is the largest segment with ${mostCommon.count} orchids, exceeding ${CONSERVATION_STATUS_LABELS[secondMostCommon.key]} by ${topGap}.`));
         barInsightList.appendChild(createConservationInsightItem(`${threatenedCount} of ${total} orchids (${threatenedRatio}%) are currently in threatened classes.`));
         barInsightList.appendChild(createConservationInsightItem(`Only ${safeCount} orchids (${safeRatio}%) are in Least Concern, while Critically Endangered alone accounts for ${summary.critically_endangered || 0} (${criticalRatio}%).`));
         barInsightList.appendChild(createConservationInsightItem(`Unassigned records are ${summary.unassigned || 0}, which keeps the chart fully attributable to known conservation categories.`));
-
-        heatInsightList.appendChild(createConservationInsightItem(`High-intensity zones represent weighted risk from conservation classes; with ${highestRiskRatio}% in Critically Endangered + Endangered, hotspot concentration should be treated as high priority.`));
-        heatInsightList.appendChild(createConservationInsightItem(`Because ${threatenedRatio}% of the dataset is threatened, map hotspots should guide patrol scheduling and rapid habitat checks before lower-risk zones.`));
-        heatInsightList.appendChild(createConservationInsightItem(`The heat model uses relative risk weighting, so the most intense clusters indicate where protection effort can reduce loss risk fastest in Mt. Busa.`));
       }
 
       function refreshConservationAnalytics(rawData) {
         const summary = getConservationSummarySnapshot(rawData);
         refreshConservationInfoCard(summary);
         refreshConservationCharts(summary);
-        refreshConservationHeatMap(summary);
         refreshConservationInsights(summary);
       }
 
