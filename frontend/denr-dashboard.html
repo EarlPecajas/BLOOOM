@@ -7503,15 +7503,15 @@
           let orchidId;
           if (existingOrchid) {
             orchidId = existingOrchid.orchid_id;
-            // Re-publishing a hidden orchid — restore visibility and update thumbnail
+            // Re-publishing a hidden orchid — restore visibility (thumbnail is linked via biogeography.picture_id below)
             const { error: updErr } = await bloomSupabase.from('orchids')
-              .update({ genus_id: genusId, image_url: thumbnailUrl, is_published: true })
+              .update({ genus_id: genusId, is_published: true })
               .eq('orchid_id', orchidId);
             if (updErr) throw updErr;
           } else {
             const { data: newOrchid, error: orchidError } = await bloomSupabase
               .from('orchids')
-              .insert({ sci_name: scientificName, genus_id: genusId, image_url: thumbnailUrl,
+              .insert({ sci_name: scientificName, genus_id: genusId,
                         is_published: true, date_discovered: new Date().toISOString() })
               .select('orchid_id').single();
             if (orchidError) throw orchidError;
@@ -7561,12 +7561,12 @@
             .from('biogeography').select('biogeographic_id').eq('orchid_id', orchidId).maybeSingle();
           if (existingBio) {
             const { error: bioErr } = await bloomSupabase.from('biogeography')
-              .update({ picture_id: picId, submission_status: 'approved', image_url: thumbnailUrl, conservation_id: conservationId })
+              .update({ picture_id: picId, submission_status: 'approved', conservation_id: conservationId })
               .eq('orchid_id', orchidId);
             if (bioErr) throw bioErr;
           } else {
             const { error: bioErr } = await bloomSupabase.from('biogeography')
-              .insert({ orchid_id: orchidId, picture_id: picId, submission_status: 'approved', image_url: thumbnailUrl, conservation_id: conservationId });
+              .insert({ orchid_id: orchidId, picture_id: picId, submission_status: 'approved', conservation_id: conservationId });
             if (bioErr) throw bioErr;
           }
 
