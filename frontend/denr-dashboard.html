@@ -2059,7 +2059,7 @@
                   <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);flex:1;">Conservation & Threat Data</h4>
                 </div>
                 <div class="ptc-section" data-section="con" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
-                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><span id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><select id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;border:1.5px solid var(--dt-border-md);border-radius:6px;background:var(--dt-bg-input);padding:0.25rem 0.4rem;outline:none;"><option value="">Unassigned</option><option value="Least Concern">Least Concern</option><option value="Vulnerable">Vulnerable</option><option value="Endangered">Endangered</option><option value="Critically Endangered">Critically Endangered</option></select></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Level</span><span id="ptc-threat" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Population Status</span><span id="ptc-pop-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><input type="checkbox" class="ptc-field-check" checked style="width:13px;height:13px;accent-color:#4db86a;cursor:pointer;flex-shrink:0;"><span style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Types</span><span id="ptc-threat-types" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span></div>
@@ -7450,6 +7450,18 @@
         if (el) el.textContent = val || '—';
       }
 
+      // Normalizes free-text threat_level/conservation_status values (e.g. "vulnerable", "VU")
+      // to the exact option labels used by the #ptc-con-status select.
+      function normalizeConservationStatusLabel(raw) {
+        const s = String(raw || '').toLowerCase().trim();
+        if (!s) return '';
+        if (s.includes('critically')) return 'Critically Endangered';
+        if (s.includes('endanger')) return 'Endangered';
+        if (s.includes('vulnerable')) return 'Vulnerable';
+        if (s.includes('least') || s.includes('concern')) return 'Least Concern';
+        return '';
+      }
+
       async function openPostToCatalogModal() {
         if (!currentSubmission) return;
         catalogCustomThumbnailFile = null;
@@ -7459,6 +7471,18 @@
         if (uploadInput) uploadInput.value = '';
 
         const s = currentSubmission;
+
+        // If this species is already published with a real conservation status, prefer that
+        // over the submission's threat_level so re-publishing doesn't clobber it back to Unassigned.
+        let existingStatusLabel = '';
+        try {
+          const { data: existingOverview } = await bloomSupabase
+            .from('orchid_overview').select('conservation_status')
+            .eq('name', s.species || s.scientific_name || '').maybeSingle();
+          if (existingOverview && existingOverview.conservation_status !== 'Unassigned') {
+            existingStatusLabel = existingOverview.conservation_status;
+          }
+        } catch (e) { console.warn('Existing conservation status lookup failed:', e); }
 
         // Header
         document.getElementById('ptc-species-name').textContent = s.species || s.scientific_name || '';
@@ -7505,7 +7529,8 @@
         ptcSet('ptc-leaf-shape',       s.leaf_shape);
         ptcSet('ptc-blooming',         s.blooming_stage);
 
-        ptcSet('ptc-con-status',       s.conservation_status);
+        document.getElementById('ptc-con-status').value =
+          existingStatusLabel || normalizeConservationStatusLabel(s.conservation_status || s.threat_level);
         ptcSet('ptc-threat',           s.threat_level);
         ptcSet('ptc-pop-status',       s.population_status);
         const threatTypes = Array.isArray(s.threat_types) ? s.threat_types.join(', ') : (s.threat_types || '');
@@ -7642,17 +7667,35 @@
             if (!ep) await bloomSupabase.from('picture').insert({ file_path: imgUrl });
           }
 
-          // Upsert biogeography (links orchid → thumbnail + marks it published)
+          // Resolve the selected conservation status to a conservation_status row id
+          const selectedStatusLabel = document.getElementById('ptc-con-status').value;
+          let conservationId = null;
+          if (selectedStatusLabel) {
+            const { data: existingStatus } = await bloomSupabase
+              .from('conservation_status').select('conservation_id')
+              .ilike('conservation_status', selectedStatusLabel).maybeSingle();
+            if (existingStatus) {
+              conservationId = existingStatus.conservation_id;
+            } else {
+              const { data: newStatus, error: statusErr } = await bloomSupabase
+                .from('conservation_status').insert({ conservation_status: selectedStatusLabel })
+                .select('conservation_id').single();
+              if (statusErr) throw statusErr;
+              conservationId = newStatus.conservation_id;
+            }
+          }
+
+          // Upsert biogeography (links orchid → thumbnail + conservation status + marks it published)
           const { data: existingBio } = await bloomSupabase
             .from('biogeography').select('biogeographic_id').eq('orchid_id', orchidId).maybeSingle();
           if (existingBio) {
             const { error: bioErr } = await bloomSupabase.from('biogeography')
-              .update({ picture_id: picId, submission_status: 'approved', image_url: thumbnailUrl })
+              .update({ picture_id: picId, submission_status: 'approved', image_url: thumbnailUrl, conservation_id: conservationId })
               .eq('orchid_id', orchidId);
             if (bioErr) throw bioErr;
           } else {
             const { error: bioErr } = await bloomSupabase.from('biogeography')
-              .insert({ orchid_id: orchidId, picture_id: picId, submission_status: 'approved', image_url: thumbnailUrl });
+              .insert({ orchid_id: orchidId, picture_id: picId, submission_status: 'approved', image_url: thumbnailUrl, conservation_id: conservationId });
             if (bioErr) throw bioErr;
           }
 
