@@ -376,6 +376,12 @@
 
       // Map state
       let orchidLeafletMap = null;
+      const NEARBY_OFFSETS = [
+        { dlat: 0.004, dlng: 0.004 },
+        { dlat: -0.004, dlng: 0.004 },
+        { dlat: 0.004, dlng: -0.004 },
+        { dlat: -0.004, dlng: -0.004 },
+      ];
       const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n              </svg>';
       const LIST_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="5" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="11" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="17" width="18" height="2" fill="currentColor" rx="1" />\n              </svg>';
       let orchids = [];
@@ -769,8 +775,10 @@
           var off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
           allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng, date: null });
         }
-        orchidLeafletMap = L.map('orchid-leaflet-map', { zoomControl: false, dragging: true, scrollWheelZoom: false })
-          .setView([primary.lat, primary.lng], 13);
+        orchidLeafletMap = L.map('orchid-leaflet-map', {
+          zoomControl: false, dragging: true, scrollWheelZoom: false,
+          zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false
+        }).setView([primary.lat, primary.lng], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: 'Tiles &copy; Esri', maxZoom: 19
         }).addTo(orchidLeafletMap);
@@ -780,7 +788,7 @@
         });
         orchidLeafletMap.fitBounds(
           L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
-          { padding: [30, 30] }
+          { padding: [30, 30], animate: false }
         );
         setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 200);
         setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 600);
