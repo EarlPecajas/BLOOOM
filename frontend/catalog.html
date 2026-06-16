@@ -744,7 +744,7 @@
         });
       }
 
-      function odmPopulateImages(orchid, allSightings) {
+      async function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
         var imgs = [];
         var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
@@ -756,6 +756,17 @@
             if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
           });
         });
+        // DENR-curated gallery photos selected when publishing to the catalog
+        if (orchid.id && window.bloomSupabase) {
+          try {
+            var resp = await window.bloomSupabase
+              .from('picture').select('file_path').eq('orchid_id', orchid.id);
+            (resp.data || []).forEach(function(row) {
+              var url = row.file_path;
+              if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
+            });
+          } catch (e) { console.warn('Gallery picture lookup failed:', e); }
+        }
         if (!imgs.length) {
           el.innerHTML = '<p class="odm-empty">No images available for this species.</p>';
           return;

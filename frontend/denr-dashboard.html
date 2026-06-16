@@ -7518,24 +7518,32 @@
             orchidId = newOrchid.orchid_id;
           }
 
-          // Upsert picture row for thumbnail
+          // Upsert picture row for thumbnail — tag with orchid_id so the public
+          // catalog's Images tab can find it via picture.orchid_id
           const { data: existingPic } = await bloomSupabase
-            .from('picture').select('picture_id').eq('file_path', thumbnailUrl).maybeSingle();
+            .from('picture').select('picture_id, orchid_id').eq('file_path', thumbnailUrl).maybeSingle();
           let picId;
           if (existingPic) {
             picId = existingPic.picture_id;
+            if (existingPic.orchid_id !== orchidId) {
+              await bloomSupabase.from('picture').update({ orchid_id: orchidId }).eq('picture_id', picId);
+            }
           } else {
             const { data: newPic, error: picErr } = await bloomSupabase
-              .from('picture').insert({ file_path: thumbnailUrl }).select('picture_id').single();
+              .from('picture').insert({ file_path: thumbnailUrl, orchid_id: orchidId }).select('picture_id').single();
             if (picErr) throw picErr;
             picId = newPic.picture_id;
           }
 
-          // Insert any extra gallery pictures
+          // Insert any extra gallery pictures, likewise tagged with orchid_id
           const extraGallery = galleryImages.filter(u => u !== thumbnailUrl);
           for (const imgUrl of extraGallery) {
-            const { data: ep } = await bloomSupabase.from('picture').select('picture_id').eq('file_path', imgUrl).maybeSingle();
-            if (!ep) await bloomSupabase.from('picture').insert({ file_path: imgUrl });
+            const { data: ep } = await bloomSupabase.from('picture').select('picture_id, orchid_id').eq('file_path', imgUrl).maybeSingle();
+            if (!ep) {
+              await bloomSupabase.from('picture').insert({ file_path: imgUrl, orchid_id: orchidId });
+            } else if (ep.orchid_id !== orchidId) {
+              await bloomSupabase.from('picture').update({ orchid_id: orchidId }).eq('picture_id', ep.picture_id);
+            }
           }
 
           // Resolve the selected conservation status to a conservation_status row id
