@@ -1,12 +1,24 @@
 {
+  "redirects": [
+    { "source": "/index.html",                "destination": "/",            "permanent": false },
+    { "source": "/signin.html",               "destination": "/signin",      "permanent": false },
+    { "source": "/register.html",             "destination": "/register",    "permanent": false },
+    { "source": "/catalog.html",              "destination": "/catalog",     "permanent": false },
+    { "source": "/gallery.html",              "destination": "/gallery",     "permanent": false },
+    { "source": "/orchid-detail.html",        "destination": "/orchid-detail","permanent": false },
+    { "source": "/researcher-dashboard.html", "destination": "/researcher",  "permanent": false },
+    { "source": "/denr-dashboard.html",       "destination": "/denr",        "permanent": false },
+    { "source": "/superadmin-dashboard.html", "destination": "/admin",       "permanent": false }
+  ],
   "rewrites": [
-    { "source": "/",           "destination": "/frontend/index.html" },
-    { "source": "/researcher", "destination": "/frontend/researcher-dashboard.html" },
-    { "source": "/denr",       "destination": "/frontend/denr-dashboard.html" },
-    { "source": "/catalog",    "destination": "/frontend/catalog.html" },
-    { "source": "/gallery",    "destination": "/frontend/gallery.html" },
-    { "source": "/signin",     "destination": "/frontend/signin.html" },
-    { "source": "/register",   "destination": "/frontend/register.html" },
-    { "source": "/admin",      "destination": "/frontend/superadmin-dashboard.html" }
+    { "source": "/",              "destination": "/frontend/index.html" },
+    { "source": "/signin",        "destination": "/frontend/signin.html" },
+    { "source": "/register",      "destination": "/frontend/register.html" },
+    { "source": "/catalog",       "destination": "/frontend/catalog.html" },
+    { "source": "/gallery",       "destination": "/frontend/gallery.html" },
+    { "source": "/orchid-detail", "destination": "/frontend/orchid-detail.html" },
+    { "source": "/researcher",    "destination": "/frontend/researcher-dashboard.html" },
+    { "source": "/denr",          "destination": "/frontend/denr-dashboard.html" },
+    { "source": "/admin",         "destination": "/frontend/superadmin-dashboard.html" }
   ]
 }
