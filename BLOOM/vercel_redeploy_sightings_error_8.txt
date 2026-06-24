@@ -1,0 +1,14 @@
+﻿Invoke-RestMethod : A server error has occurred
+
+FUNCTION_INVOCATION_FAILED
+
+sin1::fsf6v-1778203740821-1e41b0295bc1
+
+At line:9 char:13
++     $resp = Invoke-RestMethod -Uri "$base/api/sightings" -Method Post ...
++             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:Htt 
+   pWebRequest) [Invoke-RestMethod], WebException
+    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShe 
+   ll.Commands.InvokeRestMethodCommand
+

@@ -1,0 +1,1206 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="loo.png" />
+    <title>Orchid Catalog - BLOOM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+      /* ── Modal shell ─────────────────────────────── */
+      .orchid-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+      @media(min-width:640px){.orchid-detail-modal{align-items:center;padding:1.5vh 2vw;}}
+      .orchid-detail-card{background:#fff;width:100%;max-width:520px;height:94vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -6px 48px rgba(0,0,0,.32);}
+      @media(min-width:640px){.orchid-detail-card{border-radius:22px;height:92vh;}}
+
+      /* Topbar */
+      .odm-topbar{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem .5rem;border-bottom:1px solid #e4ede3;flex-shrink:0;gap:.5rem;}
+      .odm-breadcrumb{font-size:.72rem;color:#5a8a54;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+      .odm-close-btn{background:none;border:1.5px solid #c8ddc5;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:#3e6639;flex-shrink:0;transition:background .15s;}
+      .odm-close-btn:hover{background:#e8f3e6;}
+
+      /* Map */
+      .odm-map-wrap{height:195px;flex-shrink:0;}
+      #orchid-leaflet-map{width:100%;height:195px;}
+      /* Bootstrap resets max-width on all <img> which breaks Leaflet tile images */
+      .leaflet-container img{max-width:none!important;}
+      .odm-map-marker-inner{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);overflow:hidden;background:#145A1E;}
+      .odm-map-marker-inner img{width:100%;height:100%;object-fit:cover;display:block;}
+      .odm-map-foot{display:flex;align-items:center;gap:.35rem;padding:.3rem .9rem;background:#f6fbf4;border-bottom:1px solid #e4ede3;font-size:.73rem;color:#5a8a54;flex-shrink:0;}
+
+      /* Sighting bar */
+      .odm-sighting-bar{display:flex;align-items:center;gap:.35rem;padding:.45rem .9rem;background:#fff;border-bottom:1px solid #e4ede3;font-size:.84rem;color:#162b14;flex-shrink:0;}
+      .odm-sighting-bar b{color:#145A1E;}
+
+      /* 4 tabs */
+      .odm-tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1.5px solid #d8ecd6;flex-shrink:0;background:#fff;}
+      .odm-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.18rem;padding:.55rem .2rem .45rem;font-size:.62rem;font-weight:600;color:#5a8a54;background:transparent;border:none;border-bottom:2.5px solid transparent;cursor:pointer;transition:all .13s;letter-spacing:.01em;}
+      .odm-tab svg{width:18px;height:18px;flex-shrink:0;}
+      .odm-tab.odm-tab--active{color:#145A1E;border-bottom-color:#145A1E;background:#f6fbf4;}
+
+      /* Scrollable body */
+      .odm-body{flex:1;overflow-y:auto;min-height:0;background:#f1f5ef;}
+      .odm-panel{display:block;}
+      .odm-panel--hidden{display:none;}
+
+      /* Conservation card */
+      .odm-conservation-card{margin:1rem 1rem .75rem;border-radius:14px;background:#145A1E;color:#fff;padding:1.1rem 1.2rem 1rem;}
+      .odm-con-head{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:600;opacity:.82;margin-bottom:.55rem;}
+      .odm-con-head svg{width:15px;height:15px;flex-shrink:0;}
+      .odm-con-status{font-size:1.7rem;font-weight:800;margin:.05rem 0 .2rem;line-height:1.15;}
+      .odm-con-desc{font-size:.8rem;opacity:.78;}
+
+      /* Sections */
+      .odm-section{margin:0 1rem .85rem;}
+      .odm-section-title{font-size:.8rem;font-weight:800;color:#162b14;margin:.7rem 0 .4rem;letter-spacing:.01em;}
+      .odm-rows-wrap{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e0e9df;}
+      .odm-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.6rem .9rem;border-bottom:1px solid #e9f0e8;gap:.75rem;}
+      .odm-row:last-child{border-bottom:none;}
+      .odm-row-label{font-size:.68rem;font-weight:700;color:#3e6639;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;min-width:95px;line-height:1.3;padding-top:.08rem;}
+      .odm-row-value{font-size:.88rem;color:#162b14;font-weight:500;text-align:right;line-height:1.4;}
+
+      /* Sightings list */
+      .odm-sighting-item{background:#fff;margin:.75rem 1rem;border-radius:12px;border:1px solid #e0e9df;overflow:hidden;}
+      .odm-sighting-item-hd{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem .5rem;border-bottom:1px solid #e9f0e8;}
+      .odm-sighting-item-num{font-weight:700;color:#145A1E;font-size:.88rem;}
+      .odm-sighting-item-date{font-size:.76rem;color:#5a8a54;}
+      .odm-sighting-item-rows{padding:.2rem 0 .3rem;}
+      .odm-sighting-item-row{display:flex;gap:.5rem;font-size:.81rem;color:#3e3e3e;padding:.22rem 1rem;}
+      .odm-sighting-item-row-lbl{color:#5a8a54;font-weight:600;min-width:70px;flex-shrink:0;}
+
+      /* Images */
+      .odm-images-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;padding:1rem;}
+      .odm-img-wrap{border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#e4ede3;}
+      .odm-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;}
+      .odm-empty{text-align:center;color:#7a9a78;font-size:.88rem;padding:2.5rem 1rem;font-style:italic;}
+
+      /* Study */
+      .odm-study-note{margin:.75rem 1rem;background:#fff;border-radius:12px;padding:1rem;border:1px solid #e0e9df;font-size:.87rem;color:#162b14;line-height:1.58;}
+    </style>
+    <style>
+      /* ── Cream/green theme for public catalog ── */
+      body.catalog-light {
+        background: #F0EAD2 !important;
+        background-image: none !important;
+        animation: none !important;
+        color: #1a3a1c !important;
+      }
+      body.catalog-light .top-nav {
+        background: #FFFFFF !important;
+        background-image: none !important;
+        border-bottom: 1px solid #D8D0B8 !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,.07) !important;
+      }
+      body.catalog-light .bloom-text { color: #145A1E !important; }
+      body.catalog-light .brand-tagline span { color: rgba(20,90,30,.6) !important; }
+      /* Sign In button */
+      body.catalog-light .btn-ghost,
+      body.catalog-light .btn-ghost:hover,
+      body.catalog-light .btn-ghost:focus,
+      body.catalog-light .btn-outline-secondary {
+        background: transparent !important;
+        border: 1.5px solid rgba(20,90,30,.45) !important;
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .btn-ghost:hover,
+      body.catalog-light .btn-outline-secondary:hover {
+        background: #eaf3ea !important;
+        border-color: #145A1E !important;
+      }
+      /* Register button */
+      body.catalog-light .btn-solid,
+      body.catalog-light .btn-success {
+        background: #145A1E !important;
+        border: 1.5px solid #145A1E !important;
+        color: #F0EAD2 !important;
+        -webkit-text-fill-color: #F0EAD2 !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .btn-solid:hover,
+      body.catalog-light .btn-success:hover {
+        background: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+      }
+      /* Catalog title and search */
+      body.catalog-light .catalog-title { color: #145A1E !important; }
+      body.catalog-light .catalog-search,
+      body.catalog-light .catalog-search-filter {
+        background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        border-color: #C8C0A8 !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
+      body.catalog-light .catalog-search::placeholder { color: rgba(20,90,30,.45) !important; }
+      body.catalog-light .catalog-search:focus,
+      body.catalog-light .catalog-search-filter:focus {
+        border-color: #145A1E !important;
+        box-shadow: 0 0 0 3px rgba(20,90,30,.1) !important;
+      }
+      /* View toggle button */
+      body.catalog-light .catalog-view-toggle {
+        background: #FFFFFF !important;
+        border-color: #C8C0A8 !important;
+        color: #145A1E !important;
+      }
+      /* Orchid cards — keep white on cream bg */
+      body.catalog-light .orchid-card {
+        background: #FFFFFF !important;
+        box-shadow: 0 2px 10px rgba(20,90,30,.09) !important;
+        border: 1px solid #E8E2CB !important;
+      }
+      body.catalog-light .orchid-card:hover {
+        box-shadow: 0 8px 24px rgba(20,90,30,.16) !important;
+        border-color: rgba(20,90,30,.25) !important;
+      }
+      body.catalog-light .orchid-card-info { background: #FFFFFF !important; }
+      /* Card text — dark theme sets these via !important with class-only selectors;
+         use body + nav chain (higher specificity) to reliably override */
+      body.catalog-light .orchid-card-name {
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+      }
+      body.catalog-light .orchid-card-genus {
+        color: #3e6639 !important;
+        -webkit-text-fill-color: #3e6639 !important;
+      }
+      /* Nav buttons — dark theme has 3-class and 4-class selectors in styles.css;
+         we need at least 4 classes + body element (0,4,1) to reliably win */
+      body.catalog-light .top-nav .btn-ghost,
+      body.catalog-light .top-nav .btn-outline-secondary,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:hover,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:focus,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:focus-visible,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:active {
+        background: transparent !important;
+        border: 1.5px solid rgba(20,90,30,.45) !important;
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .top-nav .btn-ghost:hover,
+      body.catalog-light .top-nav .btn-outline-secondary:hover,
+      body.catalog-light .top-nav .btn-ghost.btn-outline-secondary:hover {
+        background: #eaf3ea !important;
+        border-color: #145A1E !important;
+        color: #145A1E !important;
+        -webkit-text-fill-color: #145A1E !important;
+      }
+      body.catalog-light .top-nav .btn-solid,
+      body.catalog-light .top-nav .btn-success {
+        background: #145A1E !important;
+        border: 1.5px solid #145A1E !important;
+        color: #F0EAD2 !important;
+        -webkit-text-fill-color: #F0EAD2 !important;
+        box-shadow: none !important;
+      }
+      body.catalog-light .top-nav .btn-solid:hover,
+      body.catalog-light .top-nav .btn-success:hover {
+        background: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+      }
+    </style>
+    <script src="config.js?v=3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js?v=3"></script>
+  </head>
+  <body class="signin-page catalog-light">
+    <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
+      <a href="index.html" class="brand-link" id="catalog-brand-link">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <img src="./loo.png" alt="Orchid logo" class="brand-logo-image" />
+          </div>
+          <div class="brand">
+            <span class="bloom-text">BLOOM</span>
+            <div class="brand-tagline">
+              <span>Botanical Locator</span>
+              <span>and Orchid Observation</span>
+              <span>Mapping System</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      <div class="auth-actions d-flex align-items-center gap-2">
+        <a href="signin.html" class="btn btn-ghost btn-outline-secondary">Sign In</a>
+        <a href="register.html" class="btn btn-solid btn-success">Register</a>
+      </div>
+    </header>
+
+    <main class="catalog-container container-fluid py-4 px-3 px-md-4">
+      <div class="catalog-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div class="catalog-title-row">
+          <button
+            type="button"
+            class="catalog-view-toggle"
+            id="catalog-view-toggle"
+            aria-label="Switch to list view"
+            title="Switch to list view"
+          >
+            <span id="catalog-view-icon" aria-hidden="true">&#9638;</span>
+          </button>
+          <h1 class="catalog-title">Orchid Catalog</h1>
+        </div>
+        <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(520px,100%);">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:120px;" aria-label="Search filter">
+            <option value="all">All</option>
+            <option value="species">Species</option>
+            <option value="genus">Genus</option>
+          </select>
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;" aria-label="Conservation status filter">
+            <option value="all">Conservation Status</option>
+            <option value="critically endangered">Critically Endangered</option>
+            <option value="endangered">Endangered</option>
+            <option value="vulnerable">Vulnerable</option>
+            <option value="least concern">Least Concern</option>
+          </select>
+          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
+        </div>
+      </div>
+
+      <div class="catalog-grid" id="catalog-grid"></div>
+    </main>
+
+    <div class="orchid-detail-modal" id="orchid-detail-modal" hidden>
+      <div class="orchid-detail-card" role="dialog" aria-modal="true" aria-labelledby="odm-breadcrumb">
+
+        <!-- Breadcrumb + close -->
+        <div class="odm-topbar">
+          <span class="odm-breadcrumb" id="odm-breadcrumb">Orchidaceae / â / â</span>
+          <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
+        </div>
+
+        <!-- Map -->
+        <div class="odm-map-wrap">
+          <div id="orchid-leaflet-map"></div>
+        </div>
+        <div class="odm-map-foot">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-8-6.5-8-12a8 8 0 1 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span id="odm-map-hint-text">â recorded sightings &middot; tap a pin to explore</span>
+        </div>
+
+        <!-- Active sighting indicator -->
+        <div class="odm-sighting-bar" id="odm-sighting-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2" width="14" height="14"><path d="M12 21s-8-6.5-8-12a8 8 0 1 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <b id="odm-sighting-num">Sighting #1</b>
+          <span style="color:#aaa;">&middot;</span>
+          <span id="odm-sighting-date">â</span>
+        </div>
+
+        <!-- 4 tabs -->
+        <div class="odm-tabs">
+          <button class="odm-tab odm-tab--active" data-tab="value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Species Value</span>
+          </button>
+          <button class="odm-tab" data-tab="sightings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="10" ry="6"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Sightings</span>
+          </button>
+          <button class="odm-tab" data-tab="images">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Images</span>
+          </button>
+          <button class="odm-tab" data-tab="study">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Related Study</span>
+          </button>
+        </div>
+
+        <!-- Tab panels -->
+        <div class="odm-body">
+
+          <!-- Species Value -->
+          <div class="odm-panel" id="odm-panel-value">
+            <div class="odm-conservation-card" id="odm-conservation-card">
+              <div class="odm-con-head">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Conservation Status
+              </div>
+              <div class="odm-con-status" id="odm-con-status">â</div>
+              <div class="odm-con-desc" id="odm-con-desc">â</div>
+            </div>
+            <div class="odm-section">
+              <div class="odm-section-title">Taxonomy &amp; Identification</div>
+              <div class="odm-rows-wrap" id="odm-rows-taxonomy"></div>
+            </div>
+            <div class="odm-section">
+              <div class="odm-section-title">Location &amp; Habitat</div>
+              <div class="odm-rows-wrap" id="odm-rows-location"></div>
+            </div>
+          </div>
+
+          <!-- Sightings -->
+          <div class="odm-panel odm-panel--hidden" id="odm-panel-sightings">
+            <div id="odm-sightings-list"></div>
+          </div>
+
+          <!-- Images -->
+          <div class="odm-panel odm-panel--hidden" id="odm-panel-images">
+            <div id="odm-images-inner"></div>
+          </div>
+
+          <!-- Related Study -->
+          <div class="odm-panel odm-panel--hidden" id="odm-panel-study">
+            <div id="odm-study-inner"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <script>
+      const catalogGrid = document.getElementById('catalog-grid');
+      const searchInput = document.getElementById('search-input');
+      const searchFilter = document.getElementById('search-filter');
+      const conservationFilter = document.getElementById('conservation-filter');
+      const catalogViewToggle = document.getElementById('catalog-view-toggle');
+      const catalogViewIcon = document.getElementById('catalog-view-icon');
+      const orchidDetailModal = document.getElementById('orchid-detail-modal');
+      const catalogImage = encodeURI('./catalogicon.png');
+
+      // Map state
+      let orchidLeafletMap = null;
+      const NEARBY_OFFSETS = [
+        { dlat: 0.004, dlng: 0.004 },
+        { dlat: -0.004, dlng: 0.004 },
+        { dlat: 0.004, dlng: -0.004 },
+        { dlat: -0.004, dlng: -0.004 },
+      ];
+      const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n                <rect x="13" y="13" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none" rx="1" />\n              </svg>';
+      const LIST_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <rect x="3" y="5" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="11" width="18" height="2" fill="currentColor" rx="1" />\n                <rect x="3" y="17" width="18" height="2" fill="currentColor" rx="1" />\n              </svg>';
+      let orchids = [];
+      let approvedSightingsByScientificName = new Map();
+      let storageImagesByGenus = new Map(); // genus_lower or "genus species" -> publicUrl
+      let isListView = false;
+      let currentSubmission = null;
+      const bloomSupabase = window.bloomSupabase;
+
+      // Public catalog stays visitor-only; role-specific catalogs live in the dashboards.
+
+      function hasUsableValue(value) {
+        if (value === null || value === undefined) {
+          return false;
+        }
+
+        const normalized = String(value).trim().toLowerCase();
+        if (normalized === '') {
+          return false;
+        }
+
+        const unavailableTokens = new Set(['none', 'n/a', 'na', 'not available', 'null', 'unknown', '-']);
+        return !unavailableTokens.has(normalized);
+      }
+
+      function normalizeScientificKey(value) {
+        return String(value || '').trim().toLowerCase();
+      }
+
+      function parseJsonArrayValue(value) {
+        if (Array.isArray(value)) {
+          return value.filter(Boolean);
+        }
+
+        if (value === null || value === undefined || value === '') {
+          return [];
+        }
+
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+              return parsed.filter(Boolean);
+            }
+          } catch {
+            return [];
+          }
+        }
+
+        return [];
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function normalizeObservationMonth(observationDate, fallbackMonth) {
+        if (hasUsableValue(fallbackMonth)) {
+          return String(fallbackMonth).trim();
+        }
+
+        if (!hasUsableValue(observationDate)) {
+          return '';
+        }
+
+        const rawDate = String(observationDate).trim();
+        if (/^\d{4}-\d{2}/.test(rawDate)) {
+          return rawDate.slice(0, 7);
+        }
+
+        return '';
+      }
+
+      function normalizePublicSightingRow(row) {
+        return {
+          scientific_name: row.scientific_name || '',
+          common_names: parseJsonArrayValue(row.common_names),
+          local_names: parseJsonArrayValue(row.local_names),
+          identification_confidence: row.identification_confidence || '',
+          observation_date: row.observation_date || '',
+          observation_month: normalizeObservationMonth(row.observation_date, row.observation_month),
+          latitude: row.latitude != null ? Number(row.latitude) : null,
+          longitude: row.longitude != null ? Number(row.longitude) : null,
+          mountain_name: row.mountain_name || '',
+          specific_site_zone: row.specific_site_zone || '',
+          elevation_meters: row.elevation_meters ?? '',
+          habitat_type: row.habitat_type || '',
+          microhabitat: row.microhabitat || '',
+          plant_height_cm: row.plant_height_cm ?? '',
+          leaf_shape: row.leaf_shape || '',
+          leaf_count: row.leaf_count ?? '',
+          leaf_textures: parseJsonArrayValue(row.leaf_textures),
+          leaf_arrangement: row.leaf_arrangement || '',
+          flower_color: row.flower_color || '',
+          flower_count: row.flower_count ?? '',
+          flower_diameter_cm: row.flower_diameter_cm ?? '',
+          inflorescence_type: row.inflorescence_type || '',
+          petal_characteristics: row.petal_characteristics || '',
+          labellum_lip_description: row.labellum_lip_description || '',
+          fragrance: row.fragrance || '',
+          flowering_season: row.flowering_season || '',
+          blooming_stage: row.blooming_stage || '',
+          flowering_stage: row.blooming_stage || row.flowering_stage || '',
+          fruit_present: row.fruit_present,
+          fruit_type: row.fruit_type || '',
+          population_status: row.population_status || '',
+          threat_level: row.threat_level || row.threat_level_generalized || '',
+          threat_level_generalized: row.threat_level || row.threat_level_generalized || '',
+          endemic_to_philippines: row.endemic_to_philippines || '',
+          observation_time: row.observation_time || '',
+          observation_type: row.observation_type || '',
+          collection_method: row.collection_method || '',
+          voucher_collected: row.voucher_collected,
+          researcher_notes: row.researcher_notes || '',
+          growth_substrate: row.growth_substrate || '',
+          nearby_water_source: row.nearby_water_source || '',
+          educational_notes: row.educational_notes || '',
+          location_visibility_note: row.location_visibility_note || 'Location hidden for conservation',
+          whole_plant_photo_path: parseJsonArrayValue(row.whole_plant_photo_path),
+          closeup_flower_photo_path: parseJsonArrayValue(row.closeup_flower_photo_path),
+          habitat_photo_path: parseJsonArrayValue(row.habitat_photo_path),
+          researcher_name: row.researcher_name || '',
+          team_members: parseJsonArrayValue(row.team_members),
+          institution: row.institution || ''
+        };
+      }
+
+      function getPublicSightingImages(publicSighting) {
+        if (!publicSighting) {
+          return [];
+        }
+
+        return [
+          ...(Array.isArray(publicSighting.whole_plant_photo_path) ? publicSighting.whole_plant_photo_path : []),
+          ...(Array.isArray(publicSighting.closeup_flower_photo_path) ? publicSighting.closeup_flower_photo_path : []),
+          ...(Array.isArray(publicSighting.habitat_photo_path) ? publicSighting.habitat_photo_path : [])
+        ].filter(Boolean);
+      }
+
+      function getObservationSummaryText(publicSighting) {
+        if (!publicSighting) {
+          return '';
+        }
+
+        const parts = [
+          publicSighting.habitat_type,
+          publicSighting.blooming_stage || publicSighting.flowering_stage
+        ].filter((value) => hasUsableValue(value));
+
+        return parts.join(' | ');
+      }
+
+      function getPrimaryCommonName(value) {
+        if (Array.isArray(value)) {
+          return value.filter(Boolean)[0] || '';
+        }
+
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+              return parsed.filter(Boolean)[0] || '';
+            }
+          } catch {
+            return value;
+          }
+        }
+
+        return '';
+      }
+
+      function buildAddInstanceUrl(orchid, source) {
+        const speciesName = hasUsableValue(orchid?.name) ? String(orchid.name).trim() : '';
+        const genusFromSpecies = speciesName ? speciesName.split(' ')[0] : '';
+        const genus = hasUsableValue(orchid?.genus) ? String(orchid.genus).trim() : genusFromSpecies;
+        const commonName = getPrimaryCommonName(source?.common_names) || source?.common_name || orchid?.common_name || '';
+
+        const params = new URLSearchParams();
+        params.set('view', 'submissions');
+        params.set('action', 'add-instance');
+
+        if (speciesName) {
+          params.set('species', speciesName);
+        }
+
+        if (genus) {
+          params.set('genus', genus);
+        }
+
+        if (hasUsableValue(commonName)) {
+          params.set('commonName', String(commonName).trim());
+        }
+
+        return `researcher-dashboard.html?${params.toString()}`;
+      }
+
+      function formatSimplifiedConfidence(value) {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (!normalized) {
+          return '';
+        }
+
+        if (normalized.includes('confirm') || normalized.includes('verified')) {
+          return 'Confirmed';
+        }
+
+        if (normalized.includes('probable') || normalized.includes('likely')) {
+          return 'Probable';
+        }
+
+        return 'Probable';
+      }
+
+      function formatRoundedElevation(value) {
+        if (value === null || value === undefined || value === '') {
+          return '';
+        }
+
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+          return `~${Math.round(parsed)} m`;
+        }
+
+        return String(value);
+      }
+
+      function formatRoundedMeasurement(value, unitLabel) {
+        if (value === null || value === undefined || value === '') {
+          return '';
+        }
+
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+          return `~${Math.round(parsed)} ${unitLabel}`;
+        }
+
+        return String(value);
+      }
+
+      // ── Tabbed modal helpers ─────────────────────────────────────────
+
+      function odmSwitchTab(tab) {
+        document.querySelectorAll('.odm-tab').forEach(function(btn) {
+          btn.classList.toggle('odm-tab--active', btn.dataset.tab === tab);
+        });
+        ['value', 'sightings', 'images', 'study'].forEach(function(t) {
+          var p = document.getElementById('odm-panel-' + t);
+          if (p) p.classList.toggle('odm-panel--hidden', t !== tab);
+        });
+      }
+
+      function odmRow(label, value) {
+        if (value === null || value === undefined || value === '') return '';
+        return '<div class="odm-row"><span class="odm-row-label">' + label +
+          '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
+      }
+
+      function odmPopulateValue(orchid, allSightings) {
+        var src = allSightings[0] || {};
+        var count = allSightings.length;
+        var status = src.threat_level_generalized || src.threat_level ||
+          orchid.conservation_status || '—';
+        var card = document.getElementById('odm-conservation-card');
+        var sl = status.toLowerCase();
+        card.style.background = sl.indexOf('critical') >= 0 ? '#9c2929'
+          : sl.indexOf('endanger') >= 0 ? '#b84a1a'
+          : sl.indexOf('vulnerable') >= 0 ? '#145A1E'
+          : sl.indexOf('concern') >= 0 ? '#1a6b3c'
+          : '#145A1E';
+        document.getElementById('odm-con-status').textContent = status;
+        document.getElementById('odm-con-desc').textContent = count > 0
+          ? 'Recorded ' + count + ' time' + (count === 1 ? '' : 's') + ' in the wild'
+          : 'No recorded sightings';
+        var genus = orchid.genus || (orchid.name || '').split(' ')[0] || '';
+        var commonNames = Array.isArray(src.common_names) && src.common_names.length
+          ? src.common_names.join(', ') : (orchid.common_name || '');
+        var localNames = Array.isArray(src.local_names) && src.local_names.length
+          ? src.local_names.join(', ') : '';
+        var endemic = src.endemic_to_philippines == null ? ''
+          : (src.endemic_to_philippines ? 'Yes' : 'No');
+        var taxHtml = odmRow('Local Name(s)', localNames) +
+          odmRow('Common Name(s)', commonNames) +
+          odmRow('Endemic to Philippines', endemic) +
+          odmRow('Genus', genus) +
+          odmRow('Confidence', src.identification_confidence) +
+          odmRow('Population Status', src.population_status);
+        document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
+        var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
+        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa') +
+          odmRow('Site / Zone', src.specific_site_zone) +
+          odmRow('Elevation', elev) +
+          odmRow('Habitat', src.habitat_type) +
+          odmRow('Microhabitat', src.microhabitat);
+        document.getElementById('odm-rows-location').innerHTML = locHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
+      }
+
+      function odmPopulateSightings(allSightings) {
+        var el = document.getElementById('odm-sightings-list');
+        if (!allSightings.length) {
+          el.innerHTML = '<p class="odm-empty">No recorded sightings yet.</p>';
+          return;
+        }
+        el.innerHTML = allSightings.map(function(s, i) {
+          var date = s.observation_date
+            ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+          var rows = [
+            ['Location', s.mountain_name || ''],
+            ['Site', s.specific_site_zone || ''],
+            ['Elevation', s.elevation_meters ? s.elevation_meters + ' m' : ''],
+            ['Researcher', s.researcher_name || ''],
+            ['Institution', s.institution || ''],
+          ].filter(function(r){ return r[1]; });
+          return '<div class="odm-sighting-item">' +
+            '<div class="odm-sighting-item-hd">' +
+              '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
+              '<span class="odm-sighting-item-date">' + date + '</span>' +
+            '</div>' +
+            '<div class="odm-sighting-item-rows">' +
+              rows.map(function(r){
+                return '<div class="odm-sighting-item-row">' +
+                  '<span class="odm-sighting-item-row-lbl">' + r[0] + '</span>' +
+                  '<span>' + escapeHtml(r[1]) + '</span></div>';
+              }).join('') +
+            '</div></div>';
+        }).join('');
+      }
+
+      function getOrchidThumbnailUrl(orchid, allSightings) {
+        var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
+        var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
+        if (seedImg) return seedImg;
+        if (orchid.image_url) return orchid.image_url;
+        for (var i = 0; i < allSightings.length; i++) {
+          var photos = getPublicSightingImages(allSightings[i]).filter(function(u){ return u && String(u).indexOf('http') === 0; });
+          if (photos.length) return photos[0];
+        }
+        return null;
+      }
+
+      function buildOrchidMarkerIcon(thumbnailUrl) {
+        if (!thumbnailUrl) {
+          return L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
+        }
+        return L.divIcon({
+          className: 'odm-map-marker',
+          html: '<div class="odm-map-marker-inner"><img src="' + escapeHtml(thumbnailUrl) + '" alt=""></div>',
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+          popupAnchor: [0, -22]
+        });
+      }
+
+      async function odmPopulateImages(orchid, allSightings) {
+        var el = document.getElementById('odm-images-inner');
+        var imgs = [];
+        var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
+        var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
+        if (seedImg) imgs.push(seedImg);
+        if (orchid.image_url && imgs.indexOf(orchid.image_url) < 0) imgs.push(orchid.image_url);
+        allSightings.forEach(function(s) {
+          getPublicSightingImages(s).forEach(function(url) {
+            if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
+          });
+        });
+        // DENR-curated gallery photos selected when publishing to the catalog
+        if (orchid.id && window.bloomSupabase) {
+          try {
+            var resp = await window.bloomSupabase
+              .from('picture').select('file_path').eq('orchid_id', orchid.id);
+            (resp.data || []).forEach(function(row) {
+              var url = row.file_path;
+              if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
+            });
+          } catch (e) { console.warn('Gallery picture lookup failed:', e); }
+        }
+        if (!imgs.length) {
+          el.innerHTML = '<p class="odm-empty">No images available for this species.</p>';
+          return;
+        }
+        el.innerHTML = '<div class="odm-images-grid">' + imgs.map(function(url){
+          return '<div class="odm-img-wrap"><img src="' + escapeHtml(url) +
+            '" alt="Orchid photo" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+        }).join('') + '</div>';
+      }
+
+      function odmPopulateStudy(allSightings) {
+        var el = document.getElementById('odm-study-inner');
+        var src = allSightings[0] || {};
+        var parts = [];
+        if (src.researcher_notes) {
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Researcher Notes</b>' +
+            escapeHtml(src.researcher_notes) + '</div>');
+        }
+        if (src.educational_notes) {
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Educational Notes</b>' +
+            escapeHtml(src.educational_notes) + '</div>');
+        }
+        var team = Array.isArray(src.team_members) ? src.team_members.filter(Boolean).join(', ') : (src.team_members || '');
+        var detailRows = odmRow('Institution', src.institution) +
+          odmRow('Team Members', team) +
+          odmRow('Collection Method', src.collection_method) +
+          odmRow('Observation Type', src.observation_type) +
+          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No') : '');
+        if (detailRows) {
+          parts.push('<div class="odm-section"><div class="odm-section-title">Research Details</div>' +
+            '<div class="odm-rows-wrap">' + detailRows + '</div></div>');
+        }
+        el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
+      }
+
+      function orchidInitMap(sightingPoints, thumbnailUrl) {
+        if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
+        var mapEl = document.getElementById('orchid-leaflet-map');
+        if (!mapEl) return;
+        mapEl.style.height = '195px';
+        var primary = sightingPoints[0];
+        var allPoints = sightingPoints.slice();
+        for (var i = 0; allPoints.length < 5; i++) {
+          var off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
+          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng, date: null });
+        }
+        orchidLeafletMap = L.map('orchid-leaflet-map', {
+          zoomControl: false, dragging: true, scrollWheelZoom: false,
+          zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false
+        }).setView([primary.lat, primary.lng], 13);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri', maxZoom: 19
+        }).addTo(orchidLeafletMap);
+        var icon = buildOrchidMarkerIcon(thumbnailUrl);
+        sightingPoints.forEach(function(pt) {
+          L.marker([pt.lat, pt.lng], { icon: icon, interactive: false }).addTo(orchidLeafletMap);
+        });
+        orchidLeafletMap.fitBounds(
+          L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
+          { padding: [30, 30], animate: false }
+        );
+        setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 200);
+        setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 600);
+      }
+
+      async function openOrchidDetails(orchid) {
+        var scientificKey = normalizeScientificKey(orchid.name);
+        var allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
+        var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
+        var genus = orchid.genus || orchidName.split(' ')[0] || '';
+        document.getElementById('odm-breadcrumb').textContent =
+          'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
+        var count = allSightings.length;
+        document.getElementById('odm-map-hint-text').textContent =
+          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · recorded locations';
+        var firstSighting = allSightings[0];
+        var sightingBar = document.getElementById('odm-sighting-bar');
+        if (firstSighting) {
+          sightingBar.style.display = '';
+          document.getElementById('odm-sighting-num').textContent = 'Sighting #1';
+          var d0 = firstSighting.observation_date
+            ? new Date(firstSighting.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+          document.getElementById('odm-sighting-date').textContent = d0;
+        } else {
+          sightingBar.style.display = 'none';
+        }
+        odmSwitchTab('value');
+        odmPopulateValue(orchid, allSightings);
+        odmPopulateSightings(allSightings);
+        odmPopulateImages(orchid, allSightings);
+        odmPopulateStudy(allSightings);
+        orchidDetailModal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        var sightingPoints = allSightings
+          .filter(function(s){ return s.latitude != null && s.longitude != null; })
+          .map(function(s){ return { lat: Number(s.latitude), lng: Number(s.longitude), date: s.observation_date }; });
+        if (sightingPoints.length === 0 && window.bloomSupabase) {
+          try {
+            var resp = await window.bloomSupabase
+              .from('species_sightings')
+              .select('latitude, longitude, observation_date')
+              .ilike('scientific_name', orchidName.trim())
+              .eq('review_status', 'approved')
+              .limit(10);
+            if (resp.data && resp.data.length > 0) {
+              sightingPoints = resp.data
+                .filter(function(r){ return r.latitude != null && r.longitude != null; })
+                .map(function(r){ return { lat: Number(r.latitude), lng: Number(r.longitude), date: r.observation_date }; });
+            }
+          } catch(e) { console.warn('Coord lookup failed:', e); }
+        }
+        if (sightingPoints.length === 0) {
+          sightingPoints.push({ lat: 6.109410, lng: 124.663094, date: null });
+        }
+        orchidInitMap(sightingPoints, getOrchidThumbnailUrl(orchid, allSightings));
+        var closeBtn = document.getElementById('orchid-detail-close-btn');
+        if (closeBtn && !closeBtn._odmBound) {
+          closeBtn._odmBound = true;
+          closeBtn.addEventListener('click', closeOrchidDetails);
+        }
+        document.querySelectorAll('.odm-tab').forEach(function(btn) {
+          if (!btn._odmBound) {
+            btn._odmBound = true;
+            btn.addEventListener('click', function(){ odmSwitchTab(this.dataset.tab); });
+          }
+        });
+      }
+
+      function closeOrchidDetails() {
+        orchidDetailModal.hidden = true;
+        document.body.style.overflow = '';
+        if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
+      }
+
+      function normalizeOrchidRow(row) {
+        return {
+          ...row,
+          id: row.id ?? row.orchid_id,
+          name: row.name || row.sci_name || '',
+          genus: row.genus || '',
+          common_name: row.common_name || '',
+          endemicity: row.endemicity || '',
+          image_url: row.image_url || '',
+          conservation_status: row.conservation_status || row.threat_level_generalized || row.threat_level || ''
+        };
+      }
+
+      function syncCatalogViewState() {
+        catalogGrid.classList.toggle('list-view', isListView);
+
+        if (catalogViewIcon) {
+          catalogViewIcon.innerHTML = isListView ? LIST_SVG : GRID_SVG;
+        }
+
+        if (catalogViewToggle) {
+          const nextModeLabel = isListView ? 'catalog' : 'list';
+          const label = `Switch to ${nextModeLabel} view`;
+          catalogViewToggle.setAttribute('aria-label', label);
+          catalogViewToggle.setAttribute('title', label);
+        }
+      }
+
+      // Defensive fallback: direct handler for orchid card clicks
+      window.handleOrchidCardClick = function(orchidId) {
+        const orchid = orchids.find(o => o.id == orchidId);
+        if (orchid) {
+          openOrchidDetails(orchid);
+        }
+      };
+
+      function renderCatalog(items) {
+        if (!items || items.length === 0) {
+          catalogGrid.innerHTML = '<p>No orchids found in the database.</p>';
+          return;
+        }
+
+        catalogGrid.innerHTML = items.map((orchid) => {
+          const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
+          const fullName = (orchid.name || '').toLowerCase();
+
+          // Mirror the researcher/DENR dashboard thumbnail logic:
+          // seed images by species name → seed images by genus → DB image_url → sighting photos → fallback
+          const scientificKey = normalizeScientificKey(orchid.name);
+          const approvedSighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+
+          let thumbnailImage = storageImagesByGenus.get(fullName)
+            || storageImagesByGenus.get(genus)
+            || orchid.image_url
+            || null;
+
+          // If no seed/DB image found, try approved sighting photos (full public URLs only)
+          if (!thumbnailImage && approvedSighting) {
+            const sightingPhotos = [
+              ...(approvedSighting.whole_plant_photo_path || []),
+              ...(approvedSighting.closeup_flower_photo_path || []),
+              ...(approvedSighting.habitat_photo_path || [])
+            ].filter(p => p && String(p).startsWith('http'));
+            if (sightingPhotos.length > 0) thumbnailImage = sightingPhotos[0];
+          }
+
+          thumbnailImage = thumbnailImage || catalogImage;
+
+          const localName = approvedSighting
+            ? (parseJsonArrayValue(approvedSighting.local_names)[0] || parseJsonArrayValue(approvedSighting.common_names)[0] || orchid.common_name || '')
+            : (orchid.common_name || '');
+
+          return `
+            <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">
+              <img src="${thumbnailImage}" alt="${escapeHtml(orchid.name)}" class="orchid-card-image" onerror="this.onerror=null;this.src='./catalogicon.png';" />
+              <div class="orchid-card-info">
+                <p class="orchid-card-name scientific-name">${orchid.name}</p>
+                <p class="orchid-card-genus">${escapeHtml(localName)}</p>
+              </div>
+            </button>
+          `;
+        }).join('');
+      }
+
+      function applySearchFilter() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const filterValue = searchFilter.value;
+        const conservationValue = (conservationFilter?.value || 'all').toLowerCase();
+
+        const filtered = orchids.filter((orchid) => {
+          const name = (orchid.name || '').toLowerCase();
+          const genus = (orchid.genus || '').toLowerCase();
+          const scientificKey = normalizeScientificKey(orchid.name);
+          const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          const rawStatus =
+            sighting?.threat_level_generalized ||
+            sighting?.threat_level ||
+            orchid.conservation_status ||
+            orchid.threat_level_generalized ||
+            orchid.threat_level ||
+            '';
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
+
+          if (conservationValue !== 'all' && status !== conservationValue) {
+            return false;
+          }
+
+          if (!searchTerm) return true;
+
+          if (filterValue === 'genus') return genus.includes(searchTerm);
+          if (filterValue === 'species') return name.includes(searchTerm);
+          return name.includes(searchTerm) || genus.includes(searchTerm);
+        });
+
+        renderCatalog(filtered);
+      }
+
+      // getPublicUrl is synchronous - no auth or network call needed
+      function loadStorageImages() {
+        const client = window.bloomSupabase;
+        if (!client?.storage) return;
+        const bucket = client.storage.from('bloom-uploads');
+        const url = (name) => bucket.getPublicUrl('sightings/' + name).data?.publicUrl;
+
+        // Closeup photos → used as primary catalog thumbnail (keyed by genus)
+        [
+          ['aerides',       'seed_closeup_aerides.jpg'],
+          ['bulbophyllum',  'seed_closeup_bulbophyllum.jpg'],
+          ['calanthe',      'seed_closeup_calanthe.jpg'],
+          ['coelogyne',     'seed_closeup_coelogyne.jpg'],
+          ['dendrobium',    'seed_closeup_dendrobium.jpg'],
+          ['paphiopedilum', 'seed_closeup_paphiopedilum.jpg'],
+          ['phalaenopsis',  'seed_closeup_phalaenopsis.jpg'],
+          ['spathoglottis', 'seed_closeup_spathoglottis.jpg'],
+          ['trichoglottis', 'seed_closeup_trichoglottis.jpg'],
+          ['vanda',         'seed_closeup_vanda.jpg']
+        ].forEach(([genus, file]) => {
+          const u = url(file);
+          if (u) storageImagesByGenus.set(genus, u);
+        });
+
+        // Full species names → fallback (also lets full-name lookup work)
+        [
+          ['aerides quinquevulnera',    'seed_aerides_quinquevulnera.jpg'],
+          ['bulbophyllum lobbii',       'seed_bulbophyllum_lobbii.jpg'],
+          ['calanthe triplicata',       'seed_calanthe_triplicata.jpg'],
+          ['coelogyne asperata',        'seed_coelogyne_asperata.jpg'],
+          ['dendrobium secundum',       'seed_dendrobium_secundum.jpg'],
+          ['paphiopedilum fowliei',     'seed_paphiopedilum_fowliei.jpg'],
+          ['phalaenopsis schilleriana', 'seed_phalaenopsis_schilleriana.jpg'],
+          ['spathoglottis plicata',     'seed_spathoglottis_plicata.jpg'],
+          ['trichoglottis brachiata',   'seed_trichoglottis_brachiata.jpg'],
+          ['vanda sanderiana',          'seed_vanda_sanderiana.jpg']
+        ].forEach(([fullName, file]) => {
+          const u = url(file);
+          if (u) storageImagesByGenus.set(fullName, u);
+        });
+      }
+
+      // Populates orchids[] from the best available source — never renders.
+      // Priority: Supabase JS → REST API → local JSON fallback.
+      async function fetchOrchidData() {
+        // 1. Supabase JS client (same path as researcher/DENR dashboards)
+        const client = window.bloomSupabase;
+        if (client && typeof client.from === 'function') {
+          try {
+            const { data, error } = await client
+              .from('orchid_overview')
+              .select('id, name, genus, common_name, endemicity, image_url, conservation_status')
+              .order('name', { ascending: true });
+            if (!error && data && data.length > 0) {
+              orchids = data.map(normalizeOrchidRow);
+              return;
+            }
+          } catch (e) {
+            console.warn('Supabase direct query failed, trying REST API:', e?.message || e);
+          }
+        }
+
+        // 2. REST API fallback
+        try {
+          const response = await fetch('/api/orchids');
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          const rows = (data || []).map(normalizeOrchidRow);
+          if (rows.length > 0) { orchids = rows; return; }
+        } catch (e) {
+          console.warn('REST API also failed, using local JSON:', e?.message || e);
+        }
+
+        // 3. Local JSON as last resort
+        try {
+          const response = await fetch('./orchid-fallback.json', { cache: 'no-store' });
+          if (response.ok) {
+            const fallbackRows = await response.json();
+            orchids = (fallbackRows || []).map((row, index) => normalizeOrchidRow({
+              id: row.id || index + 1, name: row.name || '', genus: row.genus || '',
+              common_name: row.common_name || '', endemicity: row.endemicity || '',
+              image_url: row.image_url || ''
+            }));
+          }
+        } catch (e) {
+          console.warn('Local orchid fallback failed:', e?.message || e);
+        }
+      }
+
+      async function loadApprovedSightings() {
+        try {
+          // Use backend API (uses free Session Pooler - IPv4 compatible)
+          const response = await fetch('/api/sightings');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          const sightingsMap = new Map();
+          (data || []).map(normalizePublicSightingRow).forEach((row) => {
+            const scientificKey = normalizeScientificKey(row.scientific_name);
+            if (!scientificKey) return;
+            if (!sightingsMap.has(scientificKey)) sightingsMap.set(scientificKey, []);
+            sightingsMap.get(scientificKey).push(row);
+          });
+
+          approvedSightingsByScientificName = sightingsMap;
+        } catch (error) {
+          console.warn('Failed to load public approved sightings:', error?.message || error);
+          approvedSightingsByScientificName = new Map();
+        }
+      }
+
+      searchInput.addEventListener('input', function(e) {
+        applySearchFilter();
+      });
+
+      searchFilter.addEventListener('change', function() {
+        applySearchFilter();
+      });
+
+      if (conservationFilter) {
+        conservationFilter.addEventListener('change', function() {
+          applySearchFilter();
+        });
+      }
+
+      if (catalogViewToggle) {
+        catalogViewToggle.addEventListener('click', function() {
+          isListView = !isListView;
+          syncCatalogViewState();
+        });
+      }
+
+      if (catalogGrid) {
+        catalogGrid.addEventListener('click', function(e) {
+          const card = e.target.closest('[data-orchid-id]');
+          if (!card) {
+            return;
+          }
+
+          const orchidId = card.getAttribute('data-orchid-id');
+          const selectedOrchid = orchids.find((orchid) => String(orchid.id) === String(orchidId));
+
+          if (selectedOrchid) {
+            openOrchidDetails(selectedOrchid);
+          }
+        });
+      }
+
+      if (orchidDetailModal) {
+        orchidDetailModal.addEventListener('click', function(e) {
+          if (e.target === orchidDetailModal) {
+            closeOrchidDetails();
+          }
+        });
+      }
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !orchidDetailModal.hidden) {
+          closeOrchidDetails();
+        }
+      });
+
+      syncCatalogViewState();
+
+      (async () => {
+        loadStorageImages(); // synchronous — populates storageImagesByGenus before any render
+        catalogGrid.innerHTML = '<p style="padding:2rem 1rem;color:#6a8a64;text-align:center;">Loading orchids…</p>';
+        await Promise.all([fetchOrchidData(), loadApprovedSightings()]);
+        if (orchids.length > 0) {
+          renderCatalog(orchids); // single render, all data ready
+        } else {
+          catalogGrid.innerHTML = '<p style="padding:2rem 1rem;color:#666;text-align:center;">Could not load orchids from database.</p>';
+        }
+      })();
+    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
+
+
+
+

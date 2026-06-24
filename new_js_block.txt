@@ -1,0 +1,235 @@
+      // ── Tabbed modal helpers ─────────────────────────────────────────
+
+      function odmSwitchTab(tab) {
+        document.querySelectorAll('.odm-tab').forEach(function(btn) {
+          btn.classList.toggle('odm-tab--active', btn.dataset.tab === tab);
+        });
+        ['value', 'sightings', 'images', 'study'].forEach(function(t) {
+          var p = document.getElementById('odm-panel-' + t);
+          if (p) p.classList.toggle('odm-panel--hidden', t !== tab);
+        });
+      }
+
+      function odmRow(label, value) {
+        if (value === null || value === undefined || value === '') return '';
+        return '<div class="odm-row"><span class="odm-row-label">' + label +
+          '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
+      }
+
+      function odmPopulateValue(orchid, allSightings) {
+        var src = allSightings[0] || {};
+        var count = allSightings.length;
+        var status = src.threat_level_generalized || src.threat_level ||
+          orchid.conservation_status || '—';
+        var card = document.getElementById('odm-conservation-card');
+        var sl = status.toLowerCase();
+        card.style.background = sl.indexOf('critical') >= 0 ? '#9c2929'
+          : sl.indexOf('endanger') >= 0 ? '#b84a1a'
+          : sl.indexOf('vulnerable') >= 0 ? '#145A1E'
+          : sl.indexOf('concern') >= 0 ? '#1a6b3c'
+          : '#145A1E';
+        document.getElementById('odm-con-status').textContent = status;
+        document.getElementById('odm-con-desc').textContent = count > 0
+          ? 'Recorded ' + count + ' time' + (count === 1 ? '' : 's') + ' in the wild'
+          : 'No recorded sightings';
+        var genus = orchid.genus || (orchid.name || '').split(' ')[0] || '';
+        var commonNames = Array.isArray(src.common_names) && src.common_names.length
+          ? src.common_names.join(', ') : (orchid.common_name || '');
+        var localNames = Array.isArray(src.local_names) && src.local_names.length
+          ? src.local_names.join(', ') : '';
+        var endemic = src.endemic_to_philippines == null ? ''
+          : (src.endemic_to_philippines ? 'Yes' : 'No');
+        var taxHtml = odmRow('Local Name(s)', localNames) +
+          odmRow('Common Name(s)', commonNames) +
+          odmRow('Endemic to Philippines', endemic) +
+          odmRow('Genus', genus) +
+          odmRow('Confidence', src.identification_confidence) +
+          odmRow('Population Status', src.population_status);
+        document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
+        var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
+        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa') +
+          odmRow('Site / Zone', src.specific_site_zone) +
+          odmRow('Elevation', elev) +
+          odmRow('Habitat', src.habitat_type) +
+          odmRow('Microhabitat', src.microhabitat);
+        document.getElementById('odm-rows-location').innerHTML = locHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
+      }
+
+      function odmPopulateSightings(allSightings) {
+        var el = document.getElementById('odm-sightings-list');
+        if (!allSightings.length) {
+          el.innerHTML = '<p class="odm-empty">No recorded sightings yet.</p>';
+          return;
+        }
+        el.innerHTML = allSightings.map(function(s, i) {
+          var date = s.observation_date
+            ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+          var rows = [
+            ['Location', s.mountain_name || ''],
+            ['Site', s.specific_site_zone || ''],
+            ['Elevation', s.elevation_meters ? s.elevation_meters + ' m' : ''],
+            ['Researcher', s.researcher_name || ''],
+            ['Institution', s.institution || ''],
+          ].filter(function(r){ return r[1]; });
+          return '<div class="odm-sighting-item">' +
+            '<div class="odm-sighting-item-hd">' +
+              '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
+              '<span class="odm-sighting-item-date">' + date + '</span>' +
+            '</div>' +
+            '<div class="odm-sighting-item-rows">' +
+              rows.map(function(r){
+                return '<div class="odm-sighting-item-row">' +
+                  '<span class="odm-sighting-item-row-lbl">' + r[0] + '</span>' +
+                  '<span>' + escapeHtml(r[1]) + '</span></div>';
+              }).join('') +
+            '</div></div>';
+        }).join('');
+      }
+
+      function odmPopulateImages(orchid, allSightings) {
+        var el = document.getElementById('odm-images-inner');
+        var imgs = [];
+        var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
+        var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
+        if (seedImg) imgs.push(seedImg);
+        if (orchid.image_url && imgs.indexOf(orchid.image_url) < 0) imgs.push(orchid.image_url);
+        allSightings.forEach(function(s) {
+          getPublicSightingImages(s).forEach(function(url) {
+            if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
+          });
+        });
+        if (!imgs.length) {
+          el.innerHTML = '<p class="odm-empty">No images available for this species.</p>';
+          return;
+        }
+        el.innerHTML = '<div class="odm-images-grid">' + imgs.map(function(url){
+          return '<div class="odm-img-wrap"><img src="' + escapeHtml(url) +
+            '" alt="Orchid photo" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+        }).join('') + '</div>';
+      }
+
+      function odmPopulateStudy(allSightings) {
+        var el = document.getElementById('odm-study-inner');
+        var src = allSightings[0] || {};
+        var parts = [];
+        if (src.researcher_notes) {
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Researcher Notes</b>' +
+            escapeHtml(src.researcher_notes) + '</div>');
+        }
+        if (src.educational_notes) {
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Educational Notes</b>' +
+            escapeHtml(src.educational_notes) + '</div>');
+        }
+        var team = Array.isArray(src.team_members) ? src.team_members.filter(Boolean).join(', ') : (src.team_members || '');
+        var detailRows = odmRow('Institution', src.institution) +
+          odmRow('Team Members', team) +
+          odmRow('Collection Method', src.collection_method) +
+          odmRow('Observation Type', src.observation_type) +
+          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No') : '');
+        if (detailRows) {
+          parts.push('<div class="odm-section"><div class="odm-section-title">Research Details</div>' +
+            '<div class="odm-rows-wrap">' + detailRows + '</div></div>');
+        }
+        el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
+      }
+
+      function orchidInitMap(sightingPoints) {
+        if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
+        var primary = sightingPoints[0];
+        var allPoints = sightingPoints.slice();
+        for (var i = 0; allPoints.length < 5; i++) {
+          var off = NEARBY_OFFSETS[i % NEARBY_OFFSETS.length];
+          allPoints.push({ lat: primary.lat + off.dlat, lng: primary.lng + off.dlng, date: null });
+        }
+        orchidLeafletMap = L.map('orchid-leaflet-map', { zoomControl: false })
+          .setView([primary.lat, primary.lng], 13);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri', maxZoom: 19
+        }).addTo(orchidLeafletMap);
+        var icon = L.icon({ iconUrl: './catalogicon.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20] });
+        sightingPoints.forEach(function(pt, idx) {
+          var marker = L.marker([pt.lat, pt.lng], { icon: icon }).addTo(orchidLeafletMap);
+          var label = 'Sighting #' + (idx + 1);
+          marker.bindTooltip(label, { permanent: false, direction: 'top' });
+          marker.on('click', function() {
+            document.getElementById('odm-sighting-num').textContent = label;
+            var d = pt.date
+              ? new Date(pt.date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+              : '—';
+            document.getElementById('odm-sighting-date').textContent = d;
+          });
+        });
+        orchidLeafletMap.fitBounds(
+          L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
+          { padding: [30, 30] }
+        );
+        setTimeout(function(){ if (orchidLeafletMap) orchidLeafletMap.invalidateSize(); }, 120);
+      }
+
+      async function openOrchidDetails(orchid) {
+        var scientificKey = normalizeScientificKey(orchid.name);
+        var allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
+        var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
+        var genus = orchid.genus || orchidName.split(' ')[0] || '';
+        document.getElementById('odm-breadcrumb').textContent =
+          'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
+        var count = allSightings.length;
+        document.getElementById('odm-map-hint-text').textContent =
+          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · tap a pin to explore';
+        var firstSighting = allSightings[0];
+        var sightingBar = document.getElementById('odm-sighting-bar');
+        if (firstSighting) {
+          sightingBar.style.display = '';
+          document.getElementById('odm-sighting-num').textContent = 'Sighting #1';
+          var d0 = firstSighting.observation_date
+            ? new Date(firstSighting.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+          document.getElementById('odm-sighting-date').textContent = d0;
+        } else {
+          sightingBar.style.display = 'none';
+        }
+        odmSwitchTab('value');
+        odmPopulateValue(orchid, allSightings);
+        odmPopulateSightings(allSightings);
+        odmPopulateImages(orchid, allSightings);
+        odmPopulateStudy(allSightings);
+        orchidDetailModal.hidden = false;
+        document.body.style.overflow = 'hidden';
+        var sightingPoints = allSightings
+          .filter(function(s){ return s.latitude != null && s.longitude != null; })
+          .map(function(s){ return { lat: Number(s.latitude), lng: Number(s.longitude), date: s.observation_date }; });
+        if (sightingPoints.length === 0 && window.bloomSupabase) {
+          try {
+            var resp = await window.bloomSupabase
+              .from('species_sightings')
+              .select('latitude, longitude, observation_date')
+              .ilike('scientific_name', orchidName.trim())
+              .eq('review_status', 'approved')
+              .limit(10);
+            if (resp.data && resp.data.length > 0) {
+              sightingPoints = resp.data
+                .filter(function(r){ return r.latitude != null && r.longitude != null; })
+                .map(function(r){ return { lat: Number(r.latitude), lng: Number(r.longitude), date: r.observation_date }; });
+            }
+          } catch(e) { console.warn('Coord lookup failed:', e); }
+        }
+        if (sightingPoints.length === 0) {
+          sightingPoints.push({ lat: 6.109410, lng: 124.663094, date: null });
+        }
+        setTimeout(function(){ orchidInitMap(sightingPoints); }, 100);
+        var closeBtn = document.getElementById('orchid-detail-close-btn');
+        if (closeBtn && !closeBtn._odmBound) {
+          closeBtn._odmBound = true;
+          closeBtn.addEventListener('click', closeOrchidDetails);
+        }
+        document.querySelectorAll('.odm-tab').forEach(function(btn) {
+          if (!btn._odmBound) {
+            btn._odmBound = true;
+            btn.addEventListener('click', function(){ odmSwitchTab(this.dataset.tab); });
+          }
+        });
+      }
+

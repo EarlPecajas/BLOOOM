@@ -1,0 +1,367 @@
+table_name,column_name,exact_data_type,is_nullable,is_primary_key,is_foreign_key,references_table,references_column
+account,account_id,integer,NO,true,false,null,null
+account,user_id,integer,NO,false,true,user,user_id
+account,email,character varying(255),NO,false,false,null,null
+account,username,character varying(255),YES,false,false,null,null
+account,password,character varying(255),NO,false,false,null,null
+account,account_type_id,integer,YES,false,true,account_type,account_type_id
+account,creation_date,timestamp with time zone,NO,false,false,null,null
+account_type,account_type_id,integer,NO,true,false,null,null
+account_type,account_desc,character varying(255),NO,false,false,null,null
+address,address_id,integer,NO,true,false,null,null
+address,municipality_id,integer,YES,false,true,municipality,municipality_id
+address,city_name,character varying(255),YES,false,false,null,null
+affiliation,affiliation_id,integer,NO,true,false,null,null
+affiliation,affiliation_name,character varying(255),NO,false,false,null,null
+biogeography,biogeographic_id,integer,NO,true,false,null,null
+biogeography,orchid_id,integer,YES,false,true,orchids,orchid_id
+biogeography,habitat_id,integer,YES,false,true,habitat_information,habitat_id
+biogeography,conservation_id,integer,YES,false,true,conservation_status,conservation_id
+biogeography,picture_id,integer,YES,false,true,picture,picture_id
+biogeography,user_id,integer,YES,false,true,user,user_id
+biogeography,morphological_id,integer,YES,false,true,morphological_characteristics,morphological_id
+biogeography,specie_val_id,integer,YES,false,true,specie_value,specie_val_id
+biogeography,submission_status,character varying(30),NO,false,false,null,null
+conservation_status,conservation_id,integer,NO,true,false,null,null
+conservation_status,conservation_status,character varying(255),YES,false,false,null,null
+conservation_status,threats,character varying(255),YES,false,false,null,null
+conservation_status,status_name,character varying(255),NO,false,false,null,null
+denr_approved_sightings,sighting_id,integer,YES,false,false,null,null
+denr_approved_sightings,entry_id,text,YES,false,false,null,null
+denr_approved_sightings,user_id,integer,YES,false,false,null,null
+denr_approved_sightings,researcher_email,text,YES,false,false,null,null
+denr_approved_sightings,scientific_name,text,YES,false,false,null,null
+denr_approved_sightings,common_names,jsonb,YES,false,false,null,null
+denr_approved_sightings,local_names,jsonb,YES,false,false,null,null
+denr_approved_sightings,identification_confidence,text,YES,false,false,null,null
+denr_approved_sightings,endemic_to_philippines,boolean,YES,false,false,null,null
+denr_approved_sightings,observation_date,date,YES,false,false,null,null
+denr_approved_sightings,observation_time,time without time zone,YES,false,false,null,null
+denr_approved_sightings,collection_method,text,YES,false,false,null,null
+denr_approved_sightings,observation_type,text,YES,false,false,null,null
+denr_approved_sightings,voucher_collected,boolean,YES,false,false,null,null
+denr_approved_sightings,mountain_name,character varying(255),YES,false,false,null,null
+denr_approved_sightings,mountain_id,integer,YES,false,false,null,null
+denr_approved_sightings,specific_site_zone,text,YES,false,false,null,null
+denr_approved_sightings,specific_site_other,text,YES,false,false,null,null
+denr_approved_sightings,latitude,double precision,YES,false,false,null,null
+denr_approved_sightings,longitude,double precision,YES,false,false,null,null
+denr_approved_sightings,elevation_meters,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,habitat_type,character varying(100),YES,false,false,null,null
+denr_approved_sightings,microhabitat,character varying(100),YES,false,false,null,null
+denr_approved_sightings,growth_substrate,character varying(100),YES,false,false,null,null
+denr_approved_sightings,host_tree_species,character varying(255),YES,false,false,null,null
+denr_approved_sightings,host_tree_dbh_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,canopy_cover_percent,"numeric(5,2)",YES,false,false,null,null
+denr_approved_sightings,light_exposure,character varying(50),YES,false,false,null,null
+denr_approved_sightings,soil_type,character varying(100),YES,false,false,null,null
+denr_approved_sightings,nearby_water_source,character varying(100),YES,false,false,null,null
+denr_approved_sightings,plant_height_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,pseudobulb_present,boolean,YES,false,false,null,null
+denr_approved_sightings,stem_length_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,root_length_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,leaf_count,integer,YES,false,false,null,null
+denr_approved_sightings,leaf_shape,character varying(120),YES,false,false,null,null
+denr_approved_sightings,leaf_shape_other,character varying(255),YES,false,false,null,null
+denr_approved_sightings,leaf_length_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,leaf_width_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,leaf_textures,jsonb,YES,false,false,null,null
+denr_approved_sightings,leaf_arrangement,character varying(50),YES,false,false,null,null
+denr_approved_sightings,flower_color,character varying(120),YES,false,false,null,null
+denr_approved_sightings,flower_count,integer,YES,false,false,null,null
+denr_approved_sightings,flower_diameter_cm,"numeric(8,2)",YES,false,false,null,null
+denr_approved_sightings,inflorescence_type,character varying(50),YES,false,false,null,null
+denr_approved_sightings,petal_characteristics,character varying(50),YES,false,false,null,null
+denr_approved_sightings,sepal_characteristics,character varying(255),YES,false,false,null,null
+denr_approved_sightings,labellum_lip_description,character varying(80),YES,false,false,null,null
+denr_approved_sightings,fragrance,character varying(50),YES,false,false,null,null
+denr_approved_sightings,blooming_stage,character varying(60),YES,false,false,null,null
+denr_approved_sightings,flowering_season,character varying(60),YES,false,false,null,null
+denr_approved_sightings,fruit_present,boolean,YES,false,false,null,null
+denr_approved_sightings,fruit_type,character varying(50),YES,false,false,null,null
+denr_approved_sightings,seed_capsule_condition,character varying(80),YES,false,false,null,null
+denr_approved_sightings,life_stage,character varying(50),YES,false,false,null,null
+denr_approved_sightings,phenology,character varying(50),YES,false,false,null,null
+denr_approved_sightings,population_count,integer,YES,false,false,null,null
+denr_approved_sightings,population_status,character varying(50),YES,false,false,null,null
+denr_approved_sightings,threat_level,character varying(50),YES,false,false,null,null
+denr_approved_sightings,threat_types,jsonb,YES,false,false,null,null
+denr_approved_sightings,threat_level_generalized,character varying,YES,false,false,null,null
+denr_approved_sightings,whole_plant_photo_path,jsonb,YES,false,false,null,null
+denr_approved_sightings,closeup_flower_photo_path,jsonb,YES,false,false,null,null
+denr_approved_sightings,habitat_photo_path,jsonb,YES,false,false,null,null
+denr_approved_sightings,video_path,jsonb,YES,false,false,null,null
+denr_approved_sightings,researcher_name,text,YES,false,false,null,null
+denr_approved_sightings,team_members,text,YES,false,false,null,null
+denr_approved_sightings,institution,character varying(255),YES,false,false,null,null
+denr_approved_sightings,related_study,text,YES,false,false,null,null
+denr_approved_sightings,researcher_notes,text,YES,false,false,null,null
+denr_approved_sightings,review_status,text,YES,false,false,null,null
+denr_approved_sightings,created_at,timestamp with time zone,YES,false,false,null,null
+denr_approved_sightings,updated_at,timestamp with time zone,YES,false,false,null,null
+gender,gender_id,integer,NO,true,false,null,null
+gender,gender_name,character varying(50),NO,false,false,null,null
+genus,genus_id,integer,NO,true,false,null,null
+genus,genus_name,character varying(255),NO,false,false,null,null
+habitat_information,habitat_id,integer,NO,true,false,null,null
+habitat_information,location_id,integer,YES,false,true,location,location_id
+habitat_information,elevation,character varying(255),YES,false,false,null,null
+habitat_information,altitude,character varying(255),YES,false,false,null,null
+habitat_information,vertical_distribution,character varying(255),YES,false,false,null,null
+habitat_information,habitat_type,character varying(255),YES,false,false,null,null
+habitat_information,micro_habitat,character varying(255),YES,false,false,null,null
+location,location_id,integer,NO,true,false,null,null
+location,mountain_id,integer,NO,false,true,mountain,mountain_id
+morphological_characteristics,morphological_id,integer,NO,true,false,null,null
+morphological_characteristics,leaf_type,character varying(255),YES,false,false,null,null
+morphological_characteristics,flower_color,character varying(255),YES,false,false,null,null
+morphological_characteristics,flowering_season,character varying(255),YES,false,false,null,null
+mountain,mountain_id,integer,NO,true,false,null,null
+mountain,municipality_id,integer,NO,false,true,municipality,municipality_id
+mountain,mountain_name,character varying(255),NO,false,false,null,null
+mountain,coordinates,character varying(255),YES,false,false,null,null
+municipality,municipality_id,integer,NO,true,false,null,null
+municipality,province_id,integer,NO,false,true,province,province_id
+municipality,municipality_name,character varying(255),NO,false,false,null,null
+municipality,coordinates,character varying(255),YES,false,false,null,null
+orchid_overview,id,integer,YES,false,false,null,null
+orchid_overview,name,text,YES,false,false,null,null
+orchid_overview,genus,text,YES,false,false,null,null
+orchid_overview,common_name,text,YES,false,false,null,null
+orchid_overview,endemicity,text,YES,false,false,null,null
+orchid_overview,ethnobotanical,text,YES,false,false,null,null
+orchid_overview,horticulture_value,text,YES,false,false,null,null
+orchid_overview,cultural_importance,text,YES,false,false,null,null
+orchid_overview,image_url,text,YES,false,false,null,null
+orchid_overview,conservation_status_key,text,YES,false,false,null,null
+orchid_overview,conservation_status,text,YES,false,false,null,null
+orchids,orchid_id,integer,NO,true,false,null,null
+orchids,sci_name,character varying(255),NO,false,false,null,null
+orchids,genus_id,integer,NO,false,true,genus,genus_id
+orchids,common_name,character varying(255),YES,false,false,null,null
+orchids,endemicity,character varying(255),YES,false,false,null,null
+orchids,date_discovered,timestamp with time zone,YES,false,false,null,null
+orchids,is_published,boolean,NO,false,false,null,null
+picture,picture_id,integer,NO,true,false,null,null
+picture,file_name,character varying(255),YES,false,false,null,null
+picture,file_path,character varying(255),NO,false,false,null,null
+picture,file_type,character varying(100),YES,false,false,null,null
+picture,file_size,integer,YES,false,false,null,null
+picture,date_uploaded,timestamp with time zone,NO,false,false,null,null
+picture,file_url,text,YES,false,false,null,null
+picture,orchid_id,bigint,YES,false,true,orchids,orchid_id
+picture,status,text,YES,false,false,null,null
+province,province_id,integer,NO,true,false,null,null
+province,province_name,character varying(255),NO,false,false,null,null
+public_approved_sightings,id,integer,YES,false,false,null,null
+public_approved_sightings,scientific_name,text,YES,false,false,null,null
+public_approved_sightings,common_names,jsonb,YES,false,false,null,null
+public_approved_sightings,local_names,jsonb,YES,false,false,null,null
+public_approved_sightings,identification_confidence,text,YES,false,false,null,null
+public_approved_sightings,observation_date,date,YES,false,false,null,null
+public_approved_sightings,observation_month,text,YES,false,false,null,null
+public_approved_sightings,observation_time,time without time zone,YES,false,false,null,null
+public_approved_sightings,observation_type,text,YES,false,false,null,null
+public_approved_sightings,collection_method,text,YES,false,false,null,null
+public_approved_sightings,voucher_collected,boolean,YES,false,false,null,null
+public_approved_sightings,mountain_name,character varying(255),YES,false,false,null,null
+public_approved_sightings,specific_site_zone,text,YES,false,false,null,null
+public_approved_sightings,latitude,double precision,YES,false,false,null,null
+public_approved_sightings,longitude,double precision,YES,false,false,null,null
+public_approved_sightings,elevation_meters,"numeric(8,2)",YES,false,false,null,null
+public_approved_sightings,habitat_type,character varying(100),YES,false,false,null,null
+public_approved_sightings,microhabitat,character varying(100),YES,false,false,null,null
+public_approved_sightings,plant_height_cm,"numeric(8,2)",YES,false,false,null,null
+public_approved_sightings,leaf_shape,character varying(120),YES,false,false,null,null
+public_approved_sightings,leaf_count,integer,YES,false,false,null,null
+public_approved_sightings,leaf_textures,jsonb,YES,false,false,null,null
+public_approved_sightings,leaf_arrangement,character varying(50),YES,false,false,null,null
+public_approved_sightings,flower_color,character varying(120),YES,false,false,null,null
+public_approved_sightings,flower_count,integer,YES,false,false,null,null
+public_approved_sightings,flower_diameter_cm,"numeric(8,2)",YES,false,false,null,null
+public_approved_sightings,inflorescence_type,character varying(50),YES,false,false,null,null
+public_approved_sightings,petal_characteristics,character varying(50),YES,false,false,null,null
+public_approved_sightings,labellum_lip_description,character varying(80),YES,false,false,null,null
+public_approved_sightings,fragrance,character varying(50),YES,false,false,null,null
+public_approved_sightings,flowering_season,character varying(60),YES,false,false,null,null
+public_approved_sightings,blooming_stage,character varying(60),YES,false,false,null,null
+public_approved_sightings,fruit_present,boolean,YES,false,false,null,null
+public_approved_sightings,fruit_type,character varying(50),YES,false,false,null,null
+public_approved_sightings,population_status,character varying(50),YES,false,false,null,null
+public_approved_sightings,threat_level,character varying(50),YES,false,false,null,null
+public_approved_sightings,threat_level_generalized,character varying,YES,false,false,null,null
+public_approved_sightings,endemic_to_philippines,boolean,YES,false,false,null,null
+public_approved_sightings,growth_substrate,character varying(100),YES,false,false,null,null
+public_approved_sightings,nearby_water_source,character varying(100),YES,false,false,null,null
+public_approved_sightings,researcher_notes,text,YES,false,false,null,null
+public_approved_sightings,educational_notes,text,YES,false,false,null,null
+public_approved_sightings,location_visibility_note,text,YES,false,false,null,null
+public_approved_sightings,whole_plant_photo_path,jsonb,YES,false,false,null,null
+public_approved_sightings,closeup_flower_photo_path,jsonb,YES,false,false,null,null
+public_approved_sightings,habitat_photo_path,jsonb,YES,false,false,null,null
+public_approved_sightings,researcher_name,text,YES,false,false,null,null
+public_approved_sightings,team_members,text,YES,false,false,null,null
+public_approved_sightings,institution,character varying(255),YES,false,false,null,null
+sighting_conservation,sighting_conservation_id,integer,NO,true,false,null,null
+sighting_conservation,population_status,character varying(50),YES,false,false,null,null
+sighting_conservation,threat_level,character varying(50),YES,false,false,null,null
+sighting_conservation,threat_types,jsonb,NO,false,false,null,null
+sighting_habitat,sighting_habitat_id,integer,NO,true,false,null,null
+sighting_habitat,habitat_type,character varying(100),YES,false,false,null,null
+sighting_habitat,microhabitat,character varying(100),YES,false,false,null,null
+sighting_habitat,growth_substrate,character varying(100),YES,false,false,null,null
+sighting_habitat,host_tree_species,character varying(255),YES,false,false,null,null
+sighting_habitat,host_tree_dbh_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_habitat,canopy_cover_percent,"numeric(5,2)",YES,false,false,null,null
+sighting_habitat,light_exposure,character varying(50),YES,false,false,null,null
+sighting_habitat,soil_type,character varying(100),YES,false,false,null,null
+sighting_habitat,nearby_water_source,character varying(100),YES,false,false,null,null
+sighting_media,sighting_media_id,integer,NO,true,false,null,null
+sighting_media,sighting_id,integer,NO,false,true,species_sightings,sighting_id
+sighting_media,picture_id,integer,NO,false,true,picture,picture_id
+sighting_media,media_category,character varying(50),NO,false,false,null,null
+sighting_media,photographer_name,character varying(255),YES,false,false,null,null
+sighting_media,sort_order,smallint,NO,false,false,null,null
+sighting_morphology,sighting_morphology_id,integer,NO,true,false,null,null
+sighting_morphology,plant_height_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_morphology,pseudobulb_present,boolean,YES,false,false,null,null
+sighting_morphology,stem_length_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_morphology,root_length_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_morphology,leaf_count,integer,YES,false,false,null,null
+sighting_morphology,leaf_shape,character varying(120),YES,false,false,null,null
+sighting_morphology,leaf_shape_other,character varying(255),YES,false,false,null,null
+sighting_morphology,leaf_length_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_morphology,leaf_width_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_morphology,leaf_textures,jsonb,NO,false,false,null,null
+sighting_morphology,leaf_arrangement,character varying(50),YES,false,false,null,null
+sighting_morphology,flower_color,character varying(120),YES,false,false,null,null
+sighting_morphology,flower_count,integer,YES,false,false,null,null
+sighting_morphology,flower_diameter_cm,"numeric(8,2)",YES,false,false,null,null
+sighting_morphology,inflorescence_type,character varying(50),YES,false,false,null,null
+sighting_morphology,petal_characteristics,character varying(50),YES,false,false,null,null
+sighting_morphology,sepal_characteristics,character varying(255),YES,false,false,null,null
+sighting_morphology,labellum_lip_description,character varying(80),YES,false,false,null,null
+sighting_morphology,fragrance,character varying(50),YES,false,false,null,null
+sighting_morphology,blooming_stage,character varying(60),YES,false,false,null,null
+sighting_morphology,flowering_season,character varying(60),YES,false,false,null,null
+sighting_morphology,fruit_present,boolean,YES,false,false,null,null
+sighting_morphology,fruit_type,character varying(50),YES,false,false,null,null
+sighting_morphology,seed_capsule_condition,character varying(80),YES,false,false,null,null
+sighting_morphology,life_stage,character varying(50),YES,false,false,null,null
+sighting_morphology,phenology,character varying(50),YES,false,false,null,null
+sighting_morphology,population_count,integer,YES,false,false,null,null
+sighting_team_member,team_member_id,integer,NO,true,false,null,null
+sighting_team_member,sighting_id,integer,NO,false,true,species_sightings,sighting_id
+sighting_team_member,member_name,character varying(255),NO,false,false,null,null
+sighting_team_member,member_role,character varying(100),YES,false,false,null,null
+sighting_team_member,user_id,integer,YES,false,true,user,user_id
+specie_value,specie_val_id,integer,NO,true,false,null,null
+specie_value,ethnobotanical,character varying(255),YES,false,false,null,null
+specie_value,horticulture_value,character varying(255),YES,false,false,null,null
+specie_value,cultural_imp,character varying(255),YES,false,false,null,null
+species_sightings,sighting_id,integer,NO,true,false,null,null
+species_sightings,entry_id,text,NO,false,false,null,null
+species_sightings,user_id,integer,YES,false,true,user,user_id
+species_sightings,researcher_email,text,YES,false,false,null,null
+species_sightings,scientific_name,text,NO,false,false,null,null
+species_sightings,common_names,jsonb,NO,false,false,null,null
+species_sightings,identification_confidence,text,NO,false,false,null,null
+species_sightings,observation_date,date,YES,false,false,null,null
+species_sightings,observation_time,time without time zone,YES,false,false,null,null
+species_sightings,collection_method,text,YES,false,false,null,null
+species_sightings,observation_type,text,YES,false,false,null,null
+species_sightings,voucher_collected,boolean,YES,false,false,null,null
+species_sightings,specific_site_zone,text,YES,false,false,null,null
+species_sightings,specific_site_other,text,YES,false,false,null,null
+species_sightings,latitude,double precision,YES,false,false,null,null
+species_sightings,longitude,double precision,YES,false,false,null,null
+species_sightings,elevation_meters,"numeric(8,2)",YES,false,false,null,null
+species_sightings,researcher_notes,text,YES,false,false,null,null
+species_sightings,review_status,text,NO,false,false,null,null
+species_sightings,created_at,timestamp with time zone,NO,false,false,null,null
+species_sightings,updated_at,timestamp with time zone,NO,false,false,null,null
+species_sightings,local_names,jsonb,NO,false,false,null,null
+species_sightings,related_study,text,YES,false,false,null,null
+species_sightings,catalog_published,boolean,YES,false,false,null,null
+species_sightings,endemic_to_philippines,boolean,YES,false,false,null,null
+species_sightings,province,text,YES,false,false,null,null
+species_sightings,municipality,text,YES,false,false,null,null
+species_sightings,specific_site,text,YES,false,false,null,null
+species_sightings,host_tree_diameter,text,YES,false,false,null,null
+species_sightings,canopy_cover,text,YES,false,false,null,null
+species_sightings,plant_height,text,YES,false,false,null,null
+species_sightings,stem_length,text,YES,false,false,null,null
+species_sightings,root_length,text,YES,false,false,null,null
+species_sightings,leaf_length,text,YES,false,false,null,null
+species_sightings,leaf_width,text,YES,false,false,null,null
+species_sightings,leaf_texture,text,YES,false,false,null,null
+species_sightings,number_of_leaves,text,YES,false,false,null,null
+species_sightings,number_of_flowers,text,YES,false,false,null,null
+species_sightings,flower_diameter,text,YES,false,false,null,null
+species_sightings,labellum_description,text,YES,false,false,null,null
+species_sightings,ethnobotanical_importance,text,YES,false,false,null,null
+species_sightings,aesthetic_appeal,text,YES,false,false,null,null
+species_sightings,cultivation,text,YES,false,false,null,null
+species_sightings,rarity,text,YES,false,false,null,null
+species_sightings,cultural_importance,text,YES,false,false,null,null
+species_sightings,unusual_observations,text,YES,false,false,null,null
+species_sightings,study_title,text,YES,false,false,null,null
+species_sightings,study_link,text,YES,false,false,null,null
+species_sightings,review_notes,text,YES,false,false,null,null
+species_sightings,reviewed_at,timestamp with time zone,YES,false,false,null,null
+species_sightings,sighting_habitat_id,integer,YES,false,true,sighting_habitat,sighting_habitat_id
+species_sightings,sighting_morphology_id,integer,YES,false,true,sighting_morphology,sighting_morphology_id
+species_sightings,sighting_conservation_id,integer,YES,false,true,sighting_conservation,sighting_conservation_id
+species_sightings,mountain_id,integer,YES,false,true,mountain,mountain_id
+species_sightings,researcher_name,text,YES,false,false,null,null
+species_sightings,growth_substrate,text,YES,false,false,null,null
+species_sightings,host_tree_species,text,YES,false,false,null,null
+species_sightings,light_exposure,text,YES,false,false,null,null
+species_sightings,soil_type,text,YES,false,false,null,null
+species_sightings,nearby_water_source,text,YES,false,false,null,null
+species_sightings,pseudobulb_present,text,YES,false,false,null,null
+species_sightings,leaf_arrangement,text,YES,false,false,null,null
+species_sightings,flowering_season,text,YES,false,false,null,null
+species_sightings,inflorescence_type,text,YES,false,false,null,null
+species_sightings,petal_characteristics,text,YES,false,false,null,null
+species_sightings,sepal_characteristics,text,YES,false,false,null,null
+species_sightings,fragrance,text,YES,false,false,null,null
+species_sightings,blooming_stage,text,YES,false,false,null,null
+species_sightings,fruit_present,text,YES,false,false,null,null
+species_sightings,fruit_type,text,YES,false,false,null,null
+species_sightings,seed_capsule_condition,text,YES,false,false,null,null
+species_sightings,mountain_name,text,YES,false,false,null,null
+species_sightings,habitat_type,text,YES,false,false,null,null
+species_sightings,microhabitat,text,YES,false,false,null,null
+species_sightings,leaf_shape,text,YES,false,false,null,null
+species_sightings,flower_color,text,YES,false,false,null,null
+species_sightings,life_stage,text,YES,false,false,null,null
+species_sightings,phenology,text,YES,false,false,null,null
+species_sightings,population_count,integer,YES,false,false,null,null
+species_sightings,population_status,text,YES,false,false,null,null
+species_sightings,threat_level,text,YES,false,false,null,null
+species_sightings,threat_types,text,YES,false,false,null,null
+species_sightings,institution,text,YES,false,false,null,null
+species_sightings,team_members,jsonb,YES,false,false,null,null
+species_sightings,whole_plant_photo_path,text,YES,false,false,null,null
+species_sightings,closeup_flower_photo_path,text,YES,false,false,null,null
+species_sightings,habitat_photo_path,text,YES,false,false,null,null
+user,user_id,integer,NO,true,false,null,null
+user,first_name,character varying(255),NO,false,false,null,null
+user,last_name,character varying(255),NO,false,false,null,null
+user,address_id,integer,YES,false,true,address,address_id
+user,affiliation_id,integer,YES,false,true,affiliation,affiliation_id
+user,gender_id,integer,YES,false,true,gender,gender_id
+user_drafts,draft_id,text,NO,true,false,null,null
+user_drafts,account_id,integer,NO,false,true,account,account_id
+user_drafts,draft_data,jsonb,NO,false,false,null,null
+user_drafts,updated_at,timestamp with time zone,NO,false,false,null,null
+users,id,integer,NO,true,false,null,null
+users,first_name,character varying(100),NO,false,false,null,null
+users,last_name,character varying(100),NO,false,false,null,null
+users,email,character varying(255),NO,false,false,null,null
+users,birth_date,date,YES,false,false,null,null
+users,phone,character varying(30),YES,false,false,null,null
+users,password_hash,text,NO,false,false,null,null
+users,created_at,timestamp with time zone,YES,false,false,null,null
+users,profile_photo_url,text,YES,false,false,null,null

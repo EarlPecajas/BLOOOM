@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="loo.png" />
+    <title>BLOOM Botanical Locator and Orchid Observation Mapping System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* ── White header ── */
+      .index-page .top-nav {
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #D8D0B8 !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07) !important;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .index-page .bloom-text { color: #145A1E !important; }
+      .index-page .brand-tagline span { color: rgba(20,90,30,.6) !important; }
+
+      /* Auth buttons on white header */
+      .index-page .btn-ghost {
+        background: transparent !important;
+        border: 1.5px solid rgba(20,90,30,.45) !important;
+        color: #145A1E !important;
+        box-shadow: none !important;
+        transition: all .2s !important;
+      }
+      .index-page .btn-ghost:hover {
+        background: #eaf3ea !important;
+        border-color: #145A1E !important;
+        color: #145A1E !important;
+      }
+      .index-page .btn-solid {
+        background: #145A1E !important;
+        border: 1.5px solid #145A1E !important;
+        color: #F0EAD2 !important;
+        box-shadow: none !important;
+        transition: all .2s !important;
+      }
+      .index-page .btn-solid:hover {
+        background: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+      }
+
+      /* ── Hero fills viewport below the header ── */
+      .index-page .hero {
+        min-height: calc(100vh - 72px);
+        padding-top: 0 !important;
+        position: relative;
+        background:
+          radial-gradient(ellipse 75% 65% at 72% 45%, rgba(160,210,145,.32) 0%, transparent 65%),
+          radial-gradient(ellipse 55% 65% at 18% 75%, rgba(190,225,180,.28) 0%, transparent 55%),
+          linear-gradient(160deg, #F0EAD2 0%, #EDE6C5 35%, #E8E0BE 65%, #EEE8CC 100%);
+        background-size: auto, auto, 220% 220%;
+        animation: heroBgShift 18s ease infinite;
+        overflow: hidden;
+      }
+      @keyframes heroBgShift {
+        0%   { background-position: center, center, 0% 50%; }
+        50%  { background-position: center, center, 100% 50%; }
+        100% { background-position: center, center, 0% 50%; }
+      }
+      .index-page .hero::after { content: none; }
+
+      /* Floating petals */
+      .orchid-bg-canvas { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+      .orchid-petal {
+        position: absolute;
+        opacity: 0;
+        will-change: transform, opacity;
+        animation: petalDrift linear infinite;
+      }
+      @keyframes petalDrift {
+        0%   { opacity: 0; transform: translateY(105vh) translateX(0px) rotate(0deg); }
+        6%   { opacity: 1; }
+        50%  { transform: translateY(50vh) translateX(var(--drift,20px)) rotate(180deg); }
+        94%  { opacity: .1; }
+        100% { opacity: 0; transform: translateY(-8vh) translateX(calc(var(--drift,20px) * 2)) rotate(360deg); }
+      }
+
+      /* Hero text */
+      .index-page .hero-copy { position: relative; z-index: 1; }
+      .index-page .hero-copy h1 { color: #145A1E !important; text-shadow: none; letter-spacing: -.01em; }
+      .index-page .hero-description { color: #2d5a27 !important; text-shadow: none; }
+      .index-page .button-group { margin-top: 3rem !important; }
+      .index-page .try-this { color: #145A1E !important; letter-spacing: .14em; font-size: 1rem !important; font-weight: 800 !important; }
+      .index-page .separator-line {
+        background: linear-gradient(180deg, transparent, rgba(20,90,30,.3), transparent) !important;
+        box-shadow: none !important;
+      }
+      .index-page .catalog-btn {
+        position: relative; z-index: 1;
+        background: #145A1E !important;
+        border: 1.5px solid #145A1E !important;
+        color: #F0EAD2 !important;
+        backdrop-filter: none;
+        box-shadow: 0 4px 16px rgba(20,90,30,.2) !important;
+        transition: all .2s;
+      }
+      .index-page .catalog-btn:hover {
+        background: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(20,90,30,.3) !important;
+      }
+      .index-page .or-text { color: rgba(20,90,30,.5) !important; }
+
+      /* Hero panel card */
+      .index-page .hero-panel { position: relative; z-index: 1; }
+      .index-page .panel-content {
+        background: rgba(240,234,210,.9) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(20,90,30,.22) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 8px 32px rgba(20,90,30,.1) !important;
+      }
+      .index-page .panel-label { color: rgba(20,90,30,.6) !important; letter-spacing: .1em; }
+      .index-page .panel-title { color: #145A1E !important; text-shadow: none; }
+    </style>
+  </head>
+  <body class="signin-page index-page bg-light">
+
+    <!-- White sticky header -->
+    <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
+      <a href="index.html" class="brand-link" id="index-brand-link">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <img src="./loo.png" alt="Orchid logo" class="brand-logo-image" />
+          </div>
+          <div class="brand">
+            <span class="bloom-text">BLOOM</span>
+            <div class="brand-tagline">
+              <span>Botanical Locator</span>
+              <span>and Orchid Observation</span>
+              <span>Mapping System</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <a href="signin.html" class="btn btn-ghost btn-outline-secondary">Sign In</a>
+        <a href="register.html" class="btn btn-solid">Register</a>
+      </div>
+    </header>
+
+    <!-- Hero section -->
+    <main class="hero container-fluid py-3">
+      <div class="orchid-bg-canvas" id="orchid-bg-canvas"></div>
+      <section class="hero-copy">
+        <h1>GET BLOOM3D!</h1>
+        <p class="hero-description">Botanical Locator and Orchid Observation Mapping System 3D offers a wide catalog of orchids in Mt. Busa, Kiamba, Sarangani Province.</p>
+        <div class="button-group">
+          <p class="try-this">TRY US!</p>
+          <div class="separator-line"></div>
+          <div class="buttons-stack">
+            <a href="catalog.html?split=1" class="catalog-btn catalog-view">Search</a>
+            <span class="or-text">or</span>
+            <a href="catalog.html?split=1" class="catalog-btn catalog-view">View Catalog</a>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hero-panel" aria-hidden="true">
+        <img class="hero-panel-image" src="./indexpic.png" alt="Orchid showcase" />
+        <div class="panel-content">
+          <p class="panel-label">Orchid Atlas</p>
+          <p class="panel-title">Map. Observe. Preserve.</p>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      // ── Floating petal animation ──────────────────────────────────
+      (function() {
+        const canvas = document.getElementById('orchid-bg-canvas');
+        if (!canvas) return;
+
+        function petalSVG(color, w, h) {
+          const tilt = (Math.random() * 40 - 20).toFixed(1);
+          const cx = (w / 2).toFixed(1), cy = (h / 2).toFixed(1);
+          const rx = (w / 2 - 1).toFixed(1), ry = (h / 2 - 1).toFixed(1);
+          return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${color}" transform="rotate(${tilt},${cx},${cy})"/></svg>`;
+        }
+
+        const colors = [
+          'rgba(20,90,30,0.18)',
+          'rgba(180,100,155,0.22)',
+          'rgba(100,155,85,0.2)',
+          'rgba(210,140,190,0.2)',
+          'rgba(60,120,50,0.16)',
+          'rgba(190,130,170,0.18)',
+        ];
+
+        const COUNT = 20;
+        for (let i = 0; i < COUNT; i++) {
+          const el = document.createElement('div');
+          el.className = 'orchid-petal';
+          const w = Math.round(10 + Math.random() * 22);
+          const h = Math.round(w * (2 + Math.random() * 1.2));
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          el.innerHTML = petalSVG(color, w, h);
+          el.style.left = (Math.random() * 100) + '%';
+          el.style.bottom = '-' + h + 'px';
+          el.style.setProperty('--drift', (Math.random() * 160 - 80).toFixed(0) + 'px');
+          const duration = 16 + Math.random() * 22;
+          const delay = -(Math.random() * duration);
+          el.style.animationDuration = duration + 's';
+          el.style.animationDelay = delay + 's';
+          el.style.filter = `blur(${Math.random() < 0.35 ? (Math.random() * 1.2).toFixed(1) : 0}px)`;
+          canvas.appendChild(el);
+        }
+      })();
+
+      if (localStorage.getItem('bloomUser')) {
+        const indexBrandLink = document.getElementById('index-brand-link');
+        if (indexBrandLink) {
+          indexBrandLink.setAttribute('aria-disabled', 'true');
+          indexBrandLink.style.pointerEvents = 'none';
+          indexBrandLink.style.cursor = 'default';
+        }
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

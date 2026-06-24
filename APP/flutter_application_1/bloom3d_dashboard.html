@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloom3D – Review Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <style>
+    :root {
+      --primary:      #0C4C0D;
+      --primary-h:    #0a400b;
+      --accent:       #247120;
+      --accent-soft:  #D9F3D5;
+      --bg:           #F4F6F8;
+      --surface:      #FFFFFF;
+      --border:       #E4E7EC;
+      --border-dark:  #CED4DA;
+      --text:         #111827;
+      --text-2:       #374151;
+      --text-3:       #6B7280;
+      --text-4:       #9CA3AF;
+      --pend:         #B45309;
+      --pend-bg:      #FFFBEB;
+      --pend-border:  #FDE68A;
+      --appr:         #065F46;
+      --appr-bg:      #ECFDF5;
+      --appr-border:  #A7F3D0;
+      --rej:          #991B1B;
+      --rej-bg:       #FEF2F2;
+      --rej-border:   #FECACA;
+      --sidebar-w:    220px;
+      --hd-h:         58px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13.5px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--primary);
+      display: flex; flex-direction: column;
+      z-index: 100; overflow: hidden;
+    }
+    .sb-logo {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.09);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sb-logomark {
+      width: 30px; height: 30px; flex-shrink: 0;
+      background: rgba(255,255,255,0.12);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sb-logomark svg { display: block; }
+    .sb-wordmark { line-height: 1.2; }
+    .sb-name { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -0.2px; }
+    .sb-desc { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.3px; }
+
+    .sb-nav { padding: 12px 10px; flex: 1; overflow-y: auto; }
+    .sb-sec {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.7px;
+      color: rgba(255,255,255,0.28); padding: 0 8px; margin: 12px 0 3px;
+    }
+    .sb-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: 6px;
+      color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background .12s, color .12s; user-select: none;
+    }
+    .sb-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+    .sb-item.active { background: rgba(255,255,255,0.13); color: #fff; }
+    .sb-item svg { flex-shrink: 0; opacity: 0.7; }
+    .sb-item.active svg { opacity: 1; }
+    .sb-badge {
+      margin-left: auto; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85);
+      font-size: 10px; font-weight: 600; min-width: 18px; height: 18px;
+      border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px;
+    }
+    .sb-footer {
+      padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.07);
+      font-size: 11px; color: rgba(255,255,255,0.2);
+    }
+
+    /* ── MAIN ────────────────────────────────────── */
+    #main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── HEADER ──────────────────────────────────── */
+    #top-hd {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      height: var(--hd-h); padding: 0 24px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .hd-left { flex: 1; min-width: 0; }
+    .hd-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .hd-sub   { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 7px; padding: 6px 11px; width: 220px;
+      transition: border-color .15s, background .15s;
+    }
+    .search-box:focus-within { background: var(--surface); border-color: var(--primary); }
+    .search-box svg { flex-shrink: 0; color: var(--text-4); }
+    .search-box input {
+      border: none; outline: none; background: transparent;
+      font-size: 13px; color: var(--text); width: 100%;
+    }
+    .search-box input::placeholder { color: var(--text-4); }
+
+    .hd-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--text-2);
+      cursor: pointer; transition: border-color .15s, background .15s; white-space: nowrap;
+    }
+    .hd-btn:hover { border-color: var(--border-dark); background: var(--bg); }
+    .hd-btn svg { color: var(--text-3); }
+
+    /* ── CONTENT ─────────────────────────────────── */
+    #content { padding: 24px; flex: 1; }
+
+    /* ── STATS ───────────────────────────────────── */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px;
+      border-top: 3px solid var(--border);
+    }
+    .stat-card.tot  { border-top-color: #9CA3AF; }
+    .stat-card.pend { border-top-color: #F59E0B; }
+    .stat-card.appr { border-top-color: #10B981; }
+    .stat-card.rej  { border-top-color: #EF4444; }
+    .stat-n { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+    .stat-l { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+    /* ── FILTER BAR ──────────────────────────────── */
+    .filter-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+    .ftab {
+      padding: 5px 13px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface); font-size: 13px; font-weight: 500; color: var(--text-3);
+      cursor: pointer; transition: all .12s; user-select: none;
+    }
+    .ftab:hover { border-color: var(--border-dark); color: var(--text-2); }
+    .ftab.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+    .fc {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 16px; height: 16px; border-radius: 8px; font-size: 10px;
+      padding: 0 4px; margin-left: 4px; background: rgba(0,0,0,0.07);
+    }
+    .ftab.active .fc { background: rgba(255,255,255,0.2); }
+    .sort-sel {
+      margin-left: auto; padding: 5px 10px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--surface); font-size: 13px; color: var(--text-2);
+      cursor: pointer; outline: none; font-family: inherit;
+    }
+    .sort-sel:focus { border-color: var(--primary); }
+
+    /* ── SECTION HEADER ──────────────────────────── */
+    .sec-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .sec-hd h2 { font-size: 13px; font-weight: 600; color: var(--text-2); }
+    .chip {
+      font-size: 11px; color: var(--text-4); background: var(--bg);
+      border: 1px solid var(--border); padding: 1px 7px; border-radius: 10px;
+    }
+
+    /* ── CARD GRID ───────────────────────────────── */
+    .sub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 16px; }
+    .sub-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      transition: box-shadow .18s, border-color .18s; cursor: pointer;
+    }
+    .sub-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--border-dark); }
+
+    /* hero thumbnail — whole plant photo fills the card top */
+    .card-hero {
+      position: relative; height: 168px; overflow: hidden;
+      border-radius: 8px 8px 0 0; background: var(--bg);
+    }
+    .card-hero img {
+      width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s;
+    }
+    .sub-card:hover .card-hero img { transform: scale(1.04); }
+    .card-hero.empty::after {
+      content: 'No photo'; display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%; color: var(--text-4); font-size: 12px;
+    }
+    .hero-lbl {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.58));
+      color: #fff; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+      padding: 22px 10px 7px; text-transform: uppercase;
+    }
+    /* secondary thumbnail row (close-up, habitat, …) */
+    .card-thumbs { display: flex; gap: 1px; height: 54px; background: var(--border); }
+    .c-thumb { position: relative; overflow: hidden; flex: 1; background: var(--bg); }
+    .c-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .a-lbl {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.48); color: rgba(255,255,255,0.9);
+      font-size: 7px; font-weight: 600; text-align: center;
+      padding: 2px 0 3px; letter-spacing: 0.3px;
+    }
+    .a-thumb.empty { background: var(--bg); }
+
+    .card-body { padding: 13px 15px 15px; }
+    .card-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+    .card-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; font-style: italic; }
+
+    .badge {
+      flex-shrink: 0; font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: 4px; border: 1px solid;
+    }
+    .badge.pending  { color: var(--pend); background: var(--pend-bg); border-color: var(--pend-border); }
+    .badge.approved { color: var(--appr); background: var(--appr-bg); border-color: var(--appr-border); }
+    .badge.rejected { color: var(--rej);  background: var(--rej-bg);  border-color: var(--rej-border);  }
+
+    .card-meta { font-size: 12px; color: var(--text-3); display: flex; flex-wrap: wrap; gap: 10px; }
+    .review-note {
+      margin-top: 8px; font-size: 11.5px; color: var(--text-3);
+      padding-left: 9px; border-left: 2px solid var(--border); font-style: italic;
+    }
+    .card-actions { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 500;
+      cursor: pointer; border: 1px solid; transition: all .12s; white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn-pri  { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn-pri:hover { background: var(--primary-h); }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--text-3); padding: 6px 8px; }
+    .btn-ghost:hover { background: var(--bg); color: var(--text-2); border-color: var(--border); }
+    .btn-ghost.ok:hover  { color: var(--appr); background: var(--appr-bg); border-color: var(--appr-border); }
+    .btn-ghost.bad:hover { color: var(--rej);  background: var(--rej-bg);  border-color: var(--rej-border);  }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-ok  { background: var(--appr); border-color: var(--appr); color: #fff; }
+    .btn-ok:hover  { background: #047857; }
+    .btn-bad { background: var(--rej);  border-color: var(--rej);  color: #fff; }
+    .btn-bad:hover { background: #B91C1C; }
+    .btn-out { background: var(--surface); border-color: var(--border); color: var(--text-2); }
+    .btn-out:hover { border-color: var(--border-dark); background: var(--bg); }
+
+    /* ── EMPTY / LOADING ─────────────────────────── */
+    .empty-st {
+      text-align: center; padding: 72px 24px;
+      color: var(--text-3); max-width: 400px; margin: 0 auto;
+    }
+    .empty-st svg { color: var(--border-dark); margin-bottom: 16px; }
+    .empty-st h3 { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+    .empty-st p  { font-size: 13px; line-height: 1.6; }
+
+    .load-wrap { display: flex; flex-direction: column; align-items: center; padding: 72px 20px; gap: 12px; }
+    .spin { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .65s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .load-txt { font-size: 13px; color: var(--text-3); }
+
+    /* ── TOAST ───────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1F2937; color: #F9FAFB;
+      padding: 10px 16px; border-radius: 8px; font-size: 13px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 9999;
+      transform: translateY(50px); opacity: 0;
+      transition: transform .25s, opacity .25s; max-width: 300px;
+      border-left: 3px solid #4B5563;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.ts { border-left-color: #10B981; }
+    #toast.te { border-left-color: #EF4444; }
+    #toast.ti { border-left-color: #3B82F6; }
+
+    /* ── VIEWER OVERLAY ──────────────────────────── */
+    #vov {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 500; display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; pointer-events: none;
+      transition: opacity .22s; backdrop-filter: blur(3px);
+    }
+    #vov.open { opacity: 1; pointer-events: all; }
+    #vm {
+      background: var(--surface); border-radius: 12px;
+      width: 100%; max-width: 880px; max-height: 92vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22); display: flex; flex-direction: column;
+      transform: translateY(14px); transition: transform .22s;
+    }
+    #vov.open #vm { transform: translateY(0); }
+
+    /* Viewer header */
+    .vh {
+      display: flex; align-items: center; gap: 12px;
+      padding: 15px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .vh-info { flex: 1; min-width: 0; }
+    .vh-name { font-size: 15px; font-weight: 600; color: var(--text); font-style: italic;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vh-sub  { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+    .v-close {
+      width: 30px; height: 30px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-3); transition: all .12s; flex-shrink: 0;
+    }
+    .v-close:hover { background: var(--rej-bg); border-color: var(--rej-border); color: var(--rej); }
+
+    /* Viewer body */
+    .vbody { padding: 16px 20px; flex: 1; }
+
+    /* View mode */
+    .vmode-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+    .vmode-btn {
+      padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border);
+      background: var(--surface); font-size: 12.5px; font-weight: 500;
+      color: var(--text-3); cursor: pointer; transition: all .12s; font-family: inherit;
+    }
+    .vmode-btn:hover { border-color: var(--border-dark); color: var(--text-2); }
+    .vmode-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+    .vmode-sep { margin-left: auto; font-size: 11.5px; color: var(--text-4); }
+
+    /* 3D Stage */
+    #vstage {
+      position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden;
+      border-radius: 10px; background: #111; cursor: crosshair;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.28); user-select: none;
+    }
+    #vstage:hover .v-hint { opacity: 0; pointer-events: none; }
+    .al {
+      position: absolute; inset: 0; width: 110%; height: 110%; top: -5%; left: -5%;
+      object-fit: cover; opacity: 0; will-change: opacity, transform;
+      pointer-events: none; transform: translateZ(0);
+    }
+    .al.base { opacity: 1; }
+
+    /* Angle label */
+    .v-ang-lbl {
+      position: absolute; top: 11px; left: 11px; z-index: 2;
+      background: rgba(0,0,0,0.54); color: rgba(255,255,255,0.92);
+      font-size: 11.5px; font-weight: 600; padding: 4px 10px;
+      border-radius: 5px; letter-spacing: 0.2px; pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Compass */
+    .v-compass { position: absolute; top: 11px; right: 11px; width: 46px; height: 46px; pointer-events: none; z-index: 2; }
+    .comp-ring {
+      width: 100%; height: 100%; border: 1.5px solid rgba(255,255,255,0.22); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); position: relative;
+    }
+    .comp-dot {
+      width: 7px; height: 7px; background: rgba(255,255,255,0.85); border-radius: 50%;
+      position: absolute; transition: transform .08s ease-out;
+    }
+    .comp-txt { font-size: 7px; color: rgba(255,255,255,0.35); font-weight: 600; letter-spacing: 0.5px; }
+
+    /* Hint */
+    .v-hint {
+      position: absolute; bottom: 11px; left: 0; right: 0; z-index: 2;
+      text-align: center; pointer-events: none; transition: opacity .35s;
+    }
+    .v-hint-inner {
+      display: inline-block; background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.8);
+      font-size: 11px; padding: 5px 12px; border-radius: 5px; backdrop-filter: blur(4px);
+    }
+
+    /* Progress */
+    .v-prog-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .v-prog-l, .v-prog-r { font-size: 11px; color: var(--text-4); width: 64px; flex-shrink: 0; }
+    .v-prog-r { text-align: left; }
+    .v-prog-l { text-align: right; }
+    .v-prog-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; position: relative; }
+    .v-prog-fill { position: absolute; top: 0; bottom: 0; left: 50%;
+      background: var(--accent); border-radius: 2px; transition: left .06s, width .06s; width: 0; }
+    .v-prog-ctr { position: absolute; top: 50%; left: 50%; width: 1.5px; height: 7px;
+      background: var(--border-dark); transform: translate(-50%,-50%); border-radius: 1px; }
+
+    /* Thumbs */
+    .v-thumbs { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; margin-top: 8px; }
+    .v-th {
+      border-radius: 6px; overflow: hidden; aspect-ratio: 4/3; position: relative;
+      cursor: pointer; border: 1.5px solid transparent; transition: border-color .12s;
+    }
+    .v-th:hover { border-color: var(--border-dark); }
+    .v-th.active { border-color: var(--primary); }
+    .v-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .v-th-lbl {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.88);
+      font-size: 7.5px; font-weight: 600; text-align: center; padding: 2px 0 3px;
+    }
+    .v-th.miss { background: var(--bg); display: flex; align-items: center;
+      justify-content: center; border: 1.5px dashed var(--border); cursor: default; }
+
+    /* Grid view */
+    #v-grid { display: none; }
+    #v-grid.vis { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+    .g-item { border-radius: 6px; overflow: hidden; aspect-ratio: 4/3; position: relative; }
+    .g-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .g-lbl {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.9);
+      font-size: 10px; font-weight: 600; text-align: center; padding: 4px 0 5px;
+    }
+
+    /* Review panel */
+    .rev-panel { border-top: 1px solid var(--border); padding: 14px 20px; flex-shrink: 0; }
+    .rev-ttl {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-3); margin-bottom: 10px;
+    }
+    .rev-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .rev-cur { margin-left: auto; font-size: 12px; color: var(--text-3); }
+    .rev-notes {
+      width: 100%; margin-top: 10px; padding: 8px 11px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12.5px; color: var(--text); background: var(--bg);
+      resize: none; outline: none; font-family: inherit; transition: border-color .12s;
+    }
+    .rev-notes:focus { border-color: var(--primary); background: var(--surface); }
+    .rev-notes::placeholder { color: var(--text-4); }
+
+    /* ── BULK SELECT ─────────────────────────────── */
+    .sub-card { position: relative; }
+    .card-cb {
+      position: absolute; top: 8px; left: 8px; z-index: 5;
+      opacity: 0; pointer-events: none; transition: opacity .15s;
+    }
+    .bulk-mode .card-cb,
+    .sub-card.sel .card-cb { opacity: 1; pointer-events: all; }
+    .card-cb input[type="checkbox"] {
+      width: 18px; height: 18px; cursor: pointer;
+      accent-color: var(--primary); border-radius: 4px;
+    }
+    .sub-card.sel {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(12,76,13,.12);
+    }
+    .bulk-bar {
+      display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 9px 14px; margin-bottom: 12px;
+      background: #EDF7EA; border: 1px solid var(--appr-border);
+      border-radius: 8px; font-size: 13px;
+    }
+    .bulk-bar.rej-bar { background: #FEF2F2; border-color: var(--rej-border); }
+    .bulk-bar.show { display: flex; }
+    .bulk-count { font-weight: 600; color: var(--primary); flex: 1; }
+    .bulk-bar.rej-bar .bulk-count { color: var(--rej); }
+
+    /* ── PROCESSING OVERLAY ─────────────────────── */
+    #proc-overlay {
+      position: absolute; inset: 0; z-index: 10;
+      background: rgba(0,0,0,0.72); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      border-radius: 10px; opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    #proc-overlay.show { opacity: 1; pointer-events: all; }
+    .proc-spin {
+      width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: #10B981; border-radius: 50%;
+      animation: spin .65s linear infinite;
+    }
+    .proc-txt { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; }
+    .proc-step { font-size: 11px; color: rgba(255,255,255,0.45); }
+
+    /* Published badge on the stage */
+    #v-pub-badge {
+      position: absolute; bottom: 11px; right: 11px; z-index: 3;
+      background: var(--appr); color: #fff; font-size: 10px; font-weight: 700;
+      padding: 4px 10px; border-radius: 5px; letter-spacing: 0.3px;
+      display: none; backdrop-filter: blur(4px);
+    }
+
+    /* Depth strip (shown after processing) */
+    #v-depth-strip {
+      display: none; margin-top: 8px; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    #v-depth-strip.vis { display: block; }
+    .depth-strip-hd {
+      display: flex; align-items: center; gap: 8px; padding: 7px 12px;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      font-size: 11.5px; font-weight: 600; color: var(--text-2);
+    }
+    .depth-strip-hd .ds-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0;
+    }
+    .depth-strip-body {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    }
+    .ds-side {
+      position: relative; aspect-ratio: 16/10; overflow: hidden; background: #111;
+    }
+    .ds-side img, .ds-side canvas {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .ds-lbl {
+      position: absolute; top: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.85);
+      font-size: 9.5px; font-weight: 600; text-align: center; padding: 4px 0 5px;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 900px) {
+      :root { --sidebar-w: 56px; }
+      .sb-wordmark, .sb-item span:not(.sb-badge), .sb-badge, .sb-sec, .sb-footer { display: none; }
+      .sb-item { padding: 9px; justify-content: center; }
+      .sb-logo { justify-content: center; }
+    }
+    @media (max-width: 640px) {
+      :root { --sidebar-w: 0px; }
+      #sidebar { display: none; }
+      .sub-grid { grid-template-columns: 1fr; }
+      #top-hd { padding: 0 16px; }
+      .search-box { display: none; }
+      #content { padding: 16px; }
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+      #v-grid.vis { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logomark">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.7)" stroke-width="1.4"/>
+          <path d="M8 3C8 3 11 5.5 11 8C11 10.5 9.5 11.5 8 11.5C6.5 11.5 5 10.5 5 8C5 5.5 8 3 8 3Z" fill="rgba(255,255,255,0.6)"/>
+        </svg>
+      </div>
+      <div class="sb-wordmark">
+        <div class="sb-name">Bloom3D</div>
+        <div class="sb-desc">Admin Panel</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Overview</div>
+      <div class="sb-item active">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="1" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2"/>
+          <rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2"/>
+        </svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="sb-sec">Content</div>
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M1.5 5L7.5 2.5L13.5 5L7.5 7.5L1.5 5Z"/><path d="M1.5 8.5L7.5 11L13.5 8.5"/>
+          <path d="M1.5 12L7.5 14.5L13.5 12"/>
+        </svg>
+        <span>Submissions</span>
+        <span class="sb-badge" id="sb-pend">0</span>
+      </div>
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M5.5 1.5V6L2 12.5H13L9.5 6V1.5"/><path d="M4.5 1.5H10.5"/>
+        </svg>
+        <span>Species</span>
+      </div>
+      <div class="sb-sec">System</div>
+      <div class="sb-item">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="7.5" cy="7.5" r="2"/>
+          <path d="M7.5 1.5V3M7.5 12V13.5M1.5 7.5H3M12 7.5H13.5M3.4 3.4L4.5 4.5M10.5 10.5L11.6 11.6M3.4 11.6L4.5 10.5M10.5 4.5L11.6 3.4"/>
+        </svg>
+        <span>Settings</span>
+      </div>
+    </nav>
+    <div class="sb-footer">Bloom3D · MSUG</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main-wrap">
+    <header id="top-hd">
+      <div class="hd-left">
+        <div class="hd-title">3D Photo Review</div>
+        <div class="hd-sub">Review and approve orchid 3D photo submissions</div>
+      </div>
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="5.5" cy="5.5" r="4"/><path d="M9 9L12 12"/>
+        </svg>
+        <input type="text" id="q" placeholder="Search by name or ID…" oninput="onSearch(this.value)" />
+      </div>
+      <button class="hd-btn" onclick="refreshData()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M11 6.5A4.5 4.5 0 1 1 6.5 2C8.2 2 9.7 2.8 10.7 4"/>
+          <path d="M11 2v2.5H8.5"/>
+        </svg>
+        Refresh
+      </button>
+    </header>
+
+    <main id="content">
+      <div class="stats-row">
+        <div class="stat-card tot">
+          <div class="stat-n" id="sn-tot">—</div>
+          <div class="stat-l">Total Submissions</div>
+        </div>
+        <div class="stat-card pend">
+          <div class="stat-n" id="sn-pend">—</div>
+          <div class="stat-l">Pending Review</div>
+        </div>
+        <div class="stat-card appr">
+          <div class="stat-n" id="sn-appr">—</div>
+          <div class="stat-l">Approved</div>
+        </div>
+        <div class="stat-card rej">
+          <div class="stat-n" id="sn-rej">—</div>
+          <div class="stat-l">Rejected</div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="ftab active" data-f="all"      onclick="setFilter('all')">All <span class="fc" id="fc-all">0</span></button>
+        <button class="ftab"        data-f="pending"  onclick="setFilter('pending')">Pending <span class="fc" id="fc-pend">0</span></button>
+        <button class="ftab"        data-f="approved" onclick="setFilter('approved')">Approved <span class="fc" id="fc-appr">0</span></button>
+        <button class="ftab"        data-f="rejected" onclick="setFilter('rejected')">Rejected <span class="fc" id="fc-rej">0</span></button>
+        <select class="sort-sel" onchange="setSort(this.value)">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+
+      <div class="sec-hd">
+        <h2>Submissions</h2>
+        <span class="chip" id="showing">0 shown</span>
+      </div>
+
+      <div id="sub-container">
+        <div class="load-wrap"><div class="spin"></div><div class="load-txt">Connecting to Supabase…</div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- VIEWER MODAL -->
+<div id="vov" onclick="ovClick(event)">
+  <div id="vm">
+
+    <div class="vh">
+      <div class="vh-info">
+        <div class="vh-name" id="v-name">—</div>
+        <div class="vh-sub"  id="v-sub">—</div>
+      </div>
+      <div class="badge pending" id="v-badge">Pending</div>
+      <div class="v-close" onclick="closeV()" title="Close (Esc)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M1 1L12 12M12 1L1 12"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="vbody">
+      <div class="vmode-bar">
+        <button class="vmode-btn active" id="mb-3d"   onclick="setMode('3d')">3D Viewer</button>
+        <button class="vmode-btn"        id="mb-grid"  onclick="setMode('grid')">All Angles</button>
+        <span class="vmode-sep" id="v-cnt">5 angles</span>
+      </div>
+
+      <div id="v-stage-wrap">
+        <div id="vstage"
+          onmousemove="smMove(event)" onmouseleave="smLeave()"
+          ontouchstart="stStart(event)" ontouchmove="stMove(event)" ontouchend="stEnd()">
+          <div class="v-ang-lbl" id="v-albl">Front View</div>
+          <div class="v-compass">
+            <div class="comp-ring">
+              <div class="comp-dot" id="cdot"></div>
+              <span class="comp-txt">3D</span>
+            </div>
+          </div>
+          <div class="v-hint" id="v-hint">
+            <div class="v-hint-inner">Move mouse to explore depth &nbsp;·&nbsp; Arrow keys &nbsp;·&nbsp; Click angle to pin</div>
+          </div>
+          <div id="proc-overlay">
+            <div class="proc-spin"></div>
+            <div class="proc-txt" id="proc-txt">Processing 3D…</div>
+            <div class="proc-step" id="proc-step">Generating depth map</div>
+          </div>
+          <div id="v-pub-badge">&#10003; Published</div>
+        </div>
+        <div class="v-prog-row">
+          <span class="v-prog-l">Left</span>
+          <div class="v-prog-bar">
+            <div class="v-prog-fill" id="vpf"></div>
+            <div class="v-prog-ctr"></div>
+          </div>
+          <span class="v-prog-r">Right</span>
+        </div>
+      </div>
+
+      <div id="v-grid"></div>
+      <div class="v-thumbs" id="v-thumbs"></div>
+      <div id="v-depth-strip">
+        <div class="depth-strip-hd"><span class="ds-dot"></span>3D Processing Result</div>
+        <div class="depth-strip-body">
+          <div class="ds-side">
+            <img id="ds-color-img" src="" alt="Color"/>
+            <div class="ds-lbl">Color Photo</div>
+          </div>
+          <div class="ds-side">
+            <canvas id="ds-depth-canvas"></canvas>
+            <div class="ds-lbl">Generated Depth Map</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rev-panel">
+      <div class="rev-ttl">Review</div>
+      <div class="rev-row" id="rev-row">
+        <button class="btn btn-ok  btn-sm" id="btn-approve" onclick="doRev('approved')">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg>
+          Approve &amp; Process 3D
+        </button>
+        <button class="btn btn-bad btn-sm" id="btn-reject" onclick="doRev('rejected')">Reject</button>
+        <button class="btn btn-out btn-sm" id="btn-reset"  onclick="doRev('pending')">Reset</button>
+        <div class="rev-cur">Status: <strong id="rev-cur-txt">Pending</strong></div>
+      </div>
+      <textarea class="rev-notes" id="rev-notes" rows="2" placeholder="Add review notes (optional)…"></textarea>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// ─ CONFIG ──────────────────────────────────────────────────────
+const SB_URL    = 'https://fmvkxvmrycsubjmkyaet.supabase.co';
+const SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtdmt4dm1yeWNzdWJqbWt5YWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NjQyOTUsImV4cCI6MjA5NDE0MDI5NX0.lYomB0Ckg-b2cRHtylOQTpM9oAtOaLIto0T9nu-a5d8';
+const BUCKET    = 'bloom-uploads';
+const FOLDER    = '3d_images';
+
+const LABELS = ['Front View', 'Left Side', 'Right Side', 'Top View', 'Back / Bottom'];
+
+// ─ STATE ───────────────────────────────────────────────────────
+let S = {
+  subs: [], reviews: {}, filter: 'all', sort: 'newest', q: '', viewSub: null,
+  selected: new Set(),
+};
+
+// ─ SUPABASE ────────────────────────────────────────────────────
+let sb = null;
+try { sb = supabase.createClient(SB_URL, SB_KEY); } catch(e) {}
+
+// ─ BOOT ────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  loadRevs();
+  await loadData();
+  setupKeys();
+  subscribeRealtime();
+});
+
+async function loadData() {
+  document.getElementById('sub-container').innerHTML =
+    `<div class="load-wrap"><div class="spin"></div><div class="load-txt">Connecting to Supabase…</div></div>`;
+
+  S.subs = [];
+  if (sb) {
+    try {
+      // All submissions (both 3D uploads and field sightings) are stored in
+      // species_sightings. Select * so the query never fails due to a
+      // missing column (e.g. review_notes before the migration runs).
+      const { data: sightings, error } = await sb
+        .from('species_sightings')
+        .select('*')
+        .like('entry_id', 'BLOOM-3D-%')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) {
+        console.error('Supabase query error:', error);
+        // Surface a human-readable message with the actual error
+        showToast(`Database error: ${error.message || error.code || 'unknown'}`, 'e');
+        throw error;
+      }
+
+      console.log(`Loaded ${sightings?.length ?? 0} sighting(s) from species_sightings`);
+      if (sightings && sightings.length > 0) S.subs = parseSightings(sightings);
+    } catch(e) {
+      console.error('loadData failed:', e);
+      showToast('Could not load submissions — check the browser console for details', 'e');
+    }
+  } else {
+    showToast('Supabase client failed to initialise', 'e');
+  }
+  applyRevs();
+  renderAll();
+}
+
+async function refreshData() { await loadData(); showToast('Refreshed', 's'); }
+
+// ─ PARSE STORAGE FILES ─────────────────────────────────────────
+// Map species_sightings rows → submission objects
+function parseSightings(rows) {
+  return rows.map(r => {
+    const angles = [];
+    if (r.whole_plant_photo_path)    angles.push({ label: 'Whole Plant',    url: r.whole_plant_photo_path });
+    if (r.closeup_flower_photo_path) angles.push({ label: 'Close-up Flower', url: r.closeup_flower_photo_path });
+    if (r.habitat_photo_path)        angles.push({ label: 'Habitat',         url: r.habitat_photo_path });
+
+    // Build a readable location string from available columns
+    const locParts = [r.mountain_name, r.municipality, r.province].filter(Boolean);
+
+    return {
+      id:           r.entry_id,
+      orchidId:     r.entry_id,
+      orchidName:   r.scientific_name || 'Unknown Species',
+      submittedBy:  r.researcher_name || 'Unknown',
+      submittedAt:  r.created_at,
+      observedAt:   r.observation_date || null,
+      location:     locParts.join(', ') || null,
+      flowerColor:  r.flower_color || null,
+      lifeStage:    r.life_stage || null,
+      confidence:   r.identification_confidence || null,
+      lat:          r.latitude  || null,
+      lng:          r.longitude || null,
+      elevation:    r.elevation_meters || null,
+      status:       r.review_status || 'pending',
+      notes:        r.review_notes  || '',
+      isMock: false,
+      angles,
+    };
+  });
+}
+
+// ─ REVIEW PERSISTENCE ──────────────────────────────────────────
+// Primary store: Supabase (saved on approve/reject via saveToSupabase).
+// localStorage is a fallback cache so offline changes survive a reload
+// until the next DB sync.
+const LS = 'bloom3d_reviews_v1';
+function loadRevs() { try { S.reviews = JSON.parse(localStorage.getItem(LS) || '{}'); } catch{} }
+function saveRevs() { try { localStorage.setItem(LS, JSON.stringify(S.reviews)); } catch{} }
+function applyRevs() {
+  for (const s of S.subs) {
+    // DB status is authoritative when it's already non-pending.
+    // Only apply local cache when DB still shows 'pending'.
+    if (s.status !== 'pending') continue;
+    const lsRev = S.reviews[s.id];
+    if (lsRev) { s.status = lsRev.status; s.notes = lsRev.notes; }
+  }
+}
+
+// ─ FILTER / SORT ───────────────────────────────────────────────
+function filtered() {
+  let list = [...S.subs];
+  if (S.filter !== 'all') list = list.filter(s => s.status === S.filter);
+  if (S.q) { const q = S.q.toLowerCase(); list = list.filter(s =>
+    s.orchidName.toLowerCase().includes(q) || s.orchidId.includes(q)); }
+  if (S.sort === 'oldest') list.reverse();
+  else if (S.sort === 'name') list.sort((a, b) => a.orchidName.localeCompare(b.orchidName));
+  return list;
+}
+function setFilter(f) {
+  S.filter = f;
+  S.selected.clear();
+  document.querySelectorAll('.ftab').forEach(el => el.classList.toggle('active', el.dataset.f === f));
+  renderSubs();
+}
+function setSort(s) { S.sort = s; renderSubs(); }
+function onSearch(v) { S.q = v; renderSubs(); }
+
+// ─ RENDER ALL ──────────────────────────────────────────────────
+function renderAll() { renderStats(); renderSubs(); }
+
+function renderStats() {
+  const t = S.subs.length;
+  const p = S.subs.filter(s => s.status === 'pending').length;
+  const a = S.subs.filter(s => s.status === 'approved').length;
+  const r = S.subs.filter(s => s.status === 'rejected').length;
+  document.getElementById('sn-tot').textContent  = t;
+  document.getElementById('sn-pend').textContent = p;
+  document.getElementById('sn-appr').textContent = a;
+  document.getElementById('sn-rej').textContent  = r;
+  document.getElementById('fc-all').textContent  = t;
+  document.getElementById('fc-pend').textContent = p;
+  document.getElementById('fc-appr').textContent = a;
+  document.getElementById('fc-rej').textContent  = r;
+  document.getElementById('sb-pend').textContent = p;
+}
+
+function renderSubs() {
+  const list = filtered();
+  const box = document.getElementById('sub-container');
+  document.getElementById('showing').textContent = `${list.length} shown`;
+  if (!list.length) {
+    const msg = S.q
+      ? 'Try a different search term.'
+      : S.filter !== 'all'
+        ? `No ${S.filter} submissions yet.`
+        : 'No submissions found. If you already uploaded from the app, run <strong>migrate_rls_policies.sql</strong> in Supabase SQL Editor to enable dashboard access, then click Refresh.';
+    box.innerHTML = `<div class="empty-st">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="4" y="10" width="32" height="22" rx="3"/>
+        <path d="M13 10V7M20 10V5M27 10V7"/>
+        <circle cx="20" cy="21" r="5"/>
+        <path d="M15 21h10"/>
+      </svg>
+      <h3>No submissions found</h3><p>${msg}</p></div>`;
+    return;
+  }
+  const showBulk = S.filter === 'pending' || S.filter === 'rejected';
+  const selCount = S.selected.size;
+  const isRej    = S.filter === 'rejected';
+
+  let bulkBarHtml = '';
+  if (showBulk) {
+    if (isRej) {
+      bulkBarHtml = `<div class="bulk-bar rej-bar${selCount ? ' show' : ''}" id="bulk-bar">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;color:var(--rej)">
+          <input type="checkbox" id="sel-all-cb" onchange="toggleSelectAll(this.checked)"
+            style="width:15px;height:15px;accent-color:var(--rej)"
+            ${selCount === list.length && list.length ? 'checked' : ''}/>
+          Select all
+        </label>
+        <span class="bulk-count">${selCount ? selCount + ' selected' : ''}</span>
+        <button class="btn btn-bad btn-sm" onclick="bulkDelete()" ${!selCount ? 'disabled' : ''}>Delete selected</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSelect()">Clear</button>
+      </div>`;
+    } else {
+      bulkBarHtml = `<div class="bulk-bar${selCount ? ' show' : ''}" id="bulk-bar">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;color:var(--primary)">
+          <input type="checkbox" id="sel-all-cb" onchange="toggleSelectAll(this.checked)"
+            style="width:15px;height:15px;accent-color:var(--primary)"
+            ${selCount === list.length && list.length ? 'checked' : ''}/>
+          Select all
+        </label>
+        <span class="bulk-count">${selCount ? selCount + ' selected' : ''}</span>
+        <button class="btn btn-ok  btn-sm" onclick="bulkAction('approved')" ${!selCount ? 'disabled' : ''}>Approve selected</button>
+        <button class="btn btn-bad btn-sm" onclick="bulkAction('rejected')" ${!selCount ? 'disabled' : ''}>Reject selected</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSelect()">Clear</button>
+      </div>`;
+    }
+  }
+
+  const gridClass = `sub-grid${showBulk ? ' bulk-mode' : ''}`;
+  box.innerHTML = bulkBarHtml + `<div class="${gridClass}">${list.map(card).join('')}</div>`;
+}
+
+function card(s) {
+  const hero   = s.angles[0];
+  const extras = s.angles.slice(1);
+  const cnt    = s.angles.length;
+  const dt     = fmtDate(s.submittedAt);
+
+  const heroHtml = `<div class="card-hero${hero ? '' : ' empty'}">
+    ${hero ? `<img src="${esc(hero.url)}" alt="${esc(hero.label)}" loading="lazy"
+        onerror="this.parentElement.classList.add('empty');this.remove()"/>
+      <div class="hero-lbl">${esc(hero.label)}</div>` : ''}
+  </div>`;
+
+  const thumbsHtml = extras.length ? `<div class="card-thumbs">
+    ${extras.slice(0,3).map(a => `<div class="c-thumb">
+      <img src="${esc(a.url)}" alt="${esc(a.label)}" loading="lazy"
+        onerror="this.parentElement.classList.add('empty');this.remove()"/>
+      <div class="a-lbl">${esc(a.label)}</div>
+    </div>`).join('')}
+  </div>` : '';
+
+  // Extra detail chips from the sighting form
+  const chips = [
+    s.location    ? `<span title="Location">${esc(s.location)}</span>` : '',
+    s.observedAt  ? `<span title="Observed on">${fmtDateShort(s.observedAt)}</span>` : '',
+    s.flowerColor ? `<span title="Flower colour">${esc(s.flowerColor)}</span>` : '',
+    s.lifeStage   ? `<span title="Life stage">${esc(s.lifeStage)}</span>` : '',
+    s.confidence  ? `<span title="Confidence">${esc(s.confidence)}</span>` : '',
+    `<span>${cnt} photo${cnt !== 1 ? 's' : ''}</span>`,
+    s.submittedBy && s.submittedBy !== 'Unknown' ? `<span>by ${esc(s.submittedBy)}</span>` : '',
+  ].filter(Boolean).join('');
+
+  const showCb = S.filter === 'pending' || S.filter === 'rejected';
+  const isSel  = S.selected.has(s.id);
+  return `<div class="sub-card${isSel ? ' sel' : ''}" onclick="openV('${s.id}')">
+    ${showCb ? `<div class="card-cb"><input type="checkbox" ${isSel ? 'checked' : ''}
+      onclick="event.stopPropagation()" onchange="toggleSelect('${s.id}',this.checked)"/></div>` : ''}
+    ${heroHtml}${thumbsHtml}
+    <div class="card-body">
+      <div class="card-row">
+        <div class="card-name">${esc(s.orchidName)}</div>
+        <span class="badge ${s.status}">${cap(s.status)}</span>
+      </div>
+      <div class="card-meta">${chips}</div>
+      <div class="card-meta" style="margin-top:3px;color:var(--text-4)">${dt}</div>
+      ${s.notes ? `<div class="review-note">${esc(s.notes)}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn btn-pri btn-sm" onclick="event.stopPropagation();openV('${s.id}')">View 3D</button>
+        ${s.status === 'pending' ? `<button class="btn btn-ghost ok btn-sm" onclick="event.stopPropagation();qRev('${s.id}','approved')" title="Approve & Process 3D">Approve</button>` : ''}
+        ${s.status === 'pending' ? `<button class="btn btn-ghost bad btn-sm" onclick="event.stopPropagation();qRev('${s.id}','rejected')" title="Reject">Reject</button>` : ''}
+        ${s.status === 'approved' ? `<span class="badge approved" style="font-size:10px;padding:3px 8px">&#10003; Approved</span>` : ''}
+        ${s.status === 'rejected' ? `<button class="btn btn-ghost ok btn-sm" onclick="event.stopPropagation();qRev('${s.id}','approved')" title="Reconsider">Approve</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function qRev(id, st) {
+  const s = S.subs.find(x => x.id === id);
+  if (!s) return;
+  if (st === 'approved') {
+    // Open viewer first, then run the approval + 3D processing flow
+    openV(id);
+    setTimeout(() => doRev('approved'), 150);
+    return;
+  }
+  setRev(id, st, ''); s.status = st;
+  renderAll();
+  showToast(`${cap(st)}: ${s.orchidName}`, st === 'rejected' ? 'e' : 'i');
+}
+
+// ─ BULK SELECT ─────────────────────────────────────────────────
+function toggleSelect(id, checked) {
+  checked ? S.selected.add(id) : S.selected.delete(id);
+  renderSubs();
+}
+
+function toggleSelectAll(checked) {
+  const list = filtered();
+  if (checked) list.forEach(s => S.selected.add(s.id));
+  else S.selected.clear();
+  renderSubs();
+}
+
+function clearSelect() {
+  S.selected.clear();
+  renderSubs();
+}
+
+async function bulkAction(st) {
+  if (!S.selected.size) return;
+  const ids = [...S.selected];
+  for (const id of ids) {
+    const s = S.subs.find(x => x.id === id);
+    if (!s) continue;
+    setRev(id, st, '');
+    s.status = st;
+    await saveToSupabase(id, st, '');
+  }
+  S.selected.clear();
+  renderAll();
+  showToast(`${cap(st)} ${ids.length} submission${ids.length !== 1 ? 's' : ''}`,
+    st === 'approved' ? 's' : 'e');
+}
+
+async function bulkDelete() {
+  if (!S.selected.size) return;
+  const ids = [...S.selected];
+  if (!confirm(`Permanently delete ${ids.length} submission${ids.length !== 1 ? 's' : ''}? This cannot be undone.`)) return;
+  let failed = 0;
+  for (const id of ids) {
+    try {
+      if (sb) await sb.from('species_sightings').delete().eq('entry_id', id);
+      delete S.reviews[id];
+    } catch { failed++; }
+  }
+  S.subs = S.subs.filter(s => !ids.includes(s.id));
+  S.selected.clear();
+  saveRevs();
+  renderAll();
+  showToast(
+    failed ? `Deleted with ${failed} error(s)` : `Deleted ${ids.length} submission${ids.length !== 1 ? 's' : ''}`,
+    failed ? 'e' : 's'
+  );
+}
+
+// ─ VIEWER ──────────────────────────────────────────────────────
+let vOpen = false, vMode = '3d', raf = null, pinned = -1;
+let depthCanvasRef = null, depthIsReal = false;
+const mou = { tx: 0, ty: 0, cx: 0, cy: 0 };
+
+function openV(id) {
+  const s = S.subs.find(x => x.id === id);
+  if (!s) return;
+  S.viewSub = s;
+
+  const vName = document.getElementById('v-name');
+  const vSub  = document.getElementById('v-sub');
+  const vBadge = document.getElementById('v-badge');
+  const revNotes = document.getElementById('rev-notes');
+  const revCurTxt = document.getElementById('rev-cur-txt');
+  const vCnt = document.getElementById('v-cnt');
+  const vDepthStrip = document.getElementById('v-depth-strip');
+  const vPubBadge = document.getElementById('v-pub-badge');
+  const vovEl = document.getElementById('vov');
+
+  if (vName) vName.textContent = s.orchidName;
+  if (vSub) {
+    const subParts = [
+      `ID #${s.orchidId}`,
+      s.location   || null,
+      s.observedAt ? `Observed ${fmtDateShort(s.observedAt)}` : null,
+      s.submittedBy && s.submittedBy !== 'Unknown' ? `by ${s.submittedBy}` : null,
+      `Uploaded ${fmtDate(s.submittedAt)}`,
+    ].filter(Boolean);
+    vSub.textContent = subParts.join(' · ');
+  }
+  if (vBadge) { vBadge.className = 'badge ' + s.status; vBadge.textContent = cap(s.status); }
+  if (revNotes) revNotes.value = s.notes || S.reviews[s.id]?.notes || '';
+  if (revCurTxt) revCurTxt.textContent = cap(s.status);
+  // Show/hide action buttons based on status
+  updateReviewButtons(s.status);
+
+  const cnt = s.angles.filter(Boolean).length;
+  if (vCnt) vCnt.textContent = `${cnt} angle${cnt !== 1 ? 's' : ''} available`;
+
+  buildLayers(s); buildThumbs(s); buildGrid(s);
+  setMode('3d');
+
+  // Show depth strip + published badge if already approved
+  const isApproved = s.status === 'approved';
+  if (vDepthStrip) vDepthStrip.classList.toggle('vis', isApproved);
+  if (vPubBadge) vPubBadge.style.display = isApproved ? 'block' : 'none';
+  if (isApproved) fillDepthStrip(s);
+
+  if (vovEl) vovEl.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  vOpen = true; pinned = -1;
+  mou.tx = 0; mou.ty = 0; mou.cx = 0; mou.cy = 0;
+  if (raf) { cancelAnimationFrame(raf); raf = null; }
+}
+
+function closeV() {
+  document.getElementById('vov')?.classList.remove('open');
+  document.body.style.overflow = '';
+  vOpen = false;
+  if (raf) { cancelAnimationFrame(raf); raf = null; }
+  disposeThree();
+}
+
+function ovClick(e) { const vovEl = document.getElementById('vov'); if (vovEl && e.target === vovEl) closeV(); }
+
+function buildLayers(s) {
+  const stage = document.getElementById('vstage');
+  stage.querySelectorAll('.al, canvas.three-canvas').forEach(el => el.remove());
+  disposeThree();
+  depthCanvasRef = null; depthIsReal = false;
+
+  const front = s.angles[0] || s.angles.find(Boolean);
+  if (!front) return;
+
+  if (s.status === 'approved') {
+    // Approved — show full 3D parallax viewer
+    if (typeof THREE !== 'undefined') {
+      initThreeViewer(stage, front.url, front.depthUrl || null);
+    } else {
+      showStaticPhoto(stage, front.url);
+    }
+    setHint('Move mouse to explore depth · Arrow keys · Click angle to pin');
+  } else {
+    // Not yet approved — show static photo only; 3D unlocks on approval
+    showStaticPhoto(stage, front.url);
+    setHint('Approve this submission to enable the 3D preview');
+  }
+}
+
+function showStaticPhoto(stage, url) {
+  const img = document.createElement('img');
+  img.className = 'al base';
+  img.src = url;
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;';
+  stage.insertBefore(img, stage.querySelector('.v-ang-lbl'));
+}
+
+function setHint(text) {
+  const h = document.getElementById('v-hint');
+  if (!h) return;
+  h.style.opacity = '1';
+  h.style.transition = 'none';
+  const inner = h.querySelector('.v-hint-inner');
+  if (inner) inner.textContent = text;
+}
+
+function buildThumbs(s) {
+  document.getElementById('v-thumbs').innerHTML = s.angles.map((a, i) => {
+    const lbl = a?.label || LABELS[i] || `Photo ${i + 1}`;
+    if (!a) return '';
+    return `<div class="v-th" data-i="${i}" onclick="pinAngle(${i})" title="Click to pin · ${lbl}">
+      <img src="${a.url}" alt="${lbl}" loading="lazy"/>
+      <div class="v-th-lbl">${lbl}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildGrid(s) {
+  document.getElementById('v-grid').innerHTML = s.angles.filter(Boolean).map(a =>
+    `<div class="g-item"><img src="${a.url}" alt="${a.label}" loading="lazy"/>
+     <div class="g-lbl">${a.label}</div></div>`
+  ).join('');
+}
+
+function setMode(m) {
+  vMode = m;
+  document.getElementById('mb-3d').classList.toggle('active', m === '3d');
+  document.getElementById('mb-grid').classList.toggle('active', m === 'grid');
+  document.getElementById('v-stage-wrap').style.display = m === '3d' ? '' : 'none';
+  document.getElementById('v-thumbs').style.display     = m === '3d' ? '' : 'none';
+  document.getElementById('v-grid').classList.toggle('vis', m === 'grid');
+}
+
+// ─ THREE.JS FACEBOOK-STYLE UV PARALLAX VIEWER ──────────────────
+// A flat quad displays the photo. A depth map (pixel luminance +
+// saturation + centre weight) drives a fragment-shader UV offset:
+// foreground (depth≈1) shifts opposite to mouse — pops toward viewer.
+
+let threeR = null, threeScene = null, threeCamera = null;
+let threeAF = null, threeCanvas = null, threeMouseU = null;
+let autoSweep = true, autoSweepT = 0;
+
+async function initThreeViewer(stage, photoUrl, depthUrl = null) {
+  disposeThree();
+
+  const W = stage.clientWidth  || 640;
+  const H = stage.clientHeight || 400;
+  const aspect = W / H;
+
+  threeCanvas = document.createElement('canvas');
+  threeCanvas.className = 'three-canvas';
+  threeCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;';
+  stage.insertBefore(threeCanvas, stage.firstChild);
+
+  threeR = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true, alpha: false });
+  threeR.setSize(W, H, false);
+  threeR.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  threeR.setClearColor(0x111111, 1);
+
+  threeScene = new THREE.Scene();
+  threeCamera = new THREE.OrthographicCamera(-aspect, aspect, 1, -1, 0.01, 10);
+  threeCamera.position.z = 1;
+
+  const loader = new THREE.TextureLoader();
+  loader.crossOrigin = 'anonymous';
+  let tex, depthTex, focus = { x: 0.5, y: 0.5 };
+  try {
+    tex      = await texLoad(loader, photoUrl);
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    const depthMap = await buildDepthMap(photoUrl, depthUrl);
+    depthTex = depthMap.texture;
+    focus = depthMap.focus;
+    depthIsReal = depthMap.isReal || false;
+  } catch (err) {
+    console.warn('Three.js texture error:', err);
+    const fallback = fallbackDepth();
+    depthTex = fallback.texture;
+    focus = fallback.focus;
+  }
+
+  const geo = new THREE.PlaneGeometry(2 * aspect, 2);
+  const mouseUniform = { value: new THREE.Vector2(0, 0) };
+  threeMouseU = mouseUniform;
+
+  const mat = tex
+    ? new THREE.ShaderMaterial({
+        uniforms: {
+          uPhoto:    { value: tex },
+          uDepth:    { value: depthTex },
+          uMouse:    mouseUniform,
+          uFocus:    { value: new THREE.Vector2(focus.x, focus.y) },
+          uStrength: { value: 0.048 },
+          uZoom:     { value: 0.12  },
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D uPhoto;
+          uniform sampler2D uDepth;
+          uniform vec2      uMouse;
+          uniform vec2      uFocus;
+          uniform float     uStrength;
+          uniform float     uZoom;
+          varying vec2 vUv;
+
+          // 16-tap circular depth-of-field blur
+          vec4 dofSample(sampler2D tex, vec2 uv, float r) {
+            if (r < 0.0003) return texture2D(tex, uv);
+            vec4 acc = texture2D(tex, uv) * 4.0;
+            float tot = 4.0;
+            for (int i = 0; i < 8; i++) {
+              float a  = float(i) * 0.7854; // pi/4 steps
+              vec2  dir = vec2(cos(a), sin(a));
+              acc += texture2D(tex, clamp(uv + dir * r,        0.001, 0.999));
+              acc += texture2D(tex, clamp(uv + dir * r * 0.5,  0.001, 0.999));
+              tot += 2.0;
+            }
+            return acc / tot;
+          }
+
+          void main() {
+            float depth = texture2D(uDepth, vUv).r;
+
+            // Crop around subject focal point with zoom buffer
+            vec2 scaled = (vUv - uFocus) * (1.0 - uZoom) + uFocus;
+
+            // Unidirectional parallax — foreground pops toward viewer,
+            // background stays still. No disocclusion holes.
+            vec2 shift = uMouse * depth * uStrength;
+            vec2 uv    = clamp(scaled + shift, 0.001, 0.999);
+
+            // Depth-of-field: background softens as it recedes
+            float blurR = pow(max(0.0, 0.78 - depth), 2.2) * 0.008;
+            vec4  color = dofSample(uPhoto, uv, blurR);
+
+            // Atmospheric haze: far areas fade toward a cool sky tone
+            float haze  = pow(max(0.0, 0.62 - depth), 2.5) * 0.20;
+            color.rgb   = mix(color.rgb, vec3(0.73, 0.78, 0.88), haze);
+
+            // Vignette: draws eye to subject
+            vec2  vc       = vUv - 0.5;
+            float vignette = 1.0 - dot(vc, vc) * 0.48;
+            color.rgb     *= max(0.58, vignette);
+
+            gl_FragColor = vec4(color.rgb, 1.0);
+          }
+        `,
+        side: THREE.FrontSide,
+      })
+    : new THREE.MeshBasicMaterial({ color: 0x1a3a1a });
+
+  threeScene.add(new THREE.Mesh(geo, mat));
+
+  autoSweep = true; autoSweepT = 0;
+
+  function renderLoop() {
+    threeAF = requestAnimationFrame(renderLoop);
+    if (!vOpen) return;
+
+    if (autoSweep) {
+      // Gentle Lissajous sweep — loops indefinitely until user touches
+      autoSweepT += 0.009;
+      mou.tx = Math.sin(autoSweepT * 0.70) * 0.92;
+      mou.ty = Math.sin(autoSweepT * 0.43) * 0.48;
+    }
+
+    // Smoothed follow — slightly snappier for physical feel
+    const k = 0.07;
+    mou.cx += (mou.tx - mou.cx) * k;
+    mou.cy += (mou.ty - mou.cy) * k;
+    if (threeMouseU) threeMouseU.value.set(mou.cx, mou.cy);
+
+    threeR.render(threeScene, threeCamera);
+    updateViewerUI();
+  }
+  renderLoop();
+}
+
+function updateViewerUI() {
+  const s = S.viewSub;
+  if (!s) return;
+
+  const dot = document.getElementById('cdot');
+  if (dot) dot.style.transform = `translate(${mou.cx * 17}px,${mou.cy * 17}px)`;
+
+  const domI = pinned >= 0 ? pinned : 0;
+  const a = s.angles[domI];
+  const lbl = a?.label || LABELS[domI] || 'Front View';
+  const el = document.getElementById('v-albl');
+  if (el && el.textContent !== lbl) el.textContent = lbl;
+
+  const pf = document.getElementById('vpf');
+  if (pf) {
+    const pct = (mou.cx + 1) / 2;
+    pf.style.left  = Math.min(pct * 100, 50) + '%';
+    pf.style.width = Math.abs(pct * 100 - 50) + '%';
+  }
+
+  document.querySelectorAll('#v-thumbs .v-th').forEach((el, i) =>
+    el.classList.toggle('active', i === domI));
+}
+
+// Load a texture via Promise
+function texLoad(loader, url) {
+  return new Promise((res, rej) => loader.load(url, res, undefined, rej));
+}
+
+// Generate depth map from pixel data using multi-channel feature extraction +
+// Sobel edge detection + bilateral smoothing + S-curve normalization.
+// If depthUrl is provided (a real _depth file), load it directly.
+async function buildDepthMap(url, depthUrl = null) {
+  const W = 384, H = 240;
+
+  // ── Real depth map from storage (_depth file) ──────────────────
+  if (depthUrl) {
+    try {
+      const depthImg = await new Promise((res, rej) => {
+        const i = new Image(); i.crossOrigin = 'anonymous';
+        i.onload = () => res(i); i.onerror = rej; i.src = depthUrl;
+      });
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(depthImg, 0, 0, W, H);
+      // Ensure grayscale: collapse RGB to luminance
+      const id = ctx.getImageData(0, 0, W, H);
+      for (let i = 0; i < W * H; i++) {
+        const g = Math.round(id.data[i*4]*0.299 + id.data[i*4+1]*0.587 + id.data[i*4+2]*0.114);
+        id.data[i*4] = id.data[i*4+1] = id.data[i*4+2] = g;
+      }
+      ctx.putImageData(id, 0, 0);
+      // Compute focus centroid from depth values
+      const d2 = ctx.getImageData(0, 0, W, H).data;
+      let sumX = 0, sumY = 0, sumW = 0;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const v = d2[(y*W+x)*4] / 255;
+        const w = Math.max(0, Math.pow(v, 1.35) - 0.08);
+        if (!w) continue;
+        sumX += (x+0.5)*w; sumY += (y+0.5)*w; sumW += w;
+      }
+      const focus = sumW
+        ? { x: Math.min(0.82,Math.max(0.18,sumX/sumW/W)), y: Math.min(0.82,Math.max(0.18,sumY/sumW/H)) }
+        : { x: 0.5, y: 0.46 };
+      depthCanvasRef = c;
+      return { texture: new THREE.CanvasTexture(c), focus, isReal: true };
+    } catch (e) {
+      console.warn('Could not load depth URL, generating:', e);
+    }
+  }
+
+  // ── Auto-generate depth from color image ───────────────────────
+  // Approach: multi-channel feature map (saturation, warmth, luminance, center
+  // weight) → heavy smooth blurring to create a clean gradient → percentile
+  // normalisation → gentle gamma. No edge detection — Sobel on textured
+  // objects (logos, patterns) creates rectangular depth blobs that tear
+  // under parallax and produce the black-patch artifact.
+  try {
+    const img = await new Promise((res, rej) => {
+      const i = new Image(); i.crossOrigin = 'anonymous';
+      i.onload = () => res(i); i.onerror = rej; i.src = url;
+    });
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, W, H);
+    const px = ctx.getImageData(0, 0, W, H).data;
+
+    // ── 1. Multi-channel feature map ────────────────────────────
+    const d = new Float32Array(W * H);
+    for (let i = 0; i < W * H; i++) {
+      const r = px[i*4]/255, g = px[i*4+1]/255, b = px[i*4+2]/255;
+      const lum = r*0.299 + g*0.587 + b*0.114;
+      const mx  = Math.max(r,g,b), mn = Math.min(r,g,b);
+      const sat    = mx > 0.02 ? (mx-mn)/mx : 0;
+      // Warm colours (red/orange) read as closer; cool (blue/grey) as farther
+      const warmth = (r - b + 1.0) * 0.5;
+      // Low-neutral score: grey/white backgrounds score low depth
+      const neutral = 1.0 - sat;
+      const xi = (i%W)/W*2-1, yi = Math.floor(i/W)/H*2-1;
+      // Elliptical center weight — subject usually near centre
+      const ctr = Math.max(0, 1 - (xi*xi*0.9 + yi*yi*1.1) * 0.62);
+      d[i] = lum*0.08 + sat*0.32 + warmth*0.22 + ctr*0.30 + (1-neutral)*0.08;
+    }
+
+    // ── 2. 18 passes of box blur for smooth gradient ────────────
+    // Large blur count intentionally creates a broad "depth gradient"
+    // that avoids per-pixel texture artifacts entirely.
+    for (let pass = 0; pass < 18; pass++) {
+      for (let y = 1; y < H-1; y++) {
+        for (let x = 1; x < W-1; x++) {
+          const i = y*W+x;
+          d[i] = (d[i]*3 + d[i-1] + d[i+1] + d[i-W] + d[i+W]) / 7;
+        }
+      }
+    }
+
+    // ── 3. Robust normalise — 5 %/95 % percentile clip ──────────
+    const sorted = Array.from(d).sort((a,b) => a-b);
+    const lo = sorted[Math.floor(W*H*0.05)];
+    const hi = sorted[Math.floor(W*H*0.95)];
+    const rng = hi - lo || 1;
+    for (let i = 0; i < W*H; i++) {
+      d[i] = Math.max(0, Math.min(1, (d[i]-lo)/rng));
+      // Gentle gamma — retains mid-range depth contrast
+      d[i] = Math.pow(d[i], 0.72);
+    }
+
+    // ── 4. Focus centroid ────────────────────────────────────────
+    let sumX=0, sumY=0, sumW=0;
+    for (let y=0; y<H; y++) for (let x=0; x<W; x++) {
+      const i = y*W+x;
+      const w = Math.max(0, Math.pow(d[i],1.3) - 0.08);
+      if (!w) continue;
+      sumX += (x+0.5)*w; sumY += (y+0.5)*w; sumW += w;
+    }
+    const focus = sumW
+      ? { x: Math.min(0.80,Math.max(0.20,sumX/sumW/W)),
+          y: Math.min(0.80,Math.max(0.20,sumY/sumW/H)) }
+      : { x: 0.5, y: 0.46 };
+
+    // ── 5. Write to canvas ───────────────────────────────────────
+    const out = document.createElement('canvas'); out.width=W; out.height=H;
+    const oc  = out.getContext('2d');
+    const id2 = oc.createImageData(W,H);
+    for (let i=0; i<W*H; i++) {
+      const v = Math.round(d[i]*255);
+      id2.data[i*4]=id2.data[i*4+1]=id2.data[i*4+2]=v; id2.data[i*4+3]=255;
+    }
+    oc.putImageData(id2, 0, 0);
+    depthCanvasRef = out;
+    return { texture: new THREE.CanvasTexture(out), focus, isReal: false };
+  } catch (e) {
+    depthCanvasRef = null;
+    return fallbackDepth();
+  }
+}
+
+// Radial-gradient fallback when CORS blocks pixel access
+function fallbackDepth() {
+  const W = 384, H = 240;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(W*.5, H*.44, 0, W*.5, H*.5, W*.60);
+  g.addColorStop(0,    '#ffffff');
+  g.addColorStop(0.30, '#dddddd');
+  g.addColorStop(0.55, '#888888');
+  g.addColorStop(0.78, '#333333');
+  g.addColorStop(1,    '#080808');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  return { texture: new THREE.CanvasTexture(c), focus: { x: 0.5, y: 0.44 } };
+}
+
+// Dispose all Three.js resources cleanly
+function disposeThree() {
+  if (threeAF) { cancelAnimationFrame(threeAF); threeAF = null; }
+  if (threeScene) {
+    threeScene.traverse(o => {
+      o.geometry?.dispose();
+      if (o.material) {
+        Object.values(o.material).forEach(v => v?.isTexture && v.dispose());
+        o.material.dispose();
+      }
+    });
+    threeScene = null;
+  }
+  if (threeR) { threeR.dispose(); threeR = null; }
+  if (threeCanvas) { threeCanvas.remove(); threeCanvas = null; }
+  threeCamera = null; threeMouseU = null;
+}
+
+// ─ PROCESS & APPROVE ───────────────────────────────────────────
+// Fills the depth-strip panel (color photo + generated depth map side-by-side)
+function fillDepthStrip(s) {
+  const angle = s.angles[0] || s.angles.find(Boolean);
+  if (!angle) return;
+  const colorImg = document.getElementById('ds-color-img');
+  if (colorImg) colorImg.src = angle.url;
+  // Depth canvas — use cached ref if available, else generate
+  const renderDepth = () => {
+    const dc = document.getElementById('ds-depth-canvas');
+    if (!dc) return;
+    if (depthCanvasRef) {
+      dc.width = depthCanvasRef.width; dc.height = depthCanvasRef.height;
+      dc.getContext('2d').drawImage(depthCanvasRef, 0, 0);
+    } else {
+      buildDepthMap(angle.url, angle.depthUrl || null).then(() => {
+        if (!depthCanvasRef) return;
+        dc.width = depthCanvasRef.width; dc.height = depthCanvasRef.height;
+        dc.getContext('2d').drawImage(depthCanvasRef, 0, 0);
+      });
+    }
+  };
+  setTimeout(renderDepth, 300);
+}
+
+// ─ MOUSE / TOUCH INPUT ─────────────────────────────────────────
+function smMove(e) {
+  autoSweep = false;
+  const r = e.currentTarget.getBoundingClientRect();
+  mou.tx = (e.clientX - r.left) / r.width  * 2 - 1;
+  mou.ty = -((e.clientY - r.top) / r.height * 2 - 1);
+}
+function smLeave() { mou.tx = 0; mou.ty = 0; }
+
+function stStart(e) { autoSweep = false; e.preventDefault(); }
+function stMove(e) {
+  const t = e.touches[0];
+  const r = e.currentTarget.getBoundingClientRect();
+  mou.tx = (t.clientX - r.left) / r.width  * 2 - 1;
+  mou.ty = -((t.clientY - r.top) / r.height * 2 - 1);
+  e.preventDefault();
+}
+function stEnd() { mou.tx = 0; mou.ty = 0; }
+
+window.addEventListener('deviceorientation', e => {
+  if (!vOpen || e.gamma == null) return;
+  autoSweep = false;
+  mou.tx = Math.max(-1, Math.min(1, e.gamma / 45));
+  mou.ty = Math.max(-1, Math.min(1, -(e.beta - 45) / 45));
+});
+
+function pinAngle(i) {
+  pinned = (pinned === i) ? -1 : i;
+  document.querySelectorAll('#v-thumbs .v-th').forEach((el, j) =>
+    el.classList.toggle('active', j === i && pinned >= 0));
+}
+
+function setupKeys() {
+  document.addEventListener('keydown', e => {
+    if (!vOpen) return;
+    if (e.key === 'Escape') { closeV(); return; }
+    if (e.key === 'g' || e.key === 'G') { setMode(vMode === '3d' ? 'grid' : '3d'); return; }
+    autoSweep = false;
+    const s = 0.15;
+    if (e.key === 'ArrowLeft')  { mou.tx = Math.max(-1, mou.tx - s); e.preventDefault(); }
+    if (e.key === 'ArrowRight') { mou.tx = Math.min( 1, mou.tx + s); e.preventDefault(); }
+    if (e.key === 'ArrowUp')    { mou.ty = Math.min( 1, mou.ty + s); e.preventDefault(); }
+    if (e.key === 'ArrowDown')  { mou.ty = Math.max(-1, mou.ty - s); e.preventDefault(); }
+  });
+}
+
+// ─ REVIEW ──────────────────────────────────────────────────────
+function doRev(st) {
+  const s = S.viewSub;
+  if (!s) return;
+  const notes = (document.getElementById('rev-notes')?.value || '').trim();
+
+  if (st === 'approved') {
+    runProcess3D(s, notes);
+    return;
+  }
+
+  commitRev(s, st, notes);
+}
+
+async function runProcess3D(s, notes) {
+  const angle = s.angles[0] || s.angles.find(Boolean);
+  const btn = document.getElementById('btn-approve');
+  if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
+
+  // Show processing overlay on the stage
+  const ov    = document.getElementById('proc-overlay');
+  const ptxt  = document.getElementById('proc-txt');
+  const pstep = document.getElementById('proc-step');
+  if (ov) ov.classList.add('show');
+
+  const setStep = (txt, sub) => {
+    if (ptxt)  ptxt.textContent  = txt;
+    if (pstep) pstep.textContent = sub;
+  };
+
+  // Step 1 — load photo
+  setStep('Processing 3D…', 'Loading photo');
+  await new Promise(r => setTimeout(r, 350));
+
+  // Step 2 — generate depth map
+  setStep('Processing 3D…', 'Generating depth map');
+  if (angle?.url) {
+    try { await buildDepthMap(angle.url, angle.depthUrl || null); } catch {}
+  }
+  await new Promise(r => setTimeout(r, 400));
+
+  // Step 3 — apply parallax
+  setStep('Processing 3D…', 'Applying 3D parallax');
+  await new Promise(r => setTimeout(r, 350));
+
+  // Step 4 — save
+  setStep('Processing 3D…', 'Saving result');
+  await saveToSupabase(s.orchidId, 'approved', notes);
+  await new Promise(r => setTimeout(r, 250));
+
+  // Done — hide overlay, commit approval, then activate the 3D viewer
+  if (ov) ov.classList.remove('show');
+  commitRev(s, 'approved', notes);
+
+  // Swap static photo → live 3D parallax
+  const stage = document.getElementById('vstage');
+  if (stage) {
+    stage.querySelectorAll('img.al').forEach(el => el.remove());
+    if (typeof THREE !== 'undefined' && angle?.url) {
+      initThreeViewer(stage, angle.url, angle.depthUrl || null);
+    }
+  }
+  setHint('Move mouse to explore depth · Arrow keys · Click angle to pin');
+
+  // Show published badge + depth strip result
+  const pubBadge2 = document.getElementById('v-pub-badge');
+  if (pubBadge2) pubBadge2.style.display = 'block';
+  const strip = document.getElementById('v-depth-strip');
+  if (strip) strip.classList.add('vis');
+  fillDepthStrip(s);
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg> Approve &amp; Process 3D'; }
+  showToast(`3D published: ${s.orchidName}`, 's');
+}
+
+function updateReviewButtons(st) {
+  const approve = document.getElementById('btn-approve');
+  const reject  = document.getElementById('btn-reject');
+  const reset   = document.getElementById('btn-reset');
+  if (!approve) return;
+  if (st === 'approved') {
+    // Approved — hide Approve & Reject, keep Reset to revert
+    approve.style.display = 'none';
+    if (reject) reject.style.display = 'none';
+    if (reset)  reset.style.display  = '';
+  } else if (st === 'rejected') {
+    // Rejected — show Approve to reconsider, hide Reject, keep Reset
+    approve.style.display = '';
+    approve.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg> Approve';
+    if (reject) reject.style.display = 'none';
+    if (reset)  reset.style.display  = '';
+  } else {
+    // Pending — show all buttons
+    approve.style.display = '';
+    approve.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 5.5L4.5 8.5L9.5 2.5"/></svg> Approve &amp; Process 3D';
+    if (reject) reject.style.display = '';
+    if (reset)  reset.style.display  = 'none';
+  }
+}
+
+function commitRev(s, st, notes) {
+  setRev(s.id, st, notes);
+  s.status = st; s.notes = notes;
+  const b = document.getElementById('v-badge');
+  if (b) { b.className = 'badge ' + st; b.textContent = cap(st); }
+  const curTxt = document.getElementById('rev-cur-txt');
+  if (curTxt) curTxt.textContent = cap(st);
+  updateReviewButtons(st);
+  renderAll();
+  if (st !== 'approved') showToast(`${cap(st)}: ${s.orchidName}`, st === 'rejected' ? 'e' : 'i');
+}
+
+async function saveToSupabase(orchidId, status, notes) {
+  if (!sb) return;
+  try {
+    await sb.from('species_sightings')
+      .update({
+        review_status: status,
+        review_notes:  notes || null,
+        reviewed_at:   new Date().toISOString(),
+      })
+      .eq('entry_id', orchidId);
+  } catch (e) {
+    console.warn('Supabase save failed (non-critical):', e);
+  }
+}
+
+// ─ REALTIME SUBSCRIPTION ───────────────────────────────────────
+// Listens for INSERT / UPDATE events on species_sightings so the
+// dashboard updates live whenever the Bloom app submits a new sighting.
+// Requires migrate_add_review_fields.sql to have been run once.
+function subscribeRealtime() {
+  if (!sb) return;
+  try {
+    sb.channel('bloom3d-sightings')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'species_sightings' },
+        payload => {
+          const row = payload.new;
+          // Only handle 3D uploads (entry_id starts with BLOOM-3D-)
+          if (!row.entry_id?.startsWith('BLOOM-3D-')) return;
+          if (S.subs.find(s => s.id === row.entry_id)) return;
+          const newSub = parseSightings([row])[0];
+          if (!newSub || !newSub.angles.length) return;
+          S.subs.unshift(newSub);
+          renderAll();
+          showToast(`New submission: ${newSub.orchidName}`, 'i');
+        })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'species_sightings' },
+        payload => {
+          const row = payload.new;
+          const idx = S.subs.findIndex(s => s.id === row.entry_id);
+          if (idx < 0) return;
+          if (row.review_status) S.subs[idx].status = row.review_status;
+          if (row.review_notes !== undefined) S.subs[idx].notes = row.review_notes || '';
+          renderAll();
+          if (S.viewSub?.id === row.entry_id) {
+            const b = document.getElementById('v-badge');
+            if (b) { b.className = 'badge ' + row.review_status; b.textContent = cap(row.review_status); }
+          }
+        })
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED')
+          console.log('Bloom3D: Realtime connected — watching for new sightings');
+      });
+  } catch (e) {
+    console.warn('Realtime subscription failed:', e);
+  }
+}
+
+function setRev(id, st, notes) {
+  S.reviews[id] = { status: st, notes, at: new Date().toISOString() };
+  saveRevs();
+}
+
+// ─ HELPERS ─────────────────────────────────────────────────────
+function fmtDate(iso) {
+  try { return new Date(iso).toLocaleString('en-PH',
+    { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch { return iso || ''; }
+}
+function fmtDateShort(iso) {
+  try { return new Date(iso).toLocaleDateString('en-PH',
+    { year:'numeric', month:'short', day:'numeric' });
+  } catch { return iso || ''; }
+}
+function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let toastT = null;
+function showToast(msg, t = 'i') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `t${t} show`;
+  if (toastT) clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>

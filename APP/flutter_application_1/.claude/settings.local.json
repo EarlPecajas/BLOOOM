@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze *)",
+      "Bash(flutter run *)",
+      "Bash(dir \"C:\\\\Users\\\\admin\\\\Documents\\\\CAPSTONE\\\\APP\\\\flutter_application_1\\\\orchid catalog\" /b)",
+      "Bash(python3 -)",
+      "Bash(flutter devices *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\admin\\\\Documents\\\\CAPSTONE\\\\APP\\\\flutter_application_1\\\\backend\" -Recurse | Where-Object { $_.Extension -eq \".js\" -and $_.FullName -notmatch \"node_modules\" } | Select-Object Name, FullName)",
+      "PowerShell(ls -Path \"C:\\\\Users\\\\admin\\\\Documents\\\\CAPSTONE\\\\APP\\\\flutter_application_1\\\\backend\" -Force -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object -First 50 Name)",
+      "Bash(flutter pub *)",
+      "Bash(flutter build *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\admin\\\\Documents\\\\CAPSTONE\\\\APP\\\\flutter_application_1\" -Force -File)",
+      "Bash(Select-Object Name, Length)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\admin\\\\Documents\\\\CAPSTONE\\\\APP\\\\flutter_application_1\" -Force -File | Select-Object Name, @{Name=\"SizeKB\"; Expression={[math]::Round\\($_.Length/1KB, 2\\)}} | Sort-Object Name | Format-Table -AutoSize)",
+      "Bash(Get-Content \"C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-admin-Documents-CAPSTONE-APP-flutter-application-1\\\\b3b0201a-c542-40e8-ae67-6e4d8e8e1943\\\\tasks\\\\bmovdj6dg.output\" -Wait)",
+      "Bash(Select-String -Pattern \"Built|Installing|error|Error|Exception|flutter run key|Connected engine\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-admin-Documents-CAPSTONE-APP-flutter-application-1\\\\4f7cbf4b-ce3d-456b-a557-97fab8c3fcdd\\\\tasks\\\\btgj0n4c5.output\" -Wait)",
+      "Bash(Select-String --line-buffered \"flutter run|Syncing files|flutter \\\\\\(|Error|error|ANR|crash|Built|Installing|key commands|Dart VM\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-admin-Documents-CAPSTONE-APP-flutter-application-1\\\\4f7cbf4b-ce3d-456b-a557-97fab8c3fcdd\\\\tasks\\\\btgj0n4c5.output\" -Tail 40)"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+﻿[
+    "Strict-Transport-Security",
+    "X-Vercel-Cache",
+    "X-Vercel-Enable-Rewrite-Caching",
+    "X-Vercel-Error",
+    "X-Vercel-Id",
+    "Content-Length",
+    "Cache-Control",
+    "Content-Type",
+    "Date",
+    "Server"
+]

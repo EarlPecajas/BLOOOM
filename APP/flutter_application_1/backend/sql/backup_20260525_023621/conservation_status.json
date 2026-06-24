@@ -1,0 +1,4 @@
+﻿[{"conservation_id":1,"conservation_status":"Critically Endangered","status_desc":"Extremely high risk of extinction in the wild.","threats":"Habitat loss, overcollection, climate pressure"}, 
+ {"conservation_id":2,"conservation_status":"Endangered","status_desc":"Very high risk of extinction in the wild.","threats":"Habitat fragmentation, illegal collection, disturbance"}, 
+ {"conservation_id":3,"conservation_status":"Vulnerable","status_desc":"High risk of extinction in the medium term.","threats":"Land-use change, invasive species, climate stress"}, 
+ {"conservation_id":4,"conservation_status":"Least Concern","status_desc":"Lower immediate risk under current assessment.","threats":"Localized disturbance and habitat pressure"}]

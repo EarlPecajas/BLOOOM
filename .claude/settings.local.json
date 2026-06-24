@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(winget install --id EclipseAdoptium.Temurin.17.JDK --accept-source-agreements --accept-package-agreements 2>&1)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git rm *)"
+    ]
+  }
+}

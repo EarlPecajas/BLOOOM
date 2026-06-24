@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="loo.png" />
+    <title>Orchid Gallery - BLOOM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+  </head>
+  <body class="gallery-page bg-light">
+    <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
+      <a href="catalog.html?split=1" class="brand-link" id="gallery-brand-link">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <img src="./loo.png" alt="Orchid logo" class="brand-logo-image" />
+          </div>
+          <div class="brand">
+            <span class="bloom-text">BLOOM</span>
+            <div class="brand-tagline">
+              <span>Botanical Locator</span>
+              <span>and Orchid Observation</span>
+              <span>Mapping System</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      <div class="auth-actions d-flex align-items-center gap-2">
+        <a href="catalog.html?split=1" class="btn btn-solid btn-success" id="gallery-back-link">Back to Catalog</a>
+      </div>
+    </header>
+
+    <main class="gallery-container container py-4">
+      <h1 class="gallery-title" id="gallery-title">Flower Gallery</h1>
+
+      <section class="gallery-grid row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3" id="gallery-grid" aria-label="Flower gallery images">
+        <!-- Images will be loaded here -->
+      </section>
+    </main>
+
+    <div class="image-lightbox" id="gallery-image-lightbox" hidden>
+      <img src="" alt="Full gallery image" id="gallery-lightbox-image" class="image-lightbox-photo" />
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const flowerName = params.get('name');
+      const galleryTitle = document.getElementById('gallery-title');
+      const galleryGrid = document.getElementById('gallery-grid');
+      const galleryBrandLink = document.getElementById('gallery-brand-link');
+      const galleryBackLink = document.getElementById('gallery-back-link');
+      const galleryImageLightbox = document.getElementById('gallery-image-lightbox');
+      const galleryLightboxImage = document.getElementById('gallery-lightbox-image');
+      const bloomSupabase = window.bloomSupabase;
+
+      const activeUserRaw = localStorage.getItem('bloomUser');
+      let viewer = null;
+      try {
+        viewer = activeUserRaw ? JSON.parse(activeUserRaw) : null;
+      } catch {
+        viewer = null;
+      }
+
+      if (activeUserRaw) {
+        const dashboardOrchidsLink = 'dashboard.html?view=orchids';
+        galleryBrandLink.href = dashboardOrchidsLink;
+        galleryBackLink.href = dashboardOrchidsLink;
+      }
+
+      function openGalleryLightbox(imageSrc) {
+        galleryLightboxImage.src = imageSrc;
+        galleryImageLightbox.hidden = false;
+      }
+
+      function closeGalleryLightbox() {
+        galleryLightboxImage.src = '';
+        galleryImageLightbox.hidden = true;
+      }
+
+      function renderGalleryImages(images) {
+        if (!images || images.length === 0) {
+          galleryGrid.innerHTML = '<p class="col-12 text-muted">No images available for this orchid.</p>';
+          return;
+        }
+
+        galleryGrid.innerHTML = images.map((imageSrc, index) => `
+          <article class="gallery-item">
+            <img src="${imageSrc}" alt="Gallery image ${index + 1}" class="gallery-image" />
+          </article>
+        `).join('');
+
+        // Add click listeners to all gallery images
+        document.querySelectorAll('.gallery-image').forEach(function(imageEl) {
+          imageEl.addEventListener('click', function() {
+            openGalleryLightbox(imageEl.src);
+          });
+        });
+      }
+
+      async function loadGalleryImages() {
+        if (!flowerName || !bloomSupabase) {
+          galleryGrid.innerHTML = '<p class="col-12 text-muted">Unable to load gallery.</p>';
+          return;
+        }
+
+        try {
+          // Try to fetch from denr_approved_sightings first (if authenticated)
+          let query = viewer
+            ? bloomSupabase.from('denr_approved_sightings')
+            : bloomSupabase.from('public_approved_sightings');
+
+          const { data, error } = await query
+            .select('whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path')
+            .eq('scientific_name', flowerName)
+            .limit(1);
+
+          if (error || !data || data.length === 0) {
+            galleryGrid.innerHTML = '<p class="col-12 text-muted">No images found for this orchid.</p>';
+            return;
+          }
+
+          const sighting = data[0];
+          const allImages = [
+            ...(Array.isArray(sighting.whole_plant_photo_path) ? sighting.whole_plant_photo_path : []),
+            ...(Array.isArray(sighting.closeup_flower_photo_path) ? sighting.closeup_flower_photo_path : []),
+            ...(Array.isArray(sighting.habitat_photo_path) ? sighting.habitat_photo_path : [])
+          ].filter(Boolean);
+
+          renderGalleryImages(allImages);
+        } catch (err) {
+          console.error('Failed to load gallery images:', err);
+          galleryGrid.innerHTML = '<p class="col-12 text-muted">Failed to load gallery images.</p>';
+        }
+      }
+
+      if (flowerName && flowerName.trim() !== '') {
+        galleryTitle.textContent = flowerName.trim();
+        galleryTitle.classList.add('scientific-name');
+        loadGalleryImages();
+      } else {
+        galleryGrid.innerHTML = '<p class="col-12 text-muted">No orchid specified.</p>';
+      }
+
+      if (galleryImageLightbox) {
+        galleryImageLightbox.addEventListener('click', closeGalleryLightbox);
+      }
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !galleryImageLightbox.hidden) {
+          closeGalleryLightbox();
+        }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

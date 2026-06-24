@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="loo.png" />
+    <title>Sign Up - BLOOM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* ── Cream/green theme override for register page ── */
+      body.signin-page.register-page {
+        background:
+          radial-gradient(ellipse 75% 65% at 28% 45%, rgba(160,210,145,.22) 0%, transparent 65%),
+          radial-gradient(ellipse 55% 65% at 82% 75%, rgba(190,225,180,.18) 0%, transparent 55%),
+          linear-gradient(160deg, #F0EAD2 0%, #EDE6C5 35%, #E8E0BE 65%, #EEE8CC 100%) !important;
+        background-size: auto, auto, 220% 220% !important;
+        animation: none !important;
+        color: #1a3a1c !important;
+      }
+
+      body.register-page .top-nav {
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #D8D0B8 !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07) !important;
+      }
+      body.register-page .bloom-text { color: #145A1E !important; }
+      body.register-page .brand-tagline span { color: rgba(20,90,30,.6) !important; }
+
+      body.register-page .signin-form {
+        background: #FFFFFF !important;
+        border: 1px solid #D8D0B8 !important;
+        box-shadow: 0 4px 20px rgba(20,90,30,0.10) !important;
+        border-radius: 16px !important;
+      }
+
+      body.register-page .signin-heading { color: #145A1E !important; }
+      body.register-page .signin-footer { color: rgba(20,90,30,.6) !important; }
+      body.register-page .signin-link { color: #145A1E !important; }
+      body.register-page .signin-link:hover { color: #0E4018 !important; }
+      body.register-page label { color: #2d5a27 !important; }
+
+      body.register-page .form-input,
+      body.register-page input.form-control {
+        background: #FAFAF7 !important;
+        background-color: #FAFAF7 !important;
+        border-color: #C8C0A8 !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
+      body.register-page .form-input::placeholder,
+      body.register-page input.form-control::placeholder { color: rgba(20,90,30,.45) !important; }
+      body.register-page .form-input:focus,
+      body.register-page input.form-control:focus {
+        background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        border-color: #145A1E !important;
+        box-shadow: 0 0 0 3px rgba(20,90,30,0.12) !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
+
+      body.register-page .signin-btn,
+      body.register-page .signin-btn.btn,
+      body.register-page .signin-btn.btn.btn-primary {
+        background: #145A1E !important;
+        background-color: #145A1E !important;
+        border-color: #145A1E !important;
+        color: #F0EAD2 !important;
+      }
+      body.register-page .signin-btn:hover,
+      body.register-page .signin-btn.btn:hover,
+      body.register-page .signin-btn.btn.btn-primary:hover {
+        background: #0E4018 !important;
+        background-color: #0E4018 !important;
+        border-color: #0E4018 !important;
+        color: #fff !important;
+      }
+      body.register-page .signin-btn:disabled {
+        background: #6b9b72 !important;
+        border-color: #6b9b72 !important;
+        color: #e8f8e0 !important;
+      }
+
+      body.register-page .signin-image-wrapper {
+        background: rgba(20,90,30,0.06) !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+      }
+    </style>
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+  </head>
+  <body class="signin-page register-page">
+    <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
+      <a href="index.html" class="brand-link">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <img src="./loo.png" alt="Orchid logo" class="brand-logo-image" />
+          </div>
+          <div class="brand">
+            <span class="bloom-text">BLOOM</span>
+            <div class="brand-tagline">
+              <span>Botanical Locator</span>
+              <span>and Orchid Observation</span>
+              <span>Mapping System</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      <div class="auth-actions"></div>
+    </header>
+
+    <main class="signin-container container-fluid">
+      <aside class="signin-image-wrapper" aria-hidden="true">
+        <img src="./queen victoria.jpg" alt="Queen Victoria's Dendrobium" class="signin-image" />
+        <div class="signin-image-label">
+          <p class="orchid-name">QUEEN VICTORIA'S DENDROBIUM</p>
+          <p class="orchid-species">Dendrobium victoriae-reginae Schitr.</p>
+        </div>
+      </aside>
+
+      <section class="signin-form-wrapper">
+        <div class="signin-form">
+          <h1 class="signin-heading">Sign up</h1>
+          
+          <form id="register-form" class="needs-validation" novalidate>
+            <input type="text" placeholder="First name" class="form-input form-control" id="first-name" required />
+            <input type="text" placeholder="Last name" class="form-input form-control" id="last-name" required />
+            <input type="email" placeholder="Email" class="form-input form-control" id="email" required />
+            <input type="date" placeholder="Birth date" class="form-input form-control" id="birth-date" required />
+            <input type="tel" placeholder="Phone number" class="form-input form-control" id="phone" required />
+            <input type="password" placeholder="Password" class="form-input form-control" id="password" required />
+            <input type="password" placeholder="Confirm password" class="form-input form-control" id="confirm-password" required />
+            
+            <button type="submit" class="signin-btn btn btn-primary w-100">Sign Up</button>
+            
+            <p class="signin-footer small text-muted mb-0">
+              Already have an account? <a href="signin.html" class="signin-link">Log In</a>
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const bloomSupabase = window.bloomSupabase;
+
+      document.getElementById('register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const firstName = document.getElementById('first-name').value.trim();
+        const lastName = document.getElementById('last-name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const birthDate = document.getElementById('birth-date').value;
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (password !== confirmPassword) {
+          alert('Passwords do not match.');
+          return;
+        }
+
+        if (!supabase) {
+          alert('Supabase is not configured.');
+          return;
+        }
+
+        try {
+          const { data, error } = await bloomSupabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                first_name: firstName,
+                last_name: lastName,
+                birth_date: birthDate,
+                phone,
+                role: 'researcher'
+              }
+            }
+          });
+
+          if (error) {
+            const msg = error.message || '';
+            if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many') || error.status === 429) {
+              alert('Too many registration attempts. Please wait a few minutes and try again.\n\nIf this keeps happening, contact your system administrator.');
+            } else if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('user already')) {
+              alert('An account with this email already exists. Please sign in instead.');
+            } else {
+              alert(msg || 'Registration failed. Please try again.');
+            }
+            return;
+          }
+
+          const user = data.user;
+          const role = String(user?.user_metadata?.role || 'researcher').trim().toLowerCase();
+
+          if (user && data.session) {
+            localStorage.setItem('bloomUser', JSON.stringify({
+              id: user.id,
+              email: user.email,
+              role,
+              first_name: user.user_metadata?.first_name || firstName,
+              last_name: user.user_metadata?.last_name || lastName
+            }));
+            // Redirect to appropriate dashboard based on role
+            const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
+            window.location.href = targetDashboard;
+            return;
+          }
+
+          alert('Registration successful. Please check your email and sign in.');
+          window.location.href = 'signin.html';
+        } catch (error) {
+          alert(error.message || 'Could not connect to Supabase. Please try again.');
+        }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
