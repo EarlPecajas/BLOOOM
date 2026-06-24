@@ -1,14 +1,24 @@
 {
   "redirects": [
-    { "source": "/index.html",                "destination": "/",            "permanent": false },
-    { "source": "/signin.html",               "destination": "/signin",      "permanent": false },
-    { "source": "/register.html",             "destination": "/register",    "permanent": false },
-    { "source": "/catalog.html",              "destination": "/catalog",     "permanent": false },
-    { "source": "/gallery.html",              "destination": "/gallery",     "permanent": false },
+    { "source": "/index.html",                "destination": "/",             "permanent": false },
+    { "source": "/signin.html",               "destination": "/signin",       "permanent": false },
+    { "source": "/register.html",             "destination": "/register",     "permanent": false },
+    { "source": "/catalog.html",              "destination": "/catalog",      "permanent": false },
+    { "source": "/gallery.html",              "destination": "/gallery",      "permanent": false },
     { "source": "/orchid-detail.html",        "destination": "/orchid-detail","permanent": false },
-    { "source": "/researcher-dashboard.html", "destination": "/researcher",  "permanent": false },
-    { "source": "/denr-dashboard.html",       "destination": "/denr",        "permanent": false },
-    { "source": "/superadmin-dashboard.html", "destination": "/admin",       "permanent": false }
+    { "source": "/researcher-dashboard.html", "destination": "/researcher",   "permanent": false },
+    { "source": "/denr-dashboard.html",       "destination": "/denr",         "permanent": false },
+    { "source": "/superadmin-dashboard.html", "destination": "/admin",        "permanent": false },
+
+    { "source": "/frontend/index.html",                "destination": "/",             "permanent": false },
+    { "source": "/frontend/signin.html",               "destination": "/signin",       "permanent": false },
+    { "source": "/frontend/register.html",             "destination": "/register",     "permanent": false },
+    { "source": "/frontend/catalog.html",              "destination": "/catalog",      "permanent": false },
+    { "source": "/frontend/gallery.html",              "destination": "/gallery",      "permanent": false },
+    { "source": "/frontend/orchid-detail.html",        "destination": "/orchid-detail","permanent": false },
+    { "source": "/frontend/researcher-dashboard.html", "destination": "/researcher",   "permanent": false },
+    { "source": "/frontend/denr-dashboard.html",       "destination": "/denr",         "permanent": false },
+    { "source": "/frontend/superadmin-dashboard.html", "destination": "/admin",        "permanent": false }
   ],
   "rewrites": [
     { "source": "/",              "destination": "/frontend/index.html" },
