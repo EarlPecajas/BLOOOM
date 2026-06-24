@@ -1121,13 +1121,12 @@
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Species</th>
               <th style="padding:1rem 0.95rem;text-align:left;font-weight:600;font-size:0.88rem;">Date</th>
               <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Status</th>
-              <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Publish</th>
               <th style="padding:1rem 0.95rem;text-align:center;font-weight:600;font-size:0.88rem;">Actions</th>
             </tr>
           </thead>
           <tbody id="submissions-table-body">
             <tr>
-              <td colspan="7" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions…</td>
+              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions…</td>
             </tr>
           </tbody>
         </table>
@@ -4140,29 +4139,24 @@
           const sid = submission.id;
           const speciesKey = (submission.species || '').trim().toLowerCase();
 
-          // Publish / Unpublish cell — approved submissions only
-          // Base publish state on whether the species is in the orchid catalog
+          // Publish / Unpublish button — approved submissions only
           const inCatalog = catalogNames.has(speciesKey);
-          let publishCell = '<td style="text-align:center;padding:.6rem .95rem;"></td>';
+          let publishBtn = '';
           if (isAdminRole && isApproved(submission)) {
             if (inCatalog) {
-              publishCell = `<td style="text-align:center;padding:.6rem .95rem;">
-                <button type="button" onclick="denrClickUnpublish(${sid})"
-                  style="background:#fff1f2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:6px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;box-shadow:0 1px 2px rgba(220,38,38,0.08);"
-                  onmouseover="this.style.background='#fee2e2';this.style.borderColor='#f87171';"
-                  onmouseout="this.style.background='#fff1f2';this.style.borderColor='#fca5a5';">
-                  Unpublish
-                </button>
-              </td>`;
+              publishBtn = `<button type="button" onclick="denrClickUnpublish(${sid})"
+                style="background:#fff1f2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:6px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;box-shadow:0 1px 2px rgba(220,38,38,0.08);"
+                onmouseover="this.style.background='#fee2e2';this.style.borderColor='#f87171';"
+                onmouseout="this.style.background='#fff1f2';this.style.borderColor='#fca5a5';">
+                Unpublish
+              </button>`;
             } else {
-              publishCell = `<td style="text-align:center;padding:.6rem .95rem;">
-                <button type="button" class="sub-post-btn" data-submission-id="${sid}"
-                  style="background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;border-radius:6px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;box-shadow:0 1px 2px rgba(22,163,74,0.08);"
-                  onmouseover="this.style.background='#dcfce7';this.style.borderColor='#4ade80';"
-                  onmouseout="this.style.background='#f0fdf4';this.style.borderColor='#86efac';">
-                  Publish
-                </button>
-              </td>`;
+              publishBtn = `<button type="button" class="sub-post-btn" data-submission-id="${sid}"
+                style="background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;border-radius:6px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;box-shadow:0 1px 2px rgba(22,163,74,0.08);"
+                onmouseover="this.style.background='#dcfce7';this.style.borderColor='#4ade80';"
+                onmouseout="this.style.background='#f0fdf4';this.style.borderColor='#86efac';">
+                Publish
+              </button>`;
             }
           }
 
@@ -4182,11 +4176,11 @@
               <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
-              ${publishCell}
               <td class="submission-action-cell" style="white-space:nowrap;">
                 <div style="display:inline-flex;align-items:center;gap:5px;">
                   <button type="button" class="sub-action-btn view" data-submission-id="${sid}" title="View details"></button>
                   ${quickBtns}
+                  ${publishBtn}
                 </div>
               </td>
             </tr>
