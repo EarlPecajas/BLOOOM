@@ -3,14 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" href="loo.png" />
+  <link rel="icon" type="image/png" href="/frontend/loo.png" />
   <title>Super Admin - BLOOM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-client.js"></script>
+  <script>
+    // Inline config so this page works at any URL (e.g. /admin rewrite)
+    const _SB_URL  = 'https://fmvkxvmrycsubjmkyaet.supabase.co';
+    const _SB_KEY  = 'sb_publishable_K0MUDbcpMBwsSmcY5VC5pA_bEeeaMH-';
+    window.bloomSupabase = window.supabase.createClient(_SB_URL, _SB_KEY, {
+      db: { schema: 'public' },
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -564,7 +571,7 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="login-brand">
-      <img src="loo.png" alt="BLOOM" />
+      <img src="/frontend/loo.png" alt="BLOOM" />
       <span class="login-brand-name">BLOOM</span>
       <span class="login-brand-sub">Super Admin Panel</span>
     </div>
@@ -590,7 +597,7 @@
   <!-- Navbar -->
   <nav class="sa-nav">
     <div class="sa-nav-brand">
-      <img src="loo.png" alt="BLOOM" />
+      <img src="/frontend/loo.png" alt="BLOOM" />
       <div class="sa-nav-brand-text">
         <div class="sa-nav-brand-name">BLOOM</div>
         <div class="sa-nav-brand-role">Super Admin</div>
