@@ -2,7 +2,10 @@
 -- Tracks approval status, role, and basic info for every registered user.
 -- The superadmin dashboard reads/writes this table to manage accounts.
 
-CREATE TABLE IF NOT EXISTS public.user_profiles (
+-- Drop and recreate cleanly so all columns are guaranteed to exist.
+DROP TABLE IF EXISTS public.user_profiles CASCADE;
+
+CREATE TABLE public.user_profiles (
   id          UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email       TEXT        NOT NULL,
   full_name   TEXT,
