@@ -2215,7 +2215,9 @@
         authResolved = true;
 
         // Expose role-dependent UI or initialize views after auth resolved.
-        try { openDashboardView('dashboard'); } catch {}
+        // Respect the ?view= URL param if present, otherwise fall back to dashboard.
+        const _initView = new URLSearchParams(window.location.search).get('view') || 'dashboard';
+        try { openDashboardView(_initView); } catch {}
         document.body.style.visibility = 'visible';
       })();
 
