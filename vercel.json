@@ -6,6 +6,7 @@
     { "source": "/catalog",    "destination": "/frontend/catalog.html" },
     { "source": "/gallery",    "destination": "/frontend/gallery.html" },
     { "source": "/signin",     "destination": "/frontend/signin.html" },
-    { "source": "/register",   "destination": "/frontend/register.html" }
+    { "source": "/register",   "destination": "/frontend/register.html" },
+    { "source": "/admin",      "destination": "/frontend/superadmin-dashboard.html" }
   ]
 }
