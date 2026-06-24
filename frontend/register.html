@@ -169,10 +169,14 @@
           return;
         }
 
-        if (!supabase) {
+        if (!bloomSupabase) {
           alert('Supabase is not configured.');
           return;
         }
+
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Signing up…';
 
         try {
           const { data, error } = await bloomSupabase.auth.signUp({
@@ -198,30 +202,47 @@
             } else {
               alert(msg || 'Registration failed. Please try again.');
             }
+            btn.disabled = false;
+            btn.textContent = 'Sign Up';
             return;
           }
 
           const user = data.user;
-          const role = String(user?.user_metadata?.role || 'researcher').trim().toLowerCase();
 
-          if (user && data.session) {
-            localStorage.setItem('bloomUser', JSON.stringify({
-              id: user.id,
-              email: user.email,
-              role,
-              first_name: user.user_metadata?.first_name || firstName,
-              last_name: user.user_metadata?.last_name || lastName
-            }));
-            // Redirect to appropriate dashboard based on role
-            const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
-            window.location.href = targetDashboard;
-            return;
+          // Also insert into user_profiles with status='pending' for superadmin approval.
+          // The trigger on auth.users handles this automatically, but we upsert here as a fallback.
+          if (user) {
+            try {
+              await bloomSupabase.from('user_profiles').upsert({
+                id: user.id,
+                email: user.email,
+                full_name: `${firstName} ${lastName}`.trim(),
+                role: 'researcher',
+                status: 'pending',
+                phone: phone || null,
+                birth_date: birthDate || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'id' });
+            } catch (_) {}
           }
 
-          alert('Registration successful. Please check your email and sign in.');
-          window.location.href = 'signin.html';
+          // Show pending approval notice instead of redirecting to dashboard
+          this.innerHTML = `
+            <div style="text-align:center;padding:1rem 0;">
+              <div style="font-size:2rem;margin-bottom:.75rem;">✅</div>
+              <div style="font-size:1rem;font-weight:700;color:#145A1E;margin-bottom:.5rem;">Registration submitted!</div>
+              <div style="font-size:.875rem;color:#5a7a5c;line-height:1.6;margin-bottom:1.25rem;">
+                Your account is <strong>pending approval</strong> by the administrator.<br>
+                You will be able to sign in once your account is approved.
+              </div>
+              <a href="signin.html" style="display:inline-block;padding:.6rem 1.5rem;background:#145A1E;color:#F0EAD2;border-radius:8px;text-decoration:none;font-weight:700;font-size:.875rem;">Back to Sign In</a>
+            </div>
+          `;
         } catch (error) {
           alert(error.message || 'Could not connect to Supabase. Please try again.');
+          btn.disabled = false;
+          btn.textContent = 'Sign Up';
         }
       });
     </script>

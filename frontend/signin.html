@@ -200,18 +200,48 @@
             return;
           }
 
-          const role = String(data.user.user_metadata?.role || 'researcher').trim().toLowerCase();
+          // Check account approval status from user_profiles
+          let profileStatus = 'approved';
+          let profileRole = String(data.user.user_metadata?.role || 'researcher').trim().toLowerCase();
+          try {
+            const { data: profile } = await bloomSupabase
+              .from('user_profiles')
+              .select('status, role')
+              .eq('id', data.user.id)
+              .single();
+            if (profile) {
+              profileStatus = profile.status || 'approved';
+              profileRole   = profile.role   || profileRole;
+            }
+          } catch (_) {}
+
+          if (profileStatus === 'pending') {
+            await bloomSupabase.auth.signOut();
+            showSigninError('Your account is pending approval by the administrator. Please wait for confirmation.');
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+            return;
+          }
+
+          if (profileStatus === 'disabled') {
+            await bloomSupabase.auth.signOut();
+            showSigninError('Your account has been disabled. Please contact the administrator.');
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+            return;
+          }
+
           const userRecord = {
             id: data.user.id,
             email: data.user.email,
-            role,
+            role: profileRole,
             first_name: data.user.user_metadata?.first_name || '',
             last_name: data.user.user_metadata?.last_name || ''
           };
 
           localStorage.setItem('bloomUser', JSON.stringify(userRecord));
           sessionStorage.setItem('bloomUser', JSON.stringify(userRecord));
-          const targetDashboard = (role === 'admin' || role === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
+          const targetDashboard = (profileRole === 'admin' || profileRole === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
           window.location.href = targetDashboard;
         } catch (err) {
           showSigninError(err.message || 'Could not connect. Please try again.');

@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="loo.png" />
+  <title>Super Admin - BLOOM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #F0EAD2;
+      --cream-mid:   #EDE6C5;
+      --cream-dark:  #E0D8C0;
+      --border:      #D8D0B8;
+      --green:       #145A1E;
+      --green-dark:  #0E4018;
+      --green-mid:   #2d6b38;
+      --green-pale:  #EAF3EA;
+      --green-light: #f2fbf2;
+      --muted:       #5a7a5c;
+      --text:        #1a3a1c;
+      --white:       #ffffff;
+      --sidebar-w:   240px;
+      --nav-h:       62px;
+    }
+
+    body {
+      font-family: Inter, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ─────────────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse 75% 65% at 72% 45%, rgba(160,210,145,.22) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 65% at 18% 75%, rgba(190,225,180,.18) 0%, transparent 55%),
+        linear-gradient(160deg, #F0EAD2 0%, #EDE6C5 35%, #E8E0BE 65%, #EEE8CC 100%);
+    }
+
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2.5rem 2.25rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 6px 32px rgba(20,90,30,.13);
+    }
+
+    .login-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 2rem;
+    }
+
+    .login-brand img { width: 52px; height: 52px; border-radius: 50%; }
+    .login-brand-name { font-size: 1.45rem; font-weight: 800; color: var(--green); letter-spacing: -.02em; }
+    .login-brand-sub  { font-size: .78rem; color: var(--muted); font-weight: 500; }
+
+    .login-card h2 { font-size: 1.15rem; font-weight: 700; color: var(--green); margin-bottom: 1.4rem; text-align: center; }
+
+    .login-field {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      margin-bottom: 1rem;
+    }
+
+    .login-field label { font-size: .8rem; font-weight: 600; color: var(--muted); }
+
+    .login-field input {
+      padding: .65rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      font-family: inherit;
+      background: #FAFAF7;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .login-field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(20,90,30,.1);
+      background: var(--white);
+    }
+
+    .login-error {
+      display: none;
+      background: #fff0f0;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: .6rem .9rem;
+      font-size: .82rem;
+      color: #991b1b;
+      margin-bottom: .75rem;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: .7rem;
+      background: var(--green);
+      color: var(--cream);
+      border: none;
+      border-radius: 8px;
+      font-size: .92rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: .4rem;
+    }
+
+    .login-btn:hover { background: var(--green-dark); }
+
+    /* ── DASHBOARD LAYOUT ─────────────────────────────────────── */
+    #dashboard { display: none; min-height: 100vh; }
+
+    /* Navbar */
+    .sa-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(20,90,30,.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem 0 1rem;
+      z-index: 100;
+    }
+
+    .sa-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      text-decoration: none;
+    }
+
+    .sa-nav-brand img { width: 36px; height: 36px; border-radius: 50%; }
+
+    .sa-nav-brand-text { line-height: 1.15; }
+    .sa-nav-brand-name { font-size: 1rem; font-weight: 800; color: var(--green); letter-spacing: -.01em; }
+    .sa-nav-brand-role { font-size: .68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+
+    .sa-nav-right { display: flex; align-items: center; gap: .75rem; }
+
+    .sa-nav-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--green);
+      color: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700;
+    }
+
+    .sa-signout-btn {
+      padding: .42rem 1rem;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color .14s, color .14s;
+    }
+
+    .sa-signout-btn:hover { border-color: var(--green); color: var(--green); }
+
+    /* Sidebar */
+    .sa-sidebar {
+      position: fixed;
+      top: var(--nav-h);
+      left: 0;
+      width: var(--sidebar-w);
+      height: calc(100vh - var(--nav-h));
+      background: var(--green);
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 0;
+      overflow-y: auto;
+      z-index: 90;
+    }
+
+    .sa-sidebar-section {
+      padding: 0 .85rem;
+      margin-bottom: .25rem;
+    }
+
+    .sa-sidebar-label {
+      font-size: .63rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.45);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      padding: .5rem .75rem .3rem;
+    }
+
+    .sa-nav-item {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .65rem .75rem;
+      border-radius: 9px;
+      color: rgba(255,255,255,.75);
+      font-size: .87rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .14s, color .14s;
+      margin-bottom: 2px;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .sa-nav-item:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    .sa-nav-item.active {
+      background: rgba(255,255,255,.18);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .sa-nav-item svg { flex-shrink: 0; opacity: .85; }
+
+    .sa-badge {
+      margin-left: auto;
+      background: #dc2626;
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .1rem .45rem;
+      border-radius: 99px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* Main content */
+    .sa-main {
+      margin-left: var(--sidebar-w);
+      margin-top: var(--nav-h);
+      padding: 2rem 2.25rem;
+      min-height: calc(100vh - var(--nav-h));
+    }
+
+    /* Page header */
+    .sa-page-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: .25rem;
+    }
+
+    .sa-page-sub {
+      font-size: .84rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+    }
+
+    /* Stat cards */
+    .sa-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .sa-stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      box-shadow: 0 1px 4px rgba(20,90,30,.06);
+    }
+
+    .sa-stat-label { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .sa-stat-val   { font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1; }
+    .sa-stat-sub   { font-size: .75rem; color: var(--muted); }
+
+    .sa-stat-card.warning .sa-stat-val { color: #b45309; }
+    .sa-stat-card.danger  .sa-stat-val { color: #dc2626; }
+
+    /* Section card */
+    .sa-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(20,90,30,.06);
+      margin-bottom: 1.5rem;
+    }
+
+    .sa-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      background: #fafaf6;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .sa-section-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .sa-search {
+      padding: .48rem .85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .84rem;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+      width: 220px;
+      transition: border-color .14s;
+    }
+
+    .sa-search:focus { border-color: var(--green); }
+
+    /* Table */
+    .sa-table { width: 100%; border-collapse: collapse; }
+
+    .sa-table th {
+      padding: .75rem 1rem;
+      text-align: left;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      background: #fafaf6;
+      white-space: nowrap;
+    }
+
+    .sa-table td {
+      padding: .8rem 1rem;
+      font-size: .875rem;
+      border-bottom: 1px solid #f0ede4;
+      vertical-align: middle;
+    }
+
+    .sa-table tr:last-child td { border-bottom: none; }
+    .sa-table tr:hover td { background: var(--green-pale); }
+
+    /* Badges */
+    .sa-badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .22rem .7rem;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sa-badge-status.pending  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .sa-badge-status.approved { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .sa-badge-status.disabled { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    .sa-badge-role {
+      display: inline-flex;
+      padding: .2rem .65rem;
+      border-radius: 6px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    .sa-badge-role.researcher { background: #dbeafe; color: #1e40af; }
+    .sa-badge-role.admin      { background: #ede9fe; color: #5b21b6; }
+    .sa-badge-role.denr       { background: #dcfce7; color: #14532d; }
+
+    /* Action buttons */
+    .sa-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .32rem .75rem;
+      border-radius: 7px;
+      font-size: .75rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: background .14s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .sa-btn:active { transform: scale(.97); }
+    .sa-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .sa-btn-approve  { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .sa-btn-approve:hover  { background: #a7f3d0; }
+    .sa-btn-disable  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .sa-btn-disable:hover  { background: #fecaca; }
+    .sa-btn-enable   { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .sa-btn-enable:hover   { background: #fde68a; }
+    .sa-btn-primary  { background: var(--green); color: var(--cream); border: 1px solid var(--green); }
+    .sa-btn-primary:hover  { background: var(--green-dark); }
+
+    /* Role select */
+    .sa-role-select {
+      padding: .28rem .55rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: .78rem;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .sa-role-select:focus { border-color: var(--green); }
+
+    /* Empty state */
+    .sa-empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    /* Toast */
+    #sa-toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: .75rem 1.25rem;
+      border-radius: 10px;
+      font-size: .88rem;
+      font-weight: 600;
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(20,90,30,.25);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+    }
+
+    #sa-toast.show { opacity: 1; transform: translateY(0); }
+    #sa-toast.error { background: #dc2626; }
+
+    /* View sections */
+    .sa-view { display: none; }
+    .sa-view.active { display: block; }
+
+    /* Confirm modal */
+    .sa-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.55);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sa-modal-overlay.open { display: flex; }
+
+    .sa-modal {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 2rem;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 12px 40px rgba(0,0,0,.2);
+    }
+
+    .sa-modal h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+    .sa-modal p  { font-size: .875rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+
+    .sa-modal-actions { display: flex; gap: .75rem; justify-content: flex-end; }
+
+    .sa-modal-cancel {
+      padding: .5rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .sa-modal-confirm {
+      padding: .5rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      font-size: .875rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .sa-modal-confirm.danger { background: #dc2626; }
+
+    /* Loading spinner */
+    .sa-spin {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .sa-loading-row td {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .sa-sidebar { transform: translateX(-100%); }
+      .sa-main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ──────────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <img src="loo.png" alt="BLOOM" />
+      <span class="login-brand-name">BLOOM</span>
+      <span class="login-brand-sub">Super Admin Panel</span>
+    </div>
+    <h2>Administrator Sign In</h2>
+    <form id="login-form" autocomplete="off">
+      <div class="login-field">
+        <label for="sa-user">Username</label>
+        <input type="text" id="sa-user" placeholder="admin" autocomplete="username" required />
+      </div>
+      <div class="login-field">
+        <label for="sa-pass">Password</label>
+        <input type="password" id="sa-pass" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button type="submit" class="login-btn" id="login-btn">Sign In</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ─────────────────────────────────────────────────── -->
+<div id="dashboard">
+
+  <!-- Navbar -->
+  <nav class="sa-nav">
+    <div class="sa-nav-brand">
+      <img src="loo.png" alt="BLOOM" />
+      <div class="sa-nav-brand-text">
+        <div class="sa-nav-brand-name">BLOOM</div>
+        <div class="sa-nav-brand-role">Super Admin</div>
+      </div>
+    </div>
+    <div class="sa-nav-right">
+      <div class="sa-nav-avatar">SA</div>
+      <button class="sa-signout-btn" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="sa-sidebar">
+    <div class="sa-sidebar-label">Management</div>
+    <div class="sa-sidebar-section">
+      <button class="sa-nav-item active" onclick="showView('overview')" id="nav-overview">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Overview
+      </button>
+      <button class="sa-nav-item" onclick="showView('pending')" id="nav-pending">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pending Approvals
+        <span class="sa-badge" id="pending-badge" style="display:none;">0</span>
+      </button>
+      <button class="sa-nav-item" onclick="showView('users')" id="nav-users">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        All Users
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="sa-main">
+
+    <!-- ── OVERVIEW ── -->
+    <div class="sa-view active" id="view-overview">
+      <div class="sa-page-title">Dashboard Overview</div>
+      <div class="sa-page-sub">Monitor and manage all registered accounts in BLOOM.</div>
+
+      <div class="sa-stats">
+        <div class="sa-stat-card">
+          <div class="sa-stat-label">Total Users</div>
+          <div class="sa-stat-val" id="stat-total">—</div>
+          <div class="sa-stat-sub">All registered accounts</div>
+        </div>
+        <div class="sa-stat-card warning">
+          <div class="sa-stat-label">Pending</div>
+          <div class="sa-stat-val" id="stat-pending">—</div>
+          <div class="sa-stat-sub">Awaiting approval</div>
+        </div>
+        <div class="sa-stat-card">
+          <div class="sa-stat-label">Approved</div>
+          <div class="sa-stat-val" id="stat-approved">—</div>
+          <div class="sa-stat-sub">Active accounts</div>
+        </div>
+        <div class="sa-stat-card danger">
+          <div class="sa-stat-label">Disabled</div>
+          <div class="sa-stat-val" id="stat-disabled">—</div>
+          <div class="sa-stat-sub">Suspended accounts</div>
+        </div>
+      </div>
+
+      <!-- Recent pending -->
+      <div class="sa-section">
+        <div class="sa-section-head">
+          <div class="sa-section-title">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Recent Pending Approvals
+          </div>
+          <button class="sa-btn sa-btn-primary" onclick="showView('pending')" style="font-size:.78rem;padding:.3rem .85rem;">View All</button>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recent-pending-tbody">
+            <tr class="sa-loading-row"><td colspan="4">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PENDING APPROVALS ── -->
+    <div class="sa-view" id="view-pending">
+      <div class="sa-page-title">Pending Approvals</div>
+      <div class="sa-page-sub">Review and approve new researcher registrations.</div>
+
+      <div class="sa-section">
+        <div class="sa-section-head">
+          <div class="sa-section-title">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Awaiting Approval
+          </div>
+          <input type="text" class="sa-search" id="pending-search" placeholder="Search…" oninput="filterPending()" />
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pending-tbody">
+            <tr class="sa-loading-row"><td colspan="5">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ALL USERS ── -->
+    <div class="sa-view" id="view-users">
+      <div class="sa-page-title">All Users</div>
+      <div class="sa-page-sub">Manage roles and account status for all registered users.</div>
+
+      <div class="sa-section">
+        <div class="sa-section-head">
+          <div class="sa-section-title">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            User Accounts
+          </div>
+          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+            <select id="status-filter" onchange="filterUsers()" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;background:#fff;color:var(--text);cursor:pointer;outline:none;">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="disabled">Disabled</option>
+            </select>
+            <input type="text" class="sa-search" id="users-search" placeholder="Search name or email…" oninput="filterUsers()" />
+          </div>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr class="sa-loading-row"><td colspan="6">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── CONFIRM MODAL ──────────────────────────────────────────────── -->
+<div class="sa-modal-overlay" id="confirm-modal">
+  <div class="sa-modal">
+    <h3 id="modal-title">Confirm Action</h3>
+    <p id="modal-body">Are you sure?</p>
+    <div class="sa-modal-actions">
+      <button class="sa-modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="sa-modal-confirm" id="modal-confirm-btn" onclick="modalConfirmFn()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ─────────────────────────────────────────────────────── -->
+<div id="sa-toast"></div>
+
+<script>
+  // ── Constants ────────────────────────────────────────────────────
+  const ADMIN_USER = 'admin';
+  const ADMIN_PASS = 'admin';
+  const SESSION_KEY = 'bloomSuperAdmin';
+
+  // ── Supabase client ───────────────────────────────────────────────
+  const db = window.bloomSupabase;
+
+  // ── Auth ──────────────────────────────────────────────────────────
+  function isLoggedIn() {
+    return sessionStorage.getItem(SESSION_KEY) === '1';
+  }
+
+  function doSignOut() {
+    sessionStorage.removeItem(SESSION_KEY);
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('sa-user').value = '';
+    document.getElementById('sa-pass').value = '';
+  }
+
+  document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const user = document.getElementById('sa-user').value.trim();
+    const pass = document.getElementById('sa-pass').value;
+    const errEl = document.getElementById('login-error');
+
+    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+      errEl.style.display = 'none';
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadAll();
+    } else {
+      errEl.textContent = 'Incorrect username or password.';
+      errEl.style.display = 'block';
+    }
+  });
+
+  // Check session on load
+  window.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadAll();
+    }
+  });
+
+  // ── Navigation ────────────────────────────────────────────────────
+  function showView(name) {
+    document.querySelectorAll('.sa-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.sa-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, isError = false) {
+    const el = document.getElementById('sa-toast');
+    el.textContent = msg;
+    el.className = 'show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+  }
+
+  // ── Confirm modal ─────────────────────────────────────────────────
+  let modalConfirmFn = () => {};
+
+  function openModal(title, body, onConfirm, isDanger = false) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').textContent = body;
+    document.getElementById('modal-confirm-btn').className = 'sa-modal-confirm' + (isDanger ? ' danger' : '');
+    modalConfirmFn = onConfirm;
+    document.getElementById('confirm-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('confirm-modal').classList.remove('open');
+    modalConfirmFn = () => {};
+  }
+
+  document.getElementById('confirm-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ── Data layer ────────────────────────────────────────────────────
+  let allProfiles = [];
+
+  async function loadAll() {
+    if (!db) {
+      showToast('Supabase not configured.', true);
+      return;
+    }
+    await loadProfiles();
+  }
+
+  async function loadProfiles() {
+    const { data, error } = await db
+      .from('user_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showToast('Failed to load users: ' + error.message, true);
+      return;
+    }
+
+    allProfiles = data || [];
+    updateStats();
+    renderRecentPending();
+    renderPending();
+    renderUsers();
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────
+  function updateStats() {
+    const total    = allProfiles.length;
+    const pending  = allProfiles.filter(u => u.status === 'pending').length;
+    const approved = allProfiles.filter(u => u.status === 'approved').length;
+    const disabled = allProfiles.filter(u => u.status === 'disabled').length;
+
+    document.getElementById('stat-total').textContent    = total;
+    document.getElementById('stat-pending').textContent  = pending;
+    document.getElementById('stat-approved').textContent = approved;
+    document.getElementById('stat-disabled').textContent = disabled;
+
+    const badge = document.getElementById('pending-badge');
+    if (pending > 0) {
+      badge.textContent = pending;
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
+  }
+
+  function statusBadge(status) {
+    const map = {
+      pending:  '<span class="sa-badge-status pending">● Pending</span>',
+      approved: '<span class="sa-badge-status approved">● Approved</span>',
+      disabled: '<span class="sa-badge-status disabled">● Disabled</span>',
+    };
+    return map[status] || status;
+  }
+
+  function roleBadge(role) {
+    const map = {
+      researcher: '<span class="sa-badge-role researcher">Researcher</span>',
+      admin:      '<span class="sa-badge-role admin">Admin</span>',
+      denr:       '<span class="sa-badge-role denr">DENR</span>',
+    };
+    return map[role] || `<span class="sa-badge-role researcher">${role}</span>`;
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Recent pending (overview) ─────────────────────────────────────
+  function renderRecentPending() {
+    const tbody = document.getElementById('recent-pending-tbody');
+    const items = allProfiles.filter(u => u.status === 'pending').slice(0, 5);
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="sa-empty">No pending approvals</td></tr>';
+      return;
+    }
+    tbody.innerHTML = items.map(u => `
+      <tr>
+        <td style="font-weight:600;">${esc(u.full_name || '—')}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${esc(u.email)}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${fmtDate(u.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="sa-btn sa-btn-approve" onclick="approveUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✓ Approve</button>
+            <button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✕ Reject</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Pending table ─────────────────────────────────────────────────
+  function filterPending() {
+    renderPending(document.getElementById('pending-search').value.trim().toLowerCase());
+  }
+
+  function renderPending(search = '') {
+    const tbody = document.getElementById('pending-tbody');
+    let items = allProfiles.filter(u => u.status === 'pending');
+    if (search) items = items.filter(u =>
+      (u.full_name || '').toLowerCase().includes(search) ||
+      (u.email || '').toLowerCase().includes(search)
+    );
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="sa-empty">${search ? 'No results found.' : 'No pending approvals — all caught up!'}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = items.map(u => `
+      <tr>
+        <td style="font-weight:600;">${esc(u.full_name || '—')}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${esc(u.email)}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${esc(u.phone || '—')}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${fmtDate(u.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="sa-btn sa-btn-approve" onclick="approveUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✓ Approve</button>
+            <button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✕ Reject</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── All users table ───────────────────────────────────────────────
+  function filterUsers() {
+    const search = document.getElementById('users-search').value.trim().toLowerCase();
+    const status = document.getElementById('status-filter').value;
+    renderUsers(search, status);
+  }
+
+  function renderUsers(search = '', statusFilter = '') {
+    const tbody = document.getElementById('users-tbody');
+    let items = [...allProfiles];
+    if (statusFilter) items = items.filter(u => u.status === statusFilter);
+    if (search) items = items.filter(u =>
+      (u.full_name || '').toLowerCase().includes(search) ||
+      (u.email || '').toLowerCase().includes(search)
+    );
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="sa-empty">${search || statusFilter ? 'No users match the filter.' : 'No users found.'}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = items.map(u => {
+      const actions = [];
+      if (u.status === 'pending') {
+        actions.push(`<button class="sa-btn sa-btn-approve" onclick="approveUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✓ Approve</button>`);
+        actions.push(`<button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✕ Reject</button>`);
+      } else if (u.status === 'approved') {
+        actions.push(`<button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">Disable</button>`);
+      } else if (u.status === 'disabled') {
+        actions.push(`<button class="sa-btn sa-btn-enable" onclick="enableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">Enable</button>`);
+      }
+      return `
+        <tr>
+          <td style="font-weight:600;">${esc(u.full_name || '—')}</td>
+          <td style="color:var(--muted);font-size:.82rem;">${esc(u.email)}</td>
+          <td>
+            <select class="sa-role-select" onchange="changeRole('${esc(u.id)}','${esc(u.full_name || u.email)}',this.value,this)">
+              <option value="researcher" ${u.role === 'researcher' ? 'selected' : ''}>Researcher</option>
+              <option value="denr"       ${u.role === 'denr'       ? 'selected' : ''}>DENR Admin</option>
+              <option value="admin"      ${u.role === 'admin'      ? 'selected' : ''}>Admin</option>
+            </select>
+          </td>
+          <td>${statusBadge(u.status)}</td>
+          <td style="color:var(--muted);font-size:.82rem;">${fmtDate(u.created_at)}</td>
+          <td>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+              ${actions.join('')}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── Actions ───────────────────────────────────────────────────────
+  async function updateStatus(id, status) {
+    const { error } = await db
+      .from('user_profiles')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    return error;
+  }
+
+  async function approveUser(id, name) {
+    openModal(
+      'Approve Account',
+      `Approve the account for "${name}"? They will be able to sign in to the researcher dashboard.`,
+      async () => {
+        closeModal();
+        const err = await updateStatus(id, 'approved');
+        if (err) { showToast('Failed: ' + err.message, true); return; }
+        const p = allProfiles.find(u => u.id === id);
+        if (p) p.status = 'approved';
+        showToast(`"${name}" approved successfully.`);
+        updateStats(); renderRecentPending(); renderPending(); renderUsers();
+      }
+    );
+  }
+
+  async function disableUser(id, name) {
+    openModal(
+      'Disable / Reject Account',
+      `Disable the account for "${name}"? They will not be able to sign in.`,
+      async () => {
+        closeModal();
+        const err = await updateStatus(id, 'disabled');
+        if (err) { showToast('Failed: ' + err.message, true); return; }
+        const p = allProfiles.find(u => u.id === id);
+        if (p) p.status = 'disabled';
+        showToast(`"${name}" has been disabled.`);
+        updateStats(); renderRecentPending(); renderPending(); renderUsers();
+      },
+      true
+    );
+  }
+
+  async function enableUser(id, name) {
+    openModal(
+      'Enable Account',
+      `Re-enable the account for "${name}"? They will be able to sign in again.`,
+      async () => {
+        closeModal();
+        const err = await updateStatus(id, 'approved');
+        if (err) { showToast('Failed: ' + err.message, true); return; }
+        const p = allProfiles.find(u => u.id === id);
+        if (p) p.status = 'approved';
+        showToast(`"${name}" has been enabled.`);
+        updateStats(); renderRecentPending(); renderPending(); renderUsers();
+      }
+    );
+  }
+
+  async function changeRole(id, name, newRole, selectEl) {
+    const prev = allProfiles.find(u => u.id === id)?.role;
+    if (prev === newRole) return;
+    openModal(
+      'Change Role',
+      `Change ${name}'s role to "${newRole}"?`,
+      async () => {
+        closeModal();
+        const { error } = await db
+          .from('user_profiles')
+          .update({ role: newRole, updated_at: new Date().toISOString() })
+          .eq('id', id);
+        if (error) {
+          showToast('Failed: ' + error.message, true);
+          if (selectEl) selectEl.value = prev;
+          return;
+        }
+        const p = allProfiles.find(u => u.id === id);
+        if (p) p.role = newRole;
+        showToast(`${name}'s role updated to "${newRole}".`);
+        renderUsers(
+          document.getElementById('users-search').value.trim().toLowerCase(),
+          document.getElementById('status-filter').value
+        );
+      },
+      false
+    );
+  }
+</script>
+</body>
+</html>
