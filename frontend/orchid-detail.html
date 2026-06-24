@@ -2136,9 +2136,8 @@
         const backLink = document.getElementById('detail-back-link');
         if (backLink) {
           const from = params.get('from');
-          if (from === 'researcher-dashboard' || from === 'denr-dashboard') {
-            const dashPage = from === 'denr-dashboard' ? 'denr-dashboard.html' : 'researcher-dashboard.html';
-            backLink.href = dashPage + '?view=orchids';
+          if (from === 'researcher-dashboard') {
+            backLink.href = 'researcher-dashboard.html?view=orchids';
             backLink.innerHTML = '&larr; Catalog';
           } else {
             backLink.href = 'catalog.html';
