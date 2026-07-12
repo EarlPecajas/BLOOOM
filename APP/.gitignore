@@ -1,0 +1,13 @@
+flutter_application_1/.dart_tool/
+flutter_application_1/build/
+flutter_application_1/.idea/
+flutter_application_1/*.iml
+flutter_application_1/.flutter-plugins
+flutter_application_1/.flutter-plugins-dependencies
+flutter_application_1/.packages
+flutter_application_1/android/.gradle/
+flutter_application_1/android/local.properties
+flutter_application_1/android/java_pid*
+flutter_application_1/backend/node_modules/
+flutter_application_1/backend/.env
+flutter_application_1/backend/.env.*
