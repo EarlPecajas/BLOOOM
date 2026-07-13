@@ -234,6 +234,36 @@
     <script>
       const bloomSupabase = window.bloomSupabase;
 
+      const BLOOM_TOAST_ICONS = {
+        success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>',
+        error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M15 9l-6 6M9 9l6 6"></path></svg>',
+        warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>',
+        info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>'
+      };
+      function showToast(message, type, duration) {
+        type = BLOOM_TOAST_ICONS[type] ? type : 'info';
+        duration = duration || 5000;
+        let container = document.getElementById('bloom-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'bloom-toast-container';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `bloom-toast bloom-toast--${type}`;
+        toast.innerHTML = `
+          <span class="bloom-toast-icon">${BLOOM_TOAST_ICONS[type]}</span>
+          <span class="bloom-toast-msg"></span>
+          <button type="button" class="bloom-toast-close" aria-label="Dismiss">&times;</button>
+        `;
+        toast.querySelector('.bloom-toast-msg').textContent = message;
+        const remove = () => { toast.classList.add('leaving'); setTimeout(() => toast.remove(), 200); };
+        toast.querySelector('.bloom-toast-close').addEventListener('click', remove);
+        container.appendChild(toast);
+        const timer = setTimeout(remove, duration);
+        toast.addEventListener('mouseenter', () => clearTimeout(timer));
+      }
+
       document.getElementById('register-form').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -246,12 +276,12 @@
         const confirmPassword = document.getElementById('confirm-password').value;
 
         if (password !== confirmPassword) {
-          alert('Passwords do not match.');
+          showToast('Passwords do not match.', 'error');
           return;
         }
 
         if (!bloomSupabase) {
-          alert('Supabase is not configured.');
+          showToast('Supabase is not configured.', 'error');
           return;
         }
 
@@ -277,11 +307,11 @@
           if (error) {
             const msg = error.message || '';
             if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many') || error.status === 429) {
-              alert('Too many registration attempts. Please wait a few minutes and try again.\n\nIf this keeps happening, contact your system administrator.');
+              showToast('Too many registration attempts. Please wait a few minutes and try again. If this keeps happening, contact your system administrator.', 'warning', 8000);
             } else if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('user already')) {
-              alert('An account with this email already exists. Please sign in instead.');
+              showToast('An account with this email already exists. Please sign in instead.', 'warning');
             } else {
-              alert(msg || 'Registration failed. Please try again.');
+              showToast(msg || 'Registration failed. Please try again.', 'error');
             }
             btn.disabled = false;
             btn.textContent = 'Sign Up';
@@ -321,7 +351,7 @@
             </div>
           `;
         } catch (error) {
-          alert(error.message || 'Could not connect to Supabase. Please try again.');
+          showToast(error.message || 'Could not connect to Supabase. Please try again.', 'error');
           btn.disabled = false;
           btn.textContent = 'Sign Up';
         }

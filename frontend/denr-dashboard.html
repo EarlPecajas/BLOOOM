@@ -2483,7 +2483,7 @@
 
               const currentCount = getMediaSectionItems(config.key).length;
               if (currentCount >= 3) {
-                alert('You can add up to 3 photos in this section.');
+                showToast('You can add up to 3 photos in this section.', true);
                 inputEl.value = '';
                 return;
               }
@@ -2499,7 +2499,7 @@
             addButton.addEventListener('click', function() {
               const currentCount = getMediaSectionItems(config.key).length;
               if (currentCount >= 3) {
-                alert('You can add up to 3 photos in this section.');
+                showToast('You can add up to 3 photos in this section.', true);
                 return;
               }
 
@@ -3013,7 +3013,7 @@
           submissionAutoLocationBtn.dataset.bound = '1';
           submissionAutoLocationBtn.addEventListener('click', function() {
             if (!navigator.geolocation) {
-              alert('Location detection is not supported in this browser.');
+              showToast('Location detection is not supported in this browser.', true);
               return;
             }
 
@@ -3034,7 +3034,7 @@
               submissionAutoLocationBtn.disabled = false;
               submissionAutoLocationBtn.textContent = 'Detect Current Location';
             }, () => {
-              alert('Could not detect your location. Please enter latitude, longitude, and elevation manually.');
+              showToast('Could not detect your location. Please enter latitude, longitude, and elevation manually.', true);
               submissionAutoLocationBtn.disabled = false;
               submissionAutoLocationBtn.textContent = 'Detect Current Location';
             }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
@@ -4398,7 +4398,7 @@
       }
 
       async function d3QuickStatus(entryId, status) {
-        if (!bloomSupabase) { alert('Database not available'); return; }
+        if (!bloomSupabase) { showToast('Database not available', true); return; }
         const idx = d3SubmissionRows.findIndex(s => s.id === entryId);
         if (idx < 0) return;
         try {
@@ -4410,7 +4410,7 @@
           d3SubmissionRows[idx].status = status;
           apply3DFilter();
         } catch (err) {
-          alert('Could not update status: ' + (err.message || err));
+          showToast('Could not update status: ' + (err.message || err), true);
         }
       }
 
@@ -6340,41 +6340,41 @@
           applySubmissionsFilter();
           loadDenrStats();
         } catch (e) {
-          alert('Failed to update status: ' + (e.message || e));
+          showToast('Failed to update status: ' + (e.message || e), true);
         }
       }
 
       async function performDetailAction(action) {
         if (!isAdminRole) {
-          alert('Only DENR/admin can review submissions.');
+          showToast('Only DENR/admin can review submissions.', true);
           return;
         }
 
         if (!currentSubmission.id) {
-          alert('Submission record is missing an ID.');
+          showToast('Submission record is missing an ID.', true);
           return;
         }
 
         if (action === 'approve') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'approved');
-            alert(`Status updated to Approved for ${currentSubmission.species}.`);
+            showToast(`Status updated to Approved for ${currentSubmission.species}.`);
           } catch (error) {
-            alert(error.message);
+            showToast(error.message, true);
           }
         } else if (action === 'deny') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'rejected');
-            alert(`Status updated to Rejected for ${currentSubmission.species}.`);
+            showToast(`Status updated to Rejected for ${currentSubmission.species}.`);
           } catch (error) {
-            alert(error.message);
+            showToast(error.message, true);
           }
         } else if (action === 'revision') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'revision');
-            alert(`Status updated to For Revision for ${currentSubmission.species}.`);
+            showToast(`Status updated to For Revision for ${currentSubmission.species}.`);
           } catch (error) {
-            alert(error.message);
+            showToast(error.message, true);
           }
         }
       }
@@ -6425,7 +6425,7 @@
       }
 
       function downloadFile(fileName) {
-        alert(`📥 File Download\n\n"${fileName}" will be downloaded.\n\nNote: In a production environment, this would trigger the actual file download.`);
+        showToast(`"${fileName}" will be downloaded. (Demo only — no real file transfer in this environment.)`);
       }
 
       // Conservation Status Species Data
@@ -7452,11 +7452,11 @@
         let thumbnailUrl = catalogCustomThumbnailFile ? '__upload__' : null;
 
         if (!scientificName || !genusName) {
-          alert('Please fill in Scientific Name and Genus.');
+          showToast('Please fill in Scientific Name and Genus.', true);
           return;
         }
         if (!thumbnailUrl) {
-          alert('Please upload a catalog thumbnail.');
+          showToast('Please upload a catalog thumbnail.', true);
           return;
         }
 
@@ -7595,13 +7595,13 @@
       async function unpublishCatalogForSubmission(submission) {
         if (!submission) return;
         if (!bloomSupabase) {
-          alert('Supabase is not configured');
+          showToast('Supabase is not configured', true);
           return;
         }
 
         const sciName = submission.scientific_name || submission.species || submission.species_name || '';
         if (!sciName) {
-          alert('Scientific name is missing for this submission.');
+          showToast('Scientific name is missing for this submission.', true);
           return;
         }
 

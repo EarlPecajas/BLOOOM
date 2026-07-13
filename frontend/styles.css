@@ -3730,6 +3730,77 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
   border-color: #145A1E !important;
 }
 
+/* ── Toast notifications (replaces native alert() popups) ── */
+#bloom-toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(360px, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.bloom-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  background: #FFFFFF;
+  border: 1px solid #D8D0B8;
+  border-left: 4px solid #145A1E;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(20,90,30,0.16);
+  padding: 0.85rem 1rem;
+  font-family: Inter, Roboto, sans-serif;
+  font-size: 0.86rem;
+  color: #1a3a1c;
+  animation: bloomToastIn 220ms ease-out;
+}
+
+.bloom-toast.leaving { animation: bloomToastOut 200ms ease-in forwards; }
+
+.bloom-toast-icon { flex-shrink: 0; width: 19px; height: 19px; margin-top: 0.1rem; }
+.bloom-toast-icon svg { width: 100%; height: 100%; }
+
+.bloom-toast-msg { flex: 1; line-height: 1.45; white-space: pre-line; }
+
+.bloom-toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3a0;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+}
+.bloom-toast-close:hover { color: #1a3a1c; }
+
+.bloom-toast--success { border-left-color: #145A1E; }
+.bloom-toast--success .bloom-toast-icon { color: #145A1E; }
+.bloom-toast--error { border-left-color: #c0392b; }
+.bloom-toast--error .bloom-toast-icon { color: #c0392b; }
+.bloom-toast--warning { border-left-color: #b7791f; }
+.bloom-toast--warning .bloom-toast-icon { color: #b7791f; }
+.bloom-toast--info { border-left-color: #1B4DA0; }
+.bloom-toast--info .bloom-toast-icon { color: #1B4DA0; }
+
+@keyframes bloomToastIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes bloomToastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(24px); }
+}
+
+@media (max-width: 480px) {
+  #bloom-toast-container { top: 0.75rem; right: 0.75rem; left: 0.75rem; width: auto; }
+}
+
 /* ── Dashboard: Quick Actions outline buttons ── */
 #dashboard-admin-overview button.bg-white {
   background: var(--dt-bg-input) !important;

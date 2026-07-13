@@ -4986,35 +4986,35 @@ function refreshConservationHeatMap(summary) {
 
       async function performDetailAction(action) {
         if (!isAdminRole) {
-          alert('Only DENR/admin can review submissions.');
+          showToast('Only DENR/admin can review submissions.', 'warning');
           return;
         }
 
         if (!currentSubmission.id) {
-          alert('Submission record is missing an ID.');
+          showToast('Submission record is missing an ID.', 'error');
           return;
         }
 
         if (action === 'approve') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'approved');
-            alert(`Status updated to Approved for ${currentSubmission.species}.`);
+            showToast(`Status updated to Approved for ${currentSubmission.species}.`, 'success');
           } catch (error) {
-            alert(error.message);
+            showToast(error.message, 'error');
           }
         } else if (action === 'deny') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'rejected');
-            alert(`Status updated to Rejected for ${currentSubmission.species}.`);
+            showToast(`Status updated to Rejected for ${currentSubmission.species}.`, 'success');
           } catch (error) {
-            alert(error.message);
+            showToast(error.message, 'error');
           }
         } else if (action === 'revision') {
           try {
             await updateSubmissionReviewStatus(currentSubmission.id, 'revision');
-            alert(`Status updated to Need Revision for ${currentSubmission.species}.`);
+            showToast(`Status updated to Need Revision for ${currentSubmission.species}.`, 'success');
           } catch (error) {
-            alert(error.message);
+            showToast(error.message, 'error');
           }
         }
       }
@@ -5040,7 +5040,7 @@ function refreshConservationHeatMap(summary) {
       }
 
       function downloadFile(fileName) {
-        alert(`=��� File Download\n\n"${fileName}" will be downloaded.\n\nNote: In a production environment, this would trigger the actual file download.`);
+        showToast(`"${fileName}" will be downloaded.\n\nNote: In a production environment, this would trigger the actual file download.`, 'info', 7000);
       }
 
       // Conservation Status Species Data
@@ -5620,17 +5620,17 @@ function refreshConservationHeatMap(summary) {
         const sections = getSelectedReportSections();
         
         if (!dateFrom || !dateTo) {
-          alert('G��n+� Please select both start and end dates');
+          showToast('Please select both start and end dates.', 'warning');
           return;
         }
-        
+
         if (new Date(dateFrom) > new Date(dateTo)) {
-          alert('G��n+� Start date must be before end date');
+          showToast('Start date must be before end date.', 'warning');
           return;
         }
 
         if (!sections.summary && !sections.details && !sections.charts && !sections.recommendations) {
-          alert('G��n+� Please select at least one report content section.');
+          showToast('Please select at least one report content section.', 'warning');
           return;
         }
 
@@ -5640,7 +5640,7 @@ function refreshConservationHeatMap(summary) {
           const fileNameBase = `${reportConfig.title.replace(/\s+/g, '_')}_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}`;
 
           if (rows.length === 0 && (sections.details || sections.charts)) {
-            alert('G��n+� No data found for the selected date range. The export will include a no-data note.');
+            showToast('No data found for the selected date range. The export will include a no-data note.', 'warning');
           }
 
           if (format === 'excel') {
@@ -5649,7 +5649,7 @@ function refreshConservationHeatMap(summary) {
             downloadReportAsPdf(fileNameBase, reportConfig.title, dateFrom, dateTo, rows, sections, reportType);
           }
         } catch (error) {
-          alert(`G��n+� Could not generate report: ${error.message}`);
+          showToast(`Could not generate report: ${error.message}`, 'error');
         }
       }
 
