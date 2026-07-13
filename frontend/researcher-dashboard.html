@@ -1021,6 +1021,7 @@
                 <input id="submission-scientific-name" type="text" placeholder="Scientific Name (auto-filled from Genus + Species, or type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
                 <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
+              <span id="submission-scientific-name-hint" style="display:none;font-size:0.78rem;color:#b42318;margin-top:0.3rem;">Scientific name must start with a capital letter (e.g., Phalaenopsis amabilis).</span>
             </div>
             <div style="grid-column:1/-1;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.45rem;">
@@ -1868,8 +1869,18 @@
           return false;
         }
         if (p === 1) {
-          const sci = (document.getElementById('submission-scientific-name')?.value || '').trim();
+          const sciEl = document.getElementById('submission-scientific-name');
+          const sci = (sciEl?.value || '').trim();
           if (!sci) return showErr('Scientific Name is required.');
+          const firstChar = sci.charAt(0);
+          const hasCase = firstChar.toUpperCase() !== firstChar.toLowerCase();
+          const isLowercase = hasCase && firstChar !== firstChar.toUpperCase();
+          if (isLowercase) {
+            if (sciEl) sciEl.style.borderColor = '#b42318';
+            const hintEl = document.getElementById('submission-scientific-name-hint');
+            if (hintEl) hintEl.style.display = 'block';
+            return showErr('Scientific Name must start with a capital letter (e.g., Phalaenopsis amabilis).');
+          }
         }
         if (p === 2) {
           const date = document.getElementById('submission-observation-date')?.value;
@@ -2101,10 +2112,23 @@
         const genusEl = document.getElementById('submission-genus');
         const speciesEl = document.getElementById('submission-species-epithet');
         const scientificEl = document.getElementById('submission-scientific-name');
+        const scientificHintEl = document.getElementById('submission-scientific-name-hint');
+        function isScientificNameCapitalized(v) {
+          const first = (v || '').trim().charAt(0);
+          return !first || (first === first.toUpperCase() && first !== first.toLowerCase());
+        }
+        function checkScientificNameFormat() {
+          if (!scientificEl) return true;
+          const ok = isScientificNameCapitalized(scientificEl.value);
+          if (scientificHintEl) scientificHintEl.style.display = ok ? 'none' : 'block';
+          scientificEl.style.borderColor = ok ? '' : '#b42318';
+          return ok;
+        }
         function syncScientificName() {
           const g = (genusEl?.value || '').trim();
           const s = (speciesEl?.value || '').trim();
           if (g || s) scientificEl.value = [g, s].filter(Boolean).join(' ');
+          checkScientificNameFormat();
         }
         if (genusEl && !genusEl.dataset.bound) {
           genusEl.dataset.bound = '1';
@@ -2113,6 +2137,10 @@
         if (speciesEl && !speciesEl.dataset.bound) {
           speciesEl.dataset.bound = '1';
           speciesEl.addEventListener('input', syncScientificName);
+        }
+        if (scientificEl && !scientificEl.dataset.formatBound) {
+          scientificEl.dataset.formatBound = '1';
+          scientificEl.addEventListener('input', checkScientificNameFormat);
         }
 
         // Growth Substrate → show/hide tree fields
