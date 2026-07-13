@@ -72,7 +72,7 @@
         -webkit-text-fill-color: #1a3a1c !important;
       }
       body.signin-page .form-input::placeholder,
-      body.signin-page input.form-control::placeholder { color: rgba(20,90,30,.45) !important; }
+      body.signin-page input.form-control::placeholder { color: rgba(20,90,30,.28) !important; }
       body.signin-page .form-input:focus,
       body.signin-page input.form-control:focus {
         background: #FFFFFF !important;
@@ -152,6 +152,25 @@
         padding: .65rem .9rem;
         border-radius: 8px;
       }
+      body.signin-page .password-field-wrap { position: relative; display: flex; }
+      body.signin-page .password-field-wrap .form-input { padding-right: 2.6rem; }
+      body.signin-page .password-toggle-btn {
+        position: absolute;
+        top: 50%;
+        right: .55rem;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: .3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: rgba(20,90,30,.55);
+        line-height: 0;
+      }
+      body.signin-page .password-toggle-btn:hover { color: #145A1E; }
+      body.signin-page .password-toggle-btn svg { width: 19px; height: 19px; }
       body.signin-page #signin-error {
         background: #fff0f0 !important;
         border: 1px solid #fca5a5 !important;
@@ -192,7 +211,6 @@
           <div class="signin-brand">
             <img src="./loo.png" alt="BLOOM" />
             <span class="signin-brand-name">BLOOM</span>
-            <span class="signin-brand-sub">Researcher &amp; DENR Portal</span>
           </div>
           <h1 class="signin-heading">Welcome back</h1>
 
@@ -203,7 +221,15 @@
             </div>
             <div class="signin-field">
               <label for="password">Password</label>
-              <input type="password" placeholder="••••••••" class="form-input form-control" id="password" required />
+              <div class="password-field-wrap">
+                <input type="password" class="form-input form-control" id="password" required />
+                <button type="button" class="password-toggle-btn" id="password-toggle" aria-label="Show password" aria-pressed="false">
+                  <svg id="password-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div class="form-options d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -246,6 +272,21 @@
       function hideSigninError() {
         const el = document.getElementById('signin-error');
         el.style.display = 'none';
+      }
+
+      const passwordToggleBtn = document.getElementById('password-toggle');
+      const passwordToggleIcon = document.getElementById('password-toggle-icon');
+      const passwordInput = document.getElementById('password');
+      const eyeIconPath = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle>';
+      const eyeOffIconPath = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.29 20.29 0 0 1-3.22 4.4M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><path d="M1 1l22 22"></path>';
+      if (passwordToggleBtn && passwordInput) {
+        passwordToggleBtn.addEventListener('click', function() {
+          const isVisible = passwordInput.type === 'text';
+          passwordInput.type = isVisible ? 'password' : 'text';
+          passwordToggleIcon.innerHTML = isVisible ? eyeIconPath : eyeOffIconPath;
+          passwordToggleBtn.setAttribute('aria-pressed', String(!isVisible));
+          passwordToggleBtn.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+        });
       }
 
       document.getElementById('signin-form').addEventListener('submit', async function(e) {
