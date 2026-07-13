@@ -107,6 +107,47 @@
         border-radius: 16px !important;
         overflow: hidden !important;
       }
+
+      /* ── Superadmin-style card layout ── */
+      body.register-page .signin-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1.75rem;
+      }
+      body.register-page .signin-brand img { width: 52px; height: 52px; border-radius: 50%; }
+      body.register-page .signin-brand-name {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #145A1E;
+        letter-spacing: -.02em;
+      }
+      body.register-page .signin-brand-sub {
+        font-size: .78rem;
+        color: rgba(20,90,30,.6);
+        font-weight: 500;
+      }
+      body.register-page .signin-heading {
+        font-size: 1.15rem !important;
+        margin: 0 0 1.4rem 0 !important;
+      }
+      body.register-page form { gap: 0 !important; }
+      body.register-page .signin-field {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        margin-bottom: 1rem;
+      }
+      body.register-page .signin-field label {
+        font-size: .8rem;
+        font-weight: 600;
+        color: rgba(20,90,30,.75);
+      }
+      body.register-page .signin-field .form-input {
+        padding: .65rem .9rem;
+        border-radius: 8px;
+      }
     </style>
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -143,20 +184,45 @@
 
       <section class="signin-form-wrapper">
         <div class="signin-form">
-          <p class="signin-subtitle">Please enter your details</p>
+          <div class="signin-brand">
+            <img src="./loo.png" alt="BLOOM" />
+            <span class="signin-brand-name">BLOOM</span>
+            <span class="signin-brand-sub">Researcher &amp; DENR Portal</span>
+          </div>
           <h1 class="signin-heading">Sign up</h1>
-          
+
           <form id="register-form" class="needs-validation" novalidate>
-            <input type="text" placeholder="First name" class="form-input form-control" id="first-name" required />
-            <input type="text" placeholder="Last name" class="form-input form-control" id="last-name" required />
-            <input type="email" placeholder="Email" class="form-input form-control" id="email" required />
-            <input type="date" placeholder="Birth date" class="form-input form-control" id="birth-date" required />
-            <input type="tel" placeholder="Phone number" class="form-input form-control" id="phone" required />
-            <input type="password" placeholder="Password" class="form-input form-control" id="password" required />
-            <input type="password" placeholder="Confirm password" class="form-input form-control" id="confirm-password" required />
-            
+            <div class="signin-field">
+              <label for="first-name">First name</label>
+              <input type="text" placeholder="Juan" class="form-input form-control" id="first-name" required />
+            </div>
+            <div class="signin-field">
+              <label for="last-name">Last name</label>
+              <input type="text" placeholder="Dela Cruz" class="form-input form-control" id="last-name" required />
+            </div>
+            <div class="signin-field">
+              <label for="email">Email</label>
+              <input type="email" placeholder="you@example.com" class="form-input form-control" id="email" required />
+            </div>
+            <div class="signin-field">
+              <label for="birth-date">Birth date</label>
+              <input type="date" class="form-input form-control" id="birth-date" required />
+            </div>
+            <div class="signin-field">
+              <label for="phone">Phone number</label>
+              <input type="tel" placeholder="09XX XXX XXXX" class="form-input form-control" id="phone" required />
+            </div>
+            <div class="signin-field">
+              <label for="password">Password</label>
+              <input type="password" placeholder="••••••••" class="form-input form-control" id="password" required />
+            </div>
+            <div class="signin-field">
+              <label for="confirm-password">Confirm password</label>
+              <input type="password" placeholder="••••••••" class="form-input form-control" id="confirm-password" required />
+            </div>
+
             <button type="submit" class="signin-btn btn btn-primary w-100">Sign Up</button>
-            
+
             <p class="signin-footer small text-muted mb-0">
               Already have an account? <a href="signin.html" class="signin-link">Log In</a>
             </p>

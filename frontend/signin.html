@@ -110,6 +110,57 @@
         border-radius: 16px !important;
         overflow: hidden !important;
       }
+
+      /* ── Superadmin-style card layout ── */
+      body.signin-page .signin-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1.75rem;
+      }
+      body.signin-page .signin-brand img { width: 52px; height: 52px; border-radius: 50%; }
+      body.signin-page .signin-brand-name {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #145A1E;
+        letter-spacing: -.02em;
+      }
+      body.signin-page .signin-brand-sub {
+        font-size: .78rem;
+        color: rgba(20,90,30,.6);
+        font-weight: 500;
+      }
+      body.signin-page .signin-heading {
+        font-size: 1.15rem !important;
+        margin: 0 0 1.4rem 0 !important;
+      }
+      body.signin-page form { gap: 0 !important; }
+      body.signin-page .form-options { margin-bottom: 1rem; }
+      body.signin-page .signin-field {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        margin-bottom: 1rem;
+      }
+      body.signin-page .signin-field label {
+        font-size: .8rem;
+        font-weight: 600;
+        color: rgba(20,90,30,.75);
+      }
+      body.signin-page .signin-field .form-input {
+        padding: .65rem .9rem;
+        border-radius: 8px;
+      }
+      body.signin-page #signin-error {
+        background: #fff0f0 !important;
+        border: 1px solid #fca5a5 !important;
+        border-radius: 8px !important;
+        padding: .6rem .9rem !important;
+        font-size: .82rem !important;
+        color: #991b1b !important;
+        margin: 0 0 .75rem 0 !important;
+      }
     </style>
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -138,13 +189,23 @@
     <main class="signin-container container-fluid">
       <section class="signin-form-wrapper">
         <div class="signin-form">
-          <p class="signin-subtitle">Please enter your details</p>
+          <div class="signin-brand">
+            <img src="./loo.png" alt="BLOOM" />
+            <span class="signin-brand-name">BLOOM</span>
+            <span class="signin-brand-sub">Researcher &amp; DENR Portal</span>
+          </div>
           <h1 class="signin-heading">Welcome back</h1>
-          
+
           <form id="signin-form" class="needs-validation" novalidate>
-            <input type="email" placeholder="Email address" class="form-input form-control" id="email" required />
-            <input type="password" placeholder="Password" class="form-input form-control" id="password" required />
-            
+            <div class="signin-field">
+              <label for="email">Email address</label>
+              <input type="email" placeholder="you@example.com" class="form-input form-control" id="email" required />
+            </div>
+            <div class="signin-field">
+              <label for="password">Password</label>
+              <input type="password" placeholder="••••••••" class="form-input form-control" id="password" required />
+            </div>
+
             <div class="form-options d-flex justify-content-between align-items-center flex-wrap gap-2">
               <label class="checkbox-label">
                 <input type="checkbox" class="form-check-input" />
@@ -152,8 +213,8 @@
               </label>
               <a href="#" class="forgot-password">Forgot password</a>
             </div>
-            
-            <div id="signin-error" style="display:none;color:#c0392b;background:#fdf0ee;border:1px solid #e8b4ae;border-radius:6px;padding:0.6rem 0.9rem;font-size:0.875rem;margin-bottom:0.5rem;"></div>
+
+            <div id="signin-error" style="display:none;"></div>
 
             <button type="submit" class="signin-btn btn btn-primary w-100">Sign In</button>
 
