@@ -1162,7 +1162,7 @@ form {
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  background: white;
+  background: linear-gradient(165deg, #ffffff 0%, #f2f7f0 100%);
   border: 1px solid rgba(20,90,30,0.08);
   box-shadow: 0 1px 2px rgba(20,90,30,.05), 0 8px 20px rgba(20,90,30,.08);
   transition: transform 280ms ease, box-shadow 280ms ease, border-color 280ms ease;
@@ -1189,7 +1189,7 @@ form {
 
 .orchid-card-image {
   width: calc(100% - 1.4rem);
-  aspect-ratio: 4 / 3.8;
+  aspect-ratio: 4 / 4.3;
   height: auto;
   object-fit: cover;
   display: block;
@@ -1199,14 +1199,14 @@ form {
 }
 
 .orchid-card-info {
-  padding: 1.1rem 1rem 1.4rem;
-  background: white;
+  padding: 1.2rem 1rem 1.6rem;
+  background: transparent;
   text-align: center;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  min-height: 6.4rem;
+  min-height: 6.8rem;
 }
 
 .orchid-card-name {
@@ -3108,11 +3108,11 @@ textarea.form-control {
 
 /* ── Orchid cards ── */
 .orchid-card {
-  background: var(--dt-bg-card) !important;
+  background: linear-gradient(165deg, #ffffff 0%, #f2f7f0 100%) !important;
   box-shadow: 0 1px 2px rgba(20,90,30,.05), 0 8px 20px rgba(20,90,30,.08) !important;
 }
 .orchid-card:hover { box-shadow: 0 4px 10px rgba(20,90,30,.08), 0 18px 34px rgba(20,90,30,.16) !important; }
-.orchid-card-info { background: var(--dt-bg-card) !important; }
+.orchid-card-info { background: transparent !important; }
 .orchid-card-name { color: var(--dt-text) !important; }
 .orchid-card-genus { color: var(--dt-muted) !important; }
 
@@ -4121,8 +4121,8 @@ body.researcher-theme #researcher-submission-panel select {
 }
 
 /* 8 ── Orchid cards */
-body.researcher-theme .orchid-card { background: #FFFFFF !important; box-shadow: 0 1px 2px rgba(20,90,30,.05), 0 8px 20px rgba(20,90,30,.08) !important; }
-body.researcher-theme .orchid-card-info { background: #FFFFFF !important; }
+body.researcher-theme .orchid-card { background: linear-gradient(165deg, #ffffff 0%, #f2f7f0 100%) !important; box-shadow: 0 1px 2px rgba(20,90,30,.05), 0 8px 20px rgba(20,90,30,.08) !important; }
+body.researcher-theme .orchid-card-info { background: transparent !important; }
 body.researcher-theme .orchid-card:hover { box-shadow: 0 4px 10px rgba(20,90,30,.08), 0 18px 34px rgba(20,90,30,.16) !important; }
 
 /* 8b ── Researcher home cards (dark theme hardcodes rgba here, vars don't help) */
