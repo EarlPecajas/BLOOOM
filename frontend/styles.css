@@ -1062,20 +1062,20 @@ form {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 1.4rem;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.6rem;
 }
 
 @media (max-width: 1500px) {
-  .catalog-grid:not(.list-view) { grid-template-columns: repeat(6, 1fr); }
-}
-
-@media (max-width: 1150px) {
   .catalog-grid:not(.list-view) { grid-template-columns: repeat(4, 1fr); }
 }
 
+@media (max-width: 1150px) {
+  .catalog-grid:not(.list-view) { grid-template-columns: repeat(3, 1fr); }
+}
+
 @media (max-width: 480px) {
-  .catalog-grid:not(.list-view) { grid-template-columns: repeat(2, 1fr); }
+  .catalog-grid:not(.list-view) { grid-template-columns: repeat(1, 1fr); }
 }
 
 .catalog-grid.list-view {
@@ -1189,7 +1189,8 @@ form {
 
 .orchid-card-image {
   width: calc(100% - 1.4rem);
-  height: 190px;
+  aspect-ratio: 16 / 10;
+  height: auto;
   object-fit: cover;
   display: block;
   flex-shrink: 0;
@@ -1751,12 +1752,8 @@ form {
   }
 
   .catalog-grid:not(.list-view) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
-  }
-
-  .orchid-card-image {
-    height: 130px;
   }
 
   .catalog-grid.list-view .orchid-card-image {
