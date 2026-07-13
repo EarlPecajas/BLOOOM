@@ -194,12 +194,6 @@
           </span>
           <span>Orchids</span>
         </a>
-        <a href="#" class="sidebar-item" data-view="conservation">
-          <span class="sidebar-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </span>
-          <span>Conservation Status</span>
-        </a>
         <a href="#" class="sidebar-item" data-view="report">
           <span class="sidebar-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
@@ -396,6 +390,150 @@
           <div id="dashboard-map" class="rounded-xl overflow-hidden" style="width:100%;height:480px;background:#f5f5f5;"></div>
         </div>
 
+        <!-- Conservation Status (moved from its own sidebar page into the dashboard) -->
+        <div id="conservation-section" class="mb-6">
+          <div class="flex items-center gap-2 mb-1" style="flex-wrap:wrap;">
+            <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
+            <h3 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Conservation Status</h3>
+            <span class="ml-auto inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Live Database
+            </span>
+          </div>
+          <p class="text-xs mb-4" style="color:var(--dt-muted);margin-left:0.9rem;">IUCN-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
+
+          <!-- IUCN Category Cards -->
+          <div class="grid gap-4 mb-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+
+            <div onclick="showConservationList('critically_endangered','Critically Endangered')"
+                 class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
+                 style="background:var(--dt-bg-input);border:1px solid #fecaca;box-shadow:0 4px 14px rgba(20,90,30,.08);"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(220,38,38,0.18)';"
+                 onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(20,90,30,.08)';">
+              <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-red-600"></div>
+              <div class="flex items-center justify-between mt-1 mb-4">
+                <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;">CR</span>
+                <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#fca5a5" stroke="#dc2626" stroke-width="1.5"/></svg>
+              </div>
+              <p id="count-critically-endangered" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Critically Endangered</p>
+              <p class="text-xs font-semibold" style="color:#b91c1c;">View species →</p>
+            </div>
+
+            <div onclick="showConservationList('endangered','Endangered')"
+                 class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
+                 style="background:var(--dt-bg-input);border:1px solid #fed7aa;box-shadow:0 4px 14px rgba(20,90,30,.08);"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(245,124,0,0.18)';"
+                 onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(20,90,30,.08)';">
+              <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-orange-500"></div>
+              <div class="flex items-center justify-between mt-1 mb-4">
+                <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:#c2410c;background:#ffedd5;border:1px solid #fed7aa;">EN</span>
+                <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" fill="#fdba74" stroke="#f57c00" stroke-width="1.5"/><line x1="12" y1="9" x2="12" y2="13" stroke="#f57c00" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17" r="0.8" fill="#f57c00"/></svg>
+              </div>
+              <p id="count-endangered" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Endangered</p>
+              <p class="text-xs font-semibold" style="color:#c2410c;">View species →</p>
+            </div>
+
+            <div onclick="showConservationList('vulnerable','Vulnerable')"
+                 class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
+                 style="background:var(--dt-bg-input);border:1px solid #fde68a;box-shadow:0 4px 14px rgba(20,90,30,.08);"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(234,179,8,0.18)';"
+                 onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(20,90,30,.08)';">
+              <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-yellow-400"></div>
+              <div class="flex items-center justify-between mt-1 mb-4">
+                <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:#a16207;background:#fef9c3;border:1px solid #fde68a;">VU</span>
+                <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="12" stroke="#92400e" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="0.8" fill="#92400e"/></svg>
+              </div>
+              <p id="count-vulnerable" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Vulnerable</p>
+              <p class="text-xs font-semibold" style="color:#a16207;">View species →</p>
+            </div>
+
+            <div onclick="showConservationList('least_concern','Least Concern')"
+                 class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
+                 style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(20,90,30,.08);"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(34,197,94,0.18)';"
+                 onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(20,90,30,.08)';">
+              <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-green-600"></div>
+              <div class="flex items-center justify-between mt-1 mb-4">
+                <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:#15803d;background:#dcfce7;border:1px solid #bbf7d0;">LC</span>
+                <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5"/><polyline points="8 12 11 15 16 9" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <p id="count-least-concern" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Least Concern</p>
+              <p class="text-xs font-semibold" style="color:#15803d;">View species →</p>
+            </div>
+
+            <div onclick="showConservationList('unassigned','Unassigned')"
+                 class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
+                 style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(20,90,30,.08);"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(107,114,128,0.18)';"
+                 onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(20,90,30,.08)';">
+              <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-gray-400"></div>
+              <div class="flex items-center justify-between mt-1 mb-4">
+                <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:#4b5563;background:#f3f4f6;border:1px solid #e5e7eb;">N/A</span>
+                <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/><line x1="9" y1="9" x2="15" y2="15" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="9" x2="9" y2="15" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <p id="count-unassigned" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Unassigned</p>
+              <p class="text-xs font-semibold" style="color:var(--dt-muted);">View species →</p>
+            </div>
+
+          </div>
+
+          <!-- Analytics Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
+
+            <!-- Summary Overview -->
+            <section class="rounded-xl p-5" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(20,90,30,.08);">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
+                <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Conservation Overview</h2>
+              </div>
+              <p id="conservation-estimate-text" class="text-sm leading-relaxed mb-4" style="color:var(--dt-muted);">Loading conservation estimate...</p>
+              <div class="grid grid-cols-3 gap-2">
+                <div class="p-3 rounded-xl text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
+                  <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Total</p>
+                  <p id="conservation-total-assessed" class="text-2xl font-black leading-none" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">0</p>
+                </div>
+                <div class="p-3 rounded-xl text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
+                  <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Threatened</p>
+                  <p id="conservation-threatened-ratio" class="text-2xl font-black leading-none" style="color:#c2410c;font-family:Inter,Roboto,sans-serif;">0%</p>
+                </div>
+                <div class="p-3 rounded-xl text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
+                  <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Dominant</p>
+                  <p id="conservation-dominant-status" class="text-sm font-bold leading-tight" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">—</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Donut Chart -->
+            <section class="rounded-xl p-5" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(20,90,30,.08);">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
+                <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Status Distribution</h2>
+              </div>
+              <div class="relative" style="min-height:280px;">
+                <canvas id="conservation-donut-chart" height="220"></canvas>
+              </div>
+            </section>
+
+            <!-- Bar Chart -->
+            <section class="rounded-xl p-5" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(20,90,30,.08);">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
+                <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Species Count by Category</h2>
+              </div>
+              <div class="relative" style="min-height:280px;">
+                <canvas id="conservation-bar-chart" height="220"></canvas>
+              </div>
+              <!-- Keep ul in DOM for JS compatibility but hidden -->
+              <ul id="conservation-bar-insights" class="hidden"></ul>
+            </section>
+
+          </div>
+        </div>
+
         <!-- Bottom row: Executive Snapshot / Queue / Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -461,7 +599,7 @@
                 style="cursor:pointer;background:var(--dt-bg-input);border:1px solid var(--dt-border-md);color:var(--dt-text);">
                 Generate Report
               </button>
-              <button type="button" data-dashboard-view="conservation"
+              <button type="button" onclick="document.getElementById('conservation-section')?.scrollIntoView({behavior:'smooth',block:'start'})"
                 class="w-full text-sm font-semibold rounded-xl py-2.5 px-4 transition-all duration-150 active:scale-95 text-left"
                 style="cursor:pointer;background:var(--dt-bg-input);border:1px solid var(--dt-border-md);color:var(--dt-text);">
                 View Conservation
@@ -701,157 +839,6 @@
       <button id="gallery-lightbox-next" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">›</button>
       <button id="gallery-lightbox-close" style="position:absolute;top:1rem;right:1rem;width:38px;height:38px;border:2px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       <div id="gallery-lightbox-caption" style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.65);font-size:0.82rem;text-align:center;pointer-events:none;white-space:nowrap;"></div>
-    </div>
-
-    <!-- Conservation Status View -->
-    <div id="conservation-view" class="view-section" style="display:none;">
-      <div class="px-6 py-8 md:px-10 md:py-10 max-w-screen-2xl mx-auto">
-
-        <!-- Page Header -->
-        <div class="flex items-start justify-between flex-wrap gap-4 mb-3">
-          <div>
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-1" style="font-family:Inter,Roboto,sans-serif;">Conservation Status</h1>
-            <p class="text-gray-500 text-sm">IUCN-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
-          </div>
-          <span class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full border border-green-200 whitespace-nowrap flex-shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Live Database
-          </span>
-        </div>
-        <div class="h-px mb-7" style="background:linear-gradient(90deg,#d1fae5,#e5e7eb,transparent);"></div>
-
-        <!-- IUCN Category Cards -->
-        <p class="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">IUCN Conservation Categories</p>
-        <div class="grid gap-4 mb-8" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
-
-          <div onclick="showConservationList('critically_endangered','Critically Endangered')"
-               class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
-               style="background:var(--dt-bg-input);border:1px solid rgba(200,60,60,.3);box-shadow:0 4px 14px rgba(0,0,0,.35);"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(220,38,38,0.22)';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,.35)';">
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-red-600"></div>
-            <div class="flex items-center justify-between mt-1 mb-4">
-              <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:rgba(255,140,140,.9);background:rgba(120,20,20,.35);border:1px solid rgba(200,60,60,.35);">CR</span>
-              <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#fca5a5" stroke="#dc2626" stroke-width="1.5"/></svg>
-            </div>
-            <p id="count-critically-endangered" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-            <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Critically Endangered</p>
-            <p class="text-xs font-semibold" style="color:rgba(255,130,130,.9);">View species →</p>
-          </div>
-
-          <div onclick="showConservationList('endangered','Endangered')"
-               class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
-               style="background:var(--dt-bg-input);border:1px solid rgba(200,120,40,.3);box-shadow:0 4px 14px rgba(0,0,0,.35);"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(245,124,0,0.22)';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,.35)';">
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-orange-500"></div>
-            <div class="flex items-center justify-between mt-1 mb-4">
-              <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:rgba(255,180,100,.9);background:rgba(120,70,20,.35);border:1px solid rgba(200,120,40,.35);">EN</span>
-              <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" fill="#fdba74" stroke="#f57c00" stroke-width="1.5"/><line x1="12" y1="9" x2="12" y2="13" stroke="#f57c00" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17" r="0.8" fill="#f57c00"/></svg>
-            </div>
-            <p id="count-endangered" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-            <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Endangered</p>
-            <p class="text-xs font-semibold" style="color:rgba(255,175,90,.9);">View species →</p>
-          </div>
-
-          <div onclick="showConservationList('vulnerable','Vulnerable')"
-               class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
-               style="background:var(--dt-bg-input);border:1px solid rgba(200,170,30,.3);box-shadow:0 4px 14px rgba(0,0,0,.35);"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(234,179,8,0.22)';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,.35)';">
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-yellow-400"></div>
-            <div class="flex items-center justify-between mt-1 mb-4">
-              <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:rgba(245,210,80,.9);background:rgba(100,80,10,.35);border:1px solid rgba(200,170,30,.35);">VU</span>
-              <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="12" stroke="#92400e" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="0.8" fill="#92400e"/></svg>
-            </div>
-            <p id="count-vulnerable" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-            <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Vulnerable</p>
-            <p class="text-xs font-semibold" style="color:rgba(240,200,65,.9);">View species →</p>
-          </div>
-
-          <div onclick="showConservationList('least_concern','Least Concern')"
-               class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
-               style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(34,197,94,0.2)';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,.35)';">
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-green-600"></div>
-            <div class="flex items-center justify-between mt-1 mb-4">
-              <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:var(--dt-accent-lt);background:rgba(30,90,40,.35);border:1px solid var(--dt-border-md);">LC</span>
-              <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5"/><polyline points="8 12 11 15 16 9" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <p id="count-least-concern" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-            <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Least Concern</p>
-            <p class="text-xs font-semibold" style="color:var(--dt-accent-lt);">View species →</p>
-          </div>
-
-          <div onclick="showConservationList('unassigned','Unassigned')"
-               class="rounded-xl p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
-               style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(107,114,128,0.22)';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,.35)';">
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-gray-400"></div>
-            <div class="flex items-center justify-between mt-1 mb-4">
-              <span class="text-xs font-black tracking-widest px-2 py-0.5 rounded" style="color:var(--dt-muted);background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">N/A</span>
-              <svg class="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/><line x1="9" y1="9" x2="15" y2="15" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="9" x2="9" y2="15" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-            <p id="count-unassigned" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-            <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Unassigned</p>
-            <p class="text-xs font-semibold" style="color:var(--dt-muted);">View species →</p>
-          </div>
-
-        </div>
-
-        <!-- Analytics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start">
-
-          <!-- Summary Overview -->
-          <section class="rounded-xl p-6" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
-              <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Conservation Overview</h2>
-            </div>
-            <p id="conservation-estimate-text" class="text-gray-500 text-sm leading-relaxed mb-4">Loading conservation estimate...</p>
-            <div class="grid grid-cols-3 gap-2">
-              <div class="p-3 rounded-xl text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
-                <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Total</p>
-                <p id="conservation-total-assessed" class="text-2xl font-black leading-none" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">0</p>
-              </div>
-              <div class="p-3 rounded-xl text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
-                <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Threatened</p>
-                <p id="conservation-threatened-ratio" class="text-2xl font-black leading-none" style="color:rgba(255,175,90,.9);font-family:Inter,Roboto,sans-serif;">0%</p>
-              </div>
-              <div class="p-3 rounded-xl text-center" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);">
-                <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:var(--dt-muted);">Dominant</p>
-                <p id="conservation-dominant-status" class="text-sm font-bold leading-tight" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">—</p>
-              </div>
-            </div>
-          </section>
-
-          <!-- Donut Chart -->
-          <section class="rounded-xl p-6" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
-              <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Status Distribution</h2>
-            </div>
-            <div class="relative" style="min-height:280px;">
-              <canvas id="conservation-donut-chart" height="220"></canvas>
-            </div>
-          </section>
-
-          <!-- Bar Chart — Key Insights removed -->
-          <section class="rounded-xl p-6" style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-0.5 h-5 rounded-full flex-shrink-0" style="background:#145A1E;"></div>
-              <h2 class="text-sm font-bold m-0" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">Species Count by Category</h2>
-            </div>
-            <div class="relative" style="min-height:280px;">
-              <canvas id="conservation-bar-chart" height="220"></canvas>
-            </div>
-            <!-- Keep ul in DOM for JS compatibility but hidden -->
-            <ul id="conservation-bar-insights" class="hidden"></ul>
-          </section>
-
-        </div>
-      </div>
     </div>
 
     <!-- Generate Report View -->
@@ -2228,7 +2215,7 @@
         if (typeof syncSidebarToggleState === 'function') { syncSidebarToggleState(); }
 
         const normalizedView = String(viewName || '').trim().toLowerCase();
-        const effectiveView = (isResearcherRole && ['conservation', 'report'].includes(normalizedView)) ? 'orchids' : normalizedView;
+        const effectiveView = (isResearcherRole && normalizedView === 'report') ? 'orchids' : normalizedView;
 
         if (isResearcherRole && effectiveView === 'orchids') {
           window.location.href = 'catalog.html?split=1';
@@ -5783,7 +5770,7 @@
             plugins: {
               legend: {
                 position: 'bottom',
-                labels: { boxWidth: 14, usePointStyle: true, color: 'rgba(200,240,190,0.75)' }
+                labels: { boxWidth: 14, usePointStyle: true, color: '#3e6639' }
               }
             }
           }
@@ -5813,11 +5800,11 @@
             scales: {
               y: {
                 beginAtZero: true,
-                ticks: { precision: 0, color: 'rgba(200,240,190,0.55)' },
-                grid: { drawBorder: false, color: 'rgba(100,200,120,0.12)' }
+                ticks: { precision: 0, color: '#3e6639' },
+                grid: { drawBorder: false, color: 'rgba(20,90,30,0.1)' }
               },
               x: {
-                ticks: { color: 'rgba(200,240,190,0.55)' },
+                ticks: { color: '#3e6639' },
                 grid: { display: false }
               }
             }
@@ -5862,7 +5849,7 @@
       }
 
       function switchView(viewName) {
-        if (isResearcherRole && ['conservation', 'report'].includes(viewName)) {
+        if (isResearcherRole && viewName === 'report') {
           viewName = 'orchids';
         }
 
@@ -5916,9 +5903,6 @@
             selectedView.style.margin = '';
             window.scrollTo(0, 0);
           }
-          if (viewName === 'conservation') {
-            loadConservationSummary();
-          }
           if (viewName === 'orchids') {
             loadOrchidCatalog();
           }
@@ -5943,7 +5927,7 @@
       const requestedView = initialSearchParams.get('view');
       const allowedViews = isResearcherRole
         ? new Set(['dashboard', 'orchids', 'map', 'collection3d', 'submissions'])
-        : new Set(['dashboard', 'orchids', 'conservation', 'report', 'map', 'submissions']);
+        : new Set(['dashboard', 'orchids', 'report', 'map', 'submissions']);
       if (requestedView && allowedViews.has(requestedView)) {
         switchView(requestedView);
       } else {
