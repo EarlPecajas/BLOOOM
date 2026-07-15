@@ -3175,6 +3175,7 @@ textarea.form-control {
 #orchids-view,
 #conservation-view,
 #report-view,
+#importexport-view,
 #submissions-view,
 #drafts-view {
   position: fixed !important;
