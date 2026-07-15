@@ -175,6 +175,38 @@
       .sub-action-btn.publish { background: #145A1E !important; border: 1.5px solid #145A1E !important; box-shadow: 0 1px 2px rgba(20,90,30,0.18) !important; }
       .sub-action-btn.publish:hover { background: #0E4018 !important; border-color: #0E4018 !important; box-shadow: 0 2px 6px rgba(20,90,30,0.25) !important; transform: translateY(-1px) !important; }
 
+      /* ── Submissions page redesign (DENR only) ── */
+      .denrsub-tabbar { display:inline-flex; gap:0.25rem; padding:0.3rem; background:var(--dt-bg-panel); border:1px solid var(--dt-border-md); border-radius:12px; margin-bottom:1.5rem; }
+      .denrsub-tab { display:inline-flex; align-items:center; gap:0.5rem; padding:0.55rem 1.1rem; border:none; border-radius:9px; background:transparent; color:var(--dt-muted); font-family:Inter,Roboto,sans-serif; font-size:0.86rem; font-weight:700; cursor:pointer; transition:background 160ms,color 160ms; }
+      .denrsub-tab:hover { background:rgba(77,184,106,0.1); color:var(--dt-text); }
+      .denrsub-tab.denrsub-tab-active { background:#145A1E; color:#fff; box-shadow:0 2px 8px rgba(20,90,30,0.28); }
+      .denrsub-tab.denrsub-tab-active:hover { background:#145A1E; }
+
+      .denrsub-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:0.75rem; margin-bottom:1.25rem; }
+      .denrsub-stat-card { background:var(--dt-bg-input); border:1px solid var(--dt-border-md); border-radius:12px; padding:0.9rem 1rem; position:relative; overflow:hidden; }
+      .denrsub-stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+      .denrsub-stat-card[data-tone="all"]::before { background:linear-gradient(90deg,#64748b,#94a3b8); }
+      .denrsub-stat-card[data-tone="pending"]::before { background:linear-gradient(90deg,#d97706,#f59e0b); }
+      .denrsub-stat-card[data-tone="approved"]::before { background:linear-gradient(90deg,#16a34a,#4ade80); }
+      .denrsub-stat-card[data-tone="rejected"]::before { background:linear-gradient(90deg,#dc2626,#f87171); }
+      .denrsub-stat-card[data-tone="revision"]::before { background:linear-gradient(90deg,#d97706,#fbbf24); }
+      .denrsub-stat-num { font-size:1.55rem; font-weight:800; color:var(--dt-text); line-height:1; font-family:Inter,Roboto,sans-serif; }
+      .denrsub-stat-lbl { font-size:0.74rem; color:var(--dt-muted); margin-top:0.3rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+
+      .denrsub-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; background:var(--dt-bg-input); border:1px solid var(--dt-border-md); border-radius:12px; padding:0.85rem 1rem; margin-bottom:1rem; }
+      .denrsub-filter-group { display:flex; gap:0.4rem; flex-wrap:wrap; }
+      .denrsub-search-wrap { position:relative; flex-shrink:0; }
+      .denrsub-search-wrap svg { position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--dt-muted); }
+      .denrsub-search-input { width:min(300px,100%); padding:0.6rem 0.9rem 0.6rem 2.15rem; border:1.5px solid var(--dt-border-md); border-radius:999px; font-family:Inter,Roboto,sans-serif; font-size:0.86rem; background:var(--dt-bg-panel); color:var(--dt-text); outline:none; transition:border-color 150ms; box-sizing:border-box; }
+      .denrsub-search-input:focus { border-color:#4db86a; }
+      .denrsub-search-input::placeholder { color:var(--dt-muted); }
+
+      .denrsub-table-shell { border-radius:14px !important; }
+      .denrsub-avatar { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#4db86a,#145A1E); color:#fff; font-size:0.72rem; font-weight:800; flex-shrink:0; }
+      .denrsub-researcher-cell { display:flex; align-items:center; gap:0.55rem; }
+
+      @media(max-width:900px){ .denrsub-stats{ grid-template-columns:repeat(2,1fr); } }
+
       /* ── Cream website theme for DENR overview ── */
       #dashboard-admin-overview {
         --dt-bg-input: #FFFFFF;
@@ -1105,37 +1137,67 @@
 
     <!-- Submissions View -->
     <div id="submissions-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <div style="margin-bottom:1.5rem;">
+      <div style="margin-bottom:1.25rem;">
         <h1 class="catalog-title">Submissions</h1>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Review, verify, and publish researcher-submitted orchid records and 3D models.</p>
       </div>
 
       <!-- ── Submission type tab bar ── -->
-      <div id="submissions-type-tabs" style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:2px solid var(--dt-border-md);">
-        <button id="sub-tab-orchid" onclick="switchSubmissionsTab('orchid')"
-          style="padding:0.6rem 1.4rem;border:none;border-bottom:3px solid #145A1E;background:transparent;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 160ms;margin-bottom:-2px;">
-          🌺 Orchid Submissions
+      <div id="submissions-type-tabs" class="denrsub-tabbar">
+        <button id="sub-tab-orchid" class="denrsub-tab denrsub-tab-active" onclick="switchSubmissionsTab('orchid')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+          Orchid Submissions
         </button>
-        <button id="sub-tab-3d" onclick="switchSubmissionsTab('3d')"
-          style="padding:0.6rem 1.4rem;border:none;border-bottom:3px solid transparent;background:transparent;color:#577A5C;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 160ms;margin-bottom:-2px;">
-          📦 3D Submissions
+        <button id="sub-tab-3d" class="denrsub-tab" onclick="switchSubmissionsTab('3d')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          3D Submissions
         </button>
       </div>
 
       <!-- ── ORCHID SUBMISSIONS PANEL ── -->
       <div id="orchid-submissions-panel">
       <div id="submissions-admin-panel">
+
+      <!-- Stat strip -->
+      <div class="denrsub-stats">
+        <div class="denrsub-stat-card" data-tone="all">
+          <div class="denrsub-stat-num" id="denrsub-count-all">—</div>
+          <div class="denrsub-stat-lbl">Total</div>
+        </div>
+        <div class="denrsub-stat-card" data-tone="pending">
+          <div class="denrsub-stat-num" id="denrsub-count-pending">—</div>
+          <div class="denrsub-stat-lbl">Pending</div>
+        </div>
+        <div class="denrsub-stat-card" data-tone="approved">
+          <div class="denrsub-stat-num" id="denrsub-count-approved">—</div>
+          <div class="denrsub-stat-lbl">Approved</div>
+        </div>
+        <div class="denrsub-stat-card" data-tone="rejected">
+          <div class="denrsub-stat-num" id="denrsub-count-rejected">—</div>
+          <div class="denrsub-stat-lbl">Rejected</div>
+        </div>
+        <div class="denrsub-stat-card" data-tone="revision">
+          <div class="denrsub-stat-num" id="denrsub-count-revision">—</div>
+          <div class="denrsub-stat-lbl">For Revision</div>
+        </div>
+      </div>
+
       <!-- Filter + Search bar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-        <div id="submissions-filter-tabs" style="display:flex;gap:0.35rem;flex-wrap:wrap;">
+      <div class="denrsub-toolbar">
+        <div id="submissions-filter-tabs" class="denrsub-filter-group">
           <button class="sub-filter-btn sub-filter-active" data-filter="all"    style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:700;cursor:pointer;transition:all 160ms;">All</button>
           <button class="sub-filter-btn" data-filter="pending"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Pending</button>
           <button class="sub-filter-btn" data-filter="approved" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Approved</button>
           <button class="sub-filter-btn" data-filter="rejected" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Rejected</button>
           <button class="sub-filter-btn" data-filter="revision" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">For Revision</button>
         </div>
-        <input id="submissions-search-input" type="text" placeholder="Search submissions…" style="width:min(320px,100%);padding:0.65rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:999px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;" />
+        <div class="denrsub-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="submissions-search-input" type="text" placeholder="Search submissions…" class="denrsub-search-input" />
+        </div>
       </div>
-      <div class="submissions-table-shell" style="background:var(--dt-bg-input);border-radius:12px;padding:1.5rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow-x:auto;">
+
+      <div class="submissions-table-shell denrsub-table-shell" style="background:var(--dt-bg-input);border-radius:12px;padding:1.5rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow-x:auto;">
         <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
           <thead>
             <tr class="submissions-table-head">
@@ -4201,6 +4263,12 @@
         };
       }
 
+      function getInitialsFromName(name) {
+        const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return '?';
+        return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+      }
+
       function renderSubmissions(items) {
         if (!submissionsTableBody) {
           return;
@@ -4262,7 +4330,12 @@
 
           return `
             <tr class="submission-row">
-              <td class="submission-researcher-cell">${safeResearcher}</td>
+              <td class="submission-researcher-cell">
+                <div class="denrsub-researcher-cell">
+                  <span class="denrsub-avatar">${getInitialsFromName(submission.researcher)}</span>
+                  <span>${safeResearcher}</span>
+                </div>
+              </td>
               <td class="submission-researcher-cell" style="font-size:0.83rem;color:var(--dt-muted);">${safeEmail}</td>
               <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
               <td class="submission-date-cell">${safeDate}</td>
@@ -4336,21 +4409,13 @@
         if (tab === 'orchid') {
           orchidPanel.style.display = '';
           d3Panel.style.display     = 'none';
-          btnOrchid.style.borderBottomColor  = '#145A1E';
-          btnOrchid.style.color              = '#145A1E';
-          btnOrchid.style.fontWeight         = '700';
-          btn3d.style.borderBottomColor      = 'transparent';
-          btn3d.style.color                  = '#577A5C';
-          btn3d.style.fontWeight             = '600';
+          btnOrchid.classList.add('denrsub-tab-active');
+          btn3d.classList.remove('denrsub-tab-active');
         } else {
           orchidPanel.style.display = 'none';
           d3Panel.style.display     = '';
-          btnOrchid.style.borderBottomColor  = 'transparent';
-          btnOrchid.style.color              = '#577A5C';
-          btnOrchid.style.fontWeight         = '600';
-          btn3d.style.borderBottomColor      = '#145A1E';
-          btn3d.style.color                  = '#145A1E';
-          btn3d.style.fontWeight             = '700';
+          btnOrchid.classList.remove('denrsub-tab-active');
+          btn3d.classList.add('denrsub-tab-active');
           if (!d3SubmissionRows.length) load3DSubmissions();
         }
       }
@@ -5646,6 +5711,26 @@
         }
       }
 
+      function updateSubmissionsStatCounts() {
+        const base = submissionRows.filter(function(s) {
+          if (String(s.review_status || '').toLowerCase() === 'draft') return false;
+          if (String(s.id || s.entry_id || '').startsWith('BLOOM-3D-')) return false;
+          return true;
+        });
+        const counts = { all: base.length, pending: 0, approved: 0, rejected: 0, revision: 0 };
+        base.forEach(function(s) {
+          const status = String(s.review_status || 'pending').toLowerCase();
+          if (status === 'approved') counts.approved++;
+          else if (status === 'rejected') counts.rejected++;
+          else if (status === 'revision') counts.revision++;
+          else counts.pending++;
+        });
+        ['all', 'pending', 'approved', 'rejected', 'revision'].forEach(function(key) {
+          const el = document.getElementById('denrsub-count-' + key);
+          if (el) el.textContent = counts[key];
+        });
+      }
+
       function applySubmissionsFilter() {
         const searchVal = (document.getElementById('submissions-search-input')?.value || '').trim().toLowerCase();
         const statusFilter = activeStatusFilter || 'all';
@@ -5660,6 +5745,7 @@
                   Array.isArray(s.common_names) ? s.common_names.join(' ') : '']
             .filter(Boolean).join(' ').toLowerCase().includes(searchVal);
         });
+        updateSubmissionsStatCounts();
         renderSubmissions(filtered);
       }
 
