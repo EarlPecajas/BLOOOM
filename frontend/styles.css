@@ -1130,6 +1130,10 @@ form {
   font-size: 1rem;
 }
 
+.catalog-grid.list-view .orchid-card-name .orchid-name-line {
+  display: inline;
+}
+
 .catalog-grid.list-view .orchid-card-genus {
   display: block;
   -webkit-line-clamp: unset;
@@ -1220,6 +1224,10 @@ form {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.orchid-card-name .orchid-name-line {
+  display: block;
 }
 
 .scientific-name,

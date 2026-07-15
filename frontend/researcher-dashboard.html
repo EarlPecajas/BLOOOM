@@ -3047,6 +3047,17 @@
           .replace(/'/g, '&#39;');
       }
 
+      // Forces the genus onto its own line from the species epithet, so every
+      // card shows a consistent two-line name instead of some wrapping and some not.
+      function scientificNameCardHtml(name) {
+        const str = String(name || '');
+        const spaceIdx = str.indexOf(' ');
+        if (spaceIdx === -1) {
+          return `<span class="orchid-name-line">${escapeHtml(str)}</span>`;
+        }
+        return `<span class="orchid-name-line">${escapeHtml(str.slice(0, spaceIdx))}</span> <span class="orchid-name-line">${escapeHtml(str.slice(spaceIdx + 1))}</span>`;
+      }
+
       function formatTeamMembersValue(value) {
         if (!value) return '';
         try {
@@ -3800,7 +3811,7 @@
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
-              <p class="orchid-card-name scientific-name">${orchid.name}</p>
+              <p class="orchid-card-name scientific-name">${scientificNameCardHtml(orchid.name)}</p>
               <p class="orchid-card-genus">${orchid.common_name || ''}</p>
             </div>
           </button>
