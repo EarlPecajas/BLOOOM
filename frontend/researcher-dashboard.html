@@ -3844,7 +3844,7 @@
 
               const { data, error } = await client
                 .from('orchid_overview')
-                .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status')
+                .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status, hidden_fields')
                 .order('name', { ascending: true });
 
           if (error) {

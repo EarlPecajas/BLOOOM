@@ -650,19 +650,27 @@
         });
       }
 
-      function odmRow(label, value) {
+      // Field keys DENR has hidden from this view via the "eye" toggles in the
+      // Publish to Catalog modal. Set once per open, in odmPopulateValue().
+      var odmHiddenFields = new Set();
+
+      function odmRow(label, value, fieldKey) {
         if (value === null || value === undefined || value === '') return '';
+        if (fieldKey && odmHiddenFields.has(fieldKey)) return '';
         return '<div class="odm-row"><span class="odm-row-label">' + label +
           '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
       }
 
       function odmPopulateValue(orchid, allSightings) {
+        odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
+
         var src = allSightings[0] || {};
         var count = allSightings.length;
         var status = src.threat_level_generalized || src.threat_level ||
           orchid.conservation_status || '—';
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
+        card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
         card.style.background = sl.indexOf('critical') >= 0 ? '#9c2929'
           : sl.indexOf('endanger') >= 0 ? '#b84a1a'
           : sl.indexOf('vulnerable') >= 0 ? '#145A1E'
@@ -679,20 +687,20 @@
           ? src.local_names.join(', ') : '';
         var endemic = src.endemic_to_philippines == null ? ''
           : (src.endemic_to_philippines ? 'Yes' : 'No');
-        var taxHtml = odmRow('Local Name(s)', localNames) +
-          odmRow('Common Name(s)', commonNames) +
-          odmRow('Endemic to Philippines', endemic) +
+        var taxHtml = odmRow('Local Name(s)', localNames, 'local-names') +
+          odmRow('Common Name(s)', commonNames, 'common-names') +
+          odmRow('Endemic to Philippines', endemic, 'endemicity') +
           odmRow('Genus', genus) +
-          odmRow('Confidence', src.identification_confidence) +
-          odmRow('Population Status', src.population_status);
+          odmRow('Confidence', src.identification_confidence, 'id-confidence') +
+          odmRow('Population Status', src.population_status, 'pop-status');
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
         var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
-        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa') +
-          odmRow('Site / Zone', src.specific_site_zone) +
-          odmRow('Elevation', elev) +
-          odmRow('Habitat', src.habitat_type) +
-          odmRow('Microhabitat', src.microhabitat);
+        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa', 'mountain') +
+          odmRow('Site / Zone', src.specific_site_zone, 'site') +
+          odmRow('Elevation', elev, 'elevation') +
+          odmRow('Habitat', src.habitat_type, 'habitat-type') +
+          odmRow('Microhabitat', src.microhabitat, 'microhabitat');
         document.getElementById('odm-rows-location').innerHTML = locHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
       }
@@ -800,11 +808,11 @@
             escapeHtml(src.educational_notes) + '</div>');
         }
         var team = Array.isArray(src.team_members) ? src.team_members.filter(Boolean).join(', ') : (src.team_members || '');
-        var detailRows = odmRow('Institution', src.institution) +
-          odmRow('Team Members', team) +
-          odmRow('Collection Method', src.collection_method) +
-          odmRow('Observation Type', src.observation_type) +
-          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No') : '');
+        var detailRows = odmRow('Institution', src.institution, 'institution') +
+          odmRow('Team Members', team, 'team') +
+          odmRow('Collection Method', src.collection_method, 'collection-method') +
+          odmRow('Observation Type', src.observation_type, 'obs-type') +
+          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No', 'voucher') : '');
         if (detailRows) {
           parts.push('<div class="odm-section"><div class="odm-section-title">Research Details</div>' +
             '<div class="odm-rows-wrap">' + detailRows + '</div></div>');
@@ -1080,7 +1088,7 @@
           try {
             const { data, error } = await client
               .from('orchid_overview')
-              .select('id, name, genus, common_name, endemicity, image_url, conservation_status')
+              .select('id, name, genus, common_name, endemicity, image_url, conservation_status, hidden_fields')
               .order('name', { ascending: true });
             if (!error && data && data.length > 0) {
               orchids = data.map(normalizeOrchidRow);

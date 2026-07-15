@@ -1037,16 +1037,18 @@
       }
 
       // ── Identity panel ─────────────────────────────────────────────
-      function setField(id, value) {
+      function setField(id, value, fieldKey) {
         const el = document.getElementById(id);
         if (!el) return;
-        const hasValue = hasUsableValue(value);
+        const hasValue = hasUsableValue(value) && !(fieldKey && odmHiddenFields.has(fieldKey));
         el.textContent = hasValue ? String(value).trim() : '';
         const row = el.closest('.oid-field-row');
         if (row) row.hidden = !hasValue;
       }
 
       function populateIdentityPanel(orchid, src) {
+        odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
+
         const orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
 
         const topbarNameEl = document.getElementById('topbar-species-name');
@@ -1068,16 +1070,16 @@
         const displayNames = localNamesArr.length > 0 ? localNamesArr
           : commonNamesArr.length > 0 ? commonNamesArr
           : (orchid.common_name ? [orchid.common_name] : []);
-        setField('oid-local-names', displayNames.length > 0 ? displayNames.join(', ') : null);
+        setField('oid-local-names', displayNames.length > 0 ? displayNames.join(', ') : null, 'local-names');
 
         // Conservation status — use actual threat_level value
-        setField('oid-conservation-status', src.threat_level || src.threat_level_generalized || null);
+        setField('oid-conservation-status', src.threat_level || src.threat_level_generalized || null, 'con-status');
 
         // Habitat & morphology
-        setField('oid-habitat', src.habitat_type || null);
-        setField('oid-substrate', src.growth_substrate || null);
-        setField('oid-flower-color', src.flower_color || null);
-        setField('oid-flowering-season', src.flowering_season || null);
+        setField('oid-habitat', src.habitat_type || null, 'habitat-type');
+        setField('oid-substrate', src.growth_substrate || null, 'substrate');
+        setField('oid-flower-color', src.flower_color || null, 'flower-color');
+        setField('oid-flowering-season', src.flowering_season || null, 'flowering-season');
 
         // Distribution & endemicity
         const endemicity = orchid.endemicity || '';
@@ -1094,7 +1096,7 @@
         } else if (endemicRaw && String(endemicRaw).trim()) {
           endemicDisplay = String(endemicRaw).trim();
         }
-        setField('oid-endemic', endemicDisplay);
+        setField('oid-endemic', endemicDisplay, 'endemicity');
 
         // Photo — same source as catalog thumbnail
         const oidPhoto = document.getElementById('oid-photo');
@@ -1123,19 +1125,27 @@
         });
       }
 
-      function odmRow(label, value) {
+      // Field keys DENR has hidden from this view via the "eye" toggles in the
+      // Publish to Catalog modal. Set from orchid.hidden_fields wherever this orchid loads.
+      var odmHiddenFields = new Set();
+
+      function odmRow(label, value, fieldKey) {
         if (value === null || value === undefined || value === '') return '';
+        if (fieldKey && odmHiddenFields.has(fieldKey)) return '';
         return '<div class="odm-row"><span class="odm-row-label">' + label +
           '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
       }
 
       function odmPopulateValue(orchid, allSightings) {
+        odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
+
         var src = allSightings[0] || {};
         var count = allSightings.length;
         var status = src.threat_level_generalized || src.threat_level ||
           orchid.conservation_status || '—';
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
+        card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
         card.style.background = sl.indexOf('critical') >= 0 ? '#9c2929'
           : sl.indexOf('endanger') >= 0 ? '#b84a1a'
           : sl.indexOf('vulnerable') >= 0 ? '#145A1E'
@@ -1152,11 +1162,11 @@
           ? src.local_names.join(', ') : '';
         var endemic = src.endemic_to_philippines == null || src.endemic_to_philippines === ''
           ? '' : (src.endemic_to_philippines === true || /^y/i.test(String(src.endemic_to_philippines)) ? 'Yes' : 'No');
-        var taxHtml = odmRow('Local Name(s)', localNames) +
-          odmRow('Common Name(s)', commonNames) +
-          odmRow('Endemic to Philippines', endemic) +
+        var taxHtml = odmRow('Local Name(s)', localNames, 'local-names') +
+          odmRow('Common Name(s)', commonNames, 'common-names') +
+          odmRow('Endemic to Philippines', endemic, 'endemicity') +
           odmRow('Genus', genus) +
-          odmRow('Confidence', src.identification_confidence);
+          odmRow('Confidence', src.identification_confidence, 'id-confidence');
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
 
@@ -1165,34 +1175,34 @@
         var plantHeight = src.plant_height_cm ? src.plant_height_cm + ' cm' : '';
         var floweringStage = src.blooming_stage || src.flowering_stage || '';
         var fruitPresent = src.fruit_present === true ? 'Present' : (src.fruit_present === false ? 'Not observed' : '');
-        var morphHtml = odmRow('Plant Height', plantHeight) +
-          odmRow('Leaf Shape', src.leaf_shape) +
+        var morphHtml = odmRow('Plant Height', plantHeight, 'height') +
+          odmRow('Leaf Shape', src.leaf_shape, 'leaf-shape') +
           odmRow('Leaf Count', src.leaf_count) +
           odmRow('Leaf Textures', leafTextures) +
           odmRow('Leaf Arrangement', src.leaf_arrangement) +
-          odmRow('Flower Color', src.flower_color) +
-          odmRow('Flower Count', src.flower_count) +
+          odmRow('Flower Color', src.flower_color, 'flower-color') +
+          odmRow('Flower Count', src.flower_count, 'flower-count') +
           odmRow('Flower Size', flowerDiameter) +
-          odmRow('Inflorescence Type', src.inflorescence_type) +
+          odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
           odmRow('Petal Characteristics', src.petal_characteristics) +
           odmRow('Labellum / Lip', src.labellum_lip_description) +
-          odmRow('Fragrance', src.fragrance) +
-          odmRow('Flowering Season', src.flowering_season) +
-          odmRow('Flowering Stage', floweringStage) +
+          odmRow('Fragrance', src.fragrance, 'fragrance') +
+          odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
+          odmRow('Flowering Stage', floweringStage, 'blooming') +
           odmRow('Fruit Present', fruitPresent) +
           odmRow('Fruit Type', src.fruit_type);
         document.getElementById('odm-rows-morphology').innerHTML = morphHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No morphological data</span></div>';
 
         var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
-        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa') +
-          odmRow('Site / Zone', src.specific_site_zone) +
-          odmRow('Elevation', elev) +
-          odmRow('Habitat', src.habitat_type) +
-          odmRow('Microhabitat', src.microhabitat) +
-          odmRow('Growth Substrate', src.growth_substrate) +
-          odmRow('Nearby Water Source', src.nearby_water_source) +
-          odmRow('Population Status', src.population_status);
+        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa', 'mountain') +
+          odmRow('Site / Zone', src.specific_site_zone, 'site') +
+          odmRow('Elevation', elev, 'elevation') +
+          odmRow('Habitat', src.habitat_type, 'habitat-type') +
+          odmRow('Microhabitat', src.microhabitat, 'microhabitat') +
+          odmRow('Growth Substrate', src.growth_substrate, 'substrate') +
+          odmRow('Nearby Water Source', src.nearby_water_source, 'water') +
+          odmRow('Population Status', src.population_status, 'pop-status');
         document.getElementById('odm-rows-location').innerHTML = locHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
       }
@@ -1275,11 +1285,11 @@
             escapeHtml(src.educational_notes) + '</div>');
         }
         var team = Array.isArray(src.team_members) ? src.team_members.filter(Boolean).join(', ') : (src.team_members || '');
-        var detailRows = odmRow('Institution', src.institution) +
-          odmRow('Team Members', team) +
-          odmRow('Collection Method', src.collection_method) +
-          odmRow('Observation Type', src.observation_type) +
-          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No') : '');
+        var detailRows = odmRow('Institution', src.institution, 'institution') +
+          odmRow('Team Members', team, 'team') +
+          odmRow('Collection Method', src.collection_method, 'collection-method') +
+          odmRow('Observation Type', src.observation_type, 'obs-type') +
+          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No', 'voucher') : '');
         if (detailRows) {
           parts.push('<div class="odm-section"><div class="odm-section-title">Research Details</div>' +
             '<div class="odm-rows-wrap">' + detailRows + '</div></div>');

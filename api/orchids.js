@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
       let result;
       try {
         result = await pool.query(
-          `SELECT id, name, genus, common_name, endemicity, image_url,
+          `SELECT id, name, genus, common_name, endemicity, image_url, hidden_fields,
                   COALESCE(conservation_status, '') AS conservation_status
            FROM orchid_overview
            ORDER BY name ASC`
