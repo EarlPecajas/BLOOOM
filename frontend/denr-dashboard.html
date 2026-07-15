@@ -4071,6 +4071,24 @@
       // so a trail added on the DENR side shows up on both dashboards' maps.
       const TRAIL_LINE_COLOR = '#2563eb';
       const TRAIL_ENDPOINT_COLOR = '#1e3a8a';
+      // Shown if the map_trails table hasn't been migrated in yet (or the fetch fails),
+      // so the original trail never just disappears from the map.
+      const FALLBACK_TRAIL_DEFS = {
+        busa: {
+          name: 'Mt. Busa Research Trail',
+          desc: 'Primary orchid survey trail. Starts at trailhead (~6.07°N) and ascends to the upper survey zone (~6.11°N). Sourced from BLOOM mobile app.',
+          color: TRAIL_LINE_COLOR,
+          coords: [
+            [6.0705, 124.7412],
+            [6.0758, 124.7350],
+            [6.0821, 124.7284],
+            [6.0903, 124.7201],
+            [6.0987, 124.7128],
+            [6.1055, 124.7049],
+            [6.1092, 124.6858]
+          ]
+        }
+      };
       let MAP_TRAIL_DEFS = {};
       const mapTrailLayers = {};
 
@@ -4084,22 +4102,29 @@
 
         const container = document.getElementById('map-trails-row');
         if (container) container.innerHTML = '';
-        if (!bloomSupabase) return;
 
-        try {
-          const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
-          if (error || !data) return;
-          data.forEach(row => {
-            MAP_TRAIL_DEFS[row.trail_id] = {
-              name: row.name,
-              desc: row.description || '',
-              color: row.color || TRAIL_LINE_COLOR,
-              coords: row.coordinates
-            };
-          });
-        } catch (e) {
-          console.warn('Failed to load map trails:', e);
-          return;
+        let loadedFromDb = false;
+        if (bloomSupabase) {
+          try {
+            const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
+            if (!error && data && data.length) {
+              data.forEach(row => {
+                MAP_TRAIL_DEFS[row.trail_id] = {
+                  name: row.name,
+                  desc: row.description || '',
+                  color: row.color || TRAIL_LINE_COLOR,
+                  coords: row.coordinates
+                };
+              });
+              loadedFromDb = true;
+            }
+          } catch (e) {
+            console.warn('Failed to load map trails:', e);
+          }
+        }
+
+        if (!loadedFromDb) {
+          MAP_TRAIL_DEFS = { ...FALLBACK_TRAIL_DEFS };
         }
 
         if (container) {
