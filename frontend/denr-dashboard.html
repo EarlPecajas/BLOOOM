@@ -21,7 +21,7 @@
     <script src="dashboard-shared.js?v=4"></script>
     <style>
       @keyframes spin{to{transform:rotate(360deg);}}
-      @media(max-width:860px){#report-view .report-grid{grid-template-columns:1fr!important;}}
+      @media(max-width:860px){#report-view .report-grid,#importexport-view .report-grid{grid-template-columns:1fr!important;}}
       .detail-step-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8d9b2;transition:all .2s;}
       .detail-step-dot.active{background:#2d5a27;transform:scale(1.35);}
       .orchid-detail-page .orchid-detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.78rem 1.3rem;border-bottom:1px solid #ecf3eb;gap:1.5rem;}
@@ -199,6 +199,12 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
           </span>
           <span>Generate Report</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="importexport">
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 17l-5-5 5-5"/><path d="M3 12h11"/><path d="M16 7l5 5-5 5"/><path d="M21 12H10"/></svg>
+          </span>
+          <span>Import / Export</span>
         </a>
         <a href="#" class="sidebar-item" data-view="map">
           <span class="sidebar-icon">
@@ -884,6 +890,144 @@
                 <div style="padding:0.75rem 1.2rem;">
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Habitat Classification</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Sightings grouped by habitat type</p>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /right -->
+
+        </div><!-- /grid -->
+      </div><!-- /body -->
+    </div>
+
+    <!-- Import / Export View -->
+    <div id="importexport-view" class="view-section" style="display:none;">
+      <div style="padding:2rem clamp(1.5rem,4vw,3rem);">
+        <div style="max-width:1100px;margin:0 auto 1.25rem auto;">
+          <h1 class="m-0" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;font-size:1.5rem;line-height:1.2;">Import / Export</h1>
+          <p class="m-0" style="color:var(--dt-muted);font-size:0.9rem;margin-top:0.35rem;">Download catalog and submission records as CSV, or bulk add/update orchid species from a spreadsheet</p>
+        </div>
+
+        <div class="report-grid" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;">
+
+          <!-- Left: primary actions -->
+          <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+            <!-- Export card -->
+            <div style="background:var(--dt-bg-input);border-radius:16px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;">
+              <div style="padding:1.1rem 1.5rem;border-bottom:1px solid var(--dt-border-md);display:flex;align-items:center;gap:0.6rem;">
+                <span style="width:30px;height:30px;border-radius:9px;background:#dcfce7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </span>
+                <p class="m-0 text-sm font-bold" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">Export Data</p>
+              </div>
+              <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.2rem;">
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Dataset</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                    <label id="ie-ds-orchids" onclick="selectExportDataset('orchids')" style="display:flex;flex-direction:column;gap:0.3rem;cursor:pointer;border:2px solid var(--dt-accent);border-radius:12px;padding:0.9rem 1rem;background:rgba(30,100,45,.3);transition:all 150ms;">
+                      <input type="radio" name="ie-dataset" value="orchids" checked style="display:none;" />
+                      <span class="text-xs font-bold" style="color:var(--dt-accent-lt);">Orchid Catalog</span>
+                      <span class="text-xs" style="color:var(--dt-muted);"><span id="ie-count-orchids">–</span> species</span>
+                    </label>
+                    <label id="ie-ds-submissions" onclick="selectExportDataset('submissions')" style="display:flex;flex-direction:column;gap:0.3rem;cursor:pointer;border:2px solid var(--dt-border-md);border-radius:12px;padding:0.9rem 1rem;background:var(--dt-bg-input);transition:all 150ms;">
+                      <input type="radio" name="ie-dataset" value="submissions" style="display:none;" />
+                      <span class="text-xs font-bold" style="color:var(--dt-muted);">Submissions</span>
+                      <span class="text-xs" style="color:var(--dt-muted);"><span id="ie-count-submissions">–</span> records</span>
+                    </label>
+                  </div>
+                </div>
+                <button type="button" id="ieExportBtn" onclick="runImportExportExport()" style="padding:0.7rem;border:none;border-radius:10px;background:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;transition:background 150ms;" onmouseover="this.style.background='#0E4018'" onmouseout="this.style.background='#145A1E'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Import card -->
+            <div style="background:var(--dt-bg-input);border-radius:16px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;">
+              <div style="padding:1.1rem 1.5rem;border-bottom:1px solid var(--dt-border-md);display:flex;align-items:center;gap:0.6rem;">
+                <span style="width:30px;height:30px;border-radius:9px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </span>
+                <p class="m-0 text-sm font-bold" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">Import Orchid Catalog</p>
+              </div>
+              <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;">
+                <p class="m-0 text-xs" style="color:var(--dt-muted);line-height:1.5;">Bulk add or update species. Rows are matched to existing species by <strong style="color:var(--dt-text);">Scientific Name</strong> — matches are updated, everything else is added as new.</p>
+
+                <input type="file" id="ieCsvFileInput" accept=".csv" style="display:none;" onchange="handleImportExportFileSelected(event)" />
+                <div id="ieDropzone" onclick="document.getElementById('ieCsvFileInput').click()"
+                     ondragover="event.preventDefault();this.style.borderColor='#145A1E';this.style.background='rgba(20,90,30,.06)';"
+                     ondragleave="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent';"
+                     ondrop="handleImportExportFileDrop(event)"
+                     style="border:2px dashed var(--dt-border-md);border-radius:12px;padding:1.6rem 1rem;text-align:center;cursor:pointer;transition:border-color 150ms,background 150ms;">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 0.5rem auto;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <p class="m-0 text-xs font-semibold" style="color:var(--dt-text);">Click to upload or drag a CSV file here</p>
+                  <p class="m-0 text-xs mt-1" style="color:#94a3b8;">Scientific Name and Genus columns required</p>
+                </div>
+
+                <div id="ieFilePreview" hidden style="border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.85rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
+                  <div>
+                    <p id="ieFileName" class="m-0 text-xs font-bold" style="color:var(--dt-text);">–</p>
+                    <p id="ieFileSummary" class="m-0 text-xs" style="color:var(--dt-muted);margin-top:0.15rem;">–</p>
+                  </div>
+                  <div style="display:flex;gap:0.5rem;">
+                    <button type="button" onclick="cancelImportExportImport()" style="padding:0.5rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);font-family:Inter,Roboto,sans-serif;font-size:0.8rem;font-weight:600;color:var(--dt-muted);cursor:pointer;">Cancel</button>
+                    <button type="button" id="ieConfirmImportBtn" onclick="confirmImportExportImport()" style="padding:0.5rem 0.9rem;border:none;border-radius:8px;background:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.8rem;font-weight:700;color:#fff;cursor:pointer;">Import Now</button>
+                  </div>
+                </div>
+
+                <div id="ieImportResults" hidden style="border-radius:10px;padding:0.85rem 1rem;font-size:0.8rem;line-height:1.5;"></div>
+
+                <button type="button" onclick="downloadCsvImportTemplate()" style="align-self:flex-start;background:none;border:none;padding:0;color:var(--dt-accent-lt);font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:underline;">Download CSV template</button>
+              </div>
+            </div>
+
+          </div><!-- /left -->
+
+          <!-- Right: info cards -->
+          <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+            <div style="background:var(--dt-bg-input);border-radius:16px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;">
+              <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--dt-border-md);">
+                <p class="m-0 text-sm font-bold" style="color:#145A1E;font-family:Inter,Roboto,sans-serif;">How it works</p>
+              </div>
+              <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem;">
+                <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.1rem;">1</div>
+                  <div><p class="m-0 text-xs font-semibold" style="color:var(--dt-text);">Export what you need</p><p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Pick a dataset and download it as CSV</p></div>
+                </div>
+                <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.1rem;">2</div>
+                  <div><p class="m-0 text-xs font-semibold" style="color:var(--dt-text);">Edit offline</p><p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Update records in Excel, Sheets, or Numbers</p></div>
+                </div>
+                <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.1rem;">3</div>
+                  <div><p class="m-0 text-xs font-semibold" style="color:var(--dt-text);">Import to update</p><p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Upload the CSV back in — you'll see a preview before anything is saved</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--dt-bg-input);border-radius:16px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;">
+              <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--dt-border-md);">
+                <p class="m-0 text-sm font-bold" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">CSV Column Reference</p>
+              </div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);display:flex;justify-content:space-between;gap:0.5rem;">
+                  <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Scientific Name</p>
+                  <span class="text-xs font-bold" style="color:#dc2626;">required</span>
+                </div>
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);display:flex;justify-content:space-between;gap:0.5rem;">
+                  <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Genus</p>
+                  <span class="text-xs font-bold" style="color:#dc2626;">required</span>
+                </div>
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);display:flex;justify-content:space-between;gap:0.5rem;">
+                  <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Common Name</p>
+                  <span class="text-xs" style="color:var(--dt-muted);">optional</span>
+                </div>
+                <div style="padding:0.75rem 1.2rem;display:flex;justify-content:space-between;gap:0.5rem;">
+                  <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Endemicity</p>
+                  <span class="text-xs" style="color:var(--dt-muted);">optional</span>
                 </div>
               </div>
             </div>
@@ -5706,7 +5850,7 @@
       }
 
       function switchView(viewName) {
-        if (isResearcherRole && viewName === 'report') {
+        if (isResearcherRole && (viewName === 'report' || viewName === 'importexport')) {
           viewName = 'orchids';
         }
 
@@ -5766,6 +5910,9 @@
           if (viewName === 'submissions') {
             loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
           }
+          if (viewName === 'importexport') {
+            initImportExportView();
+          }
         } else if (viewName === 'dashboard') {
           dashboardContainer.style.display = 'block';
           dashboardContainer.style.pointerEvents = 'auto';
@@ -5784,7 +5931,7 @@
       const requestedView = initialSearchParams.get('view');
       const allowedViews = isResearcherRole
         ? new Set(['dashboard', 'orchids', 'map', 'collection3d', 'submissions'])
-        : new Set(['dashboard', 'orchids', 'report', 'map', 'submissions']);
+        : new Set(['dashboard', 'orchids', 'report', 'importexport', 'map', 'submissions']);
       if (requestedView && allowedViews.has(requestedView)) {
         switchView(requestedView);
       } else {
@@ -6867,23 +7014,15 @@
 
       function selectReportFormat(fmt) {
         document.querySelector('input[name="format"][value="' + fmt + '"]').checked = true;
-        const pdfLbl = document.getElementById('fmt-pdf');
-        const xlsLbl = document.getElementById('fmt-excel');
-        if (fmt === 'pdf') {
-          pdfLbl.style.borderColor = '#145A1E'; pdfLbl.style.background = '#E4F0D0';
-          pdfLbl.querySelector('svg').setAttribute('stroke', '#145A1E');
-          pdfLbl.querySelector('.text-xs.font-bold').style.color = '#145A1E';
-          xlsLbl.style.borderColor = '#e2e8f0'; xlsLbl.style.background = '#fff';
-          xlsLbl.querySelector('svg').setAttribute('stroke', '#64748b');
-          xlsLbl.querySelector('.text-xs.font-bold').style.color = '#64748b';
-        } else {
-          xlsLbl.style.borderColor = '#145A1E'; xlsLbl.style.background = '#E4F0D0';
-          xlsLbl.querySelector('svg').setAttribute('stroke', '#145A1E');
-          xlsLbl.querySelector('.text-xs.font-bold').style.color = '#145A1E';
-          pdfLbl.style.borderColor = '#e2e8f0'; pdfLbl.style.background = '#fff';
-          pdfLbl.querySelector('svg').setAttribute('stroke', '#64748b');
-          pdfLbl.querySelector('.text-xs.font-bold').style.color = '#64748b';
-        }
+        ['pdf', 'excel'].forEach((candidate) => {
+          const lbl = document.getElementById('fmt-' + candidate);
+          if (!lbl) return;
+          const active = candidate === fmt;
+          lbl.style.borderColor = active ? '#145A1E' : '#e2e8f0';
+          lbl.style.background = active ? '#E4F0D0' : '#fff';
+          lbl.querySelector('svg').setAttribute('stroke', active ? '#145A1E' : '#64748b');
+          lbl.querySelector('.text-xs.font-bold').style.color = active ? '#145A1E' : '#64748b';
+        });
       }
 
       function getReportColumnDefs(reportType) {
@@ -7100,6 +7239,234 @@
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 420); }, 3500);
+      }
+
+      // ── Import / Export view ──────────────────────────────────────────
+      const IMPORT_EXPORT_COLUMNS = {
+        orchids: [['name', 'Scientific Name'], ['genus', 'Genus'], ['common_name', 'Common Name'], ['endemicity', 'Endemicity'], ['conservation_status', 'Conservation Status']],
+        submissions: [['researcher', 'Researcher'], ['researcher_email', 'Email'], ['species', 'Scientific Name'], ['common_name', 'Common Name'], ['location', 'Location'], ['submission_date', 'Observation Date'], ['review_status', 'Status']]
+      };
+      let ieParsedRows = null;
+
+      async function initImportExportView() {
+        if (!orchidCatalogLoaded) await loadOrchidCatalog();
+        if (!submissionRows || !submissionRows.length) await loadSubmissions();
+        const orchidCountEl = document.getElementById('ie-count-orchids');
+        const subCountEl = document.getElementById('ie-count-submissions');
+        if (orchidCountEl) orchidCountEl.textContent = (orchidRows || []).length;
+        if (subCountEl) subCountEl.textContent = (submissionRows || []).length;
+      }
+
+      function selectExportDataset(ds) {
+        document.querySelector('input[name="ie-dataset"][value="' + ds + '"]').checked = true;
+        ['orchids', 'submissions'].forEach((candidate) => {
+          const lbl = document.getElementById('ie-ds-' + candidate);
+          if (!lbl) return;
+          const active = candidate === ds;
+          lbl.style.borderColor = active ? '#145A1E' : 'var(--dt-border-md)';
+          lbl.style.background = active ? 'rgba(30,100,45,.3)' : 'var(--dt-bg-input)';
+          lbl.querySelectorAll('.text-xs').forEach((el) => { el.style.color = active ? 'var(--dt-accent-lt)' : 'var(--dt-muted)'; });
+        });
+      }
+
+      function csvEscapeCell(value) {
+        const str = String(value ?? '');
+        return /[",\r\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+      }
+
+      function downloadRowsAsCsv(fileNameBase, rows, colDefs) {
+        const lines = [colDefs.map(([, label]) => csvEscapeCell(label)).join(',')];
+        rows.forEach((row) => lines.push(colDefs.map(([key]) => csvEscapeCell(row[key] ?? '')).join(',')));
+        const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${fileNameBase}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function runImportExportExport() {
+        const dataset = document.querySelector('input[name="ie-dataset"]:checked').value;
+        const rows = dataset === 'orchids' ? (orchidRows || []) : (submissionRows || []);
+        if (!rows.length) {
+          showReportToast('No data available to export yet.', 'warn');
+          return;
+        }
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const fileNameBase = (dataset === 'orchids' ? 'Orchid_Catalog' : 'Submissions') + '_' + stamp;
+        downloadRowsAsCsv(fileNameBase, rows, IMPORT_EXPORT_COLUMNS[dataset]);
+        showReportToast(`Exported ${rows.length} ${dataset === 'orchids' ? 'species' : 'records'} to CSV.`, 'success');
+      }
+
+      function downloadCsvImportTemplate() {
+        downloadRowsAsCsv('Orchid_Catalog_Import_Template', [
+          { name: 'Bulbophyllum lobbii', genus: 'Bulbophyllum', common_name: 'Lobb’s Bulbophyllum', endemicity: 'Native' }
+        ], IMPORT_EXPORT_COLUMNS.orchids.filter(([key]) => key !== 'conservation_status'));
+      }
+
+      // Minimal quoted-field-aware CSV parser (handles commas/newlines inside "quotes").
+      function parseCsvText(text) {
+        const rows = [];
+        let row = [];
+        let field = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (inQuotes) {
+            if (c === '"') {
+              if (text[i + 1] === '"') { field += '"'; i++; }
+              else { inQuotes = false; }
+            } else {
+              field += c;
+            }
+          } else if (c === '"') {
+            inQuotes = true;
+          } else if (c === ',') {
+            row.push(field); field = '';
+          } else if (c === '\n' || c === '\r') {
+            if (c === '\r' && text[i + 1] === '\n') i++;
+            row.push(field); field = '';
+            rows.push(row); row = [];
+          } else {
+            field += c;
+          }
+        }
+        if (field !== '' || row.length) { row.push(field); rows.push(row); }
+        return rows.filter((r) => r.some((cell) => cell.trim() !== ''));
+      }
+
+      function handleImportExportFileDrop(event) {
+        event.preventDefault();
+        const dz = document.getElementById('ieDropzone');
+        dz.style.borderColor = 'var(--dt-border-md)';
+        dz.style.background = 'transparent';
+        const file = event.dataTransfer.files && event.dataTransfer.files[0];
+        if (file) loadImportExportFile(file);
+      }
+
+      function handleImportExportFileSelected(event) {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = '';
+        if (file) loadImportExportFile(file);
+      }
+
+      async function loadImportExportFile(file) {
+        const table = parseCsvText(await file.text());
+        if (table.length < 2) {
+          showReportToast('CSV file has no data rows.', 'warn');
+          return;
+        }
+
+        const header = table[0].map((h) => h.trim().toLowerCase());
+        const col = {
+          name: header.indexOf('scientific name'),
+          genus: header.indexOf('genus'),
+          common: header.indexOf('common name'),
+          endemicity: header.indexOf('endemicity')
+        };
+        if (col.name === -1 || col.genus === -1) {
+          showReportToast('CSV must include "Scientific Name" and "Genus" columns.', 'error');
+          return;
+        }
+
+        ieParsedRows = { rows: table.slice(1), col };
+
+        document.getElementById('ieFileName').textContent = file.name;
+        document.getElementById('ieFileSummary').textContent = `${table.length - 1} row${table.length - 1 === 1 ? '' : 's'} ready to import`;
+        document.getElementById('ieImportResults').hidden = true;
+        document.getElementById('ieFilePreview').hidden = false;
+      }
+
+      function cancelImportExportImport() {
+        ieParsedRows = null;
+        document.getElementById('ieFilePreview').hidden = true;
+        document.getElementById('ieImportResults').hidden = true;
+      }
+
+      async function confirmImportExportImport() {
+        if (!ieParsedRows) return;
+        if (!bloomSupabase) {
+          showReportToast('Supabase is not configured.', 'error');
+          return;
+        }
+
+        const { rows: table, col } = ieParsedRows;
+        const confirmBtn = document.getElementById('ieConfirmImportBtn');
+        const originalHTML = confirmBtn.innerHTML;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = 'Importing…';
+
+        let added = 0, updated = 0, failed = 0;
+        const genusCache = new Map();
+
+        for (const cols of table) {
+          const sciName = (cols[col.name] || '').trim();
+          const genusName = (cols[col.genus] || '').trim();
+          const commonName = col.common > -1 ? (cols[col.common] || '').trim() : '';
+          const endemicity = col.endemicity > -1 ? (cols[col.endemicity] || '').trim() : '';
+
+          if (!sciName || !genusName) { failed++; continue; }
+
+          try {
+            const genusKey = genusName.toLowerCase();
+            let genusId = genusCache.get(genusKey);
+            if (!genusId) {
+              const { data: existingGenus } = await bloomSupabase
+                .from('genus').select('genus_id').ilike('genus_name', genusName).maybeSingle();
+              if (existingGenus) {
+                genusId = existingGenus.genus_id;
+              } else {
+                const { data: newGenus, error: genusInsertError } = await bloomSupabase
+                  .from('genus').insert({ genus_name: genusName }).select('genus_id').single();
+                if (genusInsertError) throw genusInsertError;
+                genusId = newGenus.genus_id;
+              }
+              genusCache.set(genusKey, genusId);
+            }
+
+            const { data: existingOrchid } = await bloomSupabase
+              .from('orchids').select('orchid_id').ilike('sci_name', sciName).maybeSingle();
+
+            if (existingOrchid) {
+              const { error: updateError } = await bloomSupabase
+                .from('orchids')
+                .update({ genus_id: genusId, common_name: commonName || null, endemicity: endemicity || null })
+                .eq('orchid_id', existingOrchid.orchid_id);
+              if (updateError) throw updateError;
+              updated++;
+            } else {
+              const { error: insertError } = await bloomSupabase
+                .from('orchids')
+                .insert({ sci_name: sciName, genus_id: genusId, common_name: commonName || null, endemicity: endemicity || null });
+              if (insertError) throw insertError;
+              added++;
+            }
+          } catch (rowError) {
+            console.error('CSV row import failed:', sciName, rowError);
+            failed++;
+          }
+        }
+
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHTML;
+        document.getElementById('ieFilePreview').hidden = true;
+        ieParsedRows = null;
+
+        const resultsBox = document.getElementById('ieImportResults');
+        resultsBox.hidden = false;
+        resultsBox.style.background = failed ? '#fef9c3' : '#dcfce7';
+        resultsBox.style.color = failed ? '#92400e' : '#166534';
+        resultsBox.style.border = `1.5px solid ${failed ? '#fde68a' : '#bbf7d0'}`;
+        resultsBox.textContent = `Import complete: ${added} added, ${updated} updated${failed ? `, ${failed} failed` : ''}.`;
+
+        orchidCatalogLoaded = false;
+        await loadOrchidCatalog();
+        document.getElementById('ie-count-orchids').textContent = (orchidRows || []).length;
+
+        showReportToast('Catalog import finished.', failed ? 'warn' : 'success');
       }
 
       // Post to Catalog functionality
