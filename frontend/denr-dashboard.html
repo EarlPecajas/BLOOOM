@@ -224,6 +224,13 @@
       .detail-geo-tile-label { margin:0 0 0.25rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--dt-muted); }
       .detail-geo-tile-value { margin:0; font-size:0.92rem; font-weight:700; color:var(--dt-text); }
 
+      /* ── Map trail/route toggle ── */
+      .map-trail-toggle-btn { display:inline-flex; align-items:center; gap:0.4rem; flex-shrink:0; padding:0.4rem 0.85rem; background:transparent; border:1.5px solid rgba(77,184,106,.45); border-radius:20px; cursor:pointer; font-weight:700; color:#4db86a; font-size:0.75rem; white-space:nowrap; transition:all 0.2s; letter-spacing:0.02em; font-family:Inter,Roboto,sans-serif; }
+      .map-trail-toggle-btn svg { flex-shrink:0; }
+      .map-trail-toggle-btn:hover { border-color:#4db86a; background:rgba(77,184,106,.12); }
+      .map-trail-toggle-btn.map-trail-toggle-active { background:#4db86a; color:#0a2710; border-color:#4db86a; box-shadow:0 2px 8px rgba(77,184,106,.35); }
+      .map-trail-toggle-btn.map-trail-toggle-active:hover { background:#3fa25c; border-color:#3fa25c; }
+
       /* ── Cream website theme for DENR overview ── */
       #dashboard-admin-overview {
         --dt-bg-input: #FFFFFF;
@@ -1120,7 +1127,10 @@
         <!-- Trails row -->
         <div style="padding:0.25rem 1.3rem 0.45rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.2rem;flex-shrink:0;color:var(--dt-muted);">Trail</span>
-          <button id="trail-btn-busa" onclick="toggleTrail('busa')" style="flex-shrink:0;padding:0.26rem 0.72rem;background:#4db86a;border:1.5px solid #4db86a;border-radius:20px;cursor:pointer;font-weight:700;color:#0a2710;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;letter-spacing:0.02em;">&#9632; Mt. Busa Research Trail</button>
+          <button id="trail-btn-busa" onclick="toggleTrail('busa')" class="map-trail-toggle-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            Mt. Busa Research Trail
+          </button>
         </div>
       </div>
 
@@ -4048,15 +4058,21 @@
         if (mapTrailLayers[trailId]) {
           leafletMap.removeLayer(mapTrailLayers[trailId]);
           delete mapTrailLayers[trailId];
-          if (btn) { btn.style.background = 'transparent'; btn.style.color = '#4db86a'; btn.style.borderColor = 'rgba(77,184,106,.45)'; }
+          if (btn) btn.classList.remove('map-trail-toggle-active');
         } else {
           const opts = { lineCap: 'square', lineJoin: 'miter' };
           const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
           const halo = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 18, opacity: 0.08 });
           const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
           const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
-          mapTrailLayers[trailId] = L.layerGroup([halo, mid, core]).addTo(leafletMap);
-          if (btn) { btn.style.background = '#4db86a'; btn.style.color = '#0a2710'; btn.style.borderColor = '#4db86a'; }
+          const endpointIcon = (fill) => L.divIcon({
+            html: `<div style="width:14px;height:14px;border-radius:50%;background:${fill};border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);"></div>`,
+            className: '', iconSize: [14, 14], iconAnchor: [7, 7]
+          });
+          const trailStart = L.marker(def.coords[0], { icon: endpointIcon(NEON_BLUE) }).bindTooltip('Trailhead', { direction: 'top', offset: [0, -6] });
+          const trailEnd = L.marker(def.coords[def.coords.length - 1], { icon: endpointIcon('#145A1E') }).bindTooltip('Survey Zone', { direction: 'top', offset: [0, -6] });
+          mapTrailLayers[trailId] = L.layerGroup([halo, mid, core, trailStart, trailEnd]).addTo(leafletMap);
+          if (btn) btn.classList.add('map-trail-toggle-active');
         }
       };
 
