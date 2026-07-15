@@ -182,13 +182,12 @@
       .denrsub-tab.denrsub-tab-active { background:#145A1E; color:#fff; box-shadow:0 2px 8px rgba(20,90,30,0.28); }
       .denrsub-tab.denrsub-tab-active:hover { background:#145A1E; }
 
-      .denrsub-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:0.75rem; margin-bottom:1.25rem; }
+      .denrsub-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-bottom:1.25rem; }
       .denrsub-stat-card { background:var(--dt-bg-input); border:1px solid var(--dt-border-md); border-radius:12px; padding:0.9rem 1rem; position:relative; overflow:hidden; }
       .denrsub-stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
       .denrsub-stat-card[data-tone="all"]::before { background:linear-gradient(90deg,#64748b,#94a3b8); }
       .denrsub-stat-card[data-tone="pending"]::before { background:linear-gradient(90deg,#d97706,#f59e0b); }
       .denrsub-stat-card[data-tone="approved"]::before { background:linear-gradient(90deg,#16a34a,#4ade80); }
-      .denrsub-stat-card[data-tone="rejected"]::before { background:linear-gradient(90deg,#dc2626,#f87171); }
       .denrsub-stat-card[data-tone="revision"]::before { background:linear-gradient(90deg,#d97706,#fbbf24); }
       .denrsub-stat-num { font-size:1.55rem; font-weight:800; color:var(--dt-text); line-height:1; font-family:Inter,Roboto,sans-serif; }
       .denrsub-stat-lbl { font-size:0.74rem; color:var(--dt-muted); margin-top:0.3rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
@@ -1172,10 +1171,6 @@
           <div class="denrsub-stat-num" id="denrsub-count-approved">—</div>
           <div class="denrsub-stat-lbl">Approved</div>
         </div>
-        <div class="denrsub-stat-card" data-tone="rejected">
-          <div class="denrsub-stat-num" id="denrsub-count-rejected">—</div>
-          <div class="denrsub-stat-lbl">Rejected</div>
-        </div>
         <div class="denrsub-stat-card" data-tone="revision">
           <div class="denrsub-stat-num" id="denrsub-count-revision">—</div>
           <div class="denrsub-stat-lbl">For Revision</div>
@@ -1188,7 +1183,6 @@
           <button class="sub-filter-btn sub-filter-active" data-filter="all"    style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:700;cursor:pointer;transition:all 160ms;">All</button>
           <button class="sub-filter-btn" data-filter="pending"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Pending</button>
           <button class="sub-filter-btn" data-filter="approved" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Approved</button>
-          <button class="sub-filter-btn" data-filter="rejected" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Rejected</button>
           <button class="sub-filter-btn" data-filter="revision" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">For Revision</button>
         </div>
         <div class="denrsub-search-wrap">
@@ -5725,7 +5719,7 @@
           else if (status === 'revision') counts.revision++;
           else counts.pending++;
         });
-        ['all', 'pending', 'approved', 'rejected', 'revision'].forEach(function(key) {
+        ['all', 'pending', 'approved', 'revision'].forEach(function(key) {
           const el = document.getElementById('denrsub-count-' + key);
           if (el) el.textContent = counts[key];
         });
