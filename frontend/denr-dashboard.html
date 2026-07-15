@@ -230,6 +230,8 @@
       .map-trail-toggle-btn:hover { border-color:#4db86a; background:rgba(77,184,106,.12); }
       .map-trail-toggle-btn.map-trail-toggle-active { background:#4db86a; color:#0a2710; border-color:#4db86a; box-shadow:0 2px 8px rgba(77,184,106,.35); }
       .map-trail-toggle-btn.map-trail-toggle-active:hover { background:#3fa25c; border-color:#3fa25c; }
+      .map-trail-add-btn { display:inline-flex; align-items:center; gap:0.35rem; flex-shrink:0; padding:0.4rem 0.85rem; background:transparent; border:1.5px dashed var(--dt-border-md); border-radius:20px; cursor:pointer; font-weight:700; color:var(--dt-muted); font-size:0.75rem; white-space:nowrap; transition:all 0.2s; letter-spacing:0.02em; font-family:Inter,Roboto,sans-serif; }
+      .map-trail-add-btn:hover { border-color:#2563eb; color:#2563eb; background:rgba(37,99,235,.08); }
 
       /* ── Cream website theme for DENR overview ── */
       #dashboard-admin-overview {
@@ -1127,9 +1129,10 @@
         <!-- Trails row -->
         <div style="padding:0.25rem 1.3rem 0.45rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.2rem;flex-shrink:0;color:var(--dt-muted);">Trail</span>
-          <button id="trail-btn-busa" onclick="toggleTrail('busa')" class="map-trail-toggle-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-            Mt. Busa Research Trail
+          <div id="map-trails-row" style="display:flex;align-items:center;gap:0.5rem;"></div>
+          <button type="button" onclick="openAddTrailModal()" class="map-trail-add-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Trail
           </button>
         </div>
       </div>
@@ -2008,6 +2011,40 @@
 
     <!-- Toast notification -->
     <div id="denr-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:5000;background:#1a3a1c;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;font-family:Inter,Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:340px;line-height:1.45;"></div>
+
+    <!-- Add Trail Modal -->
+    <div id="addTrailModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:4500;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px);">
+      <div style="background:var(--dt-bg);border-radius:16px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.55);border:1px solid var(--dt-border-md);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#2563eb 0%,#1e3a8a 100%);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <div style="display:flex;align-items:center;gap:0.7rem;">
+            <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.24);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            </span>
+            <h3 style="margin:0;color:#fff;font-size:1.02rem;font-weight:800;">Add Trail Route</h3>
+          </div>
+          <button type="button" onclick="closeModal('addTrailModal')" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 160ms;" onmouseover="this.style.background='rgba(255,255,255,0.24)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">&times;</button>
+        </div>
+        <form id="addTrailForm" onsubmit="submitAddTrail(event)" style="padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;">
+          <div>
+            <label for="addTrailName" style="display:block;margin-bottom:0.35rem;font-size:0.78rem;font-weight:700;color:var(--dt-text);">Trail Name <span style="color:#f87171;">*</span></label>
+            <input id="addTrailName" type="text" required placeholder="e.g. Kalatong Ridge Trail" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--dt-border-md)'" />
+          </div>
+          <div>
+            <label for="addTrailDesc" style="display:block;margin-bottom:0.35rem;font-size:0.78rem;font-weight:700;color:var(--dt-text);">Description</label>
+            <textarea id="addTrailDesc" rows="2" placeholder="Shown in the trail's map popup (optional)" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--dt-border-md)'"></textarea>
+          </div>
+          <div>
+            <label for="addTrailCoords" style="display:block;margin-bottom:0.35rem;font-size:0.78rem;font-weight:700;color:var(--dt-text);">Coordinates <span style="color:#f87171;">*</span></label>
+            <textarea id="addTrailCoords" required rows="6" placeholder="6.0705, 124.7412&#10;6.0758, 124.7350&#10;6.0821, 124.7284" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:monospace;font-size:0.82rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--dt-border-md)'"></textarea>
+            <p style="margin:0.4rem 0 0;font-size:0.72rem;color:var(--dt-muted);line-height:1.4;">One <strong style="color:var(--dt-text);">latitude, longitude</strong> pair per line, in the order the trail should be drawn. At least 2 points are required.</p>
+          </div>
+          <div style="display:flex;gap:0.6rem;justify-content:flex-end;padding-top:0.25rem;">
+            <button type="button" onclick="closeModal('addTrailModal')" style="padding:0.55rem 1.2rem;border-radius:8px;border:1.5px solid var(--dt-border-md);background:var(--dt-bg-input);color:var(--dt-text);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+            <button type="submit" id="addTrailSubmitBtn" style="padding:0.55rem 1.3rem;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Add Trail</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- ══ Publish to Catalog Modal ══════════════════════════════════════ -->
     <div id="postToCatalogModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:3000;align-items:flex-start;justify-content:center;padding:1.25rem;overflow-y:auto;backdrop-filter:blur(3px);">
@@ -4030,25 +4067,56 @@
       let activeSubmissionsTab = 'orchid';
       let storageImagesByGenus = new Map();
 
-      // GPS trail from the BLOOM mobile app (_kBusaTrail)
-      const NEON_BLUE = '#4db86a';
-      const MAP_TRAIL_DEFS = {
-        busa: {
-          name: 'Mt. Busa Research Trail', color: NEON_BLUE, weight: 3,
-          desc: 'Primary orchid survey trail. Starts at trailhead (~6.07°N) and ascends to the upper survey zone (~6.11°N). Sourced from BLOOM mobile app.',
-          coords: [
-            [6.0705, 124.7412],
-            [6.0758, 124.7350],
-            [6.0821, 124.7284],
-            [6.0903, 124.7201],
-            [6.0987, 124.7128],
-            [6.1055, 124.7049],
-            [6.1092, 124.6858]
-          ]
-        }
-      };
-
+      // Trail routes are DENR-managed and stored in Supabase (map_trails table),
+      // so a trail added on the DENR side shows up on both dashboards' maps.
+      const TRAIL_LINE_COLOR = '#2563eb';
+      const TRAIL_ENDPOINT_COLOR = '#1e3a8a';
+      let MAP_TRAIL_DEFS = {};
       const mapTrailLayers = {};
+
+      async function loadMapTrails() {
+        if (!leafletMap) return;
+        Object.keys(mapTrailLayers).forEach(trailId => {
+          leafletMap.removeLayer(mapTrailLayers[trailId]);
+          delete mapTrailLayers[trailId];
+        });
+        MAP_TRAIL_DEFS = {};
+
+        const container = document.getElementById('map-trails-row');
+        if (container) container.innerHTML = '';
+        if (!bloomSupabase) return;
+
+        try {
+          const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
+          if (error || !data) return;
+          data.forEach(row => {
+            MAP_TRAIL_DEFS[row.trail_id] = {
+              name: row.name,
+              desc: row.description || '',
+              color: row.color || TRAIL_LINE_COLOR,
+              coords: row.coordinates
+            };
+          });
+        } catch (e) {
+          console.warn('Failed to load map trails:', e);
+          return;
+        }
+
+        if (container) {
+          Object.keys(MAP_TRAIL_DEFS).forEach(trailId => {
+            const def = MAP_TRAIL_DEFS[trailId];
+            const btn = document.createElement('button');
+            btn.id = 'trail-btn-' + trailId;
+            btn.className = 'map-trail-toggle-btn';
+            btn.type = 'button';
+            btn.onclick = () => toggleTrail(trailId);
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>' + escapeHtml(def.name);
+            container.appendChild(btn);
+          });
+        }
+
+        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
+      }
 
       window.toggleTrail = function(trailId) {
         if (!leafletMap) return;
@@ -4060,21 +4128,90 @@
           delete mapTrailLayers[trailId];
           if (btn) btn.classList.remove('map-trail-toggle-active');
         } else {
+          const trailColor = def.color || TRAIL_LINE_COLOR;
           const opts = { lineCap: 'square', lineJoin: 'miter' };
-          const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
-          const halo = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 18, opacity: 0.08 });
-          const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
-          const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
+          const popup = `<div style="min-width:180px;"><b style="color:${trailColor};font-size:1rem;">${escapeHtml(def.name)}</b><br><span style="color:#555;font-size:0.85rem;">${escapeHtml(def.desc)}</span></div>`;
+          const halo = L.polyline(def.coords, { ...opts, color: trailColor, weight: 18, opacity: 0.08 });
+          const mid  = L.polyline(def.coords, { ...opts, color: trailColor, weight: 9,  opacity: 0.28 });
+          const core = L.polyline(def.coords, { ...opts, color: trailColor, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
           const endpointIcon = (fill) => L.divIcon({
             html: `<div style="width:14px;height:14px;border-radius:50%;background:${fill};border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);"></div>`,
             className: '', iconSize: [14, 14], iconAnchor: [7, 7]
           });
-          const trailStart = L.marker(def.coords[0], { icon: endpointIcon(NEON_BLUE) }).bindTooltip('Trailhead', { direction: 'top', offset: [0, -6] });
-          const trailEnd = L.marker(def.coords[def.coords.length - 1], { icon: endpointIcon('#145A1E') }).bindTooltip('Survey Zone', { direction: 'top', offset: [0, -6] });
+          const trailStart = L.marker(def.coords[0], { icon: endpointIcon(trailColor) }).bindTooltip('Trailhead', { direction: 'top', offset: [0, -6] });
+          const trailEnd = L.marker(def.coords[def.coords.length - 1], { icon: endpointIcon(TRAIL_ENDPOINT_COLOR) }).bindTooltip('Survey Zone', { direction: 'top', offset: [0, -6] });
           mapTrailLayers[trailId] = L.layerGroup([halo, mid, core, trailStart, trailEnd]).addTo(leafletMap);
           if (btn) btn.classList.add('map-trail-toggle-active');
         }
       };
+
+      function openAddTrailModal() {
+        const form = document.getElementById('addTrailForm');
+        if (form) form.reset();
+        const modal = document.getElementById('addTrailModal');
+        if (modal) modal.style.display = 'flex';
+      }
+
+      async function submitAddTrail(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('addTrailName').value.trim();
+        const description = document.getElementById('addTrailDesc').value.trim();
+        const coordsRaw = document.getElementById('addTrailCoords').value.trim();
+
+        if (!name) {
+          showToast('Trail name is required.', true);
+          return;
+        }
+
+        const lines = coordsRaw.split('\n').map(line => line.trim()).filter(Boolean);
+        const coords = [];
+        for (const line of lines) {
+          const parts = line.split(',').map(part => parseFloat(part.trim()));
+          if (parts.length !== 2 || parts.some(Number.isNaN)) {
+            showToast(`Invalid coordinate line: "${line}". Use "latitude, longitude".`, true);
+            return;
+          }
+          const [lat, lng] = parts;
+          if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            showToast(`Coordinate out of range: "${line}".`, true);
+            return;
+          }
+          coords.push([lat, lng]);
+        }
+        if (coords.length < 2) {
+          showToast('Add at least 2 coordinate points to draw a trail line.', true);
+          return;
+        }
+
+        if (!bloomSupabase) {
+          showToast('Supabase is not configured.', true);
+          return;
+        }
+
+        const submitBtn = document.getElementById('addTrailSubmitBtn');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Adding…';
+
+        try {
+          const { error } = await bloomSupabase.from('map_trails').insert({
+            name,
+            description: description || null,
+            coordinates: coords
+          });
+          if (error) throw error;
+
+          closeModal('addTrailModal');
+          showToast(`Trail "${name}" added.`);
+          await loadMapTrails();
+        } catch (e) {
+          showToast('Failed to add trail: ' + (e.message || e), true);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
 
       function orchidSvg(c, s) {
         s = s || 22;
@@ -5886,8 +6023,8 @@
           maxZoom: 19, opacity: 0.7
         }).addTo(leafletMap);
 
-        // Show the Mt. Busa research trail by default
-        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
+        // Load DENR-managed trail routes and show them by default
+        loadMapTrails();
 
         // Live orchid sighting markers from database
         if (storageImagesByGenus.size === 0) loadStorageImages();

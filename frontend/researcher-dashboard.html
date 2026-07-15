@@ -857,10 +857,7 @@
         </div>
         <div style="padding:0.2rem 0.2rem 0.1rem;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;display:flex;align-items:center;gap:0.5rem;">
           <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;margin-right:0.2rem;flex-shrink:0;color:#4a7a44;">Trail</span>
-          <button id="trail-btn-busa" onclick="toggleTrail('busa')" class="map-trail-toggle-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-            Mt. Busa Research Trail
-          </button>
+          <div id="map-trails-row" style="display:flex;align-items:center;gap:0.5rem;"></div>
         </div>
       </div>
 
@@ -4208,25 +4205,56 @@
         renderOrchidCatalog(filtered);
       }
 
-      // GPS trail from the BLOOM mobile app (_kBusaTrail)
-      const NEON_BLUE = '#4db86a';
-      const MAP_TRAIL_DEFS = {
-        busa: {
-          name: 'Mt. Busa Research Trail', color: NEON_BLUE, weight: 3,
-          desc: 'Primary orchid survey trail. Starts at trailhead (~6.07°N) and ascends to the upper survey zone (~6.11°N). Sourced from BLOOM mobile app.',
-          coords: [
-            [6.0705, 124.7412],
-            [6.0758, 124.7350],
-            [6.0821, 124.7284],
-            [6.0903, 124.7201],
-            [6.0987, 124.7128],
-            [6.1055, 124.7049],
-            [6.1092, 124.6858]
-          ]
-        }
-      };
-
+      // Trail routes are DENR-managed and stored in Supabase (map_trails table),
+      // so a trail added on the DENR side shows up on both dashboards' maps.
+      const TRAIL_LINE_COLOR = '#2563eb';
+      const TRAIL_ENDPOINT_COLOR = '#1e3a8a';
+      let MAP_TRAIL_DEFS = {};
       const mapTrailLayers = {};
+
+      async function loadMapTrails() {
+        if (!leafletMap) return;
+        Object.keys(mapTrailLayers).forEach(trailId => {
+          leafletMap.removeLayer(mapTrailLayers[trailId]);
+          delete mapTrailLayers[trailId];
+        });
+        MAP_TRAIL_DEFS = {};
+
+        const container = document.getElementById('map-trails-row');
+        if (container) container.innerHTML = '';
+        if (!bloomSupabase) return;
+
+        try {
+          const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
+          if (error || !data) return;
+          data.forEach(row => {
+            MAP_TRAIL_DEFS[row.trail_id] = {
+              name: row.name,
+              desc: row.description || '',
+              color: row.color || TRAIL_LINE_COLOR,
+              coords: row.coordinates
+            };
+          });
+        } catch (e) {
+          console.warn('Failed to load map trails:', e);
+          return;
+        }
+
+        if (container) {
+          Object.keys(MAP_TRAIL_DEFS).forEach(trailId => {
+            const def = MAP_TRAIL_DEFS[trailId];
+            const btn = document.createElement('button');
+            btn.id = 'trail-btn-' + trailId;
+            btn.className = 'map-trail-toggle-btn';
+            btn.type = 'button';
+            btn.onclick = () => toggleTrail(trailId);
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>' + escapeHtml(def.name);
+            container.appendChild(btn);
+          });
+        }
+
+        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
+      }
 
       window.toggleTrail = function(trailId) {
         if (!leafletMap) return;
@@ -4238,18 +4266,19 @@
           delete mapTrailLayers[trailId];
           if (btn) btn.classList.remove('map-trail-toggle-active');
         } else {
+          const trailColor = def.color || TRAIL_LINE_COLOR;
           const opts = { lineCap: 'square', lineJoin: 'miter' };
-          const popup = `<div style="min-width:180px;"><b style="color:${NEON_BLUE};font-size:1rem;">${def.name}</b><br><span style="color:#555;font-size:0.85rem;">${def.desc}</span></div>`;
+          const popup = `<div style="min-width:180px;"><b style="color:${trailColor};font-size:1rem;">${escapeHtml(def.name)}</b><br><span style="color:#555;font-size:0.85rem;">${escapeHtml(def.desc)}</span></div>`;
           // Three-layer neon glow: outer halo → mid glow → bright core
-          const halo = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 18, opacity: 0.08 });
-          const mid  = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 9,  opacity: 0.28 });
-          const core = L.polyline(def.coords, { ...opts, color: NEON_BLUE, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
+          const halo = L.polyline(def.coords, { ...opts, color: trailColor, weight: 18, opacity: 0.08 });
+          const mid  = L.polyline(def.coords, { ...opts, color: trailColor, weight: 9,  opacity: 0.28 });
+          const core = L.polyline(def.coords, { ...opts, color: trailColor, weight: 2.5, opacity: 1.0 }).bindPopup(popup);
           const endpointIcon = (fill) => L.divIcon({
             html: `<div style="width:14px;height:14px;border-radius:50%;background:${fill};border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);"></div>`,
             className: '', iconSize: [14, 14], iconAnchor: [7, 7]
           });
-          const trailStart = L.marker(def.coords[0], { icon: endpointIcon(NEON_BLUE) }).bindTooltip('Trailhead', { direction: 'top', offset: [0, -6] });
-          const trailEnd = L.marker(def.coords[def.coords.length - 1], { icon: endpointIcon('#145A1E') }).bindTooltip('Survey Zone', { direction: 'top', offset: [0, -6] });
+          const trailStart = L.marker(def.coords[0], { icon: endpointIcon(trailColor) }).bindTooltip('Trailhead', { direction: 'top', offset: [0, -6] });
+          const trailEnd = L.marker(def.coords[def.coords.length - 1], { icon: endpointIcon(TRAIL_ENDPOINT_COLOR) }).bindTooltip('Survey Zone', { direction: 'top', offset: [0, -6] });
           mapTrailLayers[trailId] = L.layerGroup([halo, mid, core, trailStart, trailEnd]).addTo(leafletMap);
           if (btn) btn.classList.add('map-trail-toggle-active');
         }
@@ -4315,8 +4344,8 @@
           maxZoom: 19, opacity: 0.7
         }).addTo(leafletMap);
 
-        // Show the Mt. Busa research trail by default
-        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
+        // Load DENR-managed trail routes and show them by default
+        loadMapTrails();
 
         // Ensure storage photos are loaded
         if (storageImagesByGenus.size === 0) loadStorageImages();
