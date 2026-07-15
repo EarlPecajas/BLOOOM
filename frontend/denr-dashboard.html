@@ -215,6 +215,15 @@
 
       @media(max-width:900px){ .denrsub-stats{ grid-template-columns:repeat(2,1fr); } }
 
+      /* ── Sighting Submission detail modal ── */
+      .detail-icon-chip { width:26px; height:26px; border-radius:8px; background:rgba(77,184,106,0.16); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .detail-icon-chip.detail-icon-chip-warn { background:rgba(249,115,22,0.18); }
+      .detail-geo-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--dt-border); }
+      .detail-geo-tile { padding:0.7rem 1rem; text-align:center; border-right:1px solid var(--dt-border); }
+      .detail-geo-tile:last-child { border-right:none; }
+      .detail-geo-tile-label { margin:0 0 0.25rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--dt-muted); }
+      .detail-geo-tile-value { margin:0; font-size:0.92rem; font-weight:700; color:var(--dt-text); }
+
       /* ── Cream website theme for DENR overview ── */
       #dashboard-admin-overview {
         --dt-bg-input: #FFFFFF;
@@ -1757,7 +1766,7 @@
           <!-- Basic Taxonomic Information -->
           <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
             <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
               <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Basic Taxonomic Information</h4>
             </div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
@@ -1773,7 +1782,7 @@
           <!-- Observation / Collection Details -->
           <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
             <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
               <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Observation / Collection Details</h4>
             </div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
@@ -1789,16 +1798,17 @@
           <!-- Geographical / Location Data -->
           <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
             <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
               <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Geographical / Location Data</h4>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
-              <div id="row-mountain-name" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Mountain</span><span id="value-mountain-name" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
-              <div id="row-specific-site" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Specific Site / Zone</span><span id="value-specific-site" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
-              <div id="row-latitude" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Latitude</span><span id="value-latitude" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;font-family:monospace;"></span></div>
-              <div id="row-longitude" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Longitude</span><span id="value-longitude" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;font-family:monospace;"></span></div>
-              <div id="row-elevation" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Elevation (m)</span><span id="value-elevation" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
-              <div style="padding:0.6rem 1rem;"></div>
+            <div>
+              <div id="row-mountain-name" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Mountain</span><span id="value-mountain-name" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+              <div id="row-specific-site" style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.6rem 1rem;"><span style="font-size:0.8rem;color:var(--dt-muted);font-weight:600;">Specific Site / Zone</span><span id="value-specific-site" style="font-size:0.82rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
+            </div>
+            <div class="detail-geo-row">
+              <div id="row-latitude" class="detail-geo-tile"><p class="detail-geo-tile-label">Latitude</p><p id="value-latitude" class="detail-geo-tile-value"></p></div>
+              <div id="row-longitude" class="detail-geo-tile"><p class="detail-geo-tile-label">Longitude</p><p id="value-longitude" class="detail-geo-tile-value"></p></div>
+              <div id="row-elevation" class="detail-geo-tile"><p class="detail-geo-tile-label">Elevation (m)</p><p id="value-elevation" class="detail-geo-tile-value"></p></div>
             </div>
           </div>
 
@@ -1808,7 +1818,7 @@
             <!-- Habitat Information -->
             <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Habitat</h4>
               </div>
               <div>
@@ -1827,7 +1837,7 @@
             <!-- Morphological Characteristics -->
             <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Morphology</h4>
               </div>
               <div>
@@ -1851,7 +1861,7 @@
             <!-- Ecological / Biological Data -->
             <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Ecological / Biological</h4>
               </div>
               <div>
@@ -1874,7 +1884,7 @@
             <!-- Conservation & Threat Data -->
             <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;align-self:start;">
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:rgba(120,40,10,.3);border-bottom:1px solid rgba(200,100,30,.35);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="detail-icon-chip detail-icon-chip-warn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#fb923c;">Conservation & Threats</h4>
               </div>
               <div>
@@ -1894,7 +1904,7 @@
             <!-- Researchers -->
             <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Researchers</h4>
               </div>
               <div>
@@ -1908,7 +1918,7 @@
             <!-- Notes & Remarks -->
             <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Notes & Remarks</h4>
               </div>
               <div>
@@ -1921,7 +1931,7 @@
           <!-- Field Documentation Photos -->
           <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);overflow:hidden;">
             <div style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--dt-bg-panel);border-bottom:1px solid var(--dt-border-md);">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span class="detail-icon-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
               <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Field Documentation — Photos</h4>
             </div>
             <div style="padding:1rem;">
