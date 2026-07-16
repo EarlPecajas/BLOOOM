@@ -10,7 +10,12 @@ ALTER TABLE orchids ADD COLUMN IF NOT EXISTS model_3d_url TEXT;
 -- in case that earlier migration was never applied to this database.
 ALTER TABLE orchids ADD COLUMN IF NOT EXISTS hidden_fields JSONB NOT NULL DEFAULT '[]'::jsonb;
 
-CREATE OR REPLACE VIEW orchid_overview AS
+-- CREATE OR REPLACE VIEW requires column types to match the existing view
+-- exactly; the live view was built with slightly different column types
+-- than this definition, so drop and recreate instead.
+DROP VIEW IF EXISTS orchid_overview;
+
+CREATE VIEW orchid_overview AS
 SELECT
   o.orchid_id AS id,
   o.sci_name AS name,
