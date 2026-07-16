@@ -89,12 +89,6 @@
       .index-page .hero-copy { position: relative; z-index: 1; }
       .index-page .hero-copy h1 { color: #145A1E !important; text-shadow: none; letter-spacing: -.01em; }
       .index-page .hero-description { color: #2d5a27 !important; text-shadow: none; }
-      .index-page .button-group { margin-top: 3rem !important; }
-      .index-page .try-this { color: #145A1E !important; letter-spacing: .14em; font-size: 1rem !important; font-weight: 800 !important; }
-      .index-page .separator-line {
-        background: linear-gradient(180deg, transparent, rgba(20,90,30,.3), transparent) !important;
-        box-shadow: none !important;
-      }
       .index-page .catalog-btn {
         position: relative; z-index: 1;
         background: #145A1E !important;
@@ -111,17 +105,29 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(20,90,30,.3) !important;
       }
-      .index-page .or-text { color: rgba(20,90,30,.5) !important; }
+      .index-page .catalog-btn-outline { position: relative; z-index: 1; }
 
       /* Hero panel card */
-      .index-page .hero-panel { position: relative; z-index: 1; }
+      .index-page .hero-panel {
+        position: relative;
+        z-index: 1;
+        border-radius: 22px !important;
+        box-shadow: 0 20px 60px rgba(20,90,30,.22) !important;
+      }
+      .index-page .hero-panel::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 45%, rgba(10,40,14,.72) 100%);
+        pointer-events: none;
+      }
       .index-page .panel-content {
-        background: rgba(240,234,210,.9) !important;
+        background: rgba(240,234,210,.92) !important;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(20,90,30,.22) !important;
         border-radius: 14px !important;
-        box-shadow: 0 8px 32px rgba(20,90,30,.1) !important;
+        box-shadow: 0 8px 32px rgba(20,90,30,.18) !important;
       }
       .index-page .panel-label { color: rgba(20,90,30,.6) !important; letter-spacing: .1em; }
       .index-page .panel-title { color: #145A1E !important; text-shadow: none; }
@@ -156,21 +162,20 @@
     <main class="hero container-fluid py-3">
       <div class="orchid-bg-canvas" id="orchid-bg-canvas"></div>
       <section class="hero-copy">
+        <p class="hero-eyebrow">Mt. Busa &middot; Kiamba &middot; Sarangani Province</p>
         <h1>GET BLOOM3D!</h1>
         <p class="hero-description">Botanical Locator and Orchid Observation Mapping System 3D offers a wide catalog of orchids in Mt. Busa, Kiamba, Sarangani Province.</p>
         <div class="button-group">
-          <p class="try-this">TRY US!</p>
-          <div class="separator-line"></div>
+          <span class="try-this">Try us!</span>
           <div class="buttons-stack">
-            <a href="catalog.html?split=1" class="catalog-btn catalog-view">Search</a>
-            <span class="or-text">or</span>
             <a href="catalog.html?split=1" class="catalog-btn catalog-view">View Catalog</a>
+            <a href="catalog.html?split=1" class="catalog-btn-outline">Search</a>
           </div>
         </div>
       </section>
 
       <aside class="hero-panel" aria-hidden="true">
-        <img class="hero-panel-image" src="./indexpic.png" alt="Orchid showcase" />
+        <img class="hero-panel-image" src="./orchid1.webp" alt="Vanda orchid in bloom" />
         <div class="panel-content">
           <p class="panel-label">Orchid Atlas</p>
           <p class="panel-title">Map. Observe. Preserve.</p>
