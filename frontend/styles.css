@@ -350,22 +350,23 @@ body::before {
 .hero {
   min-height: calc(100vh - 84px);
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(0, 560px) minmax(0, 480px);
+  justify-content: center;
   align-items: center;
-  gap: clamp(1rem, 3vw, 2rem);
-  padding: clamp(0.5rem, 2vw, 1.25rem);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.5rem, 8vw, 8rem);
 }
 
 .index-page .hero {
-  height: calc(100vh - 84px);
-  min-height: 0;
-  padding: clamp(0.25rem, 1vw, 0.75rem);
+  height: auto;
+  min-height: calc(100vh - 72px);
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 4vw, 2.5rem);
   align-items: center;
 }
 
 .hero-copy {
   align-self: center;
-  max-width: 720px;
+  max-width: 560px;
   padding-inline: clamp(0.2rem, 1.2vw, 0.8rem);
   animation: revealLeft 700ms ease-out;
   text-align: left;
@@ -523,8 +524,9 @@ body::before {
 }
 
 .hero-panel {
-  justify-self: center;
-  width: min(500px, 92%);
+  justify-self: end;
+  width: 100%;
+  max-width: 480px;
   aspect-ratio: 4 / 5;
   position: relative;
   overflow: hidden;
@@ -534,8 +536,7 @@ body::before {
   transition: none;
   box-shadow: none;
   background: transparent;
-  align-self: start;
-  margin-top: -1.5rem;
+  align-self: center;
 }
 
 .index-page .hero-copy h1 {
