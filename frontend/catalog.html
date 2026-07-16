@@ -48,6 +48,9 @@
       .odm-tab.odm-tab--active{color:#145A1E;border-bottom-color:#145A1E;background:#f6fbf4;}
       .odm-model3d-wrap{position:relative;width:100%;height:280px;border-radius:12px;overflow:hidden;background:#eef4ec;}
       .odm-model3d-wrap model-viewer{width:100%;height:100%;--poster-color:transparent;}
+      .odm-model3d-wrap model-viewer:fullscreen{width:100vw;height:100vh;}
+      .odm-model3d-fs-btn{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.55);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;backdrop-filter:blur(3px);transition:background .15s;}
+      .odm-model3d-fs-btn:hover{background:rgba(0,0,0,0.75);}
 
       /* Scrollable body */
       .odm-body{flex:1;overflow-y:auto;min-height:0;background:#f1f5ef;}
@@ -375,6 +378,10 @@
       </div>
     </div>
 
+    </div>
+
+    <div class="image-lightbox" id="odm-image-lightbox" hidden onclick="if(event.target===this)odmCloseLightbox();">
+      <img src="" alt="Full orchid view" id="odm-lightbox-img" class="image-lightbox-photo" />
     </div>
 
     <script>
@@ -803,8 +810,31 @@
         }
         el.innerHTML = '<div class="odm-images-grid">' + imgs.map(function(url){
           return '<div class="odm-img-wrap"><img src="' + escapeHtml(url) +
-            '" alt="Orchid photo" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+            '" alt="Orchid photo" loading="lazy" style="cursor:zoom-in;" onclick="odmOpenLightbox(\'' + escapeHtml(url) + '\')" onerror="this.parentElement.style.display=\'none\'"></div>';
         }).join('') + '</div>';
+      }
+
+      function odmOpenLightbox(url) {
+        var img = document.getElementById('odm-lightbox-img');
+        var box = document.getElementById('odm-image-lightbox');
+        if (!img || !box) return;
+        img.src = url;
+        box.hidden = false;
+      }
+
+      function odmCloseLightbox() {
+        var img = document.getElementById('odm-lightbox-img');
+        var box = document.getElementById('odm-image-lightbox');
+        if (box) box.hidden = true;
+        if (img) img.src = '';
+      }
+
+      function odmModel3DFullscreen(btn) {
+        var wrap = btn.closest('.odm-model3d-wrap');
+        var mv = wrap ? wrap.querySelector('model-viewer') : null;
+        if (!mv) return;
+        if (mv.requestFullscreen) mv.requestFullscreen();
+        else if (mv.webkitRequestFullscreen) mv.webkitRequestFullscreen();
       }
 
       function odmPopulateStudy(allSightings) {
@@ -840,7 +870,12 @@
         }
         el.innerHTML = '<div class="odm-model3d-wrap">' +
           '<model-viewer src="' + escapeHtml(orchid.model_3d_url) + '" camera-controls auto-rotate ' +
-          'shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer></div>';
+          'shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>' +
+          '<button type="button" class="odm-model3d-fs-btn" onclick="odmModel3DFullscreen(this)" ' +
+          'title="View fullscreen" aria-label="View 3D model fullscreen">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">' +
+          '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>' +
+          '</button></div>';
       }
 
       function orchidInitMap(sightingPoints, thumbnailUrl) {
@@ -1220,7 +1255,13 @@
       }
 
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !orchidDetailModal.hidden) {
+        if (e.key !== 'Escape') return;
+        var lightbox = document.getElementById('odm-image-lightbox');
+        if (lightbox && !lightbox.hidden) {
+          odmCloseLightbox();
+          return;
+        }
+        if (!orchidDetailModal.hidden) {
           closeOrchidDetails();
         }
       });
