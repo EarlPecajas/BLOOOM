@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
       let result;
       try {
         result = await pool.query(
-          `SELECT id, name, genus, common_name, endemicity, image_url, hidden_fields,
+          `SELECT id, name, genus, common_name, endemicity, image_url, model_3d_url, hidden_fields,
                   COALESCE(conservation_status, '') AS conservation_status
            FROM orchid_overview
            ORDER BY name ASC`
@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
         // conservation_status column doesn't exist — derive from species_sightings
         result = await pool.query(
           `SELECT
-             o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url,
+             o.id, o.name, o.genus, o.common_name, o.endemicity, o.image_url, o.model_3d_url,
              COALESCE(
                (SELECT s.threat_level
                 FROM species_sightings s

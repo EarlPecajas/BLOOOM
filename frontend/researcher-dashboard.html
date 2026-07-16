@@ -3933,7 +3933,7 @@
 
               const { data, error } = await client
                 .from('orchid_overview')
-                .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status, hidden_fields')
+                .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, model_3d_url, conservation_status_key, conservation_status, hidden_fields')
                 .order('name', { ascending: true });
 
           if (error) {
@@ -5501,7 +5501,7 @@ function refreshConservationHeatMap(summary) {
         }
 
           const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
-          bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
+          bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, model_3d_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
           bloomSupabase.from('species_sightings').select('*').order('created_at', { ascending: false }),
           bloomSupabase.from('orchid_overview').select('conservation_status_key')
         ]);
