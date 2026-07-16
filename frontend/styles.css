@@ -3534,15 +3534,14 @@ body.researcher-theme #detailModalCard > div:first-child {
 #researcher-submission-panel label { color: #334155 !important; font-weight: 600 !important; -webkit-text-fill-color: #334155 !important; }
 #researcher-submission-panel strong { color: #145A1E !important; -webkit-text-fill-color: #145A1E !important; }
 /* Section header divs (e.g. "Basic Taxonomic Information" card) — slim left-border style */
-#researcher-submission-panel [style*="background:#f9fcfa"],
-#researcher-submission-panel [style*="background: #f9fcfa"] {
+.submission-section-header {
   background: transparent !important;
-  border: none !important;
-  border-left: 3px solid #145A1E !important;
-  border-radius: 0 !important;
-  padding: 0.3rem 0 0.3rem 0.65rem !important;
-  margin-bottom: 0.1rem !important;
   color: #145A1E !important;
+}
+/* Related Study card */
+.submission-subcard {
+  background: #f9fcfa !important;
+  border-color: #e4ece7 !important;
 }
 /* White inline bg containers */
 #researcher-submission-panel [style*="background:#fff"] {
@@ -3654,17 +3653,55 @@ body.researcher-theme #detailModalCard > div:first-child {
   border-color: #145A1E !important;
   color: #145A1E !important;
 }
+/* Small utility buttons — shared hover/transition polish */
+#submission-use-gps,
+#submission-auto-location,
+#submission-scientific-idk,
+#submission-genus-unknown,
+#submission-species-unknown,
+#submission-add-common-name,
+#submission-add-local-name,
+#submission-add-team-member,
+.submission-media-add-btn,
+[id^="submission-remove-common-"],
+[id^="submission-remove-local-"] {
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  cursor: pointer;
+}
+#submission-use-gps:hover,
+#submission-auto-location:hover,
+#submission-scientific-idk:hover,
+#submission-genus-unknown:hover,
+#submission-species-unknown:hover,
+#submission-add-common-name:hover,
+#submission-add-local-name:hover,
+#submission-add-team-member:hover,
+.submission-media-add-btn:hover {
+  background: #eaf3ea !important;
+  border-color: #145A1E !important;
+  transform: translateY(-1px);
+}
 [id^="submission-remove-common-"],
 [id^="submission-remove-local-"] {
   background: #fff0f0 !important;
   border-color: #f5c6c6 !important;
   color: #c0392b !important;
 }
+[id^="submission-remove-common-"]:hover,
+[id^="submission-remove-local-"]:hover {
+  background: #fde2e2 !important;
+  border-color: #e8a8a8 !important;
+  transform: translateY(-1px);
+}
 /* Help icon */
 #researcher-submission-panel .field-help {
   background: #e8f5e8 !important;
   border-color: #c8ddc5 !important;
   color: #145A1E !important;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+#researcher-submission-panel .field-help:hover {
+  transform: scale(1.08);
 }
 /* Multi-select */
 #researcher-submission-panel details summary > span { color: #1a2e1a !important; }
@@ -3672,25 +3709,83 @@ body.researcher-theme #detailModalCard > div:first-child {
   background: #ffffff !important;
   border-color: #c8ddc5 !important;
 }
-/* Nav / submit / draft buttons */
-#submission-back-btn,
-#submission-next-btn,
-#submission-submit-btn,
-#submission-draft-btn {
-  background: #ffffff !important;
-  border: 1.5px solid #145A1E !important;
+/* Nav row shell */
+#submission-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1rem -1.4rem -1.4rem;
+  padding: 0.9rem 1.4rem;
+  border-top: 1.5px solid #C8C0A4;
+  background: #E8E2CB;
+  border-radius: 0 0 16px 16px;
+}
+#submission-nav-row-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+#researcher-submission-feedback {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #4f5f56;
+  max-width: 260px;
+}
+/* Nav / submit / draft buttons — shared shape */
+.submission-nav-btn {
+  padding: 0.7rem 1.3rem;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: Inter, Roboto, sans-serif;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+.submission-nav-btn:hover {
+  transform: translateY(-1px);
+}
+.submission-nav-btn:focus-visible {
+  outline: 2px solid rgba(20, 90, 30, 0.4);
+  outline-offset: 2px;
+}
+/* Back — quiet ghost */
+#submission-back-btn {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #52655b !important;
+}
+#submission-back-btn:hover {
+  background: rgba(20, 90, 30, 0.08) !important;
   color: #145A1E !important;
 }
-#submission-nav-row {
-  margin: 1rem -1.4rem -1.4rem !important;
-  padding: 0.85rem 1.4rem !important;
-  border-top: 1.5px solid #C8C0A4 !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  background: #E8E2CB !important;
-  border-radius: 0 0 12px 12px !important;
-  justify-content: flex-end !important;
+/* Save as Draft — outline */
+#submission-draft-btn {
+  background: #ffffff !important;
+  border-color: #b9cdb9 !important;
+  color: #145A1E !important;
+}
+#submission-draft-btn:hover {
+  background: #eaf3ea !important;
+  border-color: #145A1E !important;
+}
+/* Next / Submit — solid primary CTA */
+#submission-next-btn,
+#submission-submit-btn {
+  background: #145A1E !important;
+  border-color: #145A1E !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(20, 90, 30, 0.22);
+}
+#submission-next-btn:hover,
+#submission-submit-btn:hover {
+  background: #0E4018 !important;
+  border-color: #0E4018 !important;
+  box-shadow: 0 6px 16px rgba(20, 90, 30, 0.32);
 }
 /* Remove number spinners */
 #researcher-submission-panel input[type="number"]::-webkit-outer-spin-button,
@@ -3730,6 +3825,18 @@ body.researcher-theme #detailModalCard > div:first-child {
   padding: 0.3rem 0.65rem;
   cursor: pointer;
   margin-right: 0.5rem;
+  transition: background-color 150ms ease;
+}
+#researcher-submission-panel input[type="file"]:hover::file-selector-button,
+#researcher-submission-panel input[type="file"]:hover::-webkit-file-upload-button {
+  background: #d5ecd5 !important;
+}
+#researcher-submission-panel input[type="file"] {
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+#researcher-submission-panel input[type="file"]:focus-within {
+  border-color: #145A1E !important;
+  box-shadow: 0 0 0 3px rgba(20, 90, 30, 0.15);
 }
 /* Muted hint text */
 #researcher-submission-panel [style*="color:#64748b"] { color: #6b8f6b !important; }
