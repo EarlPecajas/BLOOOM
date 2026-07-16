@@ -5,6 +5,11 @@ BEGIN;
 -- bloom-uploads bucket under orchid-models/).
 ALTER TABLE orchids ADD COLUMN IF NOT EXISTS model_3d_url TEXT;
 
+-- Belt-and-suspenders: the orchid_overview view below also selects
+-- hidden_fields (from add-hidden-fields-to-orchids.sql). Ensure it exists
+-- in case that earlier migration was never applied to this database.
+ALTER TABLE orchids ADD COLUMN IF NOT EXISTS hidden_fields JSONB NOT NULL DEFAULT '[]'::jsonb;
+
 CREATE OR REPLACE VIEW orchid_overview AS
 SELECT
   o.orchid_id AS id,
