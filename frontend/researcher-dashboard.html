@@ -1261,16 +1261,6 @@
               <div id="submission-habitat-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
               <input id="submission-habitat-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
             </div>
-            <div>
-              <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">3D Photo <span style="font-weight:400;color:#64748b;">(optional, max 3)</span></label>
-              <input id="submission-photo-3d" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
-              <div id="submission-photo-3d-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
-              <input id="submission-photo-3d-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
-            </div>
-            <div style="grid-column:1/-1;">
-              <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Video Documentation</label>
-              <input id="submission-video" type="file" accept="video/*" style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
-            </div>
           </div>
 
           <!-- Page 9: Notes, Remarks, and Researchers -->
@@ -1980,8 +1970,7 @@
         [
           ['submission-whole-plant-photo', 'submission-whole-plant-photo-err'],
           ['submission-closeup-flower-photo', 'submission-closeup-flower-photo-err'],
-          ['submission-habitat-photo', 'submission-habitat-photo-err'],
-          ['submission-photo-3d', 'submission-photo-3d-err']
+          ['submission-habitat-photo', 'submission-habitat-photo-err']
         ].forEach(([inputId, errId]) => {
           const input = document.getElementById(inputId);
           const errEl = document.getElementById(errId);
@@ -2355,7 +2344,7 @@
         entryId, currentEmail, currentName = null,
         commonNames, localNames, leafTextures, threatTypes, teamMembers,
         wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [],
-        photo3dUrls = [], videoUrls = [], relatedStudyFileUrls = [],
+        relatedStudyFileUrls = [],
         reviewStatus = 'pending', editDraftId = null
       }) {
         function numOrNull(id) {
@@ -2543,9 +2532,6 @@
         await insertMediaGroup(wholePlantPhotoUrls,    'whole_plant',    strOrNull('submission-whole-plant-photographer'));
         await insertMediaGroup(closeupFlowerPhotoUrls, 'closeup_flower', strOrNull('submission-closeup-flower-photographer'));
         await insertMediaGroup(habitatPhotoUrls,       'habitat',        strOrNull('submission-habitat-photographer'));
-        await insertMediaGroup(photo3dUrls,            'photo_3d',       strOrNull('submission-photo-3d-photographer'));
-        await insertMediaGroup(videoUrls,              'video',          null);
-
         return resultData;
       }
 
@@ -2689,19 +2675,17 @@
               return uploadedUrls;
             }
 
-            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls, relatedStudyFileUrls] = await Promise.all([
+            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, relatedStudyFileUrls] = await Promise.all([
               uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
               uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
               uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-photo-3d'), 'photo3d'),
-              uploadFilesFromInput(document.getElementById('submission-video'), 'video'),
               uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
             ]);
 
             const data = await submitNormalizedSighting({
               entryId, currentEmail, currentName,
               commonNames, localNames, leafTextures, threatTypes, teamMembers,
-              wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, photo3dUrls, videoUrls,
+              wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
               relatedStudyFileUrls,
               reviewStatus: 'pending',
               editDraftId: editDraftId ? Number(editDraftId) : null

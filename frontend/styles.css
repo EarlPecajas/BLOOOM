@@ -1946,9 +1946,9 @@ form {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1.5px solid #145A1E;
-  background: #145A1E;
-  color: #F0EAD2;
+  border: 1.5px solid rgba(20, 90, 30, 0.35);
+  background: transparent;
+  color: #145A1E;
   font: inherit;
   font-size: 0.86rem;
   font-weight: 700;
@@ -1960,8 +1960,8 @@ form {
 }
 
 .researcher-data-button:hover {
-  background: #0E4018;
-  border-color: #0E4018;
+  background: #EAF5EA;
+  border-color: #145A1E;
 }
 
 .researcher-data-button:active {
@@ -4505,13 +4505,13 @@ body.researcher-theme .user-dropdown {
 body.researcher-theme .researcher-data-dropdown-item:hover,
 body.researcher-theme .user-dropdown-item:hover { background: #F0EAD2 !important; }
 body.researcher-theme .researcher-data-button {
-  background: #145A1E !important;
-  border-color: #145A1E !important;
-  color: #F0EAD2 !important;
+  background: transparent !important;
+  border-color: rgba(20, 90, 30, 0.35) !important;
+  color: #145A1E !important;
 }
 body.researcher-theme .researcher-data-button:hover {
-  background: #0E4018 !important;
-  border-color: #0E4018 !important;
+  background: #EAF5EA !important;
+  border-color: #145A1E !important;
 }
 
 /* 11 ── Misc Bootstrap / text overrides */
