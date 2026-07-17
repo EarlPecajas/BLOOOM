@@ -172,6 +172,22 @@
       .sub-action-btn.revision { background: #fffbeb !important; border: 1.5px solid #fde68a !important; box-shadow: 0 1px 2px rgba(217,119,6,0.08) !important; }
       .sub-action-btn.revision:hover { background: #fef3c7 !important; border-color: #fbbf24 !important; box-shadow: 0 2px 6px rgba(217,119,6,0.15) !important; transform: translateY(-1px) !important; }
       .sub-action-btn.revision svg { stroke: #d97706 !important; }
+      /* Revision reason picker */
+      .revision-reason-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.65rem 0.85rem;
+        border: 1.5px solid var(--dt-border-md);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color 150ms ease, background 150ms ease;
+        font-size: 0.86rem;
+        color: var(--dt-text);
+      }
+      .revision-reason-option:hover { border-color: #d97706; background: rgba(217,119,6,0.08); }
+      .revision-reason-option input[type="radio"] { margin-top: 0.15rem; accent-color: #d97706; flex-shrink: 0; }
+      .revision-reason-option:has(input:checked) { border-color: #d97706; background: rgba(217,119,6,0.1); }
       /* Publish */
       .sub-action-btn.publish { background: #145A1E !important; border: 1.5px solid #145A1E !important; box-shadow: 0 1px 2px rgba(20,90,30,0.18) !important; }
       .sub-action-btn.publish:hover { background: #0E4018 !important; border-color: #0E4018 !important; box-shadow: 0 2px 6px rgba(20,90,30,0.25) !important; transform: translateY(-1px) !important; }
@@ -2024,6 +2040,62 @@
             <button type="submit" id="addTrailSubmitBtn" style="padding:0.55rem 1.3rem;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Add Trail</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ══ Request Revision Modal ══════════════════════════════════════ -->
+    <div id="revisionReasonModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:3000;align-items:center;justify-content:center;padding:1.25rem;backdrop-filter:blur(3px);" onclick="if(event.target===this){closeRevisionReasonModal();}">
+      <div style="background:var(--dt-bg);border-radius:18px;max-width:480px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.55);border:1px solid var(--dt-border-md);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#b45309 0%,#92400e 100%);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <div style="display:flex;align-items:center;gap:0.7rem;min-width:0;">
+            <span style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
+            </span>
+            <div style="min-width:0;">
+              <h2 style="margin:0;color:#fff;font-size:1.05rem;font-weight:700;">Request Revision</h2>
+              <p id="revisionReasonSpecies" style="margin:0.1rem 0 0;color:rgba(255,255,255,.75);font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></p>
+            </div>
+          </div>
+          <button type="button" onclick="closeRevisionReasonModal()" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.05rem;line-height:1;">&times;</button>
+        </div>
+        <div style="padding:1.4rem 1.5rem;">
+          <p style="margin:0 0 0.9rem;font-size:0.86rem;color:var(--dt-muted);line-height:1.5;">Select why this submission needs revision. The researcher will see this reason and can edit and resubmit once addressed.</p>
+          <div id="revisionReasonOptions" style="display:grid;gap:0.55rem;">
+            <label class="revision-reason-option">
+              <input type="radio" name="revisionReason" value="Photos are missing, unclear, or low quality." />
+              <span>Photos are missing, unclear, or low quality</span>
+            </label>
+            <label class="revision-reason-option">
+              <input type="radio" name="revisionReason" value="Taxonomic identification is incomplete or uncertain." />
+              <span>Taxonomic identification is incomplete or uncertain</span>
+            </label>
+            <label class="revision-reason-option">
+              <input type="radio" name="revisionReason" value="GPS coordinates appear invalid or inaccurate." />
+              <span>GPS coordinates appear invalid or inaccurate</span>
+            </label>
+            <label class="revision-reason-option">
+              <input type="radio" name="revisionReason" value="Habitat or morphological details are insufficient." />
+              <span>Habitat or morphological details are insufficient</span>
+            </label>
+            <label class="revision-reason-option">
+              <input type="radio" name="revisionReason" value="Possible duplicate of an existing sighting." />
+              <span>Possible duplicate of an existing sighting</span>
+            </label>
+            <label class="revision-reason-option">
+              <input type="radio" name="revisionReason" value="__other__" onchange="toggleRevisionReasonNotes()" />
+              <span>Other (please specify)</span>
+            </label>
+          </div>
+          <div id="revisionReasonNotesWrap" style="margin-top:0.9rem;display:none;">
+            <label for="revisionReasonNotes" style="display:block;margin-bottom:0.35rem;font-size:0.78rem;font-weight:700;color:var(--dt-muted);">Details</label>
+            <textarea id="revisionReasonNotes" rows="3" placeholder="Describe what needs to be revised…" style="width:100%;box-sizing:border-box;padding:0.6rem 0.75rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:inherit;font-size:0.88rem;resize:vertical;"></textarea>
+          </div>
+          <p id="revisionReasonError" style="display:none;margin:0.7rem 0 0;font-size:0.8rem;color:#f87171;"></p>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:0.6rem;padding:1rem 1.5rem;background:var(--dt-bg-panel);border-top:1px solid var(--dt-border-md);">
+          <button type="button" onclick="closeRevisionReasonModal()" style="padding:0.55rem 1.2rem;border-radius:999px;border:1.5px solid var(--dt-border-md);background:transparent;color:var(--dt-text);font-size:0.84rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+          <button type="button" onclick="submitRevisionReason()" style="padding:0.55rem 1.3rem;border-radius:999px;border:1.5px solid #b45309;background:#b45309;color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;">Send for Revision</button>
+        </div>
       </div>
     </div>
 
@@ -4513,7 +4585,7 @@
             <button type="button" class="sub-action-btn approve" title="Approve" onclick="quickUpdateStatus(${sid},'approved')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
-            <button type="button" class="sub-action-btn revision" title="For Revision" onclick="quickUpdateStatus(${sid},'revision')">
+            <button type="button" class="sub-action-btn revision" title="For Revision" onclick="openRevisionReasonModal(${sid})">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
             </button>` : '';
 
@@ -6810,6 +6882,69 @@
           loadDenrStats();
         } catch (e) {
           showToast('Failed to update status: ' + (e.message || e), true);
+        }
+      }
+
+      // ── Request Revision modal ──────────────────────────────────────
+      let revisionReasonTargetId = null;
+
+      function openRevisionReasonModal(submissionId) {
+        if (!isAdminRole) return;
+        revisionReasonTargetId = submissionId;
+        const row = submissionRows.find((r) => String(r.id) === String(submissionId));
+        const speciesEl = document.getElementById('revisionReasonSpecies');
+        if (speciesEl) speciesEl.textContent = row ? `${row.species || 'Unknown species'} — ${row.researcher || ''}` : '';
+        document.querySelectorAll('#revisionReasonOptions input[name="revisionReason"]').forEach((r) => { r.checked = false; });
+        const notesWrap = document.getElementById('revisionReasonNotesWrap');
+        if (notesWrap) notesWrap.style.display = 'none';
+        const notesEl = document.getElementById('revisionReasonNotes');
+        if (notesEl) notesEl.value = '';
+        const errEl = document.getElementById('revisionReasonError');
+        if (errEl) errEl.style.display = 'none';
+        const modal = document.getElementById('revisionReasonModal');
+        if (modal) modal.style.display = 'flex';
+      }
+
+      function closeRevisionReasonModal() {
+        const modal = document.getElementById('revisionReasonModal');
+        if (modal) modal.style.display = 'none';
+        revisionReasonTargetId = null;
+      }
+
+      function toggleRevisionReasonNotes() {
+        const notesWrap = document.getElementById('revisionReasonNotesWrap');
+        if (notesWrap) notesWrap.style.display = 'block';
+      }
+
+      async function submitRevisionReason() {
+        const errEl = document.getElementById('revisionReasonError');
+        const selected = document.querySelector('#revisionReasonOptions input[name="revisionReason"]:checked');
+        if (!selected) {
+          if (errEl) { errEl.textContent = 'Please select a reason.'; errEl.style.display = 'block'; }
+          return;
+        }
+        const notes = (document.getElementById('revisionReasonNotes')?.value || '').trim();
+        if (selected.value === '__other__' && !notes) {
+          if (errEl) { errEl.textContent = 'Please describe the reason.'; errEl.style.display = 'block'; }
+          return;
+        }
+        if (!revisionReasonTargetId || !bloomSupabase) return;
+
+        const reasonText = selected.value === '__other__' ? notes : (selected.value + (notes ? ` ${notes}` : ''));
+        try {
+          const { error } = await bloomSupabase
+            .from('species_sightings')
+            .update({ review_status: 'revision', review_notes: reasonText, updated_at: new Date().toISOString() })
+            .eq('sighting_id', revisionReasonTargetId);
+          if (error) throw error;
+          const row = submissionRows.find((r) => String(r.id) === String(revisionReasonTargetId));
+          if (row) { row.review_status = 'revision'; row.review_notes = reasonText; }
+          closeRevisionReasonModal();
+          applySubmissionsFilter();
+          loadDenrStats();
+          showToast('Sent for revision.');
+        } catch (e) {
+          if (errEl) { errEl.textContent = 'Failed to send: ' + (e.message || e); errEl.style.display = 'block'; }
         }
       }
 

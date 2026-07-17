@@ -354,6 +354,14 @@
             </div>
           </div>
 
+          <div id="submission-revision-banner" style="display:none;margin:0 0 1rem;padding:0.85rem 1rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;gap:0.65rem;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:0.15rem;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
+            <div style="min-width:0;">
+              <p style="margin:0 0 0.2rem;font-size:0.82rem;font-weight:700;color:#92400e;">DENR requested a revision</p>
+              <p id="submission-revision-reason" style="margin:0;font-size:0.86rem;color:#78350f;line-height:1.5;"></p>
+            </div>
+          </div>
+
           <!-- Page 1: Basic Taxonomic Information -->
           <div class="submission-page" data-page="1" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
             <div class="submission-section-header">
@@ -1762,6 +1770,8 @@
           delete form.dataset.editDraftId;
           delete form.dataset.editDraftEntryId;
         }
+        const revisionBanner = document.getElementById('submission-revision-banner');
+        if (revisionBanner) revisionBanner.style.display = 'none';
         if (speciesName) {
           const speciesEl = document.getElementById('submission-scientific-name');
           if (speciesEl) speciesEl.value = String(speciesName).trim();

@@ -890,6 +890,14 @@
             </div>
           </div>
 
+          <div id="submission-revision-banner" style="display:none;margin:0 0 1rem;padding:0.85rem 1rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;gap:0.65rem;align-items:flex-start;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:0.15rem;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
+            <div style="min-width:0;">
+              <p style="margin:0 0 0.2rem;font-size:0.82rem;font-weight:700;color:#92400e;">DENR requested a revision</p>
+              <p id="submission-revision-reason" style="margin:0;font-size:0.86rem;color:#78350f;line-height:1.5;"></p>
+            </div>
+          </div>
+
           <!-- Page 1: Basic Taxonomic Information -->
           <div class="submission-page" data-page="1" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
             <div class="submission-section-header">
@@ -2129,6 +2137,8 @@
           delete form.dataset.editDraftId;
           delete form.dataset.editDraftEntryId;
         }
+        const revisionBanner = document.getElementById('submission-revision-banner');
+        if (revisionBanner) revisionBanner.style.display = 'none';
         if (speciesName) {
           const speciesEl = document.getElementById('submission-scientific-name');
           if (speciesEl) speciesEl.value = String(speciesName).trim();
@@ -3094,7 +3104,9 @@
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
-          const isDraft = String(submission.review_status || '').toLowerCase() === 'draft';
+          const statusLower = String(submission.review_status || '').toLowerCase();
+          const isDraft = statusLower === 'draft';
+          const needsRevision = statusLower === 'revision';
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">${safeResearcher}</td>
@@ -3104,7 +3116,9 @@
               <td class="submission-action-cell">
                 ${isDraft
                   ? `<button type="button" class="submission-action-btn submission-edit-btn" data-submission-id="${submission.id}" data-action="edit">Edit</button>`
-                  : `<button type="button" class="submission-view-btn" data-submission-id="${submission.id}" data-action="view" title="View details"></button>`
+                  : needsRevision
+                    ? `<button type="button" class="submission-action-btn submission-edit-btn" data-submission-id="${submission.id}" data-action="edit" title="See why and edit">Edit</button>`
+                    : `<button type="button" class="submission-view-btn" data-submission-id="${submission.id}" data-action="view" title="View details"></button>`
                 }
               </td>
             </tr>
@@ -3840,6 +3854,18 @@
         if (form) {
           form.dataset.editDraftId = String(draft.id || '');
           form.dataset.editDraftEntryId = String(draft.entry_id || '');
+        }
+
+        const revisionBanner = document.getElementById('submission-revision-banner');
+        const revisionReasonEl = document.getElementById('submission-revision-reason');
+        const needsRevision = String(draft.review_status || '').toLowerCase() === 'revision';
+        if (revisionBanner) {
+          if (needsRevision && draft.review_notes) {
+            if (revisionReasonEl) revisionReasonEl.textContent = draft.review_notes;
+            revisionBanner.style.display = 'flex';
+          } else {
+            revisionBanner.style.display = 'none';
+          }
         }
 
         const setVal = (id, val) => {
@@ -5682,13 +5708,13 @@ function refreshConservationHeatMap(summary) {
 
           const items = [];
           if (pending > 0)  items.push({ type:'info',    svg:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', text:`${pending} submission${pending!==1?'s':''} under review`, time:'Awaiting DENR decision' });
-          if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Action needed' });
+          if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Click to see why and edit', nav:'submissions' });
           if (approved > 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>', text:`${approved} submission${approved!==1?'s':''} approved`, time:'Published to catalog' });
-          if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', text:`${rejected} submission${rejected!==1?'s':''} rejected`, time:'See submission details' });
+          if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', text:`${rejected} submission${rejected!==1?'s':''} rejected`, time:'See submission details', nav:'submissions' });
           if (items.length === 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>', text:'No submissions yet. Start by adding a sighting!', time:'' });
 
           list.innerHTML = items.map(it => `
-            <div class="notif-item">
+            <div class="notif-item"${it.nav ? ` role="button" tabindex="0" style="cursor:pointer;" onclick="openDashboardView('${it.nav}');document.getElementById('notif-panel').hidden=true;"` : ''}>
               <span class="notif-icon ${it.type}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg></span>
               <div><p class="notif-text">${it.text}</p>${it.time ? `<span class="notif-time">${it.time}</span>` : ''}</div>
             </div>`).join('');
@@ -5704,13 +5730,13 @@ function refreshConservationHeatMap(summary) {
         const card = document.getElementById('notif-card-list');
         if (!card) return;
         const items = [];
-        if (revision > 0) items.push({ icon:'G', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Action needed' });
-        if (rejected > 0) items.push({ icon:'G', text:`${rejected} submission${rejected!==1?'s':''} rejected by DENR`, time:'See My Submissions' });
+        if (revision > 0) items.push({ icon:'G', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Click to see why and edit', nav:'submissions' });
+        if (rejected > 0) items.push({ icon:'G', text:`${rejected} submission${rejected!==1?'s':''} rejected by DENR`, time:'See My Submissions', nav:'submissions' });
         if (pending > 0)  items.push({ icon:'G', text:`${pending} submission${pending!==1?'s':''} under DENR review`, time:'Awaiting decision' });
         if (approved > 0) items.push({ icon:'G', text:`${approved} submission${approved!==1?'s':''} approved`, time:'Published to catalog' });
         if (items.length === 0) items.push({ icon:'G', text:'No submissions yet.', time:'Add your first sighting' });
         card.innerHTML = items.map(it => `
-          <div class="notification-item">
+          <div class="notification-item"${it.nav ? ` role="button" tabindex="0" style="cursor:pointer;" onclick="openDashboardView('${it.nav}');"` : ''}>
             <div class="notification-icon">${it.icon}</div>
             <div class="notification-content">
               <p class="notification-text">${it.text}</p>
