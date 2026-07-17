@@ -650,21 +650,19 @@
     <!-- Generate Report View -->
     <div id="report-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="max-width:1200px;margin:0 auto;">
-        <div style="margin-bottom:2.5rem;">
+        <div style="margin-bottom:1.5rem;">
           <h1 class="catalog-title" style="margin-bottom:0.5rem;">Generate Report</h1>
-          <p style="color:#666;font-size:1rem;margin:0;">Create comprehensive reports on orchid species, conservation status, and submissions data</p>
+          <p style="color:#666;font-size:1rem;margin:0;">Export orchid species, conservation status, and submissions data as PDF or Excel</p>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr;gap:2rem;margin-bottom:2rem;">
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;">
           <!-- Report Configuration Panel -->
-          <div style="background:white;border-radius:12px;padding:2rem;border:2px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-            <h2 style="color:#145A1E;font-family:Inter,Roboto,sans-serif;margin-top:0;margin-bottom:1.5rem;font-size:1.3rem;">Report Configuration</h2>
-            
-            <form style="display:flex;flex-direction:column;gap:1.5rem;" id="reportForm">
+          <div style="background:white;border-radius:16px;border:1px solid #e0e0e0;box-shadow:0 4px 14px rgba(0,0,0,0.05);overflow:hidden;">
+            <form style="padding:1.5rem;display:flex;flex-direction:column;gap:1.4rem;" id="reportForm">
               <!-- Report Type -->
               <div>
-                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#145A1E;font-size:0.95rem;">Report Type</label>
-                <select id="reportType" style="width:100%;padding:0.9rem;border:2px solid #e0e0e0;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:1rem;background:white;cursor:pointer;transition:border 200ms ease;" onmouseover="this.style.borderColor = '#145A1E';" onmouseout="this.style.borderColor='#e0e0e0';">
+                <label class="report-field-label">Report Type</label>
+                <select id="reportType" class="report-select-input">
                   <option value="species-inventory">Species Inventory Report</option>
                   <option value="conservation-summary">Conservation Status Summary</option>
                   <option value="monthly-upload">Monthly Submission Report</option>
@@ -676,59 +674,122 @@
 
               <!-- Date Range -->
               <div>
-                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#145A1E;font-size:0.95rem;">Date Range</label>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;align-items:center;">
+                <label class="report-field-label">Date Range</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
                   <div>
                     <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:0.4rem;">From</label>
-                    <input type="date" id="dateFrom" style="width:100%;padding:0.9rem;border:2px solid #e0e0e0;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:1rem;transition:border 200ms ease;" />
+                    <input type="date" id="dateFrom" class="report-select-input" />
                   </div>
                   <div>
                     <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:0.4rem;">To</label>
-                    <input type="date" id="dateTo" style="width:100%;padding:0.9rem;border:2px solid #e0e0e0;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:1rem;transition:border 200ms ease;" />
+                    <input type="date" id="dateTo" class="report-select-input" />
                   </div>
                 </div>
               </div>
 
               <!-- Include Options -->
               <div>
-                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#145A1E;font-size:0.95rem;">G�� Include in Report</label>
-                <div style="display:flex;flex-direction:column;gap:0.6rem;">
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.95rem;color:#333;">
-                    <input type="checkbox" checked data-section="summary" style="width:18px;height:18px;cursor:pointer;accent-color:#145A1E;"> Summary Statistics
+                <label class="report-field-label">Include in Report</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+                  <label class="report-check-option">
+                    <input type="checkbox" checked data-section="summary" />
+                    <span class="text-xs font-semibold">Summary Stats</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.95rem;color:#333;">
-                    <input type="checkbox" checked data-section="details" style="width:18px;height:18px;cursor:pointer;accent-color:#145A1E;"> Detailed Data Tables
+                  <label class="report-check-option">
+                    <input type="checkbox" checked data-section="details" />
+                    <span class="text-xs font-semibold">Data Tables</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.95rem;color:#333;">
-                    <input type="checkbox" checked data-section="charts" style="width:18px;height:18px;cursor:pointer;accent-color:#145A1E;"> Visual Charts & Graphs
+                  <label class="report-check-option">
+                    <input type="checkbox" checked data-section="charts" />
+                    <span class="text-xs font-semibold">Chart Data</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.95rem;color:#333;">
-                    <input type="checkbox" data-section="recommendations" style="width:18px;height:18px;cursor:pointer;accent-color:#145A1E;"> Recommendations
+                  <label class="report-check-option">
+                    <input type="checkbox" data-section="recommendations" />
+                    <span class="text-xs font-semibold">Recommendations</span>
                   </label>
                 </div>
               </div>
 
               <!-- Export Format -->
               <div>
-                <label style="display:block;margin-bottom:0.75rem;font-weight:600;color:#145A1E;font-size:0.95rem;">Export Format</label>
+                <label class="report-field-label">Export Format</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;padding:0.8rem;border:2px solid #e0e0e0;border-radius:8px;background:white;transition:all 200ms ease;" onmouseover="this.style.background='#f5f5f5';this.style.borderColor = '#145A1E';" onmouseout="this.style.background='white';this.style.borderColor='#e0e0e0';">
-                    <input type="radio" name="format" value="pdf" checked style="width:18px;height:18px;cursor:pointer;accent-color:#145A1E;"> PDF
+                  <label id="fmt-pdf" class="report-format-option is-active" onclick="selectReportFormat('pdf')">
+                    <input type="radio" name="format" value="pdf" checked style="display:none;" />
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span class="text-xs font-bold fmt-label">PDF</span>
+                    <span class="text-xs" style="color:#94a3b8;font-size:0.68rem;">Tabular document</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;padding:0.8rem;border:2px solid #e0e0e0;border-radius:8px;background:white;transition:all 200ms ease;" onmouseover="this.style.background='#f5f5f5';this.style.borderColor = '#145A1E';" onmouseout="this.style.background='white';this.style.borderColor='#e0e0e0';">
-                    <input type="radio" name="format" value="excel" style="width:18px;height:18px;cursor:pointer;accent-color:#145A1E;"> Excel
+                  <label id="fmt-excel" class="report-format-option" onclick="selectReportFormat('excel')">
+                    <input type="radio" name="format" value="excel" style="display:none;" />
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span class="text-xs font-bold fmt-label">Excel</span>
+                    <span class="text-xs" style="color:#94a3b8;font-size:0.68rem;">Spreadsheet</span>
                   </label>
                 </div>
               </div>
 
               <!-- Action Buttons -->
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem;">
-                <button type="button" onclick="resetReportForm()" class="dashboard-btn dashboard-btn-secondary">Clear</button>
-                <button type="button" onclick="generateReport()" class="dashboard-btn dashboard-btn-primary" style="display:flex;align-items:center;justify-content:center;gap:0.6rem;">=��� Generate Report</button>
+              <div style="display:flex;gap:0.75rem;padding-top:0.25rem;">
+                <button type="button" onclick="resetReportForm()" class="dashboard-btn dashboard-btn-secondary" style="flex:1;">Clear</button>
+                <button type="button" onclick="generateReport()" class="dashboard-btn dashboard-btn-primary" style="flex:2;display:flex;align-items:center;justify-content:center;gap:0.5rem;" id="generateReportBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Generate Report
+                </button>
               </div>
             </form>
           </div>
 
+          <!-- Right: Info cards -->
+          <div style="display:flex;flex-direction:column;gap:1.2rem;">
+            <div style="background:white;border-radius:16px;border:1px solid #e0e0e0;box-shadow:0 4px 14px rgba(0,0,0,0.05);overflow:hidden;">
+              <div style="padding:1rem 1.2rem;border-bottom:1px solid #e0e0e0;">
+                <p class="m-0 text-sm font-bold" style="color:#145A1E;font-family:Inter,Roboto,sans-serif;">How it works</p>
+              </div>
+              <div style="padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem;">
+                <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.1rem;">1</div>
+                  <div><p class="m-0 text-xs font-semibold" style="color:#333;">Choose report type</p><p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Select the kind of data to export</p></div>
+                </div>
+                <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.1rem;">2</div>
+                  <div><p class="m-0 text-xs font-semibold" style="color:#333;">Set date range</p><p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Filter records by observation or submission date</p></div>
+                </div>
+                <div style="display:flex;gap:0.85rem;align-items:flex-start;">
+                  <div style="width:22px;height:22px;border-radius:50%;background:#145A1E;color:#fff;font-size:0.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:0.1rem;">3</div>
+                  <div><p class="m-0 text-xs font-semibold" style="color:#333;">Pick format &amp; export</p><p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">PDF → professional tabular document; Excel → multi-sheet workbook</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:white;border-radius:16px;border:1px solid #e0e0e0;box-shadow:0 4px 14px rgba(0,0,0,0.05);overflow:hidden;">
+              <div style="padding:1rem 1.2rem;border-bottom:1px solid #e0e0e0;">
+                <p class="m-0 text-sm font-bold" style="color:#145A1E;font-family:Inter,Roboto,sans-serif;">Report Types</p>
+              </div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid #f1f1f1;">
+                  <p class="m-0 text-xs font-bold" style="color:#333;">Species Inventory</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">All orchids with genus, common names &amp; endemicity</p>
+                </div>
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid #f1f1f1;">
+                  <p class="m-0 text-xs font-bold" style="color:#333;">Conservation Status</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Species counts by CR / EN / VU / LC classification</p>
+                </div>
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid #f1f1f1;">
+                  <p class="m-0 text-xs font-bold" style="color:#333;">Monthly Submissions</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Submission counts grouped by month</p>
+                </div>
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid #f1f1f1;">
+                  <p class="m-0 text-xs font-bold" style="color:#333;">Researcher Activity</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Per-researcher submission count in selected period</p>
+                </div>
+                <div style="padding:0.75rem 1.2rem;">
+                  <p class="m-0 text-xs font-bold" style="color:#333;">Habitat Classification</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:#94a3b8;">Sightings grouped by habitat type</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -5341,6 +5402,16 @@ function refreshConservationHeatMap(summary) {
       function resetReportForm() {
         document.getElementById('reportForm').reset();
         document.getElementById('reportType').value = 'species-inventory';
+        selectReportFormat('pdf');
+      }
+
+      function selectReportFormat(fmt) {
+        document.querySelector('input[name="format"][value="' + fmt + '"]').checked = true;
+        ['pdf', 'excel'].forEach((candidate) => {
+          const lbl = document.getElementById('fmt-' + candidate);
+          if (!lbl) return;
+          lbl.classList.toggle('is-active', candidate === fmt);
+        });
       }
 
       async function getReportSourceData() {
@@ -5648,6 +5719,13 @@ function refreshConservationHeatMap(summary) {
           return;
         }
 
+        const btn = document.getElementById('generateReportBtn');
+        const originalHTML = btn ? btn.innerHTML : '';
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;animation:spin 0.8s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Generating…';
+        }
+
         try {
           const sourceData = await getReportSourceData();
           const rows = getRowsForReport(reportType, sourceData, dateFrom, dateTo);
@@ -5664,6 +5742,11 @@ function refreshConservationHeatMap(summary) {
           }
         } catch (error) {
           showToast(`Could not generate report: ${error.message}`, 'error');
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+          }
         }
       }
 

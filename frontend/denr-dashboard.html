@@ -916,16 +916,16 @@
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Export Format</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-                  <label id="fmt-pdf" onclick="selectReportFormat('pdf')" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;cursor:pointer;border:2px solid var(--dt-accent);border-radius:12px;padding:1rem 0.75rem;background:rgba(30,100,45,.3);transition:all 150ms;text-align:center;">
+                  <label id="fmt-pdf" class="report-format-option is-active" onclick="selectReportFormat('pdf')">
                     <input type="radio" name="format" value="pdf" checked style="display:none;" />
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <span class="text-xs font-bold" style="color:var(--dt-accent-lt);">PDF</span>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span class="text-xs font-bold fmt-label">PDF</span>
                     <span class="text-xs" style="color:var(--dt-muted);font-size:0.68rem;">Tabular document</span>
                   </label>
-                  <label id="fmt-excel" onclick="selectReportFormat('excel')" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;cursor:pointer;border:2px solid var(--dt-border-md);border-radius:12px;padding:1rem 0.75rem;background:var(--dt-bg-input);transition:all 150ms;text-align:center;">
+                  <label id="fmt-excel" class="report-format-option" onclick="selectReportFormat('excel')">
                     <input type="radio" name="format" value="excel" style="display:none;" />
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <span class="text-xs font-bold" style="color:var(--dt-muted);">Excel</span>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span class="text-xs font-bold fmt-label">Excel</span>
                     <span class="text-xs" style="color:var(--dt-muted);font-size:0.68rem;">Spreadsheet</span>
                   </label>
                 </div>
@@ -1026,14 +1026,14 @@
                 <div>
                   <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Dataset</label>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-                    <label id="ie-ds-orchids" onclick="selectExportDataset('orchids')" style="display:flex;flex-direction:column;gap:0.3rem;cursor:pointer;border:2px solid var(--dt-accent);border-radius:12px;padding:0.9rem 1rem;background:rgba(30,100,45,.3);transition:all 150ms;">
+                    <label id="ie-ds-orchids" class="report-format-option ie-dataset-option is-active" onclick="selectExportDataset('orchids')">
                       <input type="radio" name="ie-dataset" value="orchids" checked style="display:none;" />
-                      <span class="text-xs font-bold" style="color:var(--dt-accent-lt);">Orchid Catalog</span>
+                      <span class="text-xs font-bold fmt-label">Orchid Catalog</span>
                       <span class="text-xs" style="color:var(--dt-muted);"><span id="ie-count-orchids">–</span> species</span>
                     </label>
-                    <label id="ie-ds-submissions" onclick="selectExportDataset('submissions')" style="display:flex;flex-direction:column;gap:0.3rem;cursor:pointer;border:2px solid var(--dt-border-md);border-radius:12px;padding:0.9rem 1rem;background:var(--dt-bg-input);transition:all 150ms;">
+                    <label id="ie-ds-submissions" class="report-format-option ie-dataset-option" onclick="selectExportDataset('submissions')">
                       <input type="radio" name="ie-dataset" value="submissions" style="display:none;" />
-                      <span class="text-xs font-bold" style="color:var(--dt-muted);">Submissions</span>
+                      <span class="text-xs font-bold fmt-label">Submissions</span>
                       <span class="text-xs" style="color:var(--dt-muted);"><span id="ie-count-submissions">–</span> records</span>
                     </label>
                   </div>
@@ -7654,11 +7654,7 @@
         ['pdf', 'excel'].forEach((candidate) => {
           const lbl = document.getElementById('fmt-' + candidate);
           if (!lbl) return;
-          const active = candidate === fmt;
-          lbl.style.borderColor = active ? '#145A1E' : '#e2e8f0';
-          lbl.style.background = active ? '#E4F0D0' : '#fff';
-          lbl.querySelector('svg').setAttribute('stroke', active ? '#145A1E' : '#64748b');
-          lbl.querySelector('.text-xs.font-bold').style.color = active ? '#145A1E' : '#64748b';
+          lbl.classList.toggle('is-active', candidate === fmt);
         });
       }
 
@@ -7899,10 +7895,7 @@
         ['orchids', 'submissions'].forEach((candidate) => {
           const lbl = document.getElementById('ie-ds-' + candidate);
           if (!lbl) return;
-          const active = candidate === ds;
-          lbl.style.borderColor = active ? '#145A1E' : 'var(--dt-border-md)';
-          lbl.style.background = active ? 'rgba(30,100,45,.3)' : 'var(--dt-bg-input)';
-          lbl.querySelectorAll('.text-xs').forEach((el) => { el.style.color = active ? 'var(--dt-accent-lt)' : 'var(--dt-muted)'; });
+          lbl.classList.toggle('is-active', candidate === ds);
         });
       }
 

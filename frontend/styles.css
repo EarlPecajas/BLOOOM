@@ -4200,6 +4200,8 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
 .bloom-toast--info { border-left-color: #1B4DA0; }
 .bloom-toast--info .bloom-toast-icon { color: #1B4DA0; }
 
+@keyframes spin { to { transform: rotate(360deg); } }
+
 @keyframes bloomToastIn {
   from { opacity: 0; transform: translateX(24px); }
   to { opacity: 1; transform: translateX(0); }
@@ -4275,17 +4277,78 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
 }
 #report-view label[style*="border:1.5px solid #e2e8f0"] span { color: var(--dt-text) !important; }
 
-/* ── Generate Report: export format boxes ── */
-#fmt-pdf {
+/* ── Generate Report / Import-Export: selectable option cards ──
+   State lives entirely on the .is-active class (toggled by JS), not on
+   fixed element IDs — IDs used to carry hardcoded !important styling here,
+   which permanently pinned #fmt-pdf as "selected" and #fmt-excel as
+   "unselected" regardless of which format was actually chosen. */
+.report-format-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  border: 2px solid var(--dt-border-md) !important;
+  border-radius: 12px;
+  padding: 1rem 0.75rem;
+  background: var(--dt-bg-input) !important;
+  transition: border-color 150ms, background 150ms;
+  text-align: center;
+}
+.report-format-option:hover { border-color: var(--dt-accent) !important; }
+.report-format-option svg { stroke: var(--dt-muted); transition: stroke 150ms; }
+.report-format-option .fmt-label { color: var(--dt-muted); transition: color 150ms; }
+.report-format-option.is-active {
   background: rgba(30,100,45,.3) !important;
   border-color: var(--dt-accent) !important;
 }
-#fmt-pdf span[style*="color:#145A1E"] { color: var(--dt-accent-lt) !important; }
-#fmt-excel {
-  background: var(--dt-bg-input) !important;
-  border-color: var(--dt-border-md) !important;
+.report-format-option.is-active svg { stroke: var(--dt-accent); }
+.report-format-option.is-active .fmt-label { color: var(--dt-accent-lt); }
+
+/* ── Generate Report: shared field label / input / checkbox-card styles
+   (used by the researcher-dashboard.html report form) ── */
+.report-field-label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dt-text, #145A1E);
 }
-#fmt-excel svg { stroke: var(--dt-muted) !important; }
+.report-select-input {
+  width: 100%;
+  padding: 0.68rem 0.9rem;
+  border: 1.5px solid var(--dt-border-md, #e0e0e0);
+  border-radius: 10px;
+  font-family: Inter, Roboto, sans-serif;
+  font-size: 0.9rem;
+  color: var(--dt-text, #1a3a1a);
+  background: var(--dt-bg-input, #fff);
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 150ms;
+}
+.report-select-input:focus { border-color: var(--dt-accent, #145A1E); }
+.report-check-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  border: 1.5px solid var(--dt-border-md, #e0e0e0);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  transition: border-color 150ms, background 150ms;
+}
+.report-check-option:hover { border-color: var(--dt-accent, #145A1E); background: rgba(77,184,106,.08); }
+.report-check-option input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: #145A1E;
+  flex-shrink: 0;
+}
 
 /* ── Generate Report: Clear button ── */
 #report-view button[onclick="resetReportForm()"] {
