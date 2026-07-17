@@ -1747,7 +1747,7 @@
         <div style="background:#145A1E;padding:1.4rem 1.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-shrink:0;border-radius:18px 18px 0 0;">
           <div style="min-width:0;">
             <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.4rem;">
-              <span style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.6);">Sighting Submission</span>
+              <span id="detailSubmissionType" style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.6);">Sighting Submission</span>
               <span id="detailStatusBadge" style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;padding:0.18rem 0.6rem;border-radius:999px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.3);"></span>
             </div>
             <h2 id="detailTitle" class="scientific-name" style="margin:0 0 0.3rem;color:#fff;font-size:1.65rem;font-weight:800;line-height:1.2;"></h2>
@@ -6633,13 +6633,34 @@
         };
       }
 
+      // A submission is the species' "New Orchid Submission" if it's the earliest-created
+      // submission on record for that scientific name; every later one logging the same
+      // species elsewhere/again is a "Sighting Submission" of an already-documented orchid.
+      function getSubmissionTypeLabel(submission, allRows) {
+        const key = String(submission.species || submission.scientific_name || '').trim().toLowerCase();
+        if (!key) return 'Sighting Submission';
+        const sameSpecies = (allRows || []).filter((s) =>
+          String(s.species || s.scientific_name || '').trim().toLowerCase() === key
+        );
+        if (sameSpecies.length <= 1) return 'New Orchid Submission';
+        function ts(s) {
+          const raw = s.created_at || s.submission_date || s.observation_date || '';
+          const t = raw ? new Date(raw).getTime() : NaN;
+          return isNaN(t) ? (Number(s.id) || 0) : t;
+        }
+        const earliest = sameSpecies.reduce((a, b) => (ts(a) <= ts(b) ? a : b));
+        return String(earliest.id) === String(submission.id) ? 'New Orchid Submission' : 'Sighting Submission';
+      }
+
       function showDetailModal(submission) {
         currentSubmission = submission;
         const evidence = buildSubmissionEvidence(submission);
-        
+
         // Update modal content
         document.getElementById('detailTitle').textContent = submission.species;
         document.getElementById('detailResearcher').textContent = `Researcher: ${submission.researcher}`;
+        const submissionTypeEl = document.getElementById('detailSubmissionType');
+        if (submissionTypeEl) submissionTypeEl.textContent = getSubmissionTypeLabel(submission, submissionRows);
         // Populate status badge in header
         const statusBadgeEl = document.getElementById('detailStatusBadge');
         if (statusBadgeEl) statusBadgeEl.textContent = getStatusLabel(submission.review_status);
