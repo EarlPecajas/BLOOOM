@@ -19,6 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js?v=3"></script>
     <script src="dashboard-shared.js?v=4"></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
     <style>
       @keyframes spin{to{transform:rotate(360deg);}}
       @media(max-width:860px){#report-view .report-grid,#importexport-view .report-grid{grid-template-columns:1fr!important;}}
@@ -295,6 +296,12 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </span>
           <span>Submissions</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="model3d" id="sidebar-model3d-item">
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </span>
+          <span>3D Image</span>
         </a>
       </nav>
       <div class="sidebar-bottom">
@@ -1169,19 +1176,7 @@
     <div id="submissions-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="margin-bottom:1.25rem;">
         <h1 class="catalog-title">Submissions</h1>
-        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Review, verify, and publish researcher-submitted orchid records and 3D models.</p>
-      </div>
-
-      <!-- ── Submission type tab bar ── -->
-      <div id="submissions-type-tabs" class="denrsub-tabbar">
-        <button id="sub-tab-orchid" class="denrsub-tab denrsub-tab-active" onclick="switchSubmissionsTab('orchid')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
-          Orchid Submissions
-        </button>
-        <button id="sub-tab-3d" class="denrsub-tab" onclick="switchSubmissionsTab('3d')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          3D Submissions
-        </button>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Review, verify, and publish researcher-submitted orchid records.</p>
       </div>
 
       <!-- ── ORCHID SUBMISSIONS PANEL ── -->
@@ -1254,56 +1249,6 @@
         </table>
       </div>
       </div>
-      </div>
-
-      <!-- ── 3D SUBMISSIONS PANEL ── -->
-      <div id="d3-submissions-panel" style="display:none;">
-        <!-- Stats row -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;" id="d3-stats-row">
-          <div style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);border-radius:10px;padding:16px 18px;border-top:3px solid #9CA3AF;">
-            <div style="font-size:26px;font-weight:700;color:var(--dt-text);line-height:1;" id="d3-sn-tot">—</div>
-            <div style="font-size:12px;color:#577A5C;margin-top:4px;">Total 3D Submissions</div>
-          </div>
-          <div style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);border-radius:10px;padding:16px 18px;border-top:3px solid #F59E0B;">
-            <div style="font-size:26px;font-weight:700;color:var(--dt-text);line-height:1;" id="d3-sn-pend">—</div>
-            <div style="font-size:12px;color:#577A5C;margin-top:4px;">Pending Review</div>
-          </div>
-          <div style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);border-radius:10px;padding:16px 18px;border-top:3px solid #10B981;">
-            <div style="font-size:26px;font-weight:700;color:var(--dt-text);line-height:1;" id="d3-sn-appr">—</div>
-            <div style="font-size:12px;color:#577A5C;margin-top:4px;">Approved</div>
-          </div>
-          <div style="background:var(--dt-bg-input);border:1px solid var(--dt-border-md);border-radius:10px;padding:16px 18px;border-top:3px solid #EF4444;">
-            <div style="font-size:26px;font-weight:700;color:var(--dt-text);line-height:1;" id="d3-sn-rej">—</div>
-            <div style="font-size:12px;color:#577A5C;margin-top:4px;">Rejected</div>
-          </div>
-        </div>
-
-        <!-- Filter + Search -->
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-          <div id="d3-filter-tabs" style="display:flex;gap:0.35rem;flex-wrap:wrap;">
-            <button class="d3-filter-btn d3-filter-active" data-filter="all"      style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:700;cursor:pointer;transition:all 160ms;">All <span id="d3-fc-all">0</span></button>
-            <button class="d3-filter-btn" data-filter="pending"   style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Pending <span id="d3-fc-pend">0</span></button>
-            <button class="d3-filter-btn" data-filter="approved"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Approved <span id="d3-fc-appr">0</span></button>
-            <button class="d3-filter-btn" data-filter="rejected"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Rejected <span id="d3-fc-rej">0</span></button>
-            <button class="d3-filter-btn" data-filter="revision"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">For Revision <span id="d3-fc-rev">0</span></button>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.5rem;">
-            <input id="d3-search-input" type="text" placeholder="Search by name or ID…"
-              style="width:min(260px,100%);padding:0.65rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:999px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;" />
-            <button onclick="load3DSubmissions()" title="Refresh"
-              style="padding:0.6rem 1rem;background:var(--dt-bg-input);border:1px solid var(--dt-border-md);border-radius:8px;cursor:pointer;color:var(--dt-text);font-size:0.84rem;font-family:Inter,Roboto,sans-serif;">
-              ↻ Refresh
-            </button>
-          </div>
-        </div>
-
-        <!-- Card grid -->
-        <div id="d3-card-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
-          <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#577A5C;font-family:Inter,Roboto,sans-serif;">
-            <div style="width:28px;height:28px;border:2px solid var(--dt-border-md);border-top-color:#145A1E;border-radius:50%;animation:d3-spin .65s linear infinite;margin:0 auto 12px;"></div>
-            Loading 3D submissions…
-          </div>
-        </div>
       </div>
 
       <style>
@@ -1403,6 +1348,42 @@
         .d3v-bdg.rejected{color:#991B1B;background:#FEF2F2;border-color:#FECACA;}
         .d3v-bdg.revision{color:#92400E;background:#FEF3C7;border-color:#FDE68A;}
       </style>
+    </div>
+
+    <!-- 3D Image View -->
+    <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
+      <div style="margin-bottom:1.25rem;">
+        <h1 class="catalog-title">3D Image</h1>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Upload a 3D (.glb) model and attach it to an orchid species in the catalog.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:1.5rem;align-items:start;">
+        <div style="background:var(--dt-bg-input);border-radius:12px;padding:1.75rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
+          <label for="m3d-orchid-select" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">Orchid Species</label>
+          <select id="m3d-orchid-select" onchange="m3dOnOrchidChange()"
+            style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.9rem;margin-bottom:1.25rem;box-sizing:border-box;">
+            <option value="">Loading orchids…</option>
+          </select>
+
+          <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
+          <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
+            style="width:100%;padding:0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;margin-bottom:0.5rem;box-sizing:border-box;" />
+          <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
+
+          <button id="m3d-upload-btn" type="button" onclick="uploadOrchid3DModel()"
+            style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+            Upload 3D Model
+          </button>
+          <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+        </div>
+
+        <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;min-height:360px;display:flex;align-items:center;justify-content:center;">
+          <model-viewer id="m3d-preview" style="width:100%;height:360px;--poster-color:transparent;" camera-controls auto-rotate shadow-intensity="1" exposure="1" hidden></model-viewer>
+          <div id="m3d-preview-empty" style="color:var(--dt-muted);font-family:Inter,Roboto,sans-serif;font-size:0.88rem;text-align:center;padding:2rem;">
+            Select a file or an orchid with an existing model to preview it here.
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
@@ -3397,6 +3378,11 @@
         researcherDataMenu.hidden = !isResearcherRole;
       }
 
+      const sidebarModel3dItem = document.getElementById('sidebar-model3d-item');
+      if (sidebarModel3dItem) {
+        sidebarModel3dItem.style.display = isResearcherRole ? 'none' : '';
+      }
+
       if (isResearcherRole) {
         const initialSubmissionsAdminPanel = document.getElementById('submissions-admin-panel');
         if (initialSubmissionsAdminPanel) initialSubmissionsAdminPanel.style.display = 'block';
@@ -4611,6 +4597,113 @@
         }
       }
 
+      // ── 3D IMAGE (GLB) UPLOAD ────────────────────────────────────────
+      let m3dOrchidRows = [];
+
+      async function loadModel3DOrchidOptions() {
+        const sel = document.getElementById('m3d-orchid-select');
+        if (!sel || !bloomSupabase) return;
+        sel.innerHTML = '<option value="">Loading orchids…</option>';
+        try {
+          const { data, error } = await bloomSupabase
+            .from('orchid_overview')
+            .select('id, name, common_name, model_3d_url')
+            .order('name', { ascending: true });
+          if (error) throw error;
+          m3dOrchidRows = data || [];
+          sel.innerHTML = '<option value="">Select an orchid…</option>' +
+            m3dOrchidRows.map(o => `<option value="${o.id}">${escapeHtml(o.name)}${o.common_name ? ' — ' + escapeHtml(o.common_name) : ''}</option>`).join('');
+        } catch (err) {
+          sel.innerHTML = '<option value="">Could not load orchids</option>';
+          console.warn('loadModel3DOrchidOptions failed:', err);
+        }
+      }
+
+      function m3dSetPreview(url) {
+        const viewer = document.getElementById('m3d-preview');
+        const empty  = document.getElementById('m3d-preview-empty');
+        if (!viewer || !empty) return;
+        if (url) {
+          viewer.setAttribute('src', url);
+          viewer.hidden = false;
+          empty.style.display = 'none';
+        } else {
+          viewer.removeAttribute('src');
+          viewer.hidden = true;
+          empty.style.display = '';
+        }
+      }
+
+      function m3dOnOrchidChange() {
+        const sel  = document.getElementById('m3d-orchid-select');
+        const hint = document.getElementById('m3d-current-hint');
+        const fileInput = document.getElementById('m3d-file-input');
+        if (!sel || !hint) return;
+        const row = m3dOrchidRows.find(o => String(o.id) === sel.value);
+        if (fileInput) fileInput.value = '';
+        if (row && row.model_3d_url) {
+          hint.textContent = 'This orchid already has a 3D model — uploading will replace it.';
+          m3dSetPreview(row.model_3d_url);
+        } else {
+          hint.textContent = '';
+          m3dSetPreview(null);
+        }
+      }
+
+      function m3dOnFileChange() {
+        const fileInput = document.getElementById('m3d-file-input');
+        const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+        if (file) m3dSetPreview(URL.createObjectURL(file));
+      }
+
+      async function uploadOrchid3DModel() {
+        const sel       = document.getElementById('m3d-orchid-select');
+        const fileInput = document.getElementById('m3d-file-input');
+        const statusEl  = document.getElementById('m3d-status');
+        const btn       = document.getElementById('m3d-upload-btn');
+        const orchidId  = sel ? sel.value : '';
+        const file      = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+        if (!orchidId) { statusEl.style.color = '#991B1B'; statusEl.textContent = 'Select an orchid first.'; return; }
+        if (!file) { statusEl.style.color = '#991B1B'; statusEl.textContent = 'Choose a .glb file first.'; return; }
+        if (!file.name.toLowerCase().endsWith('.glb')) { statusEl.style.color = '#991B1B'; statusEl.textContent = 'File must be a .glb model.'; return; }
+
+        btn.disabled = true;
+        statusEl.style.color = 'var(--dt-muted)';
+        statusEl.textContent = 'Uploading…';
+
+        try {
+          const path = `orchid-models/${orchidId}-${Date.now()}.glb`;
+          const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+          const { error: upErr } = await bloomSupabase.storage
+            .from(uploadBucket)
+            .upload(path, file, { upsert: false, contentType: 'model/gltf-binary' });
+          if (upErr) throw upErr;
+
+          const { data: urlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(path);
+          const modelUrl = urlData.publicUrl;
+
+          const { error: updErr } = await bloomSupabase
+            .from('orchids')
+            .update({ model_3d_url: modelUrl })
+            .eq('orchid_id', orchidId);
+          if (updErr) throw updErr;
+
+          statusEl.style.color = '#065F46';
+          statusEl.textContent = '3D model uploaded and linked successfully.';
+          fileInput.value = '';
+          await loadModel3DOrchidOptions();
+          sel.value = orchidId;
+          m3dOnOrchidChange();
+        } catch (err) {
+          statusEl.style.color = '#991B1B';
+          statusEl.textContent = 'Upload failed: ' + (err.message || 'unknown error');
+          console.warn('uploadOrchid3DModel failed:', err);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
       // ── 3D SUBMISSIONS ─────────────────────────────────────────────
       function switchSubmissionsTab(tab) {
         activeSubmissionsTab = tab;
@@ -5771,7 +5864,7 @@
 
           const overviewResult = await bloomSupabase
             .from('orchid_overview')
-            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status, hidden_fields')
+            .select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, model_3d_url, conservation_status_key, conservation_status, hidden_fields')
             .order('name', { ascending: true });
 
           if (overviewResult.error) {
@@ -6298,6 +6391,9 @@
           if (viewName === 'importexport') {
             initImportExportView();
           }
+          if (viewName === 'model3d') {
+            loadModel3DOrchidOptions();
+          }
         } else if (viewName === 'dashboard') {
           dashboardContainer.style.display = 'block';
           dashboardContainer.style.pointerEvents = 'auto';
@@ -6316,7 +6412,7 @@
       const requestedView = initialSearchParams.get('view');
       const allowedViews = isResearcherRole
         ? new Set(['dashboard', 'orchids', 'map', 'collection3d', 'submissions'])
-        : new Set(['dashboard', 'orchids', 'report', 'importexport', 'map', 'submissions']);
+        : new Set(['dashboard', 'orchids', 'report', 'importexport', 'map', 'submissions', 'model3d']);
       if (requestedView && allowedViews.has(requestedView)) {
         switchView(requestedView);
       } else {
@@ -7189,7 +7285,7 @@
         }
 
         const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
-          bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
+          bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, model_3d_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
           bloomSupabase.from('species_sightings').select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))').order('created_at', { ascending: false }),
           bloomSupabase.from('orchid_overview').select('conservation_status_key')
         ]);
