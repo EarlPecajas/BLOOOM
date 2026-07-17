@@ -156,107 +156,6 @@
       .odm-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;}
       .odm-empty{text-align:center;color:#7a9a78;font-size:.88rem;padding:2.5rem 1rem;font-style:italic;}
       .odm-study-note{margin:.75rem 1rem;background:#fff;border-radius:12px;padding:1rem;border:1px solid #e0e9df;font-size:.87rem;color:#162b14;line-height:1.58;}
-      .submission-select {
-        padding: 0.72rem 0.8rem;
-        border: 1px solid #d4ddd7;
-        border-radius: 8px;
-        font-family: Inter, Roboto, sans-serif;
-        color: #334155;
-        background-color: #fff;
-        min-height: 46px;
-        line-height: 1.2;
-        appearance: none;
-        background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%);
-        background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
-        background-size: 6px 6px, 6px 6px;
-        background-repeat: no-repeat;
-        padding-right: 2.1rem;
-      }
-
-      .submission-select:required:invalid { color: #94a3b8; }
-      .submission-select option { color: #334155; }
-      .submission-field-title {
-        font-family: Inter, Roboto, sans-serif;
-        font-size: 0.92rem;
-        font-weight: 400;
-        color: #94a3b8;
-        line-height: 1.2;
-      }
-      .submission-text-input,
-      .submission-number-input,
-      .submission-time-input,
-      .submission-date-input,
-      .submission-textarea {
-        padding: 0.72rem 0.8rem;
-        border: 1px solid #d4ddd7;
-        border-radius: 8px;
-        font-family: Inter, Roboto, sans-serif;
-        color: #334155;
-        background: #fff;
-        min-height: 46px;
-      }
-      .submission-number-input { max-width: 220px; }
-      .submission-canopy-input { max-width: 220px; height: 42px; }
-      .submission-field { display: grid; gap: 0.35rem; }
-      .submission-field--full { grid-column: 1 / -1; }
-      .field-help {
-        display:inline-block;
-        width:18px;
-        height:18px;
-        border-radius:50%;
-        background:#EAF5EA;
-        color:#274041;
-        font-size:12px;
-        line-height:18px;
-        text-align:center;
-        margin-left:6px;
-        cursor:pointer;
-        border:1px solid #d4e9df;
-        position:relative;
-        opacity:0.9;
-        vertical-align:middle;
-      }
-      .field-help:hover { background:#daeaf8; }
-      .field-help::after {
-        content: attr(data-tooltip);
-        position:absolute;
-        bottom:calc(100% + 7px);
-        left:50%;
-        transform:translateX(-50%);
-        background:#1e293b;
-        color:#fff;
-        padding:0.45rem 0.7rem;
-        border-radius:7px;
-        font-size:0.73rem;
-        font-weight:500;
-        line-height:1.45;
-        white-space:normal;
-        width:220px;
-        pointer-events:none;
-        opacity:0;
-        transition:opacity 150ms ease;
-        z-index:10050;
-        text-align:left;
-        box-shadow:0 4px 14px rgba(0,0,0,0.22);
-      }
-      .field-help::before {
-        content:'';
-        position:absolute;
-        bottom:calc(100% + 2px);
-        left:50%;
-        transform:translateX(-50%);
-        border:5px solid transparent;
-        border-top-color:#1e293b;
-        pointer-events:none;
-        opacity:0;
-        transition:opacity 150ms ease;
-        z-index:10050;
-      }
-      .field-help:hover::after,
-      .field-help:hover::before,
-      .field-help.is-open::after,
-      .field-help.is-open::before { opacity:1; }
-
     </style>
     <script src="config.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -430,24 +329,34 @@
     </div>
 
     <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
-      <div id="researcher-submission-panel" style="background:white;border-radius:12px;padding:0;overflow:hidden;border:1px solid #dfe7e2;box-shadow:0 12px 30px rgba(0,0,0,0.18);max-width:980px;margin:0 auto;">
-        <div id="submission-modal-header" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.4rem;background:#E8E2CB;">
-          <h2 style="margin:0;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:1.18rem;font-weight:700;">Add Orchid</h2>
-          <button type="button" aria-label="Close submission form" onclick="closeResearcherSubmissionModal()" style="background:rgba(20,90,30,0.08);border:1.5px solid rgba(20,90,30,0.25);color:#145A1E;border-radius:8px;width:34px;height:34px;font-size:1.05rem;line-height:1;cursor:pointer;">✕</button>
+      <div id="researcher-submission-panel" style="background:white;border-radius:16px;padding:0;overflow:hidden;border:1px solid #dfe7e2;box-shadow:0 20px 50px rgba(10,40,20,0.28);max-width:980px;margin:0 auto;">
+        <div id="submission-modal-header" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.2rem 1.5rem;background:#E8E2CB;">
+          <div style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
+            <span id="submission-modal-icon" aria-hidden="true">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c-4-2-7-6-7-11a7 7 0 0 1 14 0c0 5-3 9-7 11z"/><circle cx="12" cy="11" r="2.5"/></svg>
+            </span>
+            <div style="min-width:0;">
+              <h2 style="margin:0;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:1.18rem;font-weight:700;line-height:1.2;">Add Sighting</h2>
+              <p style="margin:0.15rem 0 0;color:rgba(20,90,30,.58);font-family:Inter,Roboto,sans-serif;font-size:0.78rem;">New orchid sighting submission</p>
+            </div>
+          </div>
+          <button type="button" id="submission-modal-close" aria-label="Close submission form" onclick="closeResearcherSubmissionModal()">✕</button>
         </div>
         <form id="researcher-submission-form" style="display:block;padding:1.2rem 1.4rem 1.4rem;">
           <!-- Step indicator -->
-          <div id="submission-step-indicator" style="margin:-1.2rem -1.4rem 1.1rem;padding:0.75rem 1.4rem 0.9rem;background:#E8E2CB;border-bottom:2px solid #D0C9B0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.45rem;">
+          <div id="submission-step-indicator" style="margin:-1.2rem -1.4rem 1.1rem;padding:0.75rem 1.4rem 0.95rem;background:#E8E2CB;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.55rem;gap:0.75rem;">
               <span id="submission-step-label" style="font-weight:700;color:#145A1E;font-size:0.92rem;"></span>
-              <span id="submission-step-count" style="font-size:0.8rem;color:#5a7a54;"></span>
+              <span id="submission-step-count" style="font-size:0.78rem;font-weight:600;color:rgba(20,90,30,.65);white-space:nowrap;flex-shrink:0;"></span>
             </div>
-            <div id="submission-step-dots" style="display:flex;gap:0.3rem;"></div>
+            <div id="submission-progress-track" style="height:6px;border-radius:999px;background:rgba(20,90,30,.14);overflow:hidden;">
+              <div id="submission-progress-fill" style="height:100%;width:0%;border-radius:999px;background:#2d8a3a;transition:width 300ms ease;"></div>
+            </div>
           </div>
 
           <!-- Page 1: Basic Taxonomic Information -->
           <div class="submission-page" data-page="1" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Basic Taxonomic Information</strong>
             </div>
             <div class="submission-field" style="display:none;">
@@ -495,7 +404,7 @@
 
           <!-- Page 2: Observation / Collection Details -->
           <div class="submission-page" data-page="2" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Observation / Collection Details</strong>
             </div>
             <div class="submission-field">
@@ -522,7 +431,7 @@
 
           <!-- Page 3: Geographical / Location Data -->
           <div class="submission-page" data-page="3" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Geographical / Location Data</strong>
             </div>
             <div class="submission-field">
@@ -557,7 +466,7 @@
 
           <!-- Page 4: Habitat Information -->
           <div class="submission-page" data-page="4" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Habitat Information</strong>
             </div>
             <div class="submission-field">
@@ -603,7 +512,7 @@
 
           <!-- Page 5: Morphological Characteristics -->
           <div class="submission-page" data-page="5" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Morphological Characteristics</strong>
             </div>
             <div class="submission-field">
@@ -738,7 +647,7 @@
 
           <!-- Page 6: Ecological / Biological Data -->
           <div class="submission-page" data-page="6" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Ecological / Biological Data</strong>
             </div>
             <div class="submission-field">
@@ -757,7 +666,7 @@
 
           <!-- Page 7: Conservation & Threat Data -->
           <div class="submission-page" data-page="7" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Conservation &amp; Threat Data</strong>
             </div>
             <div class="submission-field">
@@ -787,7 +696,7 @@
 
           <!-- Page 8: Multimedia Documentation -->
           <div class="submission-page" data-page="8" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Multimedia Documentation</strong>
               <div style="font-size:0.82rem;color:#64748b;margin-top:0.25rem;">Up to 3 photos per category. Whole plant photo is required.</div>
             </div>
@@ -823,7 +732,7 @@
 
           <!-- Page 9: Notes, Remarks, and Researchers -->
           <div class="submission-page" data-page="9" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;">
-            <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
+            <div class="submission-section-header">
               <strong>Notes, Remarks, and Researchers</strong>
             </div>
             <div class="submission-field">
@@ -847,7 +756,7 @@
             </div>
 
             <!-- Related Study -->
-            <div style="grid-column:1/-1;border:1px solid #d4ddd7;border-radius:10px;padding:1rem;background:#f9fcfa;">
+            <div class="submission-subcard">
               <div style="font-size:0.88rem;font-weight:700;color:#145A1E;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#145A1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                 Related Study
@@ -864,13 +773,13 @@
           </div>
 
           <!-- Navigation Row -->
-          <div id="submission-nav-row" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-top:1rem;padding-top:0.85rem;border-top:1px solid #e8eeea;flex-wrap:wrap;">
-            <button type="button" id="submission-back-btn" style="padding:0.65rem 1.2rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;color:#334155;font-weight:600;cursor:pointer;display:none;">&#8592; Back</button>
-            <div style="display:flex;gap:0.65rem;margin-left:auto;align-items:center;flex-wrap:wrap;">
-              <span id="researcher-submission-feedback" style="font-size:0.92rem;color:#4f5f56;max-width:260px;"></span>
-              <button type="button" id="submission-draft-btn" style="padding:0.65rem 1.2rem;border:1px solid #145A1E;border-radius:8px;background:#fff;color:#145A1E;font-weight:600;cursor:pointer;">Save as Draft</button>
-              <button type="button" id="submission-next-btn" style="padding:0.65rem 1.2rem;border:none;border-radius:8px;background:#145A1E;color:#fff;font-weight:600;cursor:pointer;">Next &#8594;</button>
-              <button type="submit" id="submission-submit-btn" class="dashboard-btn dashboard-btn-primary" style="display:none;padding:0.65rem 1.2rem;background-color:#145A1E !important;border-color:#145A1E !important;color:white !important;">Submit Sighting</button>
+          <div id="submission-nav-row">
+            <button type="button" id="submission-back-btn" class="submission-nav-btn" style="display:none;">&#8592; Back</button>
+            <div id="submission-nav-row-right">
+              <span id="researcher-submission-feedback"></span>
+              <button type="button" id="submission-draft-btn" class="submission-nav-btn">Save as Draft</button>
+              <button type="button" id="submission-next-btn" class="submission-nav-btn">Next &#8594;</button>
+              <button type="submit" id="submission-submit-btn" class="submission-nav-btn" style="display:none;">Submit Sighting &#10003;</button>
             </div>
           </div>
         </form>
@@ -1479,17 +1388,10 @@
       function updateSubmissionStepIndicator(n) {
         const labelEl = document.getElementById('submission-step-label');
         const countEl = document.getElementById('submission-step-count');
-        const dotsEl = document.getElementById('submission-step-dots');
+        const fillEl = document.getElementById('submission-progress-fill');
         if (labelEl) labelEl.textContent = SUBMISSION_PAGE_LABELS[n - 1] || '';
         if (countEl) countEl.textContent = `Step ${n} of ${SUBMISSION_TOTAL_PAGES}`;
-        if (dotsEl) {
-          dotsEl.innerHTML = '';
-          for (let i = 1; i <= SUBMISSION_TOTAL_PAGES; i++) {
-            const dot = document.createElement('div');
-            dot.style.cssText = `width:${i === n ? '22px' : '8px'};height:8px;border-radius:4px;background:${i <= n ? '#145A1E' : '#d4ddd7'};transition:all 0.2s;`;
-            dotsEl.appendChild(dot);
-          }
-        }
+        if (fillEl) fillEl.style.width = `${Math.round((n / SUBMISSION_TOTAL_PAGES) * 100)}%`;
       }
 
       function goToSubmissionPage(n) {
@@ -2129,13 +2031,28 @@
               throw new Error(submitError.message || 'Failed to submit record');
             }
 
+            // Add this sighting to the map alongside existing ones (never replace them) —
+            // it stays pending until DENR approves it, but the researcher should see it
+            // was recorded rather than wonder if it overwrote the original sighting.
+            if (!editDraftId) {
+              const newSighting = normalizePublicSightingRow(insertPayload);
+              newSighting.review_status = 'pending';
+              currentAllSightings = [newSighting, ...currentAllSightings];
+              const refreshedPoints = currentAllSightings
+                .filter(s => s.latitude != null && s.longitude != null)
+                .map(s => ({ lat: Number(s.latitude), lng: Number(s.longitude), src: s, pending: s.review_status === 'pending' }));
+              if (refreshedPoints.length) {
+                initMap(refreshedPoints, getBestPhotoUrl(currentSrc, currentOrchid));
+              }
+            }
+
             delete researcherSubmissionFormEl.dataset.editDraftId;
             delete researcherSubmissionFormEl.dataset.editDraftEntryId;
             researcherSubmissionFormEl.reset();
             initializeResearcherSightingForm();
             if (feedback) {
               feedback.style.color = '#145A1E';
-              feedback.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}.`;
+              feedback.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}. It now appears on the map (gold marker) pending DENR review.`;
             }
             closeResearcherSubmissionModal();
           } catch (error) {
@@ -2179,10 +2096,19 @@
           iconAnchor: [22, 22],
           popupAnchor: [0, -26]
         });
+        const pendingIcon = L.divIcon({
+          html: `<div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:3px solid #d4a017;box-shadow:0 2px 10px rgba(0,0,0,.45),0 0 0 3px rgba(212,160,23,.35);position:relative;"><img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" /><span style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#d4a017;border:2px solid #fff;display:flex;align-items:center;justify-content:center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span></div>`,
+          className: '',
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
+          popupAnchor: [0, -26]
+        });
 
         displayPoints.forEach((pt, idx) => {
-          const marker = L.marker([pt.lat, pt.lng], {icon}).addTo(orchidLeafletMap);
-          const tip = idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' — click to view details';
+          const marker = L.marker([pt.lat, pt.lng], {icon: pt.pending ? pendingIcon : icon}).addTo(orchidLeafletMap);
+          const tip = pt.pending
+            ? 'Your new sighting — pending DENR review'
+            : (idx === 0 ? 'Click to view details' : 'Sighting ' + (idx + 1) + ' — click to view details');
           marker.bindTooltip(tip, {permanent: false, direction: 'top'});
           marker.on('click', (function(ptSrc) {
             return function() {
