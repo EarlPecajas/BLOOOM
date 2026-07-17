@@ -175,10 +175,13 @@
       <div class="dashboard-header-right">
         <div class="denr-section">
           <div class="researcher-data-menu" id="researcher-data-menu" hidden>
-            <button class="researcher-data-button" id="researcher-data-button" aria-haspopup="true" aria-expanded="false" type="button" onclick="const dd=document.getElementById('researcher-data-dropdown'); if(dd){ const shouldOpen=dd.hidden; dd.hidden=!shouldOpen; this.setAttribute('aria-expanded', String(shouldOpen)); }">DATA</button>
+            <button class="researcher-data-button" id="researcher-data-button" aria-haspopup="true" aria-expanded="false" type="button" onclick="const dd=document.getElementById('researcher-data-dropdown'); if(dd){ const shouldOpen=dd.hidden; dd.hidden=!shouldOpen; this.setAttribute('aria-expanded', String(shouldOpen)); }">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New
+              <svg class="researcher-data-button-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
             <div class="researcher-data-dropdown" id="researcher-data-dropdown" hidden>
-              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');openResearcherSubmissionModal();">Add</button>
-              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-update" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('orchids');">Update</button>
+              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');openResearcherSubmissionModal();">Add Sighting</button>
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
             </div>
           </div>
@@ -1702,7 +1705,6 @@
       const researcherDataButton = document.getElementById('researcher-data-button');
       const researcherDataDropdown = document.getElementById('researcher-data-dropdown');
       const researcherDataAdd = document.getElementById('researcher-data-add');
-      const researcherDataUpdate = document.getElementById('researcher-data-update');
       const researcherDataSubmissions = document.getElementById('researcher-data-submissions');
       const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
       const sidebarToggleButton = document.getElementById('sidebar-toggle-button');
@@ -2340,13 +2342,6 @@
         });
       }
 
-      if (researcherDataUpdate && !researcherDataUpdate.hasAttribute('onclick')) {
-        researcherDataUpdate.addEventListener('click', function() {
-          closeResearcherDataDropdown();
-          openDashboardView('orchids');
-        });
-      }
-
       if (researcherDataSubmissions && !researcherDataSubmissions.hasAttribute('onclick')) {
         researcherDataSubmissions.addEventListener('click', function() {
           closeResearcherDataDropdown();
@@ -2805,10 +2800,6 @@
           e.preventDefault();
           openDashboardView('submissions');
           openResearcherSubmissionModal();
-          if (researcherDataDropdown) researcherDataDropdown.hidden = true;
-        } else if (dataAction.id === 'researcher-data-update') {
-          e.preventDefault();
-          openDashboardView('orchids');
           if (researcherDataDropdown) researcherDataDropdown.hidden = true;
         } else if (dataAction.id === 'researcher-data-submissions') {
           e.preventDefault();
