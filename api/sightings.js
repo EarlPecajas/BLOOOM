@@ -19,10 +19,35 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
+      // Legacy seed sightings predate the 3NF split (sighting_morphology / sighting_habitat /
+      // sighting_conservation) and were never linked to those sub-tables, so the view's join
+      // columns come back null for them even though the original data still sits in flat
+      // columns on species_sightings. Coalesce those in here (view stays untouched) so both
+      // old seed data and new normalized submissions render correctly.
       const result = await pool.query(
-        `SELECT *
-         FROM public_approved_sightings
-         ORDER BY lower(trim(scientific_name)), observation_date DESC NULLS LAST, id DESC`
+        `SELECT pas.*,
+           coalesce(pas.leaf_shape, s.leaf_shape)                         AS leaf_shape,
+           coalesce(pas.leaf_arrangement, s.leaf_arrangement)             AS leaf_arrangement,
+           coalesce(pas.flower_color, s.flower_color)                    AS flower_color,
+           coalesce(pas.inflorescence_type, s.inflorescence_type)        AS inflorescence_type,
+           coalesce(pas.petal_characteristics, s.petal_characteristics)  AS petal_characteristics,
+           coalesce(pas.labellum_lip_description, s.labellum_description) AS labellum_lip_description,
+           coalesce(pas.fragrance, s.fragrance)                          AS fragrance,
+           coalesce(pas.fruit_type, s.fruit_type)                        AS fruit_type,
+           coalesce(pas.habitat_type, s.habitat_type)                    AS habitat_type,
+           coalesce(pas.microhabitat, s.microhabitat)                    AS microhabitat,
+           coalesce(pas.growth_substrate, s.growth_substrate)            AS growth_substrate,
+           coalesce(pas.nearby_water_source, s.nearby_water_source)      AS nearby_water_source,
+           coalesce(pas.population_status, s.population_status)          AS population_status,
+           coalesce(pas.threat_level, s.threat_level)                    AS threat_level,
+           coalesce(nullif(pas.threat_level_generalized, ''), s.threat_level, '') AS threat_level_generalized,
+           s.plant_height                                                AS plant_height_legacy,
+           s.flower_diameter                                             AS flower_diameter_legacy,
+           s.leaf_texture                                                AS leaf_texture_legacy,
+           s.fruit_present                                               AS fruit_present_legacy
+         FROM public_approved_sightings pas
+         JOIN species_sightings s ON s.sighting_id = pas.id
+         ORDER BY lower(trim(pas.scientific_name)), pas.observation_date DESC NULLS LAST, pas.id DESC`
       );
       return res.status(200).json(result.rows);
     }

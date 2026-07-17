@@ -349,6 +349,10 @@
               <div class="odm-rows-wrap" id="odm-rows-taxonomy"></div>
             </div>
             <div class="odm-section">
+              <div class="odm-section-title">Morphological Characteristics</div>
+              <div class="odm-rows-wrap" id="odm-rows-morphology"></div>
+            </div>
+            <div class="odm-section">
               <div class="odm-section-title">Location &amp; Habitat</div>
               <div class="odm-rows-wrap" id="odm-rows-location"></div>
             </div>
@@ -523,6 +527,11 @@
           flowering_stage: row.blooming_stage || row.flowering_stage || '',
           fruit_present: row.fruit_present,
           fruit_type: row.fruit_type || '',
+          // Fallbacks for legacy seed sightings never linked to sighting_morphology (see api/sightings.js)
+          plant_height_legacy: row.plant_height_legacy || '',
+          flower_diameter_legacy: row.flower_diameter_legacy || '',
+          leaf_texture_legacy: row.leaf_texture_legacy || '',
+          fruit_present_legacy: row.fruit_present_legacy || '',
           population_status: row.population_status || '',
           threat_level: row.threat_level || row.threat_level_generalized || '',
           threat_level_generalized: row.threat_level || row.threat_level_generalized || '',
@@ -714,6 +723,33 @@
           odmRow('Population Status', src.population_status, 'pop-status');
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
+
+        var leafTextures = Array.isArray(src.leaf_textures) && src.leaf_textures.length ? src.leaf_textures.join(', ') : (src.leaf_texture_legacy || '');
+        var flowerDiameter = src.flower_diameter_cm ? '~' + Math.round(Number(src.flower_diameter_cm)) + ' cm' : (src.flower_diameter_legacy || '');
+        var plantHeight = src.plant_height_cm ? src.plant_height_cm + ' cm' : (src.plant_height_legacy || '');
+        var floweringStage = src.blooming_stage || src.flowering_stage || '';
+        var fruitPresent = src.fruit_present === true ? 'Present'
+          : src.fruit_present === false ? 'Not observed'
+          : (src.fruit_present_legacy ? (/^y/i.test(src.fruit_present_legacy) ? 'Present' : 'Not observed') : '');
+        var morphHtml = odmRow('Plant Height', plantHeight, 'height') +
+          odmRow('Leaf Shape', src.leaf_shape, 'leaf-shape') +
+          odmRow('Leaf Count', src.leaf_count) +
+          odmRow('Leaf Textures', leafTextures) +
+          odmRow('Leaf Arrangement', src.leaf_arrangement) +
+          odmRow('Flower Color', src.flower_color, 'flower-color') +
+          odmRow('Flower Count', src.flower_count, 'flower-count') +
+          odmRow('Flower Size', flowerDiameter) +
+          odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
+          odmRow('Petal Characteristics', src.petal_characteristics) +
+          odmRow('Labellum / Lip', src.labellum_lip_description) +
+          odmRow('Fragrance', src.fragrance, 'fragrance') +
+          odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
+          odmRow('Flowering Stage', floweringStage, 'blooming') +
+          odmRow('Fruit Present', fruitPresent) +
+          odmRow('Fruit Type', src.fruit_type);
+        document.getElementById('odm-rows-morphology').innerHTML = morphHtml ||
+          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No morphological data</span></div>';
+
         var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
         var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa', 'mountain') +
           odmRow('Site / Zone', src.specific_site_zone, 'site') +
