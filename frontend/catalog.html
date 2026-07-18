@@ -92,17 +92,54 @@
       .odm-study-note{margin:.75rem 1rem;background:#fff;border-radius:12px;padding:1rem;border:1px solid #e0e9df;font-size:.87rem;color:#162b14;line-height:1.58;}
     </style>
     <style>
-      /* ── Cream/green theme for public catalog ── */
+      /* ── Clean, professional theme for public catalog ── */
       body.catalog-light {
-        background: #F0EAD2 !important;
+        position: relative;
+        background: linear-gradient(165deg, #FFFFFF 0%, #F4F7F5 100%) !important;
+        background-attachment: fixed !important;
         background-image: none !important;
         animation: none !important;
         color: #1a3a1c !important;
+        overflow-x: hidden;
       }
+      body.catalog-light::before {
+        content: '';
+        position: fixed;
+        top: -140px;
+        right: -120px;
+        width: 460px;
+        height: 460px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(22,163,74,.09), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body.catalog-light::after {
+        content: '';
+        position: fixed;
+        bottom: -160px;
+        left: -140px;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59,130,246,.07), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .catalog-deco { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+      .catalog-deco-icon { position: absolute; }
+      .catalog-deco-1 { width: 60px; height: 60px; top: 14%; left: 4%; color: #16a34a; opacity: .10; transform: rotate(14deg); }
+      .catalog-deco-2 { width: 46px; height: 46px; top: 55%; left: 2%; color: #f97316; opacity: .11; transform: rotate(-20deg); }
+      .catalog-deco-3 { width: 52px; height: 52px; top: 20%; right: 3%; color: #3b82f6; opacity: .10; transform: rotate(-12deg); }
+      .catalog-deco-4 { width: 40px; height: 40px; bottom: 8%; right: 6%; color: #8b5cf6; opacity: .11; transform: rotate(22deg); }
+      @media (max-width: 900px) { .catalog-deco { display: none; } }
+      body.catalog-light .catalog-container { position: relative; z-index: 1; }
       body.catalog-light .top-nav {
+        position: relative;
+        z-index: 1;
         background: #FFFFFF !important;
         background-image: none !important;
-        border-bottom: 1px solid #D8D0B8 !important;
+        border-bottom: 1px solid #E7ECE7 !important;
         box-shadow: 0 2px 10px rgba(0,0,0,.07) !important;
       }
       body.catalog-light .bloom-text { color: #145A1E !important; }
@@ -128,8 +165,8 @@
       body.catalog-light .btn-success {
         background: #145A1E !important;
         border: 1.5px solid #145A1E !important;
-        color: #F0EAD2 !important;
-        -webkit-text-fill-color: #F0EAD2 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
         box-shadow: none !important;
       }
       body.catalog-light .btn-solid:hover,
@@ -144,7 +181,7 @@
       body.catalog-light .catalog-search,
       body.catalog-light .catalog-search-filter {
         background-color: #FFFFFF !important;
-        border-color: #C8C0A8 !important;
+        border-color: #E7ECE7 !important;
         color: #1a3a1c !important;
         -webkit-text-fill-color: #1a3a1c !important;
       }
@@ -157,7 +194,7 @@
       /* View toggle button */
       body.catalog-light .catalog-view-toggle {
         background: #FFFFFF !important;
-        border-color: #C8C0A8 !important;
+        border-color: #E7ECE7 !important;
         color: #145A1E !important;
       }
       /* Orchid cards — soft tinted gradient on cream bg */
@@ -208,8 +245,8 @@
       body.catalog-light .top-nav .btn-success {
         background: #145A1E !important;
         border: 1.5px solid #145A1E !important;
-        color: #F0EAD2 !important;
-        -webkit-text-fill-color: #F0EAD2 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
         box-shadow: none !important;
       }
       body.catalog-light .top-nav .btn-solid:hover,
@@ -225,6 +262,12 @@
     <script src="supabase-client.js?v=3"></script>
   </head>
   <body class="signin-page catalog-light">
+    <div class="catalog-deco" aria-hidden="true">
+      <svg class="catalog-deco-icon catalog-deco-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+      <svg class="catalog-deco-icon catalog-deco-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+      <svg class="catalog-deco-icon catalog-deco-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+      <svg class="catalog-deco-icon catalog-deco-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+    </div>
     <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
       <a href="index.html" class="brand-link" id="catalog-brand-link">
         <div class="brand-container">
