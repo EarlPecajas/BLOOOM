@@ -4202,6 +4202,35 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Shared centered loading state for orchid catalog grids (DENR, researcher,
+   and public catalog pages) — a circular spinner instead of plain text. */
+.catalog-loading-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 320px;
+  width: 100%;
+  padding: 2rem 1rem;
+}
+.catalog-loading-spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 4px solid rgba(20, 90, 30, 0.15);
+  border-top-color: #145A1E;
+  animation: spin 0.8s linear infinite;
+}
+.catalog-loading-text {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6a8a64;
+  font-family: Inter, Roboto, sans-serif;
+}
+
 @keyframes bloomToastIn {
   from { opacity: 0; transform: translateX(24px); }
   to { opacity: 1; transform: translateX(0); }

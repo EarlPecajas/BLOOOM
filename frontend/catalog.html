@@ -1306,7 +1306,7 @@
 
       (async () => {
         loadStorageImages(); // synchronous — populates storageImagesByGenus before any render
-        catalogGrid.innerHTML = '<p style="padding:2rem 1rem;color:#6a8a64;text-align:center;">Loading orchids…</p>';
+        catalogGrid.innerHTML = '<div class="catalog-loading-state"><div class="catalog-loading-spinner"></div><p class="catalog-loading-text">Loading orchids…</p></div>';
         await Promise.all([fetchOrchidData(), loadApprovedSightings()]);
         if (orchids.length > 0) {
           renderCatalog(orchids); // single render, all data ready
