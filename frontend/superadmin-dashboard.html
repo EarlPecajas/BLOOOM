@@ -1132,8 +1132,7 @@
           <td>
             <select class="sa-role-select" onchange="changeRole('${esc(u.id)}','${esc(u.full_name || u.email)}',this.value,this)">
               <option value="researcher" ${u.role === 'researcher' ? 'selected' : ''}>Researcher</option>
-              <option value="denr"       ${u.role === 'denr'       ? 'selected' : ''}>DENR Admin</option>
-              <option value="admin"      ${u.role === 'admin'      ? 'selected' : ''}>Admin</option>
+              <option value="admin" ${(u.role === 'admin' || u.role === 'denr') ? 'selected' : ''}>Admin (DENR)</option>
             </select>
           </td>
           <td>${statusBadge(u.status)}</td>

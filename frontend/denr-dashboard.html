@@ -2707,25 +2707,25 @@
 
       const bloomSupabase = window.bloomSupabase;
 
-      // Try to hydrate `bloomUser` from local/session storage or from Supabase client session.
+      // Try to hydrate `bloomUser` from Supabase client session, re-checking role
+      // against user_profiles each time so a superadmin promoting/demoting this
+      // account (researcher <-> admin) takes effect on the next load instead of
+      // trusting a possibly-stale cached role forever.
       async function resolveActiveUser() {
-        const fromStorage = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
-        if (fromStorage) {
-          try {
-            const parsed = JSON.parse(fromStorage);
-            if (parsed && parsed.role) return parsed;
-          } catch {
-            localStorage.removeItem('bloomUser');
-          }
-        }
-
-        // Prefer using the Supabase client if available.
         if (bloomSupabase && bloomSupabase.auth && typeof bloomSupabase.auth.getSession === 'function') {
           try {
             const { data } = await bloomSupabase.auth.getSession();
             const sessionUser = data?.session?.user || data?.user || null;
             if (sessionUser) {
-              const role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
+              let role = String(sessionUser.user_metadata?.role || 'researcher').trim().toLowerCase();
+              try {
+                const { data: profile } = await bloomSupabase
+                  .from('user_profiles')
+                  .select('role')
+                  .eq('id', sessionUser.id)
+                  .single();
+                if (profile && profile.role) role = String(profile.role).trim().toLowerCase();
+              } catch (_) {}
               const parsedActiveUser = {
                 id: sessionUser.id,
                 email: sessionUser.email,
@@ -2738,7 +2738,17 @@
               return parsedActiveUser;
             }
           } catch (e) {
-            // ignore and fall back to scanning storage keys
+            // ignore and fall back to cached storage / scanning storage keys
+          }
+        }
+
+        const fromStorage = localStorage.getItem('bloomUser') || sessionStorage.getItem('bloomUser');
+        if (fromStorage) {
+          try {
+            const parsed = JSON.parse(fromStorage);
+            if (parsed && parsed.role) return parsed;
+          } catch {
+            localStorage.removeItem('bloomUser');
           }
         }
 
