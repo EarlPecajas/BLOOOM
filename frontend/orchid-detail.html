@@ -15,13 +15,14 @@
     <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
     <style>
       html, body { height: 100%; margin: 0; }
-      body { display: flex; flex-direction: column; font-family: Inter, Roboto, sans-serif; background: #F0EAD2; }
+      html:has(body.researcher-theme), body.researcher-theme { background: #F4F7F5 !important; }
+      body { display: flex; flex-direction: column; font-family: Inter, Roboto, sans-serif; background: #F4F7F5; }
 
       /* ── Topbar ── */
       .detail-topbar {
         flex-shrink: 0; display: flex; align-items: center;
         padding: 0 1.25rem; height: 56px;
-        background: #FFFFFF; border-bottom: 1px solid #D8D0B8;
+        background: #FFFFFF; border-bottom: 1px solid #E7ECE7;
         box-shadow: 0 2px 10px rgba(0,0,0,.07); gap: 1rem; z-index: 20;
       }
       .detail-brand { display: flex; align-items: center; gap: .5rem; text-decoration: none; flex-shrink: 0; }
@@ -49,37 +50,37 @@
         flex: 1; min-height: 0; display: flex; overflow: hidden;
         margin: 1rem; border-radius: 14px;
         box-shadow: 0 4px 24px rgba(20,90,30,.12);
-        border: 1px solid #D8D0B8;
+        border: 1px solid #E7ECE7;
       }
 
       /* Identity panel */
       .orchid-identity-panel {
         width: 300px; min-width: 220px; flex-shrink: 0;
         display: flex; flex-direction: column;
-        background: #ffffff; border-right: 1px solid #D8D0B8; overflow: hidden;
+        background: #ffffff; border-right: 1px solid #E7ECE7; overflow: hidden;
       }
       .oid-topbar {
         display: flex; align-items: center; gap: .7rem;
         padding: 0 .9rem; height: 36px;
-        background: #F8F5ED; border-bottom: 1px solid #E0D8C0; flex-shrink: 0;
+        background: #F6FAF7; border-bottom: 1px solid #E7ECE7; flex-shrink: 0;
       }
       .oid-subtitle { font-size: .6rem; font-weight: 800; color: #2a5224; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
-      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #E8E2CB; position: relative; }
+      .oid-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5fbf4; flex-shrink: 0; border-bottom: 1px solid #F6FAF7; position: relative; }
       .oid-photo { width: 100%; height: 100%; object-fit: contain; display: block; }
       .oid-photo-placeholder { width: 100%; height: 100%; object-fit: contain; padding: 2rem; opacity: .3; }
       .oid-info { padding: 1rem 1rem 1.2rem; flex: 1; overflow-y: auto; min-height: 0; }
       .oid-sci-name { font-size: 1.05rem; font-style: italic; color: #0d2e0a; margin: 0 0 .12rem; line-height: 1.3; font-weight: 800; font-family: Georgia, serif; }
       .oid-common-name { font-size: .78rem; color: #4a7a44; margin: 0 0 .85rem; font-weight: 500; }
-      .oid-field-list { display: flex; flex-direction: column; border: 1px solid #D8D0B8; border-radius: 10px; overflow: hidden; background: #FAFAF6; }
+      .oid-field-list { display: flex; flex-direction: column; border: 1px solid #E7ECE7; border-radius: 10px; overflow: hidden; background: #FFFFFF; }
       .oid-actions { display: none; }
       .oid-footer {
         flex-shrink: 0; display: flex; align-items: center; justify-content: center;
         padding: .6rem .9rem;
-        background: #F8F5ED; border-top: 1px solid #E0D8C0;
+        background: #F6FAF7; border-top: 1px solid #E7ECE7;
       }
-      .oid-field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .4rem .7rem; border-bottom: 1px solid #EDE7D5; gap: .5rem; }
+      .oid-field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .4rem .7rem; border-bottom: 1px solid #EEF2EE; gap: .5rem; }
       .oid-field-row:last-child { border-bottom: none; }
-      .oid-field-sep { border-top: 1.5px solid #D0C9B0; }
+      .oid-field-sep { border-top: 1.5px solid #E7ECE7; }
       .oid-field-label { font-size: .6rem; font-weight: 700; color: #4a7a44; text-transform: uppercase; letter-spacing: .09em; flex-shrink: 0; min-width: 42%; line-height: 1.4; padding-top: .06rem; }
       .oid-field-value { font-size: .78rem; font-weight: 500; color: #1a3818; text-align: right; max-width: 58%; line-height: 1.4; }
       .oid-badges { display: flex; gap: .4rem; flex-wrap: wrap; }
@@ -95,7 +96,7 @@
       .orchid-map-subheader {
         flex-shrink: 0; display: flex; align-items: center;
         justify-content: space-between; padding: .42rem 1rem;
-        background: #F8F5ED; border-bottom: 1px solid #E0D8C0;
+        background: #F6FAF7; border-bottom: 1px solid #E7ECE7;
       }
       .map-subheader-left { display: flex; align-items: center; gap: .45rem; }
       .map-subheader-title { font-size: .65rem; font-weight: 700; color: #2a5224; text-transform: uppercase; letter-spacing: .1em; }
@@ -103,11 +104,11 @@
       .map-subheader-loc { font-size: .68rem; color: #5a8a54; font-weight: 500; }
       .map-sightings-badge { font-size: .66rem; font-weight: 700; color: #143a10; background: #c0e4b8; padding: .16rem .6rem; border-radius: 10px; }
       #orchid-leaflet-map { flex: 1; min-height: 0; }
-      .orchid-map-hint { text-align: center; font-size: .72rem; color: #6a8a64; padding: .3rem 1rem; background: #F8F5ED; border-top: 1px solid #E0D8C0; margin: 0; flex-shrink: 0; }
+      .orchid-map-hint { text-align: center; font-size: .72rem; color: #6a8a64; padding: .3rem 1rem; background: #F6FAF7; border-top: 1px solid #E7ECE7; margin: 0; flex-shrink: 0; }
 
       .orchid-nav-btn { padding: .42rem 1.2rem; border-radius: 8px; font-size: .82rem; font-weight: 700; cursor: pointer; border: 1.5px solid #2d5a27; transition: all .15s; }
-      .orchid-nav-btn-cream { background: #E8E2CB; color: #145A1E; border-color: #C8BFA8; }
-      .orchid-nav-btn-cream:hover { background: #D8D2BA; border-color: #145A1E; }
+      .orchid-nav-btn-cream { background: #F6FAF7; color: #145A1E; border-color: #DCE6DF; }
+      .orchid-nav-btn-cream:hover { background: #EEF6F0; border-color: #145A1E; }
 
       /* ── Tabbed sighting detail modal — mirrors catalog.html's visitor-facing design ── */
       .orchid-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0;}
@@ -208,7 +209,7 @@
           </div>
         </div>
         <div class="oid-footer" id="oid-footer-add">
-          <button type="button" id="orchid-detail-add-btn-identity" style="display:none;align-items:center;justify-content:center;gap:.35rem;background:#145A1E;border:1.5px solid #145A1E;border-radius:8px;color:#F0EAD2;font-size:.78rem;font-weight:700;padding:.42rem 1rem;cursor:pointer;transition:background .15s,border-color .15s;font-family:Inter,Roboto,sans-serif;width:100%;">
+          <button type="button" id="orchid-detail-add-btn-identity" style="display:none;align-items:center;justify-content:center;gap:.35rem;background:#145A1E;border:1.5px solid #145A1E;border-radius:8px;color:#ffffff;font-size:.78rem;font-weight:700;padding:.42rem 1rem;cursor:pointer;transition:background .15s,border-color .15s;font-family:Inter,Roboto,sans-serif;width:100%;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Sighting
           </button>
@@ -330,7 +331,7 @@
 
     <div id="researcher-submission-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeResearcherSubmissionModal();}">
       <div id="researcher-submission-panel" style="background:white;border-radius:16px;padding:0;overflow:hidden;border:1px solid #dfe7e2;box-shadow:0 20px 50px rgba(10,40,20,0.28);max-width:980px;margin:0 auto;">
-        <div id="submission-modal-header" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.2rem 1.5rem;background:#E8E2CB;">
+        <div id="submission-modal-header" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.2rem 1.5rem;background:#F6FAF7;">
           <div style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
             <span id="submission-modal-icon" aria-hidden="true">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c-4-2-7-6-7-11a7 7 0 0 1 14 0c0 5-3 9-7 11z"/><circle cx="12" cy="11" r="2.5"/></svg>
@@ -344,7 +345,7 @@
         </div>
         <form id="researcher-submission-form" style="display:block;padding:1.2rem 1.4rem 1.4rem;">
           <!-- Step indicator -->
-          <div id="submission-step-indicator" style="margin:-1.2rem -1.4rem 1.1rem;padding:0.75rem 1.4rem 0.95rem;background:#E8E2CB;">
+          <div id="submission-step-indicator" style="margin:-1.2rem -1.4rem 1.1rem;padding:0.75rem 1.4rem 0.95rem;background:#F6FAF7;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.55rem;gap:0.75rem;">
               <span id="submission-step-label" style="font-weight:700;color:#145A1E;font-size:0.92rem;"></span>
               <span id="submission-step-count" style="font-size:0.78rem;font-weight:600;color:rgba(20,90,30,.65);white-space:nowrap;flex-shrink:0;"></span>

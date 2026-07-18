@@ -164,15 +164,52 @@
           linear-gradient(180deg, rgba(244,247,245,0.9), rgba(244,247,245,0.6)) !important;
       }
       body.dashboard-page.researcher-theme .researcher-home-hero {
-        background: #FFFFFF;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(165deg, #ffffff 0%, #f3faf5 100%);
         border: 1px solid var(--dt-border-md);
         border-radius: 20px;
         box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 12px 28px rgba(20,90,30,.06);
-        padding: 2rem 1.75rem;
+        padding: 2.25rem 1.75rem;
         margin: 0 auto 1.75rem;
-        text-align: left;
+        text-align: center;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(22,163,74,0.10), transparent 70%);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -70px;
+        left: -70px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(20,90,30,0.08), transparent 70%);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero-icon {
+        position: relative;
+        z-index: 1;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #16a34a 0%, #145A1E 100%);
+        box-shadow: 0 8px 20px rgba(20,90,30,.25);
       }
       body.dashboard-page.researcher-theme .researcher-home-eyebrow {
+        position: relative;
+        z-index: 1;
         color: #16a34a;
         font-size: 0.75rem;
         font-weight: 800;
@@ -182,10 +219,51 @@
         font-family: Inter, Roboto, sans-serif;
       }
       body.dashboard-page.researcher-theme .researcher-home-hero .researcher-home-title {
+        position: relative;
+        z-index: 1;
         margin-bottom: 0.5rem;
       }
       body.dashboard-page.researcher-theme .researcher-home-hero .researcher-home-subtitle {
+        position: relative;
+        z-index: 1;
         margin-bottom: 0;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stats {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2.25rem;
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(20,90,30,.1);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #12321a;
+        font-family: Inter, Roboto, sans-serif;
+        line-height: 1;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stat-label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #8aa091;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      @media (max-width: 640px) {
+        body.dashboard-page.researcher-theme .researcher-home-hero-stats {
+          gap: 1.25rem;
+          flex-wrap: wrap;
+        }
       }
       body.dashboard-page.researcher-theme .dashboard-header {
         background: #FFFFFF !important;
@@ -274,6 +352,7 @@
         display: flex;
         flex-direction: column;
         line-height: 1.2;
+        min-width: 0;
       }
       .sidebar-brand-title {
         font-size: 0.92rem;
@@ -288,6 +367,10 @@
         color: #8aa091;
         letter-spacing: 0.03em;
         font-family: Inter, Roboto, sans-serif;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
       }
 
       /* ── A proper Sign Out button instead of a bare hover link ── */
@@ -354,18 +437,18 @@
         transform: rotate(180deg);
       }
 
-      /* ── Collapsed sidebar: icons only ── */
+      /* ── Collapsed sidebar: fully hidden, content reclaims the full width ── */
       body.sidebar-collapsed.dashboard-page.researcher-theme {
-        --rd-sidebar-w: 76px;
+        --rd-sidebar-w: 0px;
       }
-      body.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 1.1rem 0.5rem 0.95rem; }
-      body.sidebar-collapsed .sidebar-brand-text { display: none; }
-      body.sidebar-collapsed .sidebar-item { justify-content: center; padding: 0.65rem 0 !important; margin-left: 0.6rem; margin-right: 0.6rem; }
-      body.sidebar-collapsed .sidebar-item span:not(.sidebar-icon) { display: none; }
-      body.sidebar-collapsed .sidebar-item.active { box-shadow: 0 6px 14px rgba(20,90,30,.28) !important; }
-      body.sidebar-collapsed .sidebar-signout-btn { justify-content: center; padding: 0.65rem 0; }
-      body.sidebar-collapsed .sidebar-signout-btn span:not(.sidebar-icon) { display: none; }
-      body.sidebar-collapsed .sidebar-bottom { padding: 0.75rem 0.6rem; }
+      body.sidebar-collapsed.dashboard-page.researcher-theme .sidebar {
+        transform: translateX(-100%) !important;
+        box-shadow: none !important;
+      }
+      body.sidebar-collapsed.dashboard-page.researcher-theme .sidebar-collapse-toggle {
+        left: 14px;
+        transform: none;
+      }
     </style>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -376,7 +459,7 @@
         <img src="./loo.png" alt="BLOOM" />
         <div class="sidebar-brand-text">
           <span class="sidebar-brand-title">BLOOM</span>
-          <span class="sidebar-brand-subtitle">Researcher Panel</span>
+          <span class="sidebar-brand-subtitle" id="sidebar-brand-subtitle">Researcher Panel</span>
         </div>
       </div>
       <nav class="sidebar-nav">
@@ -462,7 +545,7 @@
               <svg class="researcher-data-button-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="researcher-data-dropdown" id="researcher-data-dropdown" hidden>
-              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');openResearcherSubmissionModal();">Add Sighting</button>
+              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');openResearcherSubmissionModal();">Add Orchid</button>
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
             </div>
           </div>
@@ -601,9 +684,26 @@
 
       <section id="researcher-home" class="researcher-home" style="display:none;">
         <div class="researcher-home-hero">
+          <div class="researcher-home-hero-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+          </div>
           <p class="researcher-home-eyebrow">Researcher Panel</p>
           <h1 id="researcher-greeting" class="researcher-home-title">Welcome, Researcher</h1>
           <p class="researcher-home-subtitle">Choose where you want to explore next.</p>
+          <div class="researcher-home-hero-stats">
+            <div class="researcher-home-hero-stat">
+              <span class="researcher-home-hero-stat-value" id="researcher-hero-species-count">—</span>
+              <span class="researcher-home-hero-stat-label">Species Catalogued</span>
+            </div>
+            <div class="researcher-home-hero-stat">
+              <span class="researcher-home-hero-stat-value" id="researcher-hero-genus-count">—</span>
+              <span class="researcher-home-hero-stat-label">Genera Represented</span>
+            </div>
+            <div class="researcher-home-hero-stat">
+              <span class="researcher-home-hero-stat-value">Mt. Busa</span>
+              <span class="researcher-home-hero-stat-label">Sarangani Province</span>
+            </div>
+          </div>
         </div>
 
         <div class="researcher-home-cards">
@@ -1974,15 +2074,24 @@
           return;
         }
 
-        // Update greeting with researcher's first name
+        // Update greeting and sidebar identity with the researcher's name
         if (isResearcherRole) {
+          const firstName = (parsedActiveUser.first_name || '').trim();
+          const lastName = (parsedActiveUser.last_name || '').trim();
+          const emailPart = (parsedActiveUser.email || '').split('@')[0].replace(/[._-]+/g, ' ').trim();
+          const displayName = [firstName, lastName].filter(Boolean).join(' ') || emailPart || 'Researcher';
+          const titleCase = (s) => s.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          const fullDisplayName = titleCase(displayName);
+
           const greetingEl = document.getElementById('researcher-greeting');
           if (greetingEl) {
-            const firstName = (parsedActiveUser.first_name || '').trim();
-            const emailPart = (parsedActiveUser.email || '').split('@')[0].replace(/[._-]+/g, ' ').trim();
-            const displayName = firstName || emailPart || 'Researcher';
-            const titleCase = (s) => s.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-            greetingEl.textContent = `Welcome, ${titleCase(displayName)}`;
+            greetingEl.textContent = `Welcome, ${titleCase(firstName || emailPart || 'Researcher')}`;
+          }
+
+          const sidebarBrandSubtitle = document.getElementById('sidebar-brand-subtitle');
+          if (sidebarBrandSubtitle) {
+            sidebarBrandSubtitle.textContent = fullDisplayName;
+            sidebarBrandSubtitle.title = fullDisplayName;
           }
         }
 
@@ -4077,10 +4186,14 @@
         const totalOrchidsCount = document.getElementById('total-orchids-count');
         const totalGenusCount = document.getElementById('total-genus-count');
         const orchidRecordsCount = document.getElementById('orchid-records-count');
+        const heroSpeciesCount = document.getElementById('researcher-hero-species-count');
+        const heroGenusCount = document.getElementById('researcher-hero-genus-count');
 
         if (totalOrchidsCount) totalOrchidsCount.textContent = orchidCount;
         if (totalGenusCount) totalGenusCount.textContent = uniqueGenus;
         if (orchidRecordsCount) orchidRecordsCount.textContent = orchidCount;
+        if (heroSpeciesCount) heroSpeciesCount.textContent = orchidCount;
+        if (heroGenusCount) heroGenusCount.textContent = uniqueGenus;
       }
 
       async function loadOrchidCatalog() {
