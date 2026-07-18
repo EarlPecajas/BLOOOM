@@ -4730,7 +4730,7 @@
           try {
             const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
             if (!error && data && data.length) {
-              data.forEach(row => {
+              data.filter(row => !row.archived).forEach(row => {
                 MAP_TRAIL_DEFS[row.trail_id] = {
                   name: row.name,
                   desc: row.description || '',

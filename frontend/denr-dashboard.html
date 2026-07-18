@@ -252,6 +252,11 @@
       .map-trail-toggle-btn.map-trail-toggle-active:hover { background:#3fa25c; border-color:#3fa25c; }
       .map-trail-add-btn { display:inline-flex; align-items:center; gap:0.35rem; flex-shrink:0; padding:0.4rem 0.85rem; background:transparent; border:1.5px dashed var(--dt-border-md); border-radius:20px; cursor:pointer; font-weight:700; color:var(--dt-muted); font-size:0.75rem; white-space:nowrap; transition:all 0.2s; letter-spacing:0.02em; font-family:Inter,Roboto,sans-serif; }
       .map-trail-add-btn:hover { border-color:#2563eb; color:#2563eb; background:rgba(37,99,235,.08); }
+      .map-trail-pill { display:inline-flex; align-items:center; gap:0.3rem; flex-shrink:0; }
+      .map-trail-icon-btn { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:transparent; border:1.5px solid var(--dt-border-md); color:var(--dt-muted); cursor:pointer; flex-shrink:0; padding:0; transition:all 0.2s; }
+      .map-trail-icon-btn:hover { border-color:#2563eb; color:#2563eb; background:rgba(37,99,235,.1); }
+      .map-trail-icon-btn.map-trail-icon-btn-danger:hover { border-color:#dc2626; color:#dc2626; background:rgba(220,38,38,.1); }
+      .map-trail-archived-pill { display:inline-flex; align-items:center; gap:0.4rem; flex-shrink:0; padding:0.4rem 0.85rem; background:transparent; border:1.5px solid var(--dt-border-md); border-radius:20px; font-weight:700; color:var(--dt-muted); font-size:0.75rem; white-space:nowrap; font-family:Inter,Roboto,sans-serif; opacity:0.7; }
 
       /* ── Green admin theme for DENR overview ── */
       #dashboard-admin-overview {
@@ -1463,6 +1468,10 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Trail
           </button>
+          <button type="button" id="archivedTrailsToggleBtn" onclick="openArchivedTrailsModal()" class="map-trail-add-btn" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            <span id="archivedTrailsCount">Archived</span>
+          </button>
         </div>
       </div>
 
@@ -2315,7 +2324,7 @@
     <!-- Toast notification -->
     <div id="denr-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:5000;background:#1a3a1c;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;font-family:Inter,Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:340px;line-height:1.45;"></div>
 
-    <!-- Add Trail Modal -->
+    <!-- Add / Edit Trail Modal -->
     <div id="addTrailModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:4500;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px);">
       <div style="background:var(--dt-bg);border-radius:16px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.55);border:1px solid var(--dt-border-md);overflow:hidden;">
         <div style="background:linear-gradient(135deg,#2563eb 0%,#1e3a8a 100%);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
@@ -2323,11 +2332,12 @@
             <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.24);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
             </span>
-            <h3 style="margin:0;color:#fff;font-size:1.02rem;font-weight:800;">Add Trail Route</h3>
+            <h3 id="trailModalTitle" style="margin:0;color:#fff;font-size:1.02rem;font-weight:800;">Add Trail Route</h3>
           </div>
           <button type="button" onclick="closeModal('addTrailModal')" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 160ms;" onmouseover="this.style.background='rgba(255,255,255,0.24)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">&times;</button>
         </div>
-        <form id="addTrailForm" onsubmit="submitAddTrail(event)" style="padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;">
+        <form id="addTrailForm" onsubmit="submitTrailForm(event)" style="padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;">
+          <input type="hidden" id="trailFormId" value="">
           <div>
             <label for="addTrailName" style="display:block;margin-bottom:0.35rem;font-size:0.78rem;font-weight:700;color:var(--dt-text);">Trail Name <span style="color:#f87171;">*</span></label>
             <input id="addTrailName" type="text" required placeholder="e.g. Kalatong Ridge Trail" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--dt-border-md)'" />
@@ -2346,6 +2356,22 @@
             <button type="submit" id="addTrailSubmitBtn" style="padding:0.55rem 1.3rem;border-radius:8px;border:none;background:#2563eb;color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Add Trail</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Archived Trails Modal -->
+    <div id="archivedTrailsModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:4500;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px);">
+      <div style="background:var(--dt-bg);border-radius:16px;max-width:480px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.55);border:1px solid var(--dt-border-md);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#4b5563 0%,#1f2937 100%);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <div style="display:flex;align-items:center;gap:0.7rem;">
+            <span style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.24);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            </span>
+            <h3 style="margin:0;color:#fff;font-size:1.02rem;font-weight:800;">Archived Trails</h3>
+          </div>
+          <button type="button" onclick="closeModal('archivedTrailsModal')" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 160ms;" onmouseover="this.style.background='rgba(255,255,255,0.24)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">&times;</button>
+        </div>
+        <div id="archivedTrailsList" style="padding:0.75rem 1.5rem 1.5rem;max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:0.6rem;"></div>
       </div>
     </div>
 
@@ -4470,6 +4496,7 @@
         }
       };
       let MAP_TRAIL_DEFS = {};
+      let ARCHIVED_TRAIL_DEFS = {};
       const mapTrailLayers = {};
 
       async function loadMapTrails() {
@@ -4479,6 +4506,7 @@
           delete mapTrailLayers[trailId];
         });
         MAP_TRAIL_DEFS = {};
+        ARCHIVED_TRAIL_DEFS = {};
 
         const container = document.getElementById('map-trails-row');
         if (container) container.innerHTML = '';
@@ -4489,12 +4517,17 @@
             const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
             if (!error && data && data.length) {
               data.forEach(row => {
-                MAP_TRAIL_DEFS[row.trail_id] = {
+                const def = {
                   name: row.name,
                   desc: row.description || '',
                   color: row.color || TRAIL_LINE_COLOR,
                   coords: row.coordinates
                 };
+                if (row.archived) {
+                  ARCHIVED_TRAIL_DEFS[row.trail_id] = def;
+                } else {
+                  MAP_TRAIL_DEFS[row.trail_id] = def;
+                }
               });
               loadedFromDb = true;
             }
@@ -4510,14 +4543,47 @@
         if (container) {
           Object.keys(MAP_TRAIL_DEFS).forEach(trailId => {
             const def = MAP_TRAIL_DEFS[trailId];
+            const isManaged = Number.isFinite(Number(trailId));
+
+            const pill = document.createElement('div');
+            pill.className = 'map-trail-pill';
+
             const btn = document.createElement('button');
             btn.id = 'trail-btn-' + trailId;
             btn.className = 'map-trail-toggle-btn';
             btn.type = 'button';
             btn.onclick = () => toggleTrail(trailId);
             btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>' + escapeHtml(def.name);
-            container.appendChild(btn);
+            pill.appendChild(btn);
+
+            if (isManaged) {
+              const editBtn = document.createElement('button');
+              editBtn.type = 'button';
+              editBtn.className = 'map-trail-icon-btn';
+              editBtn.title = 'Edit trail';
+              editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+              editBtn.onclick = () => openEditTrailModal(trailId);
+              pill.appendChild(editBtn);
+
+              const archiveBtn = document.createElement('button');
+              archiveBtn.type = 'button';
+              archiveBtn.className = 'map-trail-icon-btn map-trail-icon-btn-danger';
+              archiveBtn.title = 'Archive trail';
+              archiveBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>';
+              archiveBtn.onclick = () => archiveTrail(trailId, def.name);
+              pill.appendChild(archiveBtn);
+            }
+
+            container.appendChild(pill);
           });
+        }
+
+        const archivedBtn = document.getElementById('archivedTrailsToggleBtn');
+        const archivedCount = Object.keys(ARCHIVED_TRAIL_DEFS).length;
+        if (archivedBtn) {
+          archivedBtn.style.display = archivedCount > 0 ? 'inline-flex' : 'none';
+          const countEl = document.getElementById('archivedTrailsCount');
+          if (countEl) countEl.textContent = `Archived (${archivedCount})`;
         }
 
         Object.keys(MAP_TRAIL_DEFS).forEach(trailId => toggleTrail(trailId));
@@ -4553,13 +4619,32 @@
       function openAddTrailModal() {
         const form = document.getElementById('addTrailForm');
         if (form) form.reset();
+        document.getElementById('trailFormId').value = '';
+        document.getElementById('trailModalTitle').textContent = 'Add Trail Route';
+        document.getElementById('addTrailSubmitBtn').textContent = 'Add Trail';
         const modal = document.getElementById('addTrailModal');
         if (modal) modal.style.display = 'flex';
       }
 
-      async function submitAddTrail(event) {
+      function openEditTrailModal(trailId) {
+        const def = MAP_TRAIL_DEFS[trailId];
+        if (!def) return;
+        const form = document.getElementById('addTrailForm');
+        if (form) form.reset();
+        document.getElementById('trailFormId').value = trailId;
+        document.getElementById('trailModalTitle').textContent = 'Edit Trail Route';
+        document.getElementById('addTrailSubmitBtn').textContent = 'Save Changes';
+        document.getElementById('addTrailName').value = def.name || '';
+        document.getElementById('addTrailDesc').value = def.desc || '';
+        document.getElementById('addTrailCoords').value = (def.coords || []).map(c => `${c[0]}, ${c[1]}`).join('\n');
+        const modal = document.getElementById('addTrailModal');
+        if (modal) modal.style.display = 'flex';
+      }
+
+      async function submitTrailForm(event) {
         event.preventDefault();
 
+        const editId = document.getElementById('trailFormId').value;
         const name = document.getElementById('addTrailName').value.trim();
         const description = document.getElementById('addTrailDesc').value.trim();
         const coordsRaw = document.getElementById('addTrailCoords').value.trim();
@@ -4597,25 +4682,109 @@
         const submitBtn = document.getElementById('addTrailSubmitBtn');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Adding…';
+        submitBtn.textContent = editId ? 'Saving…' : 'Adding…';
 
         try {
-          const { error } = await bloomSupabase.from('map_trails').insert({
-            name,
-            description: description || null,
-            coordinates: coords
-          });
-          if (error) throw error;
+          if (editId) {
+            const { error } = await bloomSupabase.from('map_trails').update({
+              name,
+              description: description || null,
+              coordinates: coords,
+              updated_at: new Date().toISOString()
+            }).eq('trail_id', editId);
+            if (error) throw error;
+            showToast(`Trail "${name}" updated.`);
+          } else {
+            const { error } = await bloomSupabase.from('map_trails').insert({
+              name,
+              description: description || null,
+              coordinates: coords
+            });
+            if (error) throw error;
+            showToast(`Trail "${name}" added.`);
+          }
 
           closeModal('addTrailModal');
-          showToast(`Trail "${name}" added.`);
           await loadMapTrails();
         } catch (e) {
-          showToast('Failed to add trail: ' + (e.message || e), true);
+          showToast(`Failed to ${editId ? 'update' : 'add'} trail: ` + (e.message || e), true);
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = originalText;
         }
+      }
+
+      function archiveTrail(trailId, trailName) {
+        showConfirm({
+          title: 'Archive Trail',
+          message: `Archive "${trailName}"? It will be hidden from the map but can be restored later from Archived Trails.`,
+          confirmLabel: 'Archive',
+          danger: true,
+          onConfirm: () => doArchiveTrail(trailId, trailName)
+        });
+      }
+
+      async function doArchiveTrail(trailId, trailName) {
+        if (!bloomSupabase) return;
+        try {
+          const { error } = await bloomSupabase.from('map_trails')
+            .update({ archived: true, updated_at: new Date().toISOString() })
+            .eq('trail_id', trailId);
+          if (error) throw error;
+          showToast(`Trail "${trailName}" archived.`);
+          await loadMapTrails();
+        } catch (e) {
+          showToast('Failed to archive trail: ' + (e.message || e), true);
+        }
+      }
+
+      async function restoreTrail(trailId, trailName) {
+        if (!bloomSupabase) return;
+        try {
+          const { error } = await bloomSupabase.from('map_trails')
+            .update({ archived: false, updated_at: new Date().toISOString() })
+            .eq('trail_id', trailId);
+          if (error) throw error;
+          showToast(`Trail "${trailName}" restored.`);
+          closeModal('archivedTrailsModal');
+          await loadMapTrails();
+        } catch (e) {
+          showToast('Failed to restore trail: ' + (e.message || e), true);
+        }
+      }
+
+      function openArchivedTrailsModal() {
+        const list = document.getElementById('archivedTrailsList');
+        if (list) {
+          list.innerHTML = '';
+          const ids = Object.keys(ARCHIVED_TRAIL_DEFS);
+          if (!ids.length) {
+            list.innerHTML = '<p style="margin:0;padding:1rem 0;text-align:center;font-size:0.85rem;color:var(--dt-muted);">No archived trails.</p>';
+          } else {
+            ids.forEach(trailId => {
+              const def = ARCHIVED_TRAIL_DEFS[trailId];
+              const row = document.createElement('div');
+              row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.7rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;';
+
+              const info = document.createElement('div');
+              info.style.cssText = 'min-width:0;';
+              info.innerHTML = `<p style="margin:0;font-size:0.85rem;font-weight:700;color:var(--dt-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(def.name)}</p>` +
+                (def.desc ? `<p style="margin:0.2rem 0 0;font-size:0.75rem;color:var(--dt-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(def.desc)}</p>` : '');
+              row.appendChild(info);
+
+              const restoreBtn = document.createElement('button');
+              restoreBtn.type = 'button';
+              restoreBtn.textContent = 'Restore';
+              restoreBtn.style.cssText = 'flex-shrink:0;padding:0.4rem 0.85rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;';
+              restoreBtn.onclick = () => restoreTrail(trailId, def.name);
+              row.appendChild(restoreBtn);
+
+              list.appendChild(row);
+            });
+          }
+        }
+        const modal = document.getElementById('archivedTrailsModal');
+        if (modal) modal.style.display = 'flex';
       }
 
       function orchidSvg(c, s) {
@@ -8294,10 +8463,97 @@
       }
 
       // ── Import / Export view ──────────────────────────────────────────
+      // Export carries every field the catalog/creation form collects; Import stays
+      // limited to the 4 fields the Orchid Catalog importer actually understands
+      // (see ORCHID_IMPORT_TEMPLATE_COLUMNS + the "CSV Column Reference" card).
       const IMPORT_EXPORT_COLUMNS = {
-        orchids: [['name', 'Scientific Name'], ['genus', 'Genus'], ['common_name', 'Common Name'], ['endemicity', 'Endemicity'], ['conservation_status', 'Conservation Status']],
-        submissions: [['researcher', 'Researcher'], ['researcher_email', 'Email'], ['species', 'Scientific Name'], ['common_name', 'Common Name'], ['location', 'Location'], ['submission_date', 'Observation Date'], ['review_status', 'Status']]
+        orchids: [
+          ['name', 'Scientific Name'],
+          ['genus', 'Genus'],
+          ['common_name', 'Common Name'],
+          ['endemicity', 'Endemicity'],
+          ['conservation_status', 'Conservation Status'],
+          ['ethnobotanical', 'Ethnobotanical Value'],
+          ['horticulture_value', 'Horticultural Value'],
+          ['cultural_importance', 'Cultural Importance'],
+          ['image_url', 'Image URL'],
+          ['model_3d_url', '3D Model URL']
+        ],
+        // Mirrors every field on the researcher "Add Instance" creation form,
+        // grouped in the same order (identity → observation → location →
+        // habitat → morphology → conservation → media → notes/team → meta).
+        submissions: [
+          ['entry_id', 'Entry ID'],
+          ['species', 'Scientific Name'],
+          ['common_names', 'Common Names'],
+          ['local_names', 'Local Names'],
+          ['identification_confidence', 'Identification Confidence'],
+          ['endemic_to_philippines', 'Endemic to Philippines'],
+          ['observation_date', 'Observation Date'],
+          ['observation_time', 'Observation Time'],
+          ['collection_method', 'Collection Method'],
+          ['observation_type', 'Observation Type'],
+          ['voucher_collected', 'Voucher Collected'],
+          ['mountain_name', 'Mountain'],
+          ['specific_site_zone', 'Specific Site Zone'],
+          ['specific_site_other', 'Specific Site (Other)'],
+          ['latitude', 'Latitude'],
+          ['longitude', 'Longitude'],
+          ['elevation_meters', 'Elevation (m)'],
+          ['habitat_type', 'Habitat Type'],
+          ['microhabitat', 'Microhabitat'],
+          ['growth_substrate', 'Growth Substrate'],
+          ['host_tree_species', 'Host Tree Species'],
+          ['host_tree_dbh_cm', 'Host Tree DBH (cm)'],
+          ['canopy_cover_percent', 'Canopy Cover (%)'],
+          ['light_exposure', 'Light Exposure'],
+          ['soil_type', 'Soil Type'],
+          ['nearby_water_source', 'Nearby Water Source'],
+          ['plant_height_cm', 'Plant Height (cm)'],
+          ['pseudobulb_present', 'Pseudobulb Present'],
+          ['stem_length_cm', 'Stem Length (cm)'],
+          ['root_length_cm', 'Root Length (cm)'],
+          ['leaf_count', 'Leaf Count'],
+          ['leaf_shape', 'Leaf Shape'],
+          ['leaf_shape_other', 'Leaf Shape (Other)'],
+          ['leaf_length_cm', 'Leaf Length (cm)'],
+          ['leaf_width_cm', 'Leaf Width (cm)'],
+          ['leaf_textures', 'Leaf Textures'],
+          ['leaf_arrangement', 'Leaf Arrangement'],
+          ['flower_color', 'Flower Color'],
+          ['flower_count', 'Flower Count'],
+          ['flower_diameter_cm', 'Flower Diameter (cm)'],
+          ['inflorescence_type', 'Inflorescence Type'],
+          ['petal_characteristics', 'Petal Characteristics'],
+          ['sepal_characteristics', 'Sepal Characteristics'],
+          ['labellum_lip_description', 'Labellum/Lip Description'],
+          ['fragrance', 'Fragrance'],
+          ['blooming_stage', 'Blooming Stage'],
+          ['flowering_season', 'Flowering Season'],
+          ['fruit_present', 'Fruit Present'],
+          ['fruit_type', 'Fruit Type'],
+          ['seed_capsule_condition', 'Seed Capsule Condition'],
+          ['life_stage', 'Life Stage'],
+          ['phenology', 'Phenology'],
+          ['population_count', 'Population Count'],
+          ['population_status', 'Population Status'],
+          ['threat_level', 'Threat Level'],
+          ['threat_types', 'Threat Types'],
+          ['whole_plant_photos', 'Whole Plant Photo Path(s)'],
+          ['closeup_flower_photos', 'Closeup Flower Photo Path(s)'],
+          ['habitat_photos', 'Habitat Photo Path(s)'],
+          ['video_files', 'Video Path(s)'],
+          ['researcher_notes', 'Researcher Notes'],
+          ['team_members_display', 'Team Members'],
+          ['related_study', 'Related Study'],
+          ['researcher', 'Researcher'],
+          ['researcher_email', 'Researcher Email'],
+          ['institution', 'Institution'],
+          ['location', 'Location'],
+          ['review_status', 'Status']
+        ]
       };
+      const ORCHID_IMPORT_TEMPLATE_COLUMNS = [['name', 'Scientific Name'], ['genus', 'Genus'], ['common_name', 'Common Name'], ['endemicity', 'Endemicity']];
       let ieParsedRows = null;
 
       async function initImportExportView() {
@@ -8323,9 +8579,25 @@
         return /[",\r\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
       }
 
+      // Arrays (common names, photo paths, checkbox groups) and booleans need
+      // human-readable flattening before they hit a CSV cell. Some array-typed
+      // DB columns (e.g. local_names) can come back as a JSON string instead of
+      // an already-parsed array, so try that too before giving up.
+      function csvCellValue(value) {
+        if (Array.isArray(value)) return value.filter(Boolean).join('; ');
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+        if (typeof value === 'string' && value.trim().startsWith('[')) {
+          try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) return parsed.filter(Boolean).join('; ');
+          } catch {}
+        }
+        return value ?? '';
+      }
+
       function downloadRowsAsCsv(fileNameBase, rows, colDefs) {
         const lines = [colDefs.map(([, label]) => csvEscapeCell(label)).join(',')];
-        rows.forEach((row) => lines.push(colDefs.map(([key]) => csvEscapeCell(row[key] ?? '')).join(',')));
+        rows.forEach((row) => lines.push(colDefs.map(([key]) => csvEscapeCell(csvCellValue(row[key]))).join(',')));
         const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -8353,7 +8625,7 @@
       function downloadCsvImportTemplate() {
         downloadRowsAsCsv('Orchid_Catalog_Import_Template', [
           { name: 'Bulbophyllum lobbii', genus: 'Bulbophyllum', common_name: 'Lobb’s Bulbophyllum', endemicity: 'Native' }
-        ], IMPORT_EXPORT_COLUMNS.orchids.filter(([key]) => key !== 'conservation_status'));
+        ], ORCHID_IMPORT_TEMPLATE_COLUMNS);
       }
 
       // Minimal quoted-field-aware CSV parser (handles commas/newlines inside "quotes").
@@ -8950,6 +9222,8 @@
         if (e.target.id === 'conservationModal') closeModal('conservationModal');
         if (e.target.id === 'postToCatalogModal') closeModal('postToCatalogModal');
         if (e.target.id === 'denr-confirm-modal') closeModal('denr-confirm-modal');
+        if (e.target.id === 'addTrailModal') closeModal('addTrailModal');
+        if (e.target.id === 'archivedTrailsModal') closeModal('archivedTrailsModal');
       });
       
       async function loadDenrStats() {
