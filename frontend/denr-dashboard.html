@@ -589,7 +589,7 @@
         <img src="./DENR Logo.svg" alt="DENR" />
         <div class="sidebar-brand-text">
           <span class="sidebar-brand-title">DENR</span>
-          <span class="sidebar-brand-subtitle">Admin Panel</span>
+          <span class="sidebar-brand-subtitle" id="sidebar-brand-subtitle">Admin Panel</span>
         </div>
       </div>
       <nav class="sidebar-nav">
@@ -3783,6 +3783,21 @@
 
       if (dashboardUserLabel) {
         dashboardUserLabel.textContent = isAdminRole ? 'DENR Dashboard' : 'Researcher Dashboard';
+      }
+
+      // The sidebar brand used to be a static "DENR / Admin Panel" label for
+      // every admin account, which made a researcher promoted to admin look
+      // like they'd been swapped out for a generic DENR office account. Show
+      // the signed-in person's own name instead so it's still clearly "their"
+      // account, just with admin privileges.
+      const sidebarBrandSubtitleEl = document.getElementById('sidebar-brand-subtitle');
+      if (sidebarBrandSubtitleEl && isAdminRole) {
+        const firstName = (parsedActiveUser.first_name || '').trim();
+        const lastName = (parsedActiveUser.last_name || '').trim();
+        const emailPart = (parsedActiveUser.email || '').split('@')[0].replace(/[._-]+/g, ' ').trim();
+        const rawName = [firstName, lastName].filter(Boolean).join(' ') || emailPart || 'Admin';
+        const titleCase = (s) => s.split(' ').filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        sidebarBrandSubtitleEl.textContent = titleCase(rawName);
       }
 
       if (roleProfileIcon) {
