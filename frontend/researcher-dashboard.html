@@ -79,12 +79,306 @@
       .orchid-detail-page .orchid-detail-label{color:#3e6639;font-weight:700;font-size:.76rem;min-width:150px;flex-shrink:0;text-transform:uppercase;letter-spacing:.06em;line-height:1.35;padding-top:.1rem;}
       .orchid-detail-page .orchid-detail-row span:not(.orchid-detail-label){color:#162b14;font-weight:500;font-size:.97rem;text-align:right;line-height:1.5;}
 
+      /* ══════════════════════════════════════════════════════════════
+         RESEARCHER DASHBOARD — persistent sidebar + professional theme
+         (mirrors the DENR admin redesign; scoped to this page only)
+         ══════════════════════════════════════════════════════════════ */
+
+      /* Sidebar is always visible — no collapse/overlay state */
+      body.dashboard-page.researcher-theme .sidebar {
+        transform: translateX(0) !important;
+      }
+
+      /* Fix the header's actual rendered height so the sidebar and fixed
+         view-sections sit flush under it with no gap — the shared
+         styles.css hardcodes 84px, which doesn't match this header. */
+      body.dashboard-page.researcher-theme {
+        --rd-header-h: 70px;
+        --rd-sidebar-w: 256px;
+      }
+      body.dashboard-page.researcher-theme .sidebar {
+        top: var(--rd-header-h) !important;
+        height: calc(100vh - var(--rd-header-h)) !important;
+        width: var(--rd-sidebar-w) !important;
+        transition: width 200ms ease;
+      }
+      body.dashboard-page.researcher-theme #orchids-view,
+      body.dashboard-page.researcher-theme #conservation-view,
+      body.dashboard-page.researcher-theme #report-view,
+      body.dashboard-page.researcher-theme #submissions-view,
+      body.dashboard-page.researcher-theme #drafts-view {
+        top: var(--rd-header-h) !important;
+        left: var(--rd-sidebar-w) !important;
+        transition: left 200ms ease;
+      }
+      body.dashboard-page.researcher-theme .dashboard-container,
+      body.dashboard-page.researcher-theme #collection3d-view,
+      body.dashboard-page.researcher-theme #my3d-view {
+        margin-left: var(--rd-sidebar-w) !important;
+        transition: margin-left 200ms ease, width 200ms ease;
+      }
+      body.dashboard-page.researcher-theme .dashboard-container {
+        width: calc(100% - var(--rd-sidebar-w)) !important;
+      }
+      body.dashboard-page.researcher-theme .dashboard-container,
+      body.dashboard-page.researcher-theme #orchids-view,
+      body.dashboard-page.researcher-theme #conservation-view,
+      body.dashboard-page.researcher-theme #report-view,
+      body.dashboard-page.researcher-theme #submissions-view,
+      body.dashboard-page.researcher-theme #drafts-view,
+      body.dashboard-page.researcher-theme #collection3d-view,
+      body.dashboard-page.researcher-theme #my3d-view {
+        padding: 1.5rem clamp(1.1rem, 3vw, 2.25rem) !important;
+      }
+
+      /* Remove the cream/khaki tones the shared researcher-theme uses
+         elsewhere on this page (search boxes, table headers, pill bars) */
+      body.dashboard-page.researcher-theme {
+        --dt-bg: #F4F7F5 !important;
+        --dt-bg-panel: #EEF4EF !important;
+        --dt-border: rgba(20,90,30,.09) !important;
+        --dt-border-md: rgba(20,90,30,.16) !important;
+      }
+      body.dashboard-page.researcher-theme .submissions-table-head th {
+        background: #F6FAF7 !important;
+      }
+      body.dashboard-page.researcher-theme .submissions-table-shell {
+        box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 10px 24px rgba(20,90,30,.06) !important;
+      }
+      html:has(body.dashboard-page.researcher-theme),
+      body.dashboard-page.researcher-theme,
+      body.dashboard-page.researcher-theme .dashboard-container,
+      body.dashboard-page.researcher-theme #orchids-view,
+      body.dashboard-page.researcher-theme #conservation-view,
+      body.dashboard-page.researcher-theme #report-view,
+      body.dashboard-page.researcher-theme #submissions-view,
+      body.dashboard-page.researcher-theme #drafts-view,
+      body.dashboard-page.researcher-theme #collection3d-view,
+      body.dashboard-page.researcher-theme #my3d-view {
+        background: #F4F7F5 !important;
+      }
+      body.dashboard-page.researcher-theme .researcher-home::before {
+        background:
+          radial-gradient(circle at 16% 24%, rgba(20,163,74,0.06), transparent 35%),
+          radial-gradient(circle at 84% 12%, rgba(20,90,30,0.05), transparent 32%),
+          linear-gradient(180deg, rgba(244,247,245,0.9), rgba(244,247,245,0.6)) !important;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero {
+        background: #FFFFFF;
+        border: 1px solid var(--dt-border-md);
+        border-radius: 20px;
+        box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 12px 28px rgba(20,90,30,.06);
+        padding: 2rem 1.75rem;
+        margin: 0 auto 1.75rem;
+        text-align: left;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-eyebrow {
+        color: #16a34a;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        margin: 0 0 0.5rem;
+        font-family: Inter, Roboto, sans-serif;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero .researcher-home-title {
+        margin-bottom: 0.5rem;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero .researcher-home-subtitle {
+        margin-bottom: 0;
+      }
+      body.dashboard-page.researcher-theme .dashboard-header {
+        background: #FFFFFF !important;
+        border-bottom: none !important;
+      }
+
+      /* Drop the "NAVIGATION" section label — the icons speak for themselves */
+      body.dashboard-page.researcher-theme .sidebar-nav::before {
+        display: none !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-nav {
+        padding-top: 1.3rem;
+      }
+      .sidebar-item {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.83rem !important;
+      }
+      .sidebar-icon svg {
+        width: 15px !important;
+        height: 15px !important;
+      }
+
+      /* ── Distinct light, professional admin sidebar (overrides the warm
+         researcher-theme cream) ── */
+      body.dashboard-page.researcher-theme .sidebar {
+        background: #FFFFFF !important;
+        border-right: 1px solid #E7ECE7 !important;
+        box-shadow: 2px 0 16px rgba(20,90,30,.04) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, #16a34a, #145A1E);
+      }
+      body.dashboard-page.researcher-theme .sidebar-nav::before {
+        color: #a3b3a8 !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item {
+        color: #46584c !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item:hover {
+        background: #EEF6F0 !important;
+        color: #145A1E !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item.active {
+        background: linear-gradient(135deg, #16a34a 0%, #145A1E 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgba(20,90,30,.28) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-icon {
+        color: #5c8a68 !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item.active .sidebar-icon {
+        color: #ffffff !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-bottom {
+        border-top: 1px solid #EEF2EE !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(20,90,30,.14) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(20,90,30,.26) !important;
+      }
+
+      /* ── Sidebar identity header ── */
+      .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 1.1rem 1.2rem 0.95rem;
+        border-bottom: 1px solid #EEF2EE;
+        margin-bottom: 0.3rem;
+      }
+      .sidebar-brand img {
+        height: 26px;
+        width: auto;
+        flex-shrink: 0;
+      }
+      .sidebar-brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .sidebar-brand-title {
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        color: #12321a;
+        font-family: Inter, Roboto, sans-serif;
+      }
+      .sidebar-brand-subtitle {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #8aa091;
+        letter-spacing: 0.03em;
+        font-family: Inter, Roboto, sans-serif;
+      }
+
+      /* ── A proper Sign Out button instead of a bare hover link ── */
+      body.dashboard-page.researcher-theme .sidebar-bottom {
+        padding: 0.85rem 0.9rem;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn {
+        width: 100%;
+        justify-content: center;
+        gap: 0.55rem;
+        border: 1.5px solid #F4D9D5 !important;
+        border-radius: 10px;
+        background: #FDF4F3 !important;
+        color: #c0392b !important;
+        font-weight: 700;
+        padding: 0.65rem 1rem;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn .sidebar-icon {
+        color: #c0392b !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn:hover {
+        background: #c0392b !important;
+        border-color: #c0392b !important;
+        color: #ffffff !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn:hover .sidebar-icon {
+        color: #ffffff !important;
+      }
+
+      /* ── Collapse toggle: a small circular tab on the sidebar's edge,
+         not in the header. Body-level sibling so it's never clipped by
+         the sidebar's own scroll container. ── */
+      body.dashboard-page.researcher-theme .sidebar-collapse-toggle {
+        position: fixed;
+        top: calc(var(--rd-header-h) + 26px);
+        left: var(--rd-sidebar-w);
+        transform: translateX(-50%);
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #DCE6DF;
+        background: #FFFFFF;
+        color: #46584c;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 1002;
+        box-shadow: 0 2px 6px rgba(20,90,30,.14);
+        transition: background 150ms ease, color 150ms ease, border-color 150ms ease, left 200ms ease;
+      }
+      .sidebar-collapse-toggle svg {
+        width: 13px;
+        height: 13px;
+        transition: transform 200ms ease;
+      }
+      .sidebar-collapse-toggle:hover {
+        background: #EEF6F0;
+        border-color: #145A1E;
+        color: #145A1E;
+      }
+      body.sidebar-collapsed .sidebar-collapse-toggle svg {
+        transform: rotate(180deg);
+      }
+
+      /* ── Collapsed sidebar: icons only ── */
+      body.sidebar-collapsed.dashboard-page.researcher-theme {
+        --rd-sidebar-w: 76px;
+      }
+      body.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 1.1rem 0.5rem 0.95rem; }
+      body.sidebar-collapsed .sidebar-brand-text { display: none; }
+      body.sidebar-collapsed .sidebar-item { justify-content: center; padding: 0.65rem 0 !important; margin-left: 0.6rem; margin-right: 0.6rem; }
+      body.sidebar-collapsed .sidebar-item span:not(.sidebar-icon) { display: none; }
+      body.sidebar-collapsed .sidebar-item.active { box-shadow: 0 6px 14px rgba(20,90,30,.28) !important; }
+      body.sidebar-collapsed .sidebar-signout-btn { justify-content: center; padding: 0.65rem 0; }
+      body.sidebar-collapsed .sidebar-signout-btn span:not(.sidebar-icon) { display: none; }
+      body.sidebar-collapsed .sidebar-bottom { padding: 0.75rem 0.6rem; }
     </style>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   </head>
-  <body class="dashboard-page researcher-theme sidebar-hidden" style="visibility:hidden;">
+  <body class="dashboard-page researcher-theme" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="./loo.png" alt="BLOOM" />
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-title">BLOOM</span>
+          <span class="sidebar-brand-subtitle">Researcher Panel</span>
+        </div>
+      </div>
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-item active" data-view="dashboard">
           <span class="sidebar-icon">
@@ -138,24 +432,11 @@
         </button>
       </div>
     </aside>
+    <button type="button" id="sidebar-collapse-toggle" class="sidebar-collapse-toggle" aria-label="Collapse sidebar" title="Collapse sidebar" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <header class="dashboard-header navbar navbar-expand-lg px-3 px-md-4">
       <div class="dashboard-header-left">
-        <button
-          type="button"
-          id="sidebar-toggle-button"
-          class="btn btn-sm sidebar-toggle-icon-btn"
-          aria-label="Hide sidebar menu"
-          title="Hide sidebar menu"
-          aria-pressed="false"
-        >
-          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <rect x="1.5" y="2" width="4" height="12" rx="1"></rect>
-            <rect x="7" y="3" width="7.5" height="2" rx="1"></rect>
-            <rect x="7" y="7" width="7.5" height="2" rx="1"></rect>
-            <rect x="7" y="11" width="7.5" height="2" rx="1"></rect>
-          </svg>
-          <span class="visually-hidden">Toggle sidebar menu</span>
-        </button>
         <a href="index.html" class="brand-link" id="dashboard-brand-link">
           <div class="brand-container">
             <div class="brand-logo">
@@ -185,7 +466,6 @@
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
             </div>
           </div>
-          <span class="dashboard-user">Researcher Dashboard</span>
         </div>
         <div class="notif-bell-wrap">
           <button type="button" class="notif-bell-btn" id="notif-bell-btn" title="Notifications" onclick="toggleNotifPanel()">
@@ -248,7 +528,9 @@
         <!-- Chart Panel -->
         <div class="dashboard-card chart-card card shadow-sm border-0">
           <h3 class="card-title">Orchids Uploaded per Month (2024)</h3>
-          <canvas id="orchidChart" width="300" height="120"></canvas>
+          <div style="position:relative;height:200px;">
+            <canvas id="orchidChart"></canvas>
+          </div>
         </div>
 
         <!-- Orchids Statistics -->
@@ -318,8 +600,11 @@
       </section>
 
       <section id="researcher-home" class="researcher-home" style="display:none;">
-        <h1 id="researcher-greeting" class="researcher-home-title">Welcome, Researcher</h1>
-        <p class="researcher-home-subtitle">Choose where you want to explore next.</p>
+        <div class="researcher-home-hero">
+          <p class="researcher-home-eyebrow">Researcher Panel</p>
+          <h1 id="researcher-greeting" class="researcher-home-title">Welcome, Researcher</h1>
+          <p class="researcher-home-subtitle">Choose where you want to explore next.</p>
+        </div>
 
         <div class="researcher-home-cards">
           <button type="button" class="researcher-home-card" data-researcher-view="orchids" onclick="openDashboardView('orchids')">
@@ -1630,6 +1915,13 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
+      // Restore the sidebar collapse preference before the page becomes visible.
+      try {
+        if (localStorage.getItem('researcherSidebarCollapsed') === '1') {
+          document.body.classList.add('sidebar-collapsed');
+        }
+      } catch {}
+
       const bloomSupabase = window.bloomSupabase || null;
       parsedActiveUser = window.parsedActiveUser || (typeof parsedActiveUser !== 'undefined' ? parsedActiveUser : {}) || {};
       activeRole = window.activeRole || (typeof activeRole !== 'undefined' ? activeRole : '') || '';
@@ -1769,8 +2061,39 @@
       const researcherDataAdd = document.getElementById('researcher-data-add');
       const researcherDataSubmissions = document.getElementById('researcher-data-submissions');
       const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
-      const sidebarToggleButton = document.getElementById('sidebar-toggle-button');
-      const sidebarElement = document.getElementById('sidebar');
+
+      // ── Sidebar collapse toggle: icons-only vs. icons + labels ──
+      const sidebarCollapseToggle = document.getElementById('sidebar-collapse-toggle');
+      document.querySelectorAll('.sidebar-item, .sidebar-signout-btn').forEach((el) => {
+        const label = el.querySelector('span:not(.sidebar-icon)');
+        if (label && !el.title) el.title = label.textContent.trim();
+      });
+      function applySidebarCollapseUI() {
+        const collapsed = document.body.classList.contains('sidebar-collapsed');
+        if (sidebarCollapseToggle) {
+          const actionLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+          sidebarCollapseToggle.setAttribute('aria-pressed', String(collapsed));
+          sidebarCollapseToggle.setAttribute('aria-label', actionLabel);
+          sidebarCollapseToggle.title = actionLabel;
+        }
+        const mapViewEl = document.getElementById('map-view');
+        if (mapViewEl && mapViewEl.style.display === 'flex') {
+          mapViewEl.style.left = collapsed ? '76px' : '256px';
+          if (typeof initializeLeafletMap === 'function') {
+            setTimeout(() => { try { initializeLeafletMap(); } catch {} }, 220);
+          }
+        }
+      }
+      applySidebarCollapseUI();
+      if (sidebarCollapseToggle) {
+        sidebarCollapseToggle.addEventListener('click', function() {
+          document.body.classList.toggle('sidebar-collapsed');
+          try {
+            localStorage.setItem('researcherSidebarCollapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+          } catch {}
+          applySidebarCollapseUI();
+        });
+      }
 
       let currentSubmissionPage = 1;
       const SUBMISSION_TOTAL_PAGES = 9;
@@ -2232,26 +2555,6 @@
         opt.textContent = '';
       });
 
-      function syncSidebarToggleState() {
-        if (!sidebarToggleButton) {
-          return;
-        }
-
-        const isSidebarHidden = document.body.classList.contains('sidebar-hidden');
-        const actionLabel = isSidebarHidden ? 'Show sidebar menu' : 'Hide sidebar menu';
-        sidebarToggleButton.setAttribute('aria-label', actionLabel);
-        sidebarToggleButton.setAttribute('title', actionLabel);
-        sidebarToggleButton.setAttribute('aria-pressed', String(isSidebarHidden));
-      }
-
-      if (sidebarToggleButton && sidebarElement) {
-        sidebarToggleButton.addEventListener('click', function() {
-          document.body.classList.toggle('sidebar-hidden');
-          syncSidebarToggleState();
-        });
-        syncSidebarToggleState();
-      }
-
       dashboardBrandLink.setAttribute('aria-disabled', 'true');
       dashboardBrandLink.style.pointerEvents = 'none';
       dashboardBrandLink.style.cursor = 'default';
@@ -2316,21 +2619,32 @@
       const orchidChartCanvas = document.getElementById('orchidChart');
       if (orchidChartCanvas && typeof Chart !== 'undefined') {
         const ctx = orchidChartCanvas.getContext('2d');
+        const orchidChartFill = ctx.createLinearGradient(0, 0, 0, 200);
+        orchidChartFill.addColorStop(0, 'rgba(22,163,74,0.25)');
+        orchidChartFill.addColorStop(1, 'rgba(22,163,74,0.02)');
         new Chart(ctx, {
-          type: 'bar',
+          type: 'line',
           data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
               label: 'Orchids Uploaded',
               data: [12, 8, 15, 10, 18, 14, 20, 16, 22, 12, 14, 18],
-              backgroundColor: '#2D7659',
-              borderRadius: 4,
-              borderSkipped: false
+              borderColor: '#16a34a',
+              backgroundColor: orchidChartFill,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#145A1E',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2
             }]
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
             plugins: {
               legend: {
                 display: false
@@ -2817,10 +3131,6 @@
           const view = this.getAttribute('data-view');
           if (view) {
             switchView(view);
-            document.body.classList.add('sidebar-hidden');
-            if (typeof syncSidebarToggleState === 'function') {
-              syncSidebarToggleState();
-            }
           }
         });
       });
@@ -4653,7 +4963,7 @@ function refreshConservationHeatMap(summary) {
             selectedView.style.display = 'flex';
             selectedView.style.position = 'fixed';
             selectedView.style.top = headerH + 'px';
-            selectedView.style.left = '0';
+            selectedView.style.left = document.body.classList.contains('sidebar-collapsed') ? '76px' : '256px';
             selectedView.style.right = '0';
             selectedView.style.bottom = '0';
             selectedView.style.height = '';
