@@ -22,10 +22,11 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream:       #F0EAD2;
-      --cream-mid:   #EDE6C5;
-      --cream-dark:  #E0D8C0;
-      --border:      #D8D0B8;
+      --cream:       #FFFFFF;
+      --bg:          #F4F7F5;
+      --cream-mid:   #F4F7F5;
+      --cream-dark:  #E7ECE7;
+      --border:      #E7ECE7;
       --green:       #145A1E;
       --green-dark:  #0E4018;
       --green-mid:   #2d6b38;
@@ -40,31 +41,61 @@
 
     body {
       font-family: Inter, sans-serif;
-      background: var(--cream);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
     }
 
     /* ── LOGIN SCREEN ─────────────────────────────────────────── */
     #login-screen {
+      position: relative;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background:
-        radial-gradient(ellipse 75% 65% at 72% 45%, rgba(160,210,145,.22) 0%, transparent 65%),
-        radial-gradient(ellipse 55% 65% at 18% 75%, rgba(190,225,180,.18) 0%, transparent 55%),
-        linear-gradient(160deg, #F0EAD2 0%, #EDE6C5 35%, #E8E0BE 65%, #EEE8CC 100%);
+      overflow: hidden;
+      background: linear-gradient(165deg, #FFFFFF 0%, #F4F7F5 100%);
     }
+    #login-screen::before {
+      content: '';
+      position: absolute;
+      top: -140px;
+      right: -120px;
+      width: 460px;
+      height: 460px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(22,163,74,.11), transparent 70%);
+      pointer-events: none;
+    }
+    #login-screen::after {
+      content: '';
+      position: absolute;
+      bottom: -160px;
+      left: -140px;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,.09), transparent 70%);
+      pointer-events: none;
+    }
+    .login-deco { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .login-deco-icon { position: absolute; }
+    .login-deco-1 { width: 76px; height: 76px; top: 12%; left: 12%; color: #16a34a; opacity: .22; transform: rotate(14deg); }
+    .login-deco-2 { width: 54px; height: 54px; top: 72%; left: 18%; color: #f97316; opacity: .24; transform: rotate(-20deg); }
+    .login-deco-3 { width: 64px; height: 64px; top: 16%; right: 12%; color: #3b82f6; opacity: .22; transform: rotate(-12deg); }
+    .login-deco-4 { width: 48px; height: 48px; top: 76%; right: 18%; color: #8b5cf6; opacity: .24; transform: rotate(22deg); }
+    @media (max-width: 900px) { .login-deco { display: none; } }
 
     .login-card {
+      position: relative;
+      z-index: 1;
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 2.5rem 2.25rem;
       width: 100%;
       max-width: 380px;
-      box-shadow: 0 6px 32px rgba(20,90,30,.13);
+      box-shadow: 0 6px 32px rgba(20,90,30,.1);
     }
 
     .login-brand {
@@ -96,7 +127,7 @@
       border-radius: 8px;
       font-size: .9rem;
       font-family: inherit;
-      background: #FAFAF7;
+      background: #FFFFFF;
       color: var(--text);
       outline: none;
       transition: border-color .15s, box-shadow .15s;
@@ -178,20 +209,6 @@
       font-size: .8rem; font-weight: 700;
     }
 
-    .sa-signout-btn {
-      padding: .42rem 1rem;
-      background: transparent;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: inherit;
-      transition: border-color .14s, color .14s;
-    }
-
-    .sa-signout-btn:hover { border-color: var(--green); color: var(--green); }
 
     /* Sidebar */
     .sa-sidebar {
@@ -200,10 +217,12 @@
       left: 0;
       width: var(--sidebar-w);
       height: calc(100vh - var(--nav-h));
-      background: var(--green);
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      box-shadow: 2px 0 16px rgba(20,90,30,.04);
       display: flex;
       flex-direction: column;
-      padding: 1.25rem 0;
+      padding: 1.25rem 0 0;
       overflow-y: auto;
       z-index: 90;
     }
@@ -211,15 +230,16 @@
     .sa-sidebar-section {
       padding: 0 .85rem;
       margin-bottom: .25rem;
+      flex: 1;
     }
 
     .sa-sidebar-label {
       font-size: .63rem;
       font-weight: 700;
-      color: rgba(255,255,255,.45);
+      color: #a3b3a8;
       text-transform: uppercase;
       letter-spacing: .1em;
-      padding: .5rem .75rem .3rem;
+      padding: .5rem .75rem .8rem;
     }
 
     .sa-nav-item {
@@ -228,7 +248,7 @@
       gap: .65rem;
       padding: .65rem .75rem;
       border-radius: 9px;
-      color: rgba(255,255,255,.75);
+      color: #46584c;
       font-size: .87rem;
       font-weight: 500;
       cursor: pointer;
@@ -242,15 +262,17 @@
       text-decoration: none;
     }
 
-    .sa-nav-item:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .sa-nav-item:hover { background: #EEF6F0; color: var(--green); }
 
     .sa-nav-item.active {
-      background: rgba(255,255,255,.18);
+      background: linear-gradient(135deg, #16a34a 0%, #145A1E 100%);
       color: #fff;
-      font-weight: 600;
+      font-weight: 700;
+      box-shadow: 0 8px 18px rgba(20,90,30,.24);
     }
 
     .sa-nav-item svg { flex-shrink: 0; opacity: .85; }
+    .sa-nav-item.active svg { opacity: 1; }
 
     .sa-badge {
       margin-left: auto;
@@ -264,12 +286,51 @@
       text-align: center;
     }
 
+    .sa-sidebar-bottom {
+      flex-shrink: 0;
+      padding: .85rem .9rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .sa-sidebar-signout-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .55rem;
+      width: 100%;
+      padding: .65rem 1rem;
+      border: 1.5px solid #F4D9D5;
+      border-radius: 10px;
+      background: #FDF4F3;
+      color: #c0392b;
+      font-size: .85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+
+    .sa-sidebar-signout-btn:hover {
+      background: #c0392b;
+      border-color: #c0392b;
+      color: #fff;
+    }
+
     /* Main content */
     .sa-main {
+      position: relative;
       margin-left: var(--sidebar-w);
       margin-top: var(--nav-h);
       padding: 2rem 2.25rem;
       min-height: calc(100vh - var(--nav-h));
+      background-color: var(--bg);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316a34a' stroke-width='1.5' stroke-opacity='0.14'%3E%3Cpath d='M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z'/%3E%3Cpath d='M12 12v8'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1.5' stroke-opacity='0.14'%3E%3Cpath d='M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z'/%3E%3Cpath d='M12 12v8'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='1.5' stroke-opacity='0.14'%3E%3Cpath d='M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z'/%3E%3Cpath d='M12 12v8'/%3E%3C/svg%3E");
+      background-repeat: no-repeat, no-repeat, no-repeat;
+      background-position: 94% 60px, 4% 320px, 55% 620px;
+      background-size: 64px 64px, 48px 48px, 56px 56px;
     }
 
     /* Page header */
@@ -295,15 +356,31 @@
     }
 
     .sa-stat-card {
+      position: relative;
+      z-index: 1;
       background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 1.15rem 1.25rem;
       display: flex;
       flex-direction: column;
       gap: .35rem;
-      box-shadow: 0 1px 4px rgba(20,90,30,.06);
+      box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 8px 20px rgba(20,90,30,.06);
     }
+
+    .sa-stat-head { display: flex; align-items: center; justify-content: space-between; }
+    .sa-stat-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      background: #dcfce7;
+      flex-shrink: 0;
+    }
+    .sa-stat-icon svg { width: 17px; height: 17px; stroke: #16a34a; }
+    .sa-stat-card.warning .sa-stat-icon { background: #ffedd5; }
+    .sa-stat-card.warning .sa-stat-icon svg { stroke: #f97316; }
+    .sa-stat-card.danger .sa-stat-icon { background: #fee2e2; }
+    .sa-stat-card.danger .sa-stat-icon svg { stroke: #dc2626; }
 
     .sa-stat-label { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
     .sa-stat-val   { font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1; }
@@ -328,7 +405,7 @@
       justify-content: space-between;
       padding: 1rem 1.4rem;
       border-bottom: 1px solid var(--border);
-      background: #fafaf6;
+      background: #F6FAF7;
       gap: 1rem;
       flex-wrap: wrap;
     }
@@ -369,14 +446,14 @@
       text-transform: uppercase;
       letter-spacing: .06em;
       border-bottom: 1px solid var(--border);
-      background: #fafaf6;
+      background: #F6FAF7;
       white-space: nowrap;
     }
 
     .sa-table td {
       padding: .8rem 1rem;
       font-size: .875rem;
-      border-bottom: 1px solid #f0ede4;
+      border-bottom: 1px solid #EEF2EE;
       vertical-align: middle;
     }
 
@@ -569,6 +646,12 @@
 
 <!-- ── LOGIN SCREEN ──────────────────────────────────────────────── -->
 <div id="login-screen">
+  <div class="login-deco" aria-hidden="true">
+    <svg class="login-deco-icon login-deco-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+    <svg class="login-deco-icon login-deco-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+    <svg class="login-deco-icon login-deco-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+    <svg class="login-deco-icon login-deco-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+  </div>
   <div class="login-card">
     <div class="login-brand">
       <img src="/frontend/loo.png" alt="BLOOM" />
@@ -605,14 +688,13 @@
     </div>
     <div class="sa-nav-right">
       <div class="sa-nav-avatar">SA</div>
-      <button class="sa-signout-btn" onclick="doSignOut()">Sign Out</button>
     </div>
   </nav>
 
   <!-- Sidebar -->
   <aside class="sa-sidebar">
-    <div class="sa-sidebar-label">Management</div>
     <div class="sa-sidebar-section">
+      <div class="sa-sidebar-label">Management</div>
       <button class="sa-nav-item active" onclick="showView('overview')" id="nav-overview">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Overview
@@ -627,6 +709,12 @@
         All Users
       </button>
     </div>
+    <div class="sa-sidebar-bottom">
+      <button type="button" class="sa-sidebar-signout-btn" onclick="doSignOut()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        Sign Out
+      </button>
+    </div>
   </aside>
 
   <!-- Main Content -->
@@ -639,22 +727,34 @@
 
       <div class="sa-stats">
         <div class="sa-stat-card">
-          <div class="sa-stat-label">Total Users</div>
+          <div class="sa-stat-head">
+            <div class="sa-stat-label">Total Users</div>
+            <span class="sa-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          </div>
           <div class="sa-stat-val" id="stat-total">—</div>
           <div class="sa-stat-sub">All registered accounts</div>
         </div>
         <div class="sa-stat-card warning">
-          <div class="sa-stat-label">Pending</div>
+          <div class="sa-stat-head">
+            <div class="sa-stat-label">Pending</div>
+            <span class="sa-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          </div>
           <div class="sa-stat-val" id="stat-pending">—</div>
           <div class="sa-stat-sub">Awaiting approval</div>
         </div>
         <div class="sa-stat-card">
-          <div class="sa-stat-label">Approved</div>
+          <div class="sa-stat-head">
+            <div class="sa-stat-label">Approved</div>
+            <span class="sa-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          </div>
           <div class="sa-stat-val" id="stat-approved">—</div>
           <div class="sa-stat-sub">Active accounts</div>
         </div>
         <div class="sa-stat-card danger">
-          <div class="sa-stat-label">Disabled</div>
+          <div class="sa-stat-head">
+            <div class="sa-stat-label">Disabled</div>
+            <span class="sa-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+          </div>
           <div class="sa-stat-val" id="stat-disabled">—</div>
           <div class="sa-stat-sub">Suspended accounts</div>
         </div>
