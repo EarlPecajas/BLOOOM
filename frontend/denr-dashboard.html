@@ -1173,6 +1173,7 @@
                   <option value="geographic">Geographic Distribution Analysis</option>
                   <option value="researcher-activity">Researcher Activity Report</option>
                   <option value="habitat-analysis">Habitat Classification Report</option>
+                  <option value="detailed-report">Detailed Report</option>
                 </select>
               </div>
 
@@ -7816,6 +7817,11 @@
           title: 'Habitat Classification Report',
           description: 'Detailed analysis of habitat types and species distribution by habitat',
           includesByDefault: ['Summary Statistics', 'Visual Charts & Graphs']
+        },
+        'detailed-report': {
+          title: 'Detailed Report',
+          description: 'Comprehensive record-by-record export combining species, researcher, habitat, morphology, and conservation details for each submission',
+          includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
         }
       };
 
@@ -7929,6 +7935,24 @@
           return Object.keys(habitatCounts).sort().map((habitat) => ({ habitat, submissions: habitatCounts[habitat] }));
         }
 
+        if (reportType === 'detailed-report') {
+          return submissionsInRange.map((item) => ({
+            species: item.species || '-',
+            common_name: item.common_name || '-',
+            family: item.family || '-',
+            researcher: item.researcher || '-',
+            location: item.location || '-',
+            habitat_type: item.habitat_type || item.habitat || '-',
+            growth_substrate: item.growth_substrate || '-',
+            plant_height_cm: item.plant_height_cm ?? '-',
+            flower_color: item.flower_color || '-',
+            population_status: item.population_status || '-',
+            threat_level: item.threat_level || item.conservation_status || '-',
+            review_status: item.review_status || '-',
+            submission_date: item.submission_date || '-'
+          }));
+        }
+
         return submissionsInRange.map((item) => ({
           species: item.species || '-',
           location: item.location || '-',
@@ -7982,6 +8006,17 @@
         }
         if (reportType === 'habitat-analysis') {
           return rows.map((row) => ({ label: row.habitat, value: row.submissions }));
+        }
+        if (reportType === 'detailed-report') {
+          const statusCounts = {};
+          rows.forEach((row) => {
+            const status = row.review_status || 'Unknown';
+            if (!statusCounts[status]) {
+              statusCounts[status] = 0;
+            }
+            statusCounts[status] += 1;
+          });
+          return Object.keys(statusCounts).sort().map((status) => ({ label: status, value: statusCounts[status] }));
         }
         if (reportType === 'species-inventory') {
           const genusCounts = {};
@@ -8055,14 +8090,16 @@
           'monthly-upload':       [['month','Month'],['submissions','Submissions']],
           'researcher-activity':  [['researcher','Researcher'],['submissions','Submissions']],
           'habitat-analysis':     [['habitat','Habitat Type'],['submissions','Sightings']],
-          'geographic':           [['species','Species'],['location','Location'],['review_status','Status'],['submission_date','Date']]
+          'geographic':           [['species','Species'],['location','Location'],['review_status','Status'],['submission_date','Date']],
+          'detailed-report':      [['species','Scientific Name'],['common_name','Common Name'],['family','Family'],['researcher','Researcher'],['location','Location'],['habitat_type','Habitat Type'],['growth_substrate','Growth Substrate'],['plant_height_cm','Height (cm)'],['flower_color','Flower Color'],['population_status','Population Status'],['threat_level','Threat Level'],['review_status','Status'],['submission_date','Date']]
         };
         return maps[reportType] || maps['geographic'];
       }
 
       function downloadReportAsPdf(fileNameBase, reportTitle, dateFrom, dateTo, rows, sections, reportType) {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const orientation = reportType === 'detailed-report' ? 'landscape' : 'portrait';
+        const doc = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
         const pageH = doc.internal.pageSize.getHeight();
         const marginL = 14;
