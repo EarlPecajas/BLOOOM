@@ -477,7 +477,7 @@
         --dt-border-md: rgba(20,90,30,.16) !important;
       }
       body.dashboard-page.researcher-theme .submissions-table-head th {
-        background: transparent !important;
+        background: #F6FAF7 !important;
       }
       body.dashboard-page.researcher-theme .denrsub-table-shell {
         box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 10px 24px rgba(20,90,30,.06) !important;
@@ -488,10 +488,17 @@
         display: none !important;
       }
 
-      /* ── Collapse toggle button (header) ── */
-      .sidebar-collapse-toggle {
-        width: 2.15rem;
-        height: 2.15rem;
+      /* ── Collapse toggle: a small circular tab riding on the sidebar's
+         edge, not in the header. It's a body-level sibling (not nested
+         inside the scrollable sidebar) so it's never clipped, and its
+         position tracks --denr-sidebar-w so it follows the edge. ── */
+      body.dashboard-page.researcher-theme .sidebar-collapse-toggle {
+        position: fixed;
+        top: calc(var(--denr-header-h) + 26px);
+        left: var(--denr-sidebar-w);
+        transform: translateX(-50%);
+        width: 26px;
+        height: 26px;
         flex-shrink: 0;
         display: inline-flex;
         align-items: center;
@@ -499,16 +506,24 @@
         border: 1.5px solid #DCE6DF;
         background: #FFFFFF;
         color: #46584c;
-        border-radius: 9px;
+        border-radius: 50%;
         cursor: pointer;
-        margin-right: 0.9rem;
-        transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+        z-index: 1002;
+        box-shadow: 0 2px 6px rgba(20,90,30,.14);
+        transition: background 150ms ease, color 150ms ease, border-color 150ms ease, left 200ms ease;
       }
-      .sidebar-collapse-toggle svg { width: 16px; height: 16px; }
+      .sidebar-collapse-toggle svg {
+        width: 13px;
+        height: 13px;
+        transition: transform 200ms ease;
+      }
       .sidebar-collapse-toggle:hover {
         background: #EEF6F0;
         border-color: #145A1E;
         color: #145A1E;
+      }
+      body.sidebar-collapsed .sidebar-collapse-toggle svg {
+        transform: rotate(180deg);
       }
 
       /* ── Collapsed sidebar: icons only ── */
@@ -612,11 +627,11 @@
         </button>
       </div>
     </aside>
+    <button type="button" id="sidebar-collapse-toggle" class="sidebar-collapse-toggle" aria-label="Collapse sidebar" title="Collapse sidebar" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <header class="dashboard-header navbar navbar-expand-lg px-3 px-md-4">
       <div class="dashboard-header-left">
-        <button type="button" id="sidebar-collapse-toggle" class="sidebar-collapse-toggle" aria-label="Collapse sidebar" title="Collapse sidebar" aria-pressed="false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="10" y1="4" x2="10" y2="20"/></svg>
-        </button>
         <a href="index.html" class="brand-link" id="dashboard-brand-link">
           <div class="brand-container">
             <div class="brand-logo">
@@ -752,7 +767,9 @@
               <button onclick="setOrchidChartYear(2026)" data-year="2026" class="orchid-year-btn text-xs font-bold px-2.5 py-1 rounded-lg border-0 transition-all" style="color:#fff;background:#145A1E;cursor:pointer;font-family:Inter,Roboto,sans-serif;">2026</button>
             </div>
           </div>
-          <canvas id="orchidChart" height="120"></canvas>
+          <div style="position:relative;height:200px;">
+            <canvas id="orchidChart"></canvas>
+          </div>
         </div>
 
         <!-- Conservation Status (moved from its own sidebar page into the dashboard) -->
@@ -3918,7 +3935,7 @@
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             interaction: { intersect: false, mode: 'index' },
             plugins: {
               legend: { display: false },
