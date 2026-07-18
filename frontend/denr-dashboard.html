@@ -191,6 +191,9 @@
       /* Publish */
       .sub-action-btn.publish { background: #145A1E !important; border: 1.5px solid #145A1E !important; box-shadow: 0 1px 2px rgba(20,90,30,0.18) !important; }
       .sub-action-btn.publish:hover { background: #0E4018 !important; border-color: #0E4018 !important; box-shadow: 0 2px 6px rgba(20,90,30,0.25) !important; transform: translateY(-1px) !important; }
+      /* Unpublish */
+      .sub-action-btn.unpublish { background: #fff1f2 !important; border: 1.5px solid #fca5a5 !important; box-shadow: 0 1px 2px rgba(220,38,38,0.08) !important; }
+      .sub-action-btn.unpublish:hover { background: #fee2e2 !important; border-color: #f87171 !important; box-shadow: 0 2px 6px rgba(220,38,38,0.15) !important; transform: translateY(-1px) !important; }
 
       /* ── Submissions page redesign (DENR only) ── */
       .denrsub-tabbar { display:inline-flex; gap:0.25rem; padding:0.3rem; background:var(--dt-bg-panel); border:1px solid var(--dt-border-md); border-radius:12px; margin-bottom:1.5rem; }
@@ -4888,18 +4891,12 @@
           let publishBtn = '';
           if (isAdminRole && isApproved(submission)) {
             if (inCatalog) {
-              publishBtn = `<button type="button" onclick="denrClickUnpublish(${sid})"
-                style="background:#fff1f2;border:1.5px solid #fca5a5;color:#dc2626;border-radius:6px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;box-shadow:0 1px 2px rgba(220,38,38,0.08);"
-                onmouseover="this.style.background='#fee2e2';this.style.borderColor='#f87171';"
-                onmouseout="this.style.background='#fff1f2';this.style.borderColor='#fca5a5';">
-                Unpublish
+              publishBtn = `<button type="button" class="sub-action-btn unpublish" title="Unpublish from catalog" onclick="denrClickUnpublish(${sid})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
               </button>`;
             } else {
-              publishBtn = `<button type="button" class="sub-post-btn" data-submission-id="${sid}"
-                style="background:#f0fdf4;border:1.5px solid #86efac;color:#16a34a;border-radius:6px;padding:.3rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.4;box-shadow:0 1px 2px rgba(22,163,74,0.08);"
-                onmouseover="this.style.background='#dcfce7';this.style.borderColor='#4ade80';"
-                onmouseout="this.style.background='#f0fdf4';this.style.borderColor='#86efac';">
-                Publish
+              publishBtn = `<button type="button" class="sub-action-btn publish sub-post-btn" data-submission-id="${sid}" title="Publish to catalog">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
               </button>`;
             }
           }
