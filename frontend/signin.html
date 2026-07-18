@@ -345,25 +345,19 @@
           // Check account approval status from user_profiles
           let profileStatus = 'approved';
           let profileRole = String(data.user.user_metadata?.role || 'researcher').trim().toLowerCase();
+          let profileAffiliation = '';
           try {
             const { data: profile } = await bloomSupabase
               .from('user_profiles')
-              .select('status, role')
+              .select('status, role, affiliation')
               .eq('id', data.user.id)
               .single();
             if (profile) {
               profileStatus = profile.status || 'approved';
               profileRole   = profile.role   || profileRole;
+              profileAffiliation = profile.affiliation || '';
             }
           } catch (_) {}
-
-          if (profileStatus === 'pending') {
-            await bloomSupabase.auth.signOut();
-            showSigninError('Your account is pending approval by the administrator. Please wait for confirmation.');
-            btn.disabled = false;
-            btn.textContent = 'Sign In';
-            return;
-          }
 
           if (profileStatus === 'disabled') {
             await bloomSupabase.auth.signOut();
@@ -377,6 +371,8 @@
             id: data.user.id,
             email: data.user.email,
             role: profileRole,
+            status: profileStatus,
+            affiliation: profileAffiliation,
             first_name: data.user.user_metadata?.first_name || '',
             last_name: data.user.user_metadata?.last_name || ''
           };

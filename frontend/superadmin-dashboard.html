@@ -804,12 +804,13 @@
               <th>Name</th>
               <th>Email</th>
               <th>Phone</th>
+              <th>Affiliation</th>
               <th>Registered</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="pending-tbody">
-            <tr class="sa-loading-row"><td colspan="5">Loading…</td></tr>
+            <tr class="sa-loading-row"><td colspan="6">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -841,6 +842,7 @@
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Affiliation</th>
               <th>Role</th>
               <th>Status</th>
               <th>Registered</th>
@@ -848,7 +850,7 @@
             </tr>
           </thead>
           <tbody id="users-tbody">
-            <tr class="sa-loading-row"><td colspan="6">Loading…</td></tr>
+            <tr class="sa-loading-row"><td colspan="7">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -1073,7 +1075,7 @@
       (u.email || '').toLowerCase().includes(search)
     );
     if (!items.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="sa-empty">${search ? 'No results found.' : 'No pending approvals — all caught up!'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="sa-empty">${search ? 'No results found.' : 'No pending approvals — all caught up!'}</td></tr>`;
       return;
     }
     tbody.innerHTML = items.map(u => `
@@ -1081,6 +1083,7 @@
         <td style="font-weight:600;">${esc(u.full_name || '—')}</td>
         <td style="color:var(--muted);font-size:.82rem;">${esc(u.email)}</td>
         <td style="color:var(--muted);font-size:.82rem;">${esc(u.phone || '—')}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${esc(u.affiliation || '—')}</td>
         <td style="color:var(--muted);font-size:.82rem;">${fmtDate(u.created_at)}</td>
         <td>
           <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
@@ -1108,7 +1111,7 @@
       (u.email || '').toLowerCase().includes(search)
     );
     if (!items.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="sa-empty">${search || statusFilter ? 'No users match the filter.' : 'No users found.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="sa-empty">${search || statusFilter ? 'No users match the filter.' : 'No users found.'}</td></tr>`;
       return;
     }
     tbody.innerHTML = items.map(u => {
@@ -1125,6 +1128,7 @@
         <tr>
           <td style="font-weight:600;">${esc(u.full_name || '—')}</td>
           <td style="color:var(--muted);font-size:.82rem;">${esc(u.email)}</td>
+          <td style="color:var(--muted);font-size:.82rem;">${esc(u.affiliation || '—')}</td>
           <td>
             <select class="sa-role-select" onchange="changeRole('${esc(u.id)}','${esc(u.full_name || u.email)}',this.value,this)">
               <option value="researcher" ${u.role === 'researcher' ? 'selected' : ''}>Researcher</option>

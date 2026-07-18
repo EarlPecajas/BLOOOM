@@ -373,6 +373,13 @@
         width: 15px !important;
         height: 15px !important;
       }
+      .sidebar-item.sidebar-item-locked {
+        opacity: 0.45 !important;
+        cursor: not-allowed !important;
+      }
+      .sidebar-item.sidebar-item-locked:hover {
+        background: transparent !important;
+      }
 
       /* ── Distinct light, professional admin sidebar (overrides the warm
          researcher-theme cream) ── */
@@ -661,6 +668,11 @@
         </div>
       </div>
     </header>
+
+    <div id="pending-approval-banner" hidden style="background:#fff7e6;border-bottom:1.5px solid #f5b942;color:#92400e;padding:.65rem 1.5rem;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.55rem;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Your account is pending approval by an administrator. Orchid Catalog, Map, and Submissions will unlock once you're approved.</span>
+    </div>
 
     <main class="dashboard-container container-fluid py-4">
       <div class="dashboard-grid">
@@ -2169,6 +2181,29 @@
           return;
         }
 
+        // Account approval gating. Disabled accounts are force-signed-out;
+        // pending accounts stay on the dashboard but with everything except
+        // "Dashboard" locked, and a banner explaining why.
+        const accountStatus = String(parsedActiveUser.status || 'approved').trim().toLowerCase();
+        if (accountStatus === 'disabled') {
+          try { if (bloomSupabase) await bloomSupabase.auth.signOut(); } catch {}
+          localStorage.removeItem('bloomUser');
+          sessionStorage.removeItem('bloomUser');
+          window.location.href = 'signin.html';
+          return;
+        }
+        isPendingApproval = accountStatus === 'pending';
+
+        const pendingBanner = document.getElementById('pending-approval-banner');
+        if (pendingBanner) pendingBanner.hidden = !isPendingApproval;
+
+        if (isPendingApproval) {
+          ['orchids', 'map', 'submissions', 'drafts', 'collection3d'].forEach((viewName) => {
+            const navItem = document.querySelector(`.sidebar-item[data-view="${viewName}"]`);
+            if (navItem) navItem.classList.add('sidebar-item-locked');
+          });
+        }
+
         // Update greeting and sidebar identity with the researcher's name
         if (isResearcherRole) {
           const firstName = (parsedActiveUser.first_name || '').trim();
@@ -2214,7 +2249,7 @@
 
         const researcherDataMenu = document.getElementById('researcher-data-menu');
         if (researcherDataMenu) {
-          researcherDataMenu.hidden = !isResearcherRole;
+          researcherDataMenu.hidden = !isResearcherRole || isPendingApproval;
         }
 
         // Set researcher sidebar: always show Dashboard, Orchids, Map, Submissions; hide DENR-only items
@@ -5140,6 +5175,11 @@ function refreshConservationHeatMap(summary) {
       function switchView(viewName) {
         if (isResearcherRole && ['conservation', 'report'].includes(viewName)) {
           viewName = 'orchids';
+        }
+
+        if (isPendingApproval && viewName !== 'dashboard') {
+          showToast("Your account is still pending approval. This section unlocks once an administrator approves you.", 'warning');
+          viewName = 'dashboard';
         }
 
         setActiveSidebarItem(viewName);

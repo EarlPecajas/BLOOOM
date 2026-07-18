@@ -48,6 +48,7 @@ let parsedActiveUser = {};
 let activeRole = '';
 let isAdminRole = false;
 let isResearcherRole = false;
+let isPendingApproval = false;
 let authResolved = false;
 
 // Initialize Supabase client from config
@@ -69,10 +70,27 @@ async function resolveActiveUser() {
           id: session.user.id,
           email: session.user.email,
           role,
+          status: 'approved',
+          affiliation: '',
           first_name: session.user.user_metadata?.first_name || '',
           last_name: session.user.user_metadata?.last_name || '',
           avatar_url: session.user.user_metadata?.avatar_url || ''
         };
+        // Re-check approval status/role from user_profiles on every load so an
+        // admin approving (or disabling) an account takes effect without
+        // requiring the user to sign out and back in.
+        try {
+          const { data: profile } = await supabaseClient
+            .from('user_profiles')
+            .select('status, role, affiliation')
+            .eq('id', session.user.id)
+            .single();
+          if (profile) {
+            parsedUser.status = profile.status || 'approved';
+            parsedUser.role = profile.role || parsedUser.role;
+            parsedUser.affiliation = profile.affiliation || '';
+          }
+        } catch (_) {}
         localStorage.setItem('bloomUser', JSON.stringify(parsedUser));
         sessionStorage.setItem('bloomUser', JSON.stringify(parsedUser));
         return parsedUser;
