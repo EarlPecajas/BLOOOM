@@ -63,6 +63,16 @@
       body.register-page .bloom-text { color: #145A1E !important; }
       body.register-page .brand-tagline span { color: rgba(20,90,30,.6) !important; }
 
+      /* The form grew past one viewport once Affiliation was added; centering
+         a taller-than-container flex item clips its top with no way to scroll
+         to it, so anchor to the top and let the wrapper's own scroll show the
+         rest instead of relying on vertical centering. */
+      body.register-page .signin-form-wrapper {
+        align-items: flex-start !important;
+        padding-top: clamp(1.5rem, 4vw, 3rem) !important;
+        padding-bottom: clamp(1.5rem, 4vw, 3rem) !important;
+      }
+
       body.register-page .signin-form {
         position: relative;
         z-index: 1;
