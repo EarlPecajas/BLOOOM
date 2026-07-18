@@ -434,7 +434,117 @@
       }
       body.dashboard-page.researcher-theme .dashboard-header {
         background: #FFFFFF !important;
-        border-bottom: 1px solid #E7ECE7 !important;
+        border-bottom: none !important;
+      }
+
+      /* Fix the header's actual rendered height (measured) so the sidebar and
+         fixed view-sections sit flush under it with no gap — the shared
+         styles.css hardcodes 84px, which doesn't match this page's header. */
+      body.dashboard-page.researcher-theme {
+        --denr-header-h: 70px;
+        --denr-sidebar-w: 256px;
+      }
+      body.dashboard-page.researcher-theme .sidebar {
+        top: var(--denr-header-h) !important;
+        height: calc(100vh - var(--denr-header-h)) !important;
+        width: var(--denr-sidebar-w) !important;
+        transition: width 200ms ease;
+      }
+      body.dashboard-page.researcher-theme #orchids-view,
+      body.dashboard-page.researcher-theme #report-view,
+      body.dashboard-page.researcher-theme #importexport-view,
+      body.dashboard-page.researcher-theme #submissions-view {
+        top: var(--denr-header-h) !important;
+        left: var(--denr-sidebar-w) !important;
+        transition: left 200ms ease;
+      }
+      body.dashboard-page.researcher-theme .dashboard-container,
+      body.dashboard-page.researcher-theme #collection3d-view,
+      body.dashboard-page.researcher-theme #model3d-view {
+        margin-left: var(--denr-sidebar-w) !important;
+        transition: margin-left 200ms ease, width 200ms ease;
+      }
+      body.dashboard-page.researcher-theme .dashboard-container {
+        width: calc(100% - var(--denr-sidebar-w)) !important;
+      }
+
+      /* Remove the cream/khaki tones the shared researcher-theme uses
+         elsewhere on this page (search boxes, table headers, pill bars, etc.) */
+      body.dashboard-page.researcher-theme {
+        --dt-bg: #F4F7F5 !important;
+        --dt-bg-panel: #EEF4EF !important;
+        --dt-border: rgba(20,90,30,.09) !important;
+        --dt-border-md: rgba(20,90,30,.16) !important;
+      }
+      body.dashboard-page.researcher-theme .submissions-table-head th {
+        background: transparent !important;
+      }
+      body.dashboard-page.researcher-theme .denrsub-table-shell {
+        box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 10px 24px rgba(20,90,30,.06) !important;
+      }
+
+      /* Drop the "NAVIGATION" section label — the icons speak for themselves */
+      body.dashboard-page.researcher-theme .sidebar-nav::before {
+        display: none !important;
+      }
+
+      /* ── Collapse toggle button (header) ── */
+      .sidebar-collapse-toggle {
+        width: 2.15rem;
+        height: 2.15rem;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #DCE6DF;
+        background: #FFFFFF;
+        color: #46584c;
+        border-radius: 9px;
+        cursor: pointer;
+        margin-right: 0.9rem;
+        transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+      }
+      .sidebar-collapse-toggle svg { width: 16px; height: 16px; }
+      .sidebar-collapse-toggle:hover {
+        background: #EEF6F0;
+        border-color: #145A1E;
+        color: #145A1E;
+      }
+
+      /* ── Collapsed sidebar: icons only ── */
+      body.sidebar-collapsed.dashboard-page.researcher-theme {
+        --denr-sidebar-w: 76px;
+      }
+      body.sidebar-collapsed .sidebar-brand { justify-content: center; padding: 1.1rem 0.5rem 0.95rem; }
+      body.sidebar-collapsed .sidebar-brand-text { display: none; }
+      body.sidebar-collapsed .sidebar-item { justify-content: center; padding: 0.65rem 0 !important; margin-left: 0.6rem; margin-right: 0.6rem; }
+      body.sidebar-collapsed .sidebar-item span:not(.sidebar-icon) { display: none; }
+      body.sidebar-collapsed .sidebar-item.active { box-shadow: 0 6px 14px rgba(20,90,30,.28) !important; }
+      body.sidebar-collapsed .sidebar-signout-btn { justify-content: center; padding: 0.65rem 0; }
+      body.sidebar-collapsed .sidebar-signout-btn span:not(.sidebar-icon) { display: none; }
+      body.sidebar-collapsed .sidebar-bottom { padding: 0.75rem 0.6rem; }
+
+      /* ── A proper Sign Out button instead of a bare hover link ── */
+      body.dashboard-page.researcher-theme .sidebar-bottom {
+        padding: 0.85rem 0.9rem;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn {
+        width: 100%;
+        justify-content: center;
+        gap: 0.55rem;
+        border: 1.5px solid #F4D9D5 !important;
+        border-radius: 10px;
+        background: #FDF4F3 !important;
+        font-weight: 700;
+        padding: 0.65rem 1rem;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn:hover {
+        background: #c0392b !important;
+        border-color: #c0392b !important;
+        color: #ffffff !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn:hover .sidebar-icon {
+        color: #ffffff !important;
       }
     </style>
     <!-- Leaflet CSS -->
@@ -504,6 +614,9 @@
     </aside>
     <header class="dashboard-header navbar navbar-expand-lg px-3 px-md-4">
       <div class="dashboard-header-left">
+        <button type="button" id="sidebar-collapse-toggle" class="sidebar-collapse-toggle" aria-label="Collapse sidebar" title="Collapse sidebar" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="10" y1="4" x2="10" y2="20"/></svg>
+        </button>
         <a href="index.html" class="brand-link" id="dashboard-brand-link">
           <div class="brand-container">
             <div class="brand-logo">
@@ -530,7 +643,6 @@
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
             </div>
           </div>
-          <span class="dashboard-user">DENR Dashboard</span>
         </div>
         <div class="notif-bell-wrap">
           <button type="button" class="notif-bell-btn" id="notif-bell-btn" title="Notifications" onclick="toggleNotifPanel()">
@@ -2531,6 +2643,13 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script>
+      // Restore the sidebar collapse preference before the page becomes visible.
+      try {
+        if (localStorage.getItem('denrSidebarCollapsed') === '1') {
+          document.body.classList.add('sidebar-collapsed');
+        }
+      } catch {}
+
       const bloomSupabase = window.bloomSupabase;
 
       // Try to hydrate `bloomUser` from local/session storage or from Supabase client session.
@@ -2738,6 +2857,39 @@
       const researcherDataSubmissions = document.getElementById('researcher-data-submissions');
       const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
       const submissionGenusResultsEl = document.getElementById('submission-genus-results');
+
+      // ── Sidebar collapse toggle: icons-only vs. icons + labels ──
+      const sidebarCollapseToggle = document.getElementById('sidebar-collapse-toggle');
+      document.querySelectorAll('.sidebar-item, .sidebar-signout-btn').forEach((el) => {
+        const label = el.querySelector('span:not(.sidebar-icon)');
+        if (label && !el.title) el.title = label.textContent.trim();
+      });
+      function applySidebarCollapseUI() {
+        const collapsed = document.body.classList.contains('sidebar-collapsed');
+        if (sidebarCollapseToggle) {
+          const actionLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+          sidebarCollapseToggle.setAttribute('aria-pressed', String(collapsed));
+          sidebarCollapseToggle.setAttribute('aria-label', actionLabel);
+          sidebarCollapseToggle.title = actionLabel;
+        }
+        const mapViewEl = document.getElementById('map-view');
+        if (mapViewEl && mapViewEl.style.display === 'flex') {
+          mapViewEl.style.left = collapsed ? '76px' : '256px';
+          if (typeof initializeLeafletMap === 'function') {
+            setTimeout(() => { try { initializeLeafletMap(); } catch {} }, 220);
+          }
+        }
+      }
+      applySidebarCollapseUI();
+      if (sidebarCollapseToggle) {
+        sidebarCollapseToggle.addEventListener('click', function() {
+          document.body.classList.toggle('sidebar-collapsed');
+          try {
+            localStorage.setItem('denrSidebarCollapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+          } catch {}
+          applySidebarCollapseUI();
+        });
+      }
 
       const submissionMediaSectionConfigs = [
         { key: 'wholePlant', title: 'Whole Plant Photo', listId: 'submission-whole-plant-photo-grid', inputId: 'submission-whole-plant-photo-input' },
@@ -3742,21 +3894,32 @@
       const orchidChartCanvas = document.getElementById('orchidChart');
       if (orchidChartCanvas && typeof Chart !== 'undefined') {
         const ctx = orchidChartCanvas.getContext('2d');
+        const orchidChartFill = ctx.createLinearGradient(0, 0, 0, 260);
+        orchidChartFill.addColorStop(0, 'rgba(22,163,74,0.25)');
+        orchidChartFill.addColorStop(1, 'rgba(22,163,74,0.02)');
         orchidChartInstance = new Chart(ctx, {
-          type: 'bar',
+          type: 'line',
           data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
               label: 'Approved Sightings',
               data: Array(12).fill(0),
-              backgroundColor: '#145A1E',
-              borderRadius: 5,
-              borderSkipped: false
+              borderColor: '#16a34a',
+              backgroundColor: orchidChartFill,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#145A1E',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: true,
+            interaction: { intersect: false, mode: 'index' },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -6567,7 +6730,7 @@
             selectedView.style.display = 'flex';
             selectedView.style.position = 'fixed';
             selectedView.style.top = headerH + 'px';
-            selectedView.style.left = '256px';
+            selectedView.style.left = document.body.classList.contains('sidebar-collapsed') ? '76px' : '256px';
             selectedView.style.right = '0';
             selectedView.style.bottom = '0';
             selectedView.style.zIndex = '500';
