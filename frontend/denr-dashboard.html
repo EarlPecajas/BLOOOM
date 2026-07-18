@@ -250,7 +250,7 @@
       .map-trail-add-btn { display:inline-flex; align-items:center; gap:0.35rem; flex-shrink:0; padding:0.4rem 0.85rem; background:transparent; border:1.5px dashed var(--dt-border-md); border-radius:20px; cursor:pointer; font-weight:700; color:var(--dt-muted); font-size:0.75rem; white-space:nowrap; transition:all 0.2s; letter-spacing:0.02em; font-family:Inter,Roboto,sans-serif; }
       .map-trail-add-btn:hover { border-color:#2563eb; color:#2563eb; background:rgba(37,99,235,.08); }
 
-      /* ── Cream website theme for DENR overview ── */
+      /* ── Green admin theme for DENR overview ── */
       #dashboard-admin-overview {
         --dt-bg-input: #FFFFFF;
         --dt-border-md: rgba(20,90,30,0.14);
@@ -346,66 +346,77 @@
         font-size: 0.92rem;
         font-weight: 800;
         letter-spacing: 0.04em;
-        color: #eafbef;
+        color: #12321a;
         font-family: Inter, Roboto, sans-serif;
       }
       .sidebar-brand-subtitle {
         font-size: 0.65rem;
         font-weight: 600;
-        color: rgba(255,255,255,.48);
+        color: #8aa091;
         letter-spacing: 0.03em;
         font-family: Inter, Roboto, sans-serif;
       }
 
-      /* ── Distinct dark, professional admin sidebar (overrides the warm
-         researcher-theme cream so DENR reads as a control panel) ── */
+      /* ── Light, professional admin sidebar with a solid-green active pill
+         (overrides the warm researcher-theme cream so DENR reads as a
+         clean SaaS-style control panel) ── */
       body.dashboard-page.researcher-theme .sidebar {
-        background: linear-gradient(180deg, #0d2f14 0%, #123a19 100%) !important;
-        border-right: none !important;
-        box-shadow: 4px 0 24px rgba(0,0,0,.12) !important;
+        background: #FFFFFF !important;
+        border-right: 1px solid #E7ECE7 !important;
+        box-shadow: 2px 0 16px rgba(20,90,30,.04) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, #16a34a, #145A1E);
+      }
+      body.dashboard-page.researcher-theme .sidebar-brand {
+        border-bottom: 1px solid #EEF2EE !important;
       }
       body.dashboard-page.researcher-theme .sidebar-nav::before {
-        color: rgba(255,255,255,.36) !important;
+        color: #a3b3a8 !important;
       }
       body.dashboard-page.researcher-theme .sidebar-item {
-        color: rgba(255,255,255,.7) !important;
+        color: #46584c !important;
       }
       body.dashboard-page.researcher-theme .sidebar-item:hover {
-        background: rgba(255,255,255,.08) !important;
-        color: #ffffff !important;
+        background: #EEF6F0 !important;
+        color: #145A1E !important;
       }
       body.dashboard-page.researcher-theme .sidebar-item.active {
-        background: rgba(77,184,106,.2) !important;
+        background: linear-gradient(135deg, #16a34a 0%, #145A1E 100%) !important;
         color: #ffffff !important;
         font-weight: 700;
-        border-left: 3px solid #4db86a;
-        padding-left: calc(1rem - 3px) !important;
-        box-shadow: none !important;
+        box-shadow: 0 8px 18px rgba(20,90,30,.28) !important;
       }
       body.dashboard-page.researcher-theme .sidebar-icon {
-        color: #86e0a4 !important;
+        color: #5c8a68 !important;
       }
       body.dashboard-page.researcher-theme .sidebar-item.active .sidebar-icon {
         color: #ffffff !important;
       }
       body.dashboard-page.researcher-theme .sidebar-bottom {
-        border-top: 1px solid rgba(255,255,255,.08) !important;
+        border-top: 1px solid #EEF2EE !important;
       }
       body.dashboard-page.researcher-theme .sidebar-signout-btn {
-        color: #f3a89c !important;
+        color: #c0392b !important;
       }
       body.dashboard-page.researcher-theme .sidebar-signout-btn .sidebar-icon {
-        color: #f3a89c !important;
+        color: #c0392b !important;
       }
       body.dashboard-page.researcher-theme .sidebar-signout-btn:hover {
-        background: rgba(240,90,70,.14) !important;
-        color: #ffbcae !important;
+        background: #FCECEA !important;
+        color: #922b1e !important;
       }
       body.dashboard-page.researcher-theme .sidebar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,.15) !important;
+        background: rgba(20,90,30,.14) !important;
       }
       body.dashboard-page.researcher-theme .sidebar::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,.28) !important;
+        background: rgba(20,90,30,.26) !important;
       }
 
       /* Neutral, professional content background instead of the warm cream
@@ -419,7 +430,11 @@
       body.dashboard-page.researcher-theme #submissions-view,
       body.dashboard-page.researcher-theme #model3d-view,
       body.dashboard-page.researcher-theme #collection3d-view {
-        background: #F3F5F3 !important;
+        background: #F4F7F5 !important;
+      }
+      body.dashboard-page.researcher-theme .dashboard-header {
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #E7ECE7 !important;
       }
     </style>
     <!-- Leaflet CSS -->
@@ -546,14 +561,20 @@
       <!-- ── DENR HOME ───────────────────────────────────────────── -->
       <div id="dashboard-admin-overview">
 
+        <!-- Hero -->
+        <div class="p-6 mb-6" style="background:#FFFFFF;border:1px solid var(--dt-border-md);border-radius:20px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 12px 28px rgba(20,90,30,.06);">
+          <p class="text-xs font-bold uppercase" style="color:#16a34a;letter-spacing:0.14em;margin:0 0 0.5rem;">DENR Control Center</p>
+          <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#12321a;margin:0 0 0.5rem;">Conservation command center</h1>
+          <p class="text-sm" style="color:var(--dt-muted);max-width:560px;margin:0;">Monitor orchid records, conservation status, and researcher submissions from Mt. Busa, Sarangani Province.</p>
+        </div>
+
         <!-- Stat Strip -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
           <div class="p-5 flex flex-col gap-1 relative overflow-hidden"
-               style="background:linear-gradient(165deg,#ffffff 0%,#f2faf4 100%);border:1px solid var(--dt-border-md);border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important;transition:transform 220ms ease,box-shadow 220ms ease;"
-               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.06),0 18px 32px rgba(20,90,30,.14) !important';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important';">
-            <div class="absolute top-0 left-0 right-0" style="height:3px;background:linear-gradient(90deg,#16a34a,#4ade80);"></div>
+               style="background:#FFFFFF;border:1px solid #E7ECE7;border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06);transition:transform 220ms ease,box-shadow 220ms ease;"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 14px 26px rgba(20,90,30,.1)';"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06)';">
             <div class="flex items-center justify-between mb-2">
               <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Total Uploads</p>
               <span class="flex items-center justify-center flex-shrink-0" style="width:42px;height:42px;border-radius:13px;background:#dcfce7;box-shadow:inset 0 0 0 1px rgba(22,163,74,.18);">
@@ -565,10 +586,9 @@
           </div>
 
           <div class="p-5 flex flex-col gap-1 relative overflow-hidden"
-               style="background:linear-gradient(165deg,#ffffff 0%,#f2f7ff 100%);border:1px solid var(--dt-border-md);border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important;transition:transform 220ms ease,box-shadow 220ms ease;"
-               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.06),0 18px 32px rgba(20,90,30,.14) !important';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important';">
-            <div class="absolute top-0 left-0 right-0" style="height:3px;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div>
+               style="background:#FFFFFF;border:1px solid #E7ECE7;border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06);transition:transform 220ms ease,box-shadow 220ms ease;"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 14px 26px rgba(20,90,30,.1)';"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06)';">
             <div class="flex items-center justify-between mb-2">
               <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Species</p>
               <span class="flex items-center justify-center flex-shrink-0" style="width:42px;height:42px;border-radius:13px;background:#dbeafe;box-shadow:inset 0 0 0 1px rgba(59,130,246,.18);">
@@ -580,10 +600,9 @@
           </div>
 
           <div class="p-5 flex flex-col gap-1 relative overflow-hidden"
-               style="background:linear-gradient(165deg,#ffffff 0%,#fefbf0 100%);border:1px solid var(--dt-border-md);border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important;transition:transform 220ms ease,box-shadow 220ms ease;"
-               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.06),0 18px 32px rgba(20,90,30,.14) !important';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important';">
-            <div class="absolute top-0 left-0 right-0" style="height:3px;background:linear-gradient(90deg,#ca8a04,#eab308);"></div>
+               style="background:#FFFFFF;border:1px solid #E7ECE7;border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06);transition:transform 220ms ease,box-shadow 220ms ease;"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 14px 26px rgba(20,90,30,.1)';"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06)';">
             <div class="flex items-center justify-between mb-2">
               <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Recorded</p>
               <span class="flex items-center justify-center flex-shrink-0" style="width:42px;height:42px;border-radius:13px;background:#fef9c3;box-shadow:inset 0 0 0 1px rgba(202,138,4,.18);">
@@ -595,10 +614,9 @@
           </div>
 
           <div class="p-5 flex flex-col gap-1 relative overflow-hidden"
-               style="background:linear-gradient(165deg,#ffffff 0%,#fef7f0 100%);border:1px solid var(--dt-border-md);border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important;transition:transform 220ms ease,box-shadow 220ms ease;"
-               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.06),0 18px 32px rgba(20,90,30,.14) !important';"
-               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 10px 24px rgba(20,90,30,.08) !important';">
-            <div class="absolute top-0 left-0 right-0" style="height:3px;background:linear-gradient(90deg,#f97316,#fb923c);"></div>
+               style="background:#FFFFFF;border:1px solid #E7ECE7;border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06);transition:transform 220ms ease,box-shadow 220ms ease;"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 1px 2px rgba(20,90,30,.05),0 14px 26px rgba(20,90,30,.1)';"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 1px 2px rgba(20,90,30,.04),0 8px 20px rgba(20,90,30,.06)';">
             <div class="flex items-center justify-between mb-2">
               <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Pending</p>
               <span class="flex items-center justify-center flex-shrink-0" style="width:42px;height:42px;border-radius:13px;background:#ffedd5;box-shadow:inset 0 0 0 1px rgba(249,115,22,.18);">
