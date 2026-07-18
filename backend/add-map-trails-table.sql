@@ -25,4 +25,19 @@ GRANT SELECT ON map_trails TO anon, authenticated;
 GRANT INSERT ON map_trails TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE map_trails_trail_id_seq TO authenticated;
 
+ALTER TABLE map_trails ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read map_trails" ON map_trails;
+DROP POLICY IF EXISTS "Authenticated insert map_trails" ON map_trails;
+
+CREATE POLICY "Public read map_trails"
+  ON map_trails
+  FOR SELECT
+  USING (true);
+
+CREATE POLICY "Authenticated insert map_trails"
+  ON map_trails
+  FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
 COMMIT;
