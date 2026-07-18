@@ -270,12 +270,170 @@
       #dashboard-admin-overview .text-gray-600 {
         color: #3e6639 !important;
       }
+
+      /* ══════════════════════════════════════════════════════════════
+         DENR ADMIN — persistent sidebar + compact professional layout
+         Scoped to this page only (lives in denr-dashboard.html).
+         ══════════════════════════════════════════════════════════════ */
+
+      /* Sidebar is always visible — no collapse/overlay state */
+      body.dashboard-page.researcher-theme .sidebar {
+        transform: translateX(0) !important;
+      }
+
+      /* Push content clear of the fixed sidebar instead of letting it overlay.
+         (#map-view is positioned via JS in switchView() — see the "map" branch,
+         which sets left:256px directly since it also needs a dynamic top offset.) */
+      .dashboard-container,
+      #collection3d-view,
+      #model3d-view {
+        margin-left: 256px;
+      }
+      /* Bootstrap's .container-fluid forces width:100%, which combined with the
+         margin above would overflow the viewport by the sidebar's width — clamp it. */
+      .dashboard-container {
+        width: calc(100% - 256px) !important;
+      }
+      #orchids-view,
+      #report-view,
+      #importexport-view,
+      #submissions-view {
+        left: 256px !important;
+      }
+
+      /* Tighter, denser spacing so content sits comfortably beside the sidebar */
+      .dashboard-container,
+      #orchids-view,
+      #collection3d-view,
+      #submissions-view,
+      #model3d-view {
+        padding: 1.5rem clamp(1.1rem, 3vw, 2.25rem) !important;
+      }
+      .text-3xl { font-size: 1.55rem !important; }
+      .text-4xl { font-size: 1.85rem !important; }
+      .p-5 { padding: 1.05rem !important; }
+      .gap-4 { gap: 0.85rem !important; }
+      .mb-6 { margin-bottom: 1.15rem !important; }
+      .sidebar-item {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.83rem !important;
+      }
+      .sidebar-icon svg {
+        width: 15px !important;
+        height: 15px !important;
+      }
+
+      /* ── Sidebar identity header ── */
+      .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 1.1rem 1.2rem 0.95rem;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        margin-bottom: 0.3rem;
+      }
+      .sidebar-brand img {
+        height: 26px;
+        width: auto;
+        flex-shrink: 0;
+      }
+      .sidebar-brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .sidebar-brand-title {
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        color: #eafbef;
+        font-family: Inter, Roboto, sans-serif;
+      }
+      .sidebar-brand-subtitle {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: rgba(255,255,255,.48);
+        letter-spacing: 0.03em;
+        font-family: Inter, Roboto, sans-serif;
+      }
+
+      /* ── Distinct dark, professional admin sidebar (overrides the warm
+         researcher-theme cream so DENR reads as a control panel) ── */
+      body.dashboard-page.researcher-theme .sidebar {
+        background: linear-gradient(180deg, #0d2f14 0%, #123a19 100%) !important;
+        border-right: none !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,.12) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-nav::before {
+        color: rgba(255,255,255,.36) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item {
+        color: rgba(255,255,255,.7) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item:hover {
+        background: rgba(255,255,255,.08) !important;
+        color: #ffffff !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item.active {
+        background: rgba(77,184,106,.2) !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        border-left: 3px solid #4db86a;
+        padding-left: calc(1rem - 3px) !important;
+        box-shadow: none !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-icon {
+        color: #86e0a4 !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-item.active .sidebar-icon {
+        color: #ffffff !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-bottom {
+        border-top: 1px solid rgba(255,255,255,.08) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn {
+        color: #f3a89c !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn .sidebar-icon {
+        color: #f3a89c !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar-signout-btn:hover {
+        background: rgba(240,90,70,.14) !important;
+        color: #ffbcae !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,.15) !important;
+      }
+      body.dashboard-page.researcher-theme .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,.28) !important;
+      }
+
+      /* Neutral, professional content background instead of the warm cream
+         shared with the researcher dashboard */
+      html:has(body.dashboard-page.researcher-theme),
+      body.dashboard-page.researcher-theme,
+      body.dashboard-page.researcher-theme .dashboard-container,
+      body.dashboard-page.researcher-theme #orchids-view,
+      body.dashboard-page.researcher-theme #report-view,
+      body.dashboard-page.researcher-theme #importexport-view,
+      body.dashboard-page.researcher-theme #submissions-view,
+      body.dashboard-page.researcher-theme #model3d-view,
+      body.dashboard-page.researcher-theme #collection3d-view {
+        background: #F3F5F3 !important;
+      }
     </style>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   </head>
-  <body class="dashboard-page researcher-theme sidebar-hidden" style="visibility:hidden;">
+  <body class="dashboard-page researcher-theme" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="./DENR Logo.svg" alt="DENR" />
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-title">DENR</span>
+          <span class="sidebar-brand-subtitle">Admin Panel</span>
+        </div>
+      </div>
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-item active" data-view="dashboard">
           <span class="sidebar-icon">
@@ -331,22 +489,6 @@
     </aside>
     <header class="dashboard-header navbar navbar-expand-lg px-3 px-md-4">
       <div class="dashboard-header-left">
-        <button
-          type="button"
-          id="sidebar-toggle-button"
-          class="btn btn-sm sidebar-toggle-icon-btn"
-          aria-label="Hide sidebar menu"
-          title="Hide sidebar menu"
-          aria-pressed="false"
-        >
-          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <rect x="1.5" y="2" width="4" height="12" rx="1"></rect>
-            <rect x="7" y="3" width="7.5" height="2" rx="1"></rect>
-            <rect x="7" y="7" width="7.5" height="2" rx="1"></rect>
-            <rect x="7" y="11" width="7.5" height="2" rx="1"></rect>
-          </svg>
-          <span class="visually-hidden">Toggle sidebar menu</span>
-        </button>
         <a href="index.html" class="brand-link" id="dashboard-brand-link">
           <div class="brand-container">
             <div class="brand-logo">
@@ -2488,10 +2630,6 @@
 
       // Safe navigator: always prefer in-page navigation to avoid reload loops.
       function openDashboardView(viewName) {
-        // Always close the sidebar when navigating
-        document.body.classList.add('sidebar-hidden');
-        if (typeof syncSidebarToggleState === 'function') { syncSidebarToggleState(); }
-
         const normalizedView = String(viewName || '').trim().toLowerCase();
         const effectiveView = (isResearcherRole && normalizedView === 'report') ? 'orchids' : normalizedView;
 
@@ -2581,8 +2719,6 @@
       const researcherDataUpdate = document.getElementById('researcher-data-update');
       const researcherDataSubmissions = document.getElementById('researcher-data-submissions');
       const researcherSubmissionModal = document.getElementById('researcher-submission-modal');
-      const sidebarToggleButton = document.getElementById('sidebar-toggle-button');
-      const sidebarElement = document.getElementById('sidebar');
       const submissionGenusResultsEl = document.getElementById('submission-genus-results');
 
       const submissionMediaSectionConfigs = [
@@ -3406,26 +3542,6 @@
         window.history.replaceState({}, '', cleanedUrl.toString());
       }
 
-      function syncSidebarToggleState() {
-        if (!sidebarToggleButton) {
-          return;
-        }
-
-        const isSidebarHidden = document.body.classList.contains('sidebar-hidden');
-        const actionLabel = isSidebarHidden ? 'Show sidebar menu' : 'Hide sidebar menu';
-        sidebarToggleButton.setAttribute('aria-label', actionLabel);
-        sidebarToggleButton.setAttribute('title', actionLabel);
-        sidebarToggleButton.setAttribute('aria-pressed', String(isSidebarHidden));
-      }
-
-      if (sidebarToggleButton && sidebarElement) {
-        sidebarToggleButton.addEventListener('click', function() {
-          document.body.classList.toggle('sidebar-hidden');
-          syncSidebarToggleState();
-        });
-        syncSidebarToggleState();
-      }
-
       dashboardBrandLink.setAttribute('aria-disabled', 'true');
       dashboardBrandLink.style.pointerEvents = 'none';
       dashboardBrandLink.style.cursor = 'default';
@@ -3978,10 +4094,6 @@
           const view = this.getAttribute('data-view');
           if (view) {
             switchView(view);
-            document.body.classList.add('sidebar-hidden');
-            if (typeof syncSidebarToggleState === 'function') {
-              syncSidebarToggleState();
-            }
           }
         });
       });
@@ -6437,7 +6549,7 @@
             selectedView.style.display = 'flex';
             selectedView.style.position = 'fixed';
             selectedView.style.top = headerH + 'px';
-            selectedView.style.left = '0';
+            selectedView.style.left = '256px';
             selectedView.style.right = '0';
             selectedView.style.bottom = '0';
             selectedView.style.zIndex = '500';
