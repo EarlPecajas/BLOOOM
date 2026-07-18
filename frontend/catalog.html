@@ -1126,9 +1126,12 @@
 
           thumbnailImage = thumbnailImage || catalogImage;
 
+          const cardHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
           const localName = approvedSighting
-            ? (parseJsonArrayValue(approvedSighting.local_names)[0] || parseJsonArrayValue(approvedSighting.common_names)[0] || orchid.common_name || '')
-            : (orchid.common_name || '');
+            ? ((!cardHiddenFields.has('local-names') && parseJsonArrayValue(approvedSighting.local_names)[0])
+              || (!cardHiddenFields.has('common-names') && (parseJsonArrayValue(approvedSighting.common_names)[0] || orchid.common_name))
+              || '')
+            : (!cardHiddenFields.has('common-names') ? (orchid.common_name || '') : '');
 
           return `
             <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">

@@ -984,7 +984,7 @@
 
         const commonName = getPrimaryCommonName(src.common_names) || orchid.common_name || '';
         const commonNameEl = document.getElementById('oid-common-name');
-        if (commonNameEl) commonNameEl.textContent = commonName;
+        if (commonNameEl) commonNameEl.textContent = odmHiddenFields.has('common-names') ? '' : commonName;
 
         // Taxonomy
         const genus = orchid.genus || orchidName.split(' ')[0] || '';
