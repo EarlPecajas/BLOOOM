@@ -145,6 +145,16 @@
       body.dashboard-page.researcher-theme .submissions-table-shell {
         box-shadow: 0 1px 2px rgba(20,90,30,.04), 0 10px 24px rgba(20,90,30,.06) !important;
       }
+      /* The shared stylesheet paints a cream hover color on the <td> itself,
+         which sits on top of (and hides) the nicer green <tr> hover — clear it. */
+      body.dashboard-page.researcher-theme .submissions-table tr:hover td {
+        background: transparent !important;
+      }
+      body.dashboard-page.researcher-theme .submissions-table tbody tr:hover,
+      body.dashboard-page.researcher-theme .submissions-table tbody tr.submission-row:hover {
+        background: #EEF6F0 !important;
+        background-color: #EEF6F0 !important;
+      }
       html:has(body.dashboard-page.researcher-theme),
       body.dashboard-page.researcher-theme {
         background: #F4F7F5 !important;
@@ -1308,10 +1318,6 @@
     <div id="submissions-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
         <h1 class="catalog-title" style="margin:0;">My Submissions</h1>
-        <button type="button" onclick="openDashboardView('drafts')" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 1rem;border-radius:999px;border:1.5px solid rgba(20,90,30,0.3);background:#eaf3ea;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 150ms,border-color 150ms;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-          My Drafts
-        </button>
         <button type="button" onclick="openDashboardView('my3d')" style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.45rem 1rem;border-radius:999px;border:1.5px solid rgba(20,90,30,0.3);background:#eaf3ea;color:#145A1E;font-family:Inter,Roboto,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 150ms,border-color 150ms;">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
           My 3D Submissions
