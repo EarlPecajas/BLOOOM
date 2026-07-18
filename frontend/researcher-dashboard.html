@@ -179,20 +179,20 @@
         position: absolute;
         top: -60px;
         right: -60px;
-        width: 200px;
-        height: 200px;
+        width: 220px;
+        height: 220px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(22,163,74,0.10), transparent 70%);
+        background: radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%);
       }
       body.dashboard-page.researcher-theme .researcher-home-hero::after {
         content: '';
         position: absolute;
         bottom: -70px;
         left: -70px;
-        width: 220px;
-        height: 220px;
+        width: 240px;
+        height: 240px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(20,90,30,0.08), transparent 70%);
+        background: radial-gradient(circle, rgba(249,115,22,0.10), transparent 70%);
       }
       body.dashboard-page.researcher-theme .researcher-home-hero-icon {
         position: relative;
@@ -258,6 +258,60 @@
         color: #8aa091;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stat:nth-child(1) .researcher-home-hero-stat-value { color: #16a34a; }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stat:nth-child(2) .researcher-home-hero-stat-value { color: #3b82f6; }
+      body.dashboard-page.researcher-theme .researcher-home-hero-stat:nth-child(3) .researcher-home-hero-stat-value { color: #d97706; }
+
+      /* ── Colorful nav cards, each with its own accent ── */
+      body.dashboard-page.researcher-theme .researcher-home-card {
+        position: relative;
+        overflow: hidden;
+        text-align: left;
+        padding-top: 1.5rem;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--card-accent, #16a34a);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card::after { content: none; }
+      body.dashboard-page.researcher-theme .researcher-home-card-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        margin-bottom: 0.85rem;
+        background: var(--card-accent-bg, #dcfce7);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card-icon svg {
+        width: 19px;
+        height: 19px;
+        stroke: var(--card-accent, #16a34a);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card-tag {
+        background: var(--card-accent-bg, #dcfce7);
+        color: var(--card-accent, #16a34a);
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card[data-researcher-view="orchids"] {
+        --card-accent: #16a34a;
+        --card-accent-bg: #dcfce7;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card[data-researcher-view="map"] {
+        --card-accent: #3b82f6;
+        --card-accent-bg: #dbeafe;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card[data-researcher-view="collection3d"] {
+        --card-accent: #8b5cf6;
+        --card-accent-bg: #ede9fe;
+      }
+      body.dashboard-page.researcher-theme .researcher-home-card[data-researcher-view="submissions"] {
+        --card-accent: #f97316;
+        --card-accent-bg: #ffedd5;
       }
       @media (max-width: 640px) {
         body.dashboard-page.researcher-theme .researcher-home-hero-stats {
@@ -708,24 +762,36 @@
 
         <div class="researcher-home-cards">
           <button type="button" class="researcher-home-card" data-researcher-view="orchids" onclick="openDashboardView('orchids')">
+            <span class="researcher-home-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
+            </span>
             <span class="researcher-home-card-tag">Collection</span>
             <h3 class="researcher-home-card-title">Orchid Catalog</h3>
             <p class="researcher-home-card-copy">delve into our vast collection of orchid data with over 100 entries</p>
           </button>
 
           <button type="button" class="researcher-home-card" data-researcher-view="map" onclick="openDashboardView('map')">
+            <span class="researcher-home-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/></svg>
+            </span>
             <span class="researcher-home-card-tag">Explore</span>
             <h3 class="researcher-home-card-title">Interactive Map</h3>
             <p class="researcher-home-card-copy">discover orchids with our user friendly orchid data map</p>
           </button>
 
           <button type="button" class="researcher-home-card" data-researcher-view="collection3d" onclick="openDashboardView('collection3d')">
+            <span class="researcher-home-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </span>
             <span class="researcher-home-card-tag">Learn</span>
             <h3 class="researcher-home-card-title"><span class="researcher-card-fixed-number">3D</span> Collection</h3>
             <p class="researcher-home-card-copy">learn orchid anatomy with our three- dimentional models</p>
           </button>
 
           <button type="button" class="researcher-home-card" data-researcher-view="submissions" onclick="openDashboardView('submissions')">
+            <span class="researcher-home-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </span>
             <span class="researcher-home-card-tag">Submit</span>
             <h3 class="researcher-home-card-title">My Submissions</h3>
             <p class="researcher-home-card-copy">view and track your submitted orchid sighting records</p>
