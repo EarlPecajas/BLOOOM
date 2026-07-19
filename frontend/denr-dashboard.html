@@ -2731,7 +2731,8 @@
                 email: sessionUser.email,
                 role,
                 first_name: sessionUser.user_metadata?.first_name || '',
-                last_name: sessionUser.user_metadata?.last_name || ''
+                last_name: sessionUser.user_metadata?.last_name || '',
+                avatar_url: sessionUser.user_metadata?.avatar_url || ''
               };
               localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
               sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
@@ -2767,7 +2768,8 @@
                     email: sessionUser.email,
                     role,
                     first_name: sessionUser.user_metadata?.first_name || '',
-                    last_name: sessionUser.user_metadata?.last_name || ''
+                    last_name: sessionUser.user_metadata?.last_name || '',
+                    avatar_url: sessionUser.user_metadata?.avatar_url || ''
                   };
                   localStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
                   sessionStorage.setItem('bloomUser', JSON.stringify(parsedActiveUser));
