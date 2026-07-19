@@ -73,6 +73,21 @@
       .oid-common-name { font-size: .78rem; color: #4a7a44; margin: 0 0 .85rem; font-weight: 500; }
       .oid-field-list { display: flex; flex-direction: column; border: 1px solid #E7ECE7; border-radius: 10px; overflow: hidden; background: #FFFFFF; }
       .oid-actions { display: none; }
+      .oid-view3d-bar { flex-shrink: 0; padding: .7rem .9rem; background: #F6FAF7; border-top: 1px solid #E7ECE7; border-bottom: 1px solid #E7ECE7; }
+      .oid-view3d-btn {
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+        width: 100%; padding: .6rem .9rem; background: linear-gradient(135deg, #2d8a3a, #145A1E);
+        border: none; border-radius: 10px; color: #fff; font-size: .82rem; font-weight: 700;
+        font-family: Inter, Roboto, sans-serif; cursor: pointer;
+        box-shadow: 0 3px 10px rgba(20,90,30,.3); transition: transform .15s, box-shadow .15s;
+      }
+      .oid-view3d-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(20,90,30,.4); }
+      .oid-view3d-icon { display: inline-flex; width: 20px; height: 20px; perspective: 80px; flex-shrink: 0; }
+      .oid-view3d-icon svg { width: 100%; height: 100%; animation: oidCubeSpin 2.4s linear infinite; }
+      @keyframes oidCubeSpin {
+        0% { transform: rotateY(0deg) rotateX(10deg); }
+        100% { transform: rotateY(360deg) rotateX(10deg); }
+      }
       .oid-footer {
         flex-shrink: 0; display: flex; align-items: center; justify-content: center;
         padding: .6rem .9rem;
@@ -207,6 +222,14 @@
             <div class="oid-field-row"><span class="oid-field-label">Distribution</span><span class="oid-field-value" id="oid-distribution">Philippines</span></div>
             <div class="oid-field-row"><span class="oid-field-label">Endemicity</span><span class="oid-field-value" id="oid-endemic">&mdash;</span></div>
           </div>
+        </div>
+        <div class="oid-view3d-bar" id="oid-view3d-bar" hidden>
+          <button type="button" id="oid-view-3d-btn" class="oid-view3d-btn" title="View 3D Model">
+            <span class="oid-view3d-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </span>
+            View 3D Model
+          </button>
         </div>
         <div class="oid-footer" id="oid-footer-add">
           <button type="button" id="orchid-detail-add-btn-identity" style="display:none;align-items:center;justify-content:center;gap:.35rem;background:#145A1E;border:1.5px solid #145A1E;border-radius:8px;color:#ffffff;font-size:.78rem;font-weight:700;padding:.42rem 1rem;cursor:pointer;transition:background .15s,border-color .15s;font-family:Inter,Roboto,sans-serif;width:100%;">
@@ -1025,6 +1048,10 @@
         }
         setField('oid-endemic', endemicDisplay, 'endemicity');
 
+        // 3D model quick-view button — only show when a model is actually available
+        const view3dBar = document.getElementById('oid-view3d-bar');
+        if (view3dBar) view3dBar.hidden = !orchid.model_3d_url;
+
         // Photo — same source as catalog thumbnail
         const oidPhoto = document.getElementById('oid-photo');
         const oidPhotoPlaceholder = document.getElementById('oid-photo-placeholder');
@@ -1263,7 +1290,7 @@
           '</button></div>';
       }
 
-      function openOrchidDetailsModal(clickedSrc) {
+      function openOrchidDetailsModal(clickedSrc, initialTab) {
         var orchid = currentOrchid || {};
         var allSightings = currentAllSightings || [];
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
@@ -1290,7 +1317,7 @@
           sightingBar.style.display = 'none';
         }
 
-        odmSwitchTab('value');
+        odmSwitchTab(initialTab || 'value');
         odmPopulateValue(orchid, allSightings);
         odmPopulateSightings(allSightings);
         odmPopulateImages(orchid, allSightings);
@@ -1315,6 +1342,13 @@
       function closeOrchidDetailsModal() {
         orchidDetailModal.hidden = true;
         document.body.style.overflow = '';
+      }
+
+      const oidView3dBtn = document.getElementById('oid-view-3d-btn');
+      if (oidView3dBtn) {
+        oidView3dBtn.addEventListener('click', function() {
+          openOrchidDetailsModal(currentSrc || null, '3d');
+        });
       }
 
       document.addEventListener('keydown', function(e) {
