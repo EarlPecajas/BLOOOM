@@ -4595,7 +4595,7 @@ body.researcher-theme .user-dropdown {
   backdrop-filter: none !important;
 }
 body.researcher-theme .researcher-data-dropdown-item:hover,
-body.researcher-theme .user-dropdown-item:hover { background: #F0EAD2 !important; }
+body.researcher-theme .user-dropdown-item:hover { background: #EAF5EA !important; color: #145A1E !important; }
 body.researcher-theme .researcher-data-button {
   background: transparent !important;
   border-color: rgba(20, 90, 30, 0.35) !important;
