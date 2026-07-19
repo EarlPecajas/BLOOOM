@@ -586,7 +586,7 @@
   <body class="dashboard-page researcher-theme" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <img src="./DENR Logo.svg" alt="DENR" />
+        <img src="./DENR Logo.svg" alt="DENR" id="sidebar-brand-icon" />
         <div class="sidebar-brand-text">
           <span class="sidebar-brand-title">DENR</span>
           <span class="sidebar-brand-subtitle" id="sidebar-brand-subtitle">Admin Panel</span>
@@ -3800,6 +3800,13 @@
         const rawName = [firstName, lastName].filter(Boolean).join(' ') || emailPart || 'Admin';
         const titleCase = (s) => s.split(' ').filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
         sidebarBrandSubtitleEl.textContent = titleCase(rawName);
+
+        const sidebarBrandIconEl = document.getElementById('sidebar-brand-icon');
+        if (sidebarBrandIconEl && parsedActiveUser.avatar_url) {
+          sidebarBrandIconEl.src = parsedActiveUser.avatar_url;
+          sidebarBrandIconEl.style.borderRadius = '50%';
+          sidebarBrandIconEl.style.objectFit = 'cover';
+        }
       }
 
       if (roleProfileIcon) {
