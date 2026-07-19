@@ -5314,13 +5314,21 @@
         if (!wrap || !img || !name || !common) return;
         if (row) {
           wrap.hidden = false;
-          img.src = row.image_url || '';
-          img.alt = row.name || '';
+          if (row.image_url) {
+            img.src = row.image_url;
+            img.alt = row.name || '';
+            img.style.display = '';
+            img.onerror = function() { img.style.display = 'none'; };
+          } else {
+            img.removeAttribute('src');
+            img.style.display = 'none';
+          }
           name.textContent = row.name || '';
           common.textContent = row.common_name || '';
         } else {
           wrap.hidden = true;
-          img.src = '';
+          img.removeAttribute('src');
+          img.style.display = '';
         }
       }
 
