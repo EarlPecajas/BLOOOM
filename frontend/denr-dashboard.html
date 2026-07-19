@@ -1690,11 +1690,24 @@
 
       <div style="display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:1.5rem;align-items:start;">
         <div style="background:var(--dt-bg-input);border-radius:12px;padding:1.75rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);">
-          <label for="m3d-orchid-select" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">Orchid Species</label>
-          <select id="m3d-orchid-select" onchange="m3dOnOrchidChange()"
-            style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.9rem;margin-bottom:1.25rem;box-sizing:border-box;">
-            <option value="">Loading orchids…</option>
-          </select>
+          <label for="m3d-orchid-search" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">Orchid Species</label>
+          <div id="m3d-orchid-picker" style="position:relative;margin-bottom:0.9rem;">
+            <input id="m3d-orchid-search" type="text" autocomplete="off" spellcheck="false" placeholder="Type to search an orchid…"
+              style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.9rem;box-sizing:border-box;" />
+            <input id="m3d-orchid-select" type="hidden" value="" />
+            <div id="m3d-orchid-results" hidden style="position:absolute;left:0;right:0;top:calc(100% + 0.4rem);z-index:30;max-height:280px;overflow-y:auto;background:var(--dt-bg-input);border:1px solid var(--dt-border-md);border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.35);padding:0.35rem;"></div>
+          </div>
+
+          <div id="m3d-orchid-thumb-wrap" hidden style="margin-bottom:1.25rem;">
+            <div style="width:100%;height:150px;border-radius:10px;overflow:hidden;background:var(--dt-bg-panel);border:1px solid var(--dt-border-md);display:flex;align-items:center;justify-content:center;">
+              <img id="m3d-orchid-thumb" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+              <span id="m3d-orchid-thumb-empty" style="font-size:0.78rem;color:var(--dt-muted);font-family:Inter,Roboto,sans-serif;">No photo available</span>
+            </div>
+            <div style="margin-top:0.5rem;min-width:0;">
+              <div id="m3d-orchid-thumb-name" style="font-weight:700;font-size:0.86rem;color:var(--dt-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+              <div id="m3d-orchid-thumb-common" style="font-size:0.78rem;color:var(--dt-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            </div>
+          </div>
 
           <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
           <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
@@ -1708,8 +1721,8 @@
           <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
         </div>
 
-        <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;min-height:360px;display:flex;align-items:center;justify-content:center;">
-          <model-viewer id="m3d-preview" style="width:100%;height:360px;--poster-color:transparent;" camera-controls auto-rotate shadow-intensity="1" exposure="1" hidden></model-viewer>
+        <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;height:calc(100vh - 230px);min-height:480px;display:flex;align-items:center;justify-content:center;">
+          <model-viewer id="m3d-preview" style="width:100%;height:100%;--poster-color:transparent;" camera-controls auto-rotate shadow-intensity="1" exposure="1" hidden></model-viewer>
           <div id="m3d-preview-empty" style="color:var(--dt-muted);font-family:Inter,Roboto,sans-serif;font-size:0.88rem;text-align:center;padding:2rem;">
             Select a file or an orchid with an existing model to preview it here.
           </div>
@@ -5190,24 +5203,133 @@
 
       // ── 3D IMAGE (GLB) UPLOAD ────────────────────────────────────────
       let m3dOrchidRows = [];
+      const m3dOrchidSearchEl  = document.getElementById('m3d-orchid-search');
+      const m3dOrchidResultsEl = document.getElementById('m3d-orchid-results');
+
+      // Same genus/species → seed-photo filename map the catalog uses for its
+      // thumbnails, so this picker shows the same image as the public catalog.
+      const M3D_SEED_CLOSEUP_MAP = {
+        'aerides quinquevulnera':    'seed_closeup_aerides.jpg',
+        'bulbophyllum lobbii':       'seed_closeup_bulbophyllum.jpg',
+        'calanthe triplicata':       'seed_closeup_calanthe.jpg',
+        'coelogyne asperata':        'seed_closeup_coelogyne.jpg',
+        'dendrobium secundum':       'seed_closeup_dendrobium.jpg',
+        'paphiopedilum fowliei':     'seed_closeup_paphiopedilum.jpg',
+        'phalaenopsis schilleriana': 'seed_closeup_phalaenopsis.jpg',
+        'spathoglottis plicata':     'seed_closeup_spathoglottis.jpg',
+        'trichoglottis brachiata':   'seed_closeup_trichoglottis.jpg',
+        'vanda sanderiana':          'seed_closeup_vanda.jpg',
+        'aerides':       'seed_closeup_aerides.jpg',
+        'bulbophyllum':  'seed_closeup_bulbophyllum.jpg',
+        'calanthe':      'seed_closeup_calanthe.jpg',
+        'coelogyne':     'seed_closeup_coelogyne.jpg',
+        'dendrobium':    'seed_closeup_dendrobium.jpg',
+        'paphiopedilum': 'seed_closeup_paphiopedilum.jpg',
+        'phalaenopsis':  'seed_closeup_phalaenopsis.jpg',
+        'spathoglottis': 'seed_closeup_spathoglottis.jpg',
+        'trichoglottis': 'seed_closeup_trichoglottis.jpg',
+        'vanda':         'seed_closeup_vanda.jpg'
+      };
+
+      function m3dResolveSeedPhotoUrl(filename) {
+        if (!filename || !bloomSupabase?.storage) return null;
+        const bucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+        const { data } = bloomSupabase.storage.from(bucket).getPublicUrl('sightings/' + filename);
+        return data?.publicUrl || null;
+      }
+
+      // Mirrors the catalog's thumbnail priority: seed photo by species/genus, then the DB image_url.
+      function m3dResolveOrchidPhoto(row) {
+        const sciName = (row.name || '').toLowerCase().trim();
+        const genus = sciName.split(' ')[0];
+        const seedFile = M3D_SEED_CLOSEUP_MAP[sciName] || M3D_SEED_CLOSEUP_MAP[genus];
+        return (seedFile && m3dResolveSeedPhotoUrl(seedFile)) || row.image_url || null;
+      }
 
       async function loadModel3DOrchidOptions() {
-        const sel = document.getElementById('m3d-orchid-select');
-        if (!sel || !bloomSupabase) return;
-        sel.innerHTML = '<option value="">Loading orchids…</option>';
+        if (!bloomSupabase) return;
+        if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Loading orchids…';
         try {
           const { data, error } = await bloomSupabase
             .from('orchid_overview')
-            .select('id, name, common_name, model_3d_url')
+            .select('id, name, common_name, model_3d_url, image_url')
             .order('name', { ascending: true });
           if (error) throw error;
-          m3dOrchidRows = data || [];
-          sel.innerHTML = '<option value="">Select an orchid…</option>' +
-            m3dOrchidRows.map(o => `<option value="${o.id}">${escapeHtml(o.name)}${o.common_name ? ' — ' + escapeHtml(o.common_name) : ''}</option>`).join('');
+          m3dOrchidRows = (data || []).map(o => ({ ...o, resolved_image_url: m3dResolveOrchidPhoto(o) }));
+          if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Type to search an orchid…';
         } catch (err) {
-          sel.innerHTML = '<option value="">Could not load orchids</option>';
+          if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Could not load orchids';
           console.warn('loadModel3DOrchidOptions failed:', err);
         }
+      }
+
+      function m3dHideResults() {
+        if (m3dOrchidResultsEl) {
+          m3dOrchidResultsEl.hidden = true;
+          m3dOrchidResultsEl.innerHTML = '';
+        }
+      }
+
+      function m3dRenderResults(searchTerm = '') {
+        if (!m3dOrchidResultsEl) return;
+        const query = String(searchTerm || '').trim().toLowerCase();
+        const matches = m3dOrchidRows
+          .filter(o => !query || (o.name || '').toLowerCase().includes(query) || (o.common_name || '').toLowerCase().includes(query))
+          .slice(0, 20);
+
+        m3dOrchidResultsEl.innerHTML = '';
+        if (!matches.length) {
+          const emptyState = document.createElement('div');
+          emptyState.style.cssText = 'padding:0.75rem 0.85rem;color:var(--dt-muted);font-size:0.85rem;';
+          emptyState.textContent = 'No matching orchids found';
+          m3dOrchidResultsEl.appendChild(emptyState);
+          m3dOrchidResultsEl.hidden = false;
+          return;
+        }
+
+        matches.forEach((o) => {
+          const optionButton = document.createElement('button');
+          optionButton.type = 'button';
+          optionButton.style.cssText = 'display:block;width:100%;padding:0.5rem 0.7rem;border:none;border-radius:10px;background:transparent;text-align:left;cursor:pointer;transition:background 160ms ease;';
+          optionButton.innerHTML =
+            `<span style="display:block;font-weight:600;color:var(--dt-text);font-size:0.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(o.name)}</span>
+            ${o.common_name ? `<span style="display:block;font-size:0.76rem;color:var(--dt-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(o.common_name)}</span>` : ''}`;
+          optionButton.addEventListener('mousedown', function(event) {
+            event.preventDefault();
+            m3dSelectOrchid(o.id);
+          });
+          optionButton.addEventListener('mouseenter', function() { optionButton.style.background = 'var(--dt-bg-panel)'; });
+          optionButton.addEventListener('mouseleave', function() { optionButton.style.background = 'transparent'; });
+          m3dOrchidResultsEl.appendChild(optionButton);
+        });
+        m3dOrchidResultsEl.hidden = false;
+      }
+
+      function m3dSelectOrchid(orchidId) {
+        const sel = document.getElementById('m3d-orchid-select');
+        const row = m3dOrchidRows.find(o => String(o.id) === String(orchidId));
+        if (sel) sel.value = row ? String(row.id) : '';
+        if (m3dOrchidSearchEl) m3dOrchidSearchEl.value = row ? (row.name + (row.common_name ? ' — ' + row.common_name : '')) : '';
+        m3dHideResults();
+        m3dOnOrchidChange();
+      }
+
+      if (m3dOrchidSearchEl) {
+        m3dOrchidSearchEl.addEventListener('focus', function() { m3dRenderResults(m3dOrchidSearchEl.value); });
+        m3dOrchidSearchEl.addEventListener('input', function() {
+          const sel = document.getElementById('m3d-orchid-select');
+          if (sel && sel.value) {
+            sel.value = '';
+            m3dOnOrchidChange();
+          }
+          m3dRenderResults(m3dOrchidSearchEl.value);
+        });
+        m3dOrchidSearchEl.addEventListener('keydown', function(event) {
+          if (event.key === 'Escape') m3dHideResults();
+        });
+        m3dOrchidSearchEl.addEventListener('blur', function() {
+          window.setTimeout(() => m3dHideResults(), 120);
+        });
       }
 
       function m3dSetPreview(url) {
@@ -5225,6 +5347,36 @@
         }
       }
 
+      function m3dSetThumbnail(row) {
+        const wrap   = document.getElementById('m3d-orchid-thumb-wrap');
+        const img    = document.getElementById('m3d-orchid-thumb');
+        const empty  = document.getElementById('m3d-orchid-thumb-empty');
+        const name   = document.getElementById('m3d-orchid-thumb-name');
+        const common = document.getElementById('m3d-orchid-thumb-common');
+        if (!wrap || !img || !empty || !name || !common) return;
+        if (row) {
+          wrap.hidden = false;
+          if (row.resolved_image_url) {
+            img.src = row.resolved_image_url;
+            img.alt = row.name || '';
+            img.style.display = '';
+            empty.style.display = 'none';
+            img.onerror = function() { img.style.display = 'none'; empty.style.display = ''; };
+          } else {
+            img.removeAttribute('src');
+            img.style.display = 'none';
+            empty.style.display = '';
+          }
+          name.textContent = row.name || '';
+          common.textContent = row.common_name || '';
+        } else {
+          wrap.hidden = true;
+          img.removeAttribute('src');
+          img.style.display = 'none';
+          empty.style.display = '';
+        }
+      }
+
       function m3dOnOrchidChange() {
         const sel  = document.getElementById('m3d-orchid-select');
         const hint = document.getElementById('m3d-current-hint');
@@ -5232,6 +5384,7 @@
         if (!sel || !hint) return;
         const row = m3dOrchidRows.find(o => String(o.id) === sel.value);
         if (fileInput) fileInput.value = '';
+        m3dSetThumbnail(row || null);
         if (row && row.model_3d_url) {
           hint.textContent = 'This orchid already has a 3D model — uploading will replace it.';
           m3dSetPreview(row.model_3d_url);
