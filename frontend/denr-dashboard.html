@@ -5206,6 +5206,46 @@
       const m3dOrchidSearchEl  = document.getElementById('m3d-orchid-search');
       const m3dOrchidResultsEl = document.getElementById('m3d-orchid-results');
 
+      // Same genus/species → seed-photo filename map the catalog uses for its
+      // thumbnails, so this picker shows the same image as the public catalog.
+      const M3D_SEED_CLOSEUP_MAP = {
+        'aerides quinquevulnera':    'seed_closeup_aerides.jpg',
+        'bulbophyllum lobbii':       'seed_closeup_bulbophyllum.jpg',
+        'calanthe triplicata':       'seed_closeup_calanthe.jpg',
+        'coelogyne asperata':        'seed_closeup_coelogyne.jpg',
+        'dendrobium secundum':       'seed_closeup_dendrobium.jpg',
+        'paphiopedilum fowliei':     'seed_closeup_paphiopedilum.jpg',
+        'phalaenopsis schilleriana': 'seed_closeup_phalaenopsis.jpg',
+        'spathoglottis plicata':     'seed_closeup_spathoglottis.jpg',
+        'trichoglottis brachiata':   'seed_closeup_trichoglottis.jpg',
+        'vanda sanderiana':          'seed_closeup_vanda.jpg',
+        'aerides':       'seed_closeup_aerides.jpg',
+        'bulbophyllum':  'seed_closeup_bulbophyllum.jpg',
+        'calanthe':      'seed_closeup_calanthe.jpg',
+        'coelogyne':     'seed_closeup_coelogyne.jpg',
+        'dendrobium':    'seed_closeup_dendrobium.jpg',
+        'paphiopedilum': 'seed_closeup_paphiopedilum.jpg',
+        'phalaenopsis':  'seed_closeup_phalaenopsis.jpg',
+        'spathoglottis': 'seed_closeup_spathoglottis.jpg',
+        'trichoglottis': 'seed_closeup_trichoglottis.jpg',
+        'vanda':         'seed_closeup_vanda.jpg'
+      };
+
+      function m3dResolveSeedPhotoUrl(filename) {
+        if (!filename || !bloomSupabase?.storage) return null;
+        const bucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+        const { data } = bloomSupabase.storage.from(bucket).getPublicUrl('sightings/' + filename);
+        return data?.publicUrl || null;
+      }
+
+      // Mirrors the catalog's thumbnail priority: seed photo by species/genus, then the DB image_url.
+      function m3dResolveOrchidPhoto(row) {
+        const sciName = (row.name || '').toLowerCase().trim();
+        const genus = sciName.split(' ')[0];
+        const seedFile = M3D_SEED_CLOSEUP_MAP[sciName] || M3D_SEED_CLOSEUP_MAP[genus];
+        return (seedFile && m3dResolveSeedPhotoUrl(seedFile)) || row.image_url || null;
+      }
+
       async function loadModel3DOrchidOptions() {
         if (!bloomSupabase) return;
         if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Loading orchids…';
@@ -5215,7 +5255,7 @@
             .select('id, name, common_name, model_3d_url, image_url')
             .order('name', { ascending: true });
           if (error) throw error;
-          m3dOrchidRows = data || [];
+          m3dOrchidRows = (data || []).map(o => ({ ...o, resolved_image_url: m3dResolveOrchidPhoto(o) }));
           if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Type to search an orchid…';
         } catch (err) {
           if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Could not load orchids';
@@ -5316,8 +5356,8 @@
         if (!wrap || !img || !empty || !name || !common) return;
         if (row) {
           wrap.hidden = false;
-          if (row.image_url) {
-            img.src = row.image_url;
+          if (row.resolved_image_url) {
+            img.src = row.resolved_image_url;
             img.alt = row.name || '';
             img.style.display = '';
             empty.style.display = 'none';
