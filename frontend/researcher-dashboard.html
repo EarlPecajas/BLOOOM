@@ -551,9 +551,9 @@
   <body class="dashboard-page researcher-theme" style="visibility:hidden;">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <img src="./loo.png" alt="BLOOM" />
+        <img src="./loo.png" alt="Researcher" id="sidebar-brand-icon" />
         <div class="sidebar-brand-text">
-          <span class="sidebar-brand-title">BLOOM</span>
+          <span class="sidebar-brand-title">RESEARCHER</span>
           <span class="sidebar-brand-subtitle" id="sidebar-brand-subtitle">Researcher Panel</span>
         </div>
       </div>
@@ -2223,6 +2223,13 @@
           if (sidebarBrandSubtitle) {
             sidebarBrandSubtitle.textContent = fullDisplayName;
             sidebarBrandSubtitle.title = fullDisplayName;
+          }
+
+          const sidebarBrandIconEl = document.getElementById('sidebar-brand-icon');
+          if (sidebarBrandIconEl && parsedActiveUser.avatar_url) {
+            sidebarBrandIconEl.src = parsedActiveUser.avatar_url;
+            sidebarBrandIconEl.style.borderRadius = '50%';
+            sidebarBrandIconEl.style.objectFit = 'cover';
           }
         }
 
