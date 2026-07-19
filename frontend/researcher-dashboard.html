@@ -641,7 +641,6 @@
             </button>
             <div class="researcher-data-dropdown" id="researcher-data-dropdown" hidden>
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');openResearcherSubmissionModal();">Add Orchid</button>
-              <button type="button" class="researcher-data-dropdown-item" id="researcher-data-add-specie" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openAddSpecieModal();">Add Specie</button>
               <button type="button" class="researcher-data-dropdown-item" id="researcher-data-submissions" onclick="document.getElementById('researcher-data-dropdown').hidden=true;openDashboardView('submissions');">My Submissions</button>
             </div>
           </div>
@@ -1885,76 +1884,6 @@
       </div>
     </div>
 
-    <!-- Add Specie Modal — species-identity-only submission, no field observation required -->
-    <div id="add-specie-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(17,24,39,0.45);z-index:2002;padding:2rem;overflow-y:auto;" onclick="if(event.target===this){closeAddSpecieModal();}">
-      <div style="background:white;border-radius:16px;padding:0;border:1px solid #dfe7e2;box-shadow:0 20px 50px rgba(10,40,20,0.28);max-width:640px;margin:0 auto;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.2rem 1.5rem;background:#0d2e19;">
-          <div style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
-            <span aria-hidden="true">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c-4-2-7-6-7-11a7 7 0 0 1 14 0c0 5-3 9-7 11z"/><circle cx="12" cy="11" r="2.5"/></svg>
-            </span>
-            <div style="min-width:0;">
-              <h2 style="margin:0;color:#fff;font-family:Inter,Roboto,sans-serif;font-size:1.18rem;font-weight:700;line-height:1.2;">Add Specie</h2>
-              <p style="margin:0.15rem 0 0;color:rgba(20,90,30,.58);font-family:Inter,Roboto,sans-serif;font-size:0.78rem;">Propose a species record for DENR review</p>
-            </div>
-          </div>
-          <button type="button" aria-label="Close" onclick="closeAddSpecieModal()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">&times;</button>
-        </div>
-        <form id="add-specie-form" onsubmit="submitAddSpecie(event)" style="display:block;padding:1.2rem 1.4rem 1.4rem;">
-          <div class="submission-section-header"><strong>Species Identity</strong></div>
-          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.85rem;margin:0.85rem 0;">
-            <div class="submission-field">
-              <label for="specie-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus <span style="color:#b42318;">*</span></label>
-              <input id="specie-genus" type="text" required placeholder="e.g. Phalaenopsis" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
-            </div>
-            <div class="submission-field">
-              <label for="specie-species-epithet" style="font-size:0.88rem;font-weight:600;color:#334155;">Species Epithet <span style="color:#b42318;">*</span></label>
-              <input id="specie-species-epithet" type="text" required placeholder="e.g. amabilis" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
-            </div>
-            <div class="submission-field submission-field--full">
-              <label for="specie-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
-              <input id="specie-scientific-name" type="text" list="known-species-datalist" placeholder="Auto-filled from Genus + Species, or pick/type manually" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
-              <span id="specie-scientific-name-hint" style="display:none;font-size:0.78rem;color:#b42318;margin-top:0.3rem;">Scientific name must start with a capital letter (e.g., Phalaenopsis amabilis).</span>
-            </div>
-            <div class="submission-field submission-field--full">
-              <label for="specie-common-names" style="font-size:0.88rem;font-weight:600;color:#334155;">Common Name(s)</label>
-              <input id="specie-common-names" type="text" placeholder="Comma-separated, e.g. Moon Orchid, Moth Orchid" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
-            </div>
-            <div class="submission-field submission-field--full">
-              <label for="specie-local-names" style="font-size:0.88rem;font-weight:600;color:#334155;">Local Name(s)</label>
-              <input id="specie-local-names" type="text" placeholder="Comma-separated local/vernacular names" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;" />
-            </div>
-            <div class="submission-field">
-              <label for="specie-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Identification Confidence</label>
-              <select id="specie-identification-confidence" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;">
-                <option value="Unidentified">Unidentified</option>
-                <option value="Probable">Probable</option>
-                <option value="Confirmed">Confirmed</option>
-              </select>
-            </div>
-            <div class="submission-field">
-              <label for="specie-endemic" style="font-size:0.88rem;font-weight:600;color:#334155;">Endemic to Philippines</label>
-              <select id="specie-endemic" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;">
-                <option value="">Unknown</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </div>
-            <div class="submission-field submission-field--full">
-              <label for="specie-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Notes</label>
-              <textarea id="specie-notes" rows="3" placeholder="Any reference details for DENR (source, literature, distinguishing traits)…" class="submission-text-input" style="font-family:Inter,Roboto,sans-serif;resize:vertical;"></textarea>
-            </div>
-          </div>
-          <p style="margin:0 0 1rem;font-size:0.78rem;color:#6b8f6b;line-height:1.5;">This creates a species-only record for DENR to review — no location, habitat, morphology, or photo data is required. Once approved, DENR can publish it to the catalog.</p>
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:0.75rem;margin:1rem -1.4rem -1.4rem;padding:0.9rem 1.4rem;border-top:1.5px solid #C8C0A4;background:#E8E2CB;border-radius:0 0 16px 16px;">
-            <span id="add-specie-feedback" style="font-size:0.86rem;font-weight:600;color:#4f5f56;margin-right:auto;"></span>
-            <button type="button" onclick="closeAddSpecieModal()" class="submission-nav-btn" style="background:#fff;border-color:#b9cdb9;color:#145A1E;" onmouseover="this.style.background='#eaf3ea'" onmouseout="this.style.background='#fff'">Cancel</button>
-            <button type="submit" id="add-specie-submit-btn" class="submission-nav-btn" style="background:#145A1E;border-color:#145A1E;color:#fff;box-shadow:0 4px 12px rgba(20,90,30,.22);" onmouseover="this.style.background='#0E4018'" onmouseout="this.style.background='#145A1E'">Submit for Review &#10003;</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <!-- Detail Modal with Actions -->
     <div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:2000;padding:1.5rem;overflow:hidden;backdrop-filter:blur(3px);align-items:flex-start;justify-content:center;">
       <div id="detailModalCard" style="background:#f8fafc;border-radius:18px;max-width:920px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.22);display:flex;flex-direction:column;max-height:calc(100vh - 3rem);overflow:hidden;">
@@ -2862,9 +2791,9 @@
         }
       }
 
-      // Populates the shared "known species" datalist used by both the Add Orchid
-      // scientific-name field and the Add Specie form, from the published catalog
-      // plus every DENR-approved submission (whether published yet or not).
+      // Populates the "known species" datalist for the Add Orchid scientific-name
+      // field, from the published catalog plus every DENR-approved submission
+      // (whether published yet or not).
       async function loadSpeciesNameSuggestions() {
         const datalist = document.getElementById('known-species-datalist');
         if (!datalist) return;
@@ -2890,125 +2819,6 @@
           }
         }
         datalist.innerHTML = Array.from(names).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
-      }
-
-      // ── Add Specie — species-identity-only submission (no field observation) ──
-      function isSpecieScientificNameCapitalized(v) {
-        const first = (v || '').trim().charAt(0);
-        return !first || (first === first.toUpperCase() && first !== first.toLowerCase());
-      }
-
-      function bindAddSpecieForm() {
-        const genusEl = document.getElementById('specie-genus');
-        const speciesEl = document.getElementById('specie-species-epithet');
-        const sciEl = document.getElementById('specie-scientific-name');
-        const hintEl = document.getElementById('specie-scientific-name-hint');
-        function checkFormat() {
-          if (!sciEl) return true;
-          const ok = isSpecieScientificNameCapitalized(sciEl.value);
-          if (hintEl) hintEl.style.display = ok ? 'none' : 'block';
-          sciEl.style.borderColor = ok ? '' : '#b42318';
-          return ok;
-        }
-        function syncName() {
-          const g = (genusEl?.value || '').trim();
-          const s = (speciesEl?.value || '').trim();
-          if (g || s) sciEl.value = [g, s].filter(Boolean).join(' ');
-          checkFormat();
-        }
-        if (genusEl && !genusEl.dataset.bound) { genusEl.dataset.bound = '1'; genusEl.addEventListener('input', syncName); }
-        if (speciesEl && !speciesEl.dataset.bound) { speciesEl.dataset.bound = '1'; speciesEl.addEventListener('input', syncName); }
-        if (sciEl && !sciEl.dataset.formatBound) { sciEl.dataset.formatBound = '1'; sciEl.addEventListener('input', checkFormat); }
-      }
-
-      function openAddSpecieModal() {
-        const modal = document.getElementById('add-specie-modal');
-        if (!modal) return;
-        const form = document.getElementById('add-specie-form');
-        if (form) form.reset();
-        const hintEl = document.getElementById('specie-scientific-name-hint');
-        if (hintEl) hintEl.style.display = 'none';
-        const feedbackEl = document.getElementById('add-specie-feedback');
-        if (feedbackEl) feedbackEl.textContent = '';
-        bindAddSpecieForm();
-        loadSpeciesNameSuggestions();
-        modal.style.display = 'block';
-      }
-
-      function closeAddSpecieModal() {
-        const modal = document.getElementById('add-specie-modal');
-        if (modal) modal.style.display = 'none';
-      }
-
-      async function submitAddSpecie(event) {
-        event.preventDefault();
-
-        const genus = (document.getElementById('specie-genus')?.value || '').trim();
-        const speciesEpithet = (document.getElementById('specie-species-epithet')?.value || '').trim();
-        const sciName = (document.getElementById('specie-scientific-name')?.value || '').trim() || [genus, speciesEpithet].filter(Boolean).join(' ');
-        const feedbackEl = document.getElementById('add-specie-feedback');
-
-        if (!genus || !speciesEpithet || !sciName) {
-          if (feedbackEl) { feedbackEl.textContent = 'Genus and Species Epithet are required.'; feedbackEl.style.color = '#b42318'; }
-          return;
-        }
-        if (!isSpecieScientificNameCapitalized(sciName)) {
-          if (feedbackEl) { feedbackEl.textContent = 'Scientific name must start with a capital letter.'; feedbackEl.style.color = '#b42318'; }
-          return;
-        }
-        if (!bloomSupabase) {
-          if (feedbackEl) { feedbackEl.textContent = 'Supabase is not configured.'; feedbackEl.style.color = '#b42318'; }
-          return;
-        }
-
-        const commonNames = (document.getElementById('specie-common-names')?.value || '').split(',').map((s) => s.trim()).filter(Boolean);
-        const localNames = (document.getElementById('specie-local-names')?.value || '').split(',').map((s) => s.trim()).filter(Boolean);
-        const confidence = document.getElementById('specie-identification-confidence')?.value || 'Unidentified';
-        const endemic = document.getElementById('specie-endemic')?.value || '';
-        const notes = (document.getElementById('specie-notes')?.value || '').trim();
-
-        const currentEmail = String(parsedActiveUser.email || '').trim() || null;
-        const currentName = [parsedActiveUser.first_name, parsedActiveUser.last_name].filter(Boolean).join(' ').trim() || null;
-        const entryId = `SPECIES-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-        const submitBtn = document.getElementById('add-specie-submit-btn');
-        const originalText = submitBtn ? submitBtn.textContent : '';
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting…'; }
-        if (feedbackEl) { feedbackEl.textContent = ''; }
-
-        try {
-          // Mt. Busa reference point — species-only records aren't tied to a
-          // specific field observation, but latitude/longitude are NOT NULL
-          // on species_sightings, so anchor them to the general survey area.
-          const { error } = await bloomSupabase.from('species_sightings').insert({
-            entry_id: entryId,
-            user_id: null,
-            researcher_email: currentEmail,
-            researcher_name: currentName,
-            scientific_name: sciName,
-            common_names: commonNames,
-            local_names: localNames,
-            identification_confidence: confidence,
-            endemic_to_philippines: endemic || null,
-            observation_type: 'Species record (no field observation)',
-            mountain_name: 'Mt. Busa',
-            latitude: 6.0705,
-            longitude: 124.7412,
-            researcher_notes: notes || null,
-            review_status: 'pending'
-          });
-          if (error) throw error;
-
-          showToast(`"${sciName}" submitted for DENR review.`);
-          closeAddSpecieModal();
-          if (typeof loadSubmissions === 'function') {
-            loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
-          }
-        } catch (err) {
-          if (feedbackEl) { feedbackEl.textContent = 'Failed: ' + (err.message || err); feedbackEl.style.color = '#b42318'; }
-        } finally {
-          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalText; }
-        }
       }
 
       // Clear placeholder option text from all submission selects — labels above already explain each field
