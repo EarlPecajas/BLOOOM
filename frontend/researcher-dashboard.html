@@ -1460,18 +1460,22 @@
             <div class="submission-field">
               <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus</label>
               <div style="display:flex;gap:0.5rem;">
-                <input id="submission-genus" type="text" list="known-genus-datalist" placeholder="Genus" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <div style="position:relative;flex:1;">
+                  <input id="submission-genus" type="text" autocomplete="off" spellcheck="false" placeholder="Genus" class="submission-text-input" style="width:100%;font-family:Inter,Roboto,sans-serif;box-sizing:border-box;" />
+                  <div id="submission-genus-results" hidden style="position:absolute;left:0;right:0;top:calc(100% + 0.3rem);z-index:30;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #d4ddd7;border-radius:10px;box-shadow:0 14px 32px rgba(0,0,0,.16);padding:0.3rem;"></div>
+                </div>
                 <button type="button" id="submission-genus-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
-              <datalist id="known-genus-datalist"></datalist>
             </div>
             <div class="submission-field">
               <label for="submission-species-epithet" style="font-size:0.88rem;font-weight:600;color:#334155;">Species Epithet</label>
               <div style="display:flex;gap:0.5rem;">
-                <input id="submission-species-epithet" type="text" list="known-epithet-datalist" placeholder="e.g. amabilis" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <div style="position:relative;flex:1;">
+                  <input id="submission-species-epithet" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. amabilis" class="submission-text-input" style="width:100%;font-family:Inter,Roboto,sans-serif;box-sizing:border-box;" />
+                  <div id="submission-species-epithet-results" hidden style="position:absolute;left:0;right:0;top:calc(100% + 0.3rem);z-index:30;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #d4ddd7;border-radius:10px;box-shadow:0 14px 32px rgba(0,0,0,.16);padding:0.3rem;"></div>
+                </div>
                 <button type="button" id="submission-species-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
-              <datalist id="known-epithet-datalist"></datalist>
             </div>
             <div class="submission-field submission-field--full">
               <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
@@ -2778,14 +2782,17 @@
         }
       }
 
+      // Known genus / species-epithet lists backing the dropdown-style suggestion
+      // pickers on the Genus and Species Epithet fields (same picker pattern as
+      // the DENR 3D Image page's searchable orchid picker).
+      let knownGenusNames = [];
+      let knownEpithets = [];
+
       // Populates the "known species" datalist for the Add Orchid scientific-name
-      // field, plus the genus and species-epithet datalists, from the published
+      // field, plus the genus/epithet suggestion lists, from the published
       // catalog and every DENR-approved submission (whether published yet or not).
       async function loadSpeciesNameSuggestions() {
         const speciesDatalist = document.getElementById('known-species-datalist');
-        const genusDatalist = document.getElementById('known-genus-datalist');
-        const epithetDatalist = document.getElementById('known-epithet-datalist');
-        if (!speciesDatalist && !genusDatalist && !epithetDatalist) return;
 
         const names = new Set();
         const genusNames = new Set();
@@ -2833,13 +2840,56 @@
         if (speciesDatalist) {
           speciesDatalist.innerHTML = Array.from(names).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
         }
-        if (genusDatalist) {
-          genusDatalist.innerHTML = Array.from(genusNames).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
-        }
-        if (epithetDatalist) {
-          epithetDatalist.innerHTML = Array.from(epithets).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
-        }
+        knownGenusNames = Array.from(genusNames).filter(Boolean).sort();
+        knownEpithets = Array.from(epithets).filter(Boolean).sort();
       }
+
+      // Dropdown-style suggestion picker matching the 3D Image page's searchable
+      // orchid picker: a text input that shows a floating list of matches below
+      // it as you type, click a row to fill the input.
+      function bindSuggestionPicker(inputEl, resultsEl, getOptions) {
+        if (!inputEl || !resultsEl) return;
+        function render(query) {
+          const q = String(query || '').trim().toLowerCase();
+          const matches = getOptions().filter((o) => !q || o.toLowerCase().includes(q)).slice(0, 20);
+          resultsEl.innerHTML = '';
+          if (!matches.length) {
+            resultsEl.hidden = true;
+            return;
+          }
+          matches.forEach((val) => {
+            const optionButton = document.createElement('button');
+            optionButton.type = 'button';
+            optionButton.style.cssText = 'display:block;width:100%;padding:0.5rem 0.7rem;border:none;border-radius:8px;background:transparent;text-align:left;cursor:pointer;font-size:0.86rem;color:#1e293b;font-family:Inter,Roboto,sans-serif;transition:background 150ms ease;';
+            optionButton.textContent = val;
+            optionButton.addEventListener('mousedown', function(event) {
+              event.preventDefault();
+              inputEl.value = val;
+              inputEl.dispatchEvent(new Event('input'));
+              resultsEl.hidden = true;
+            });
+            optionButton.addEventListener('mouseenter', function() { optionButton.style.background = '#f6f8f7'; });
+            optionButton.addEventListener('mouseleave', function() { optionButton.style.background = 'transparent'; });
+            resultsEl.appendChild(optionButton);
+          });
+          resultsEl.hidden = false;
+        }
+        inputEl.addEventListener('focus', function() { render(inputEl.value); });
+        inputEl.addEventListener('input', function() { render(inputEl.value); });
+        inputEl.addEventListener('keydown', function(event) { if (event.key === 'Escape') resultsEl.hidden = true; });
+        inputEl.addEventListener('blur', function() { window.setTimeout(() => { resultsEl.hidden = true; }, 120); });
+      }
+
+      bindSuggestionPicker(
+        document.getElementById('submission-genus'),
+        document.getElementById('submission-genus-results'),
+        () => knownGenusNames
+      );
+      bindSuggestionPicker(
+        document.getElementById('submission-species-epithet'),
+        document.getElementById('submission-species-epithet-results'),
+        () => knownEpithets
+      );
 
       // Clear placeholder option text from all submission selects — labels above already explain each field
       document.querySelectorAll('#researcher-submission-form .submission-select option[value=""][disabled]').forEach(function(opt) {
