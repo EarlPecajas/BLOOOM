@@ -1460,16 +1460,18 @@
             <div class="submission-field">
               <label for="submission-genus" style="font-size:0.88rem;font-weight:600;color:#334155;">Genus</label>
               <div style="display:flex;gap:0.5rem;">
-                <input id="submission-genus" type="text" placeholder="Genus" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <input id="submission-genus" type="text" list="known-genus-datalist" placeholder="Genus" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
                 <button type="button" id="submission-genus-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
+              <datalist id="known-genus-datalist"></datalist>
             </div>
             <div class="submission-field">
               <label for="submission-species-epithet" style="font-size:0.88rem;font-weight:600;color:#334155;">Species Epithet</label>
               <div style="display:flex;gap:0.5rem;">
-                <input id="submission-species-epithet" type="text" placeholder="e.g. amabilis" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <input id="submission-species-epithet" type="text" list="known-epithet-datalist" placeholder="e.g. amabilis" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
                 <button type="button" id="submission-species-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
+              <datalist id="known-epithet-datalist"></datalist>
             </div>
             <div class="submission-field submission-field--full">
               <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
@@ -1528,6 +1530,10 @@
             <div class="submission-field">
               <label for="submission-voucher-collected" style="font-size:0.88rem;font-weight:600;color:#334155;">Voucher Specimen Collected <span class="field-help" data-tooltip="Optional. Select Yes if you collected a pressed/dried specimen for herbarium, No otherwise.">?</span></label>
               <select id="submission-voucher-collected" class="submission-select"><option value="" disabled selected hidden>Voucher Specimen Collected</option><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+            <div class="submission-field">
+              <label for="submission-species-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Species <span class="field-help" data-tooltip="Optional. How many orchid species were observed during this survey/visit.">?</span></label>
+              <input id="submission-species-count" type="number" min="0" step="1" placeholder="Number of Species" class="submission-text-input submission-number-input" />
             </div>
           </div>
 
@@ -1654,19 +1660,13 @@
               <input id="submission-leaf-width" type="number" step="0.01" placeholder="Leaf Width (cm)" class="submission-text-input submission-number-input" />
             </div>
             <div class="submission-field">
-              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Texture</label>
-              <details id="submission-leaf-texture" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
-                <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
-                  <span>Choose one or more</span>
-                  <span aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #64748b;flex:0 0 auto;margin-top:2px;"></span>
-                </summary>
-                <div style="display:grid;gap:0.35rem;margin-top:0.55rem;">
-                  <label><input type="checkbox" value="Smooth" class="submission-leaf-texture-option" /> Smooth</label>
-                  <label><input type="checkbox" value="Leathery" class="submission-leaf-texture-option" /> Leathery</label>
-                  <label><input type="checkbox" value="Hairy or Fuzzy" class="submission-leaf-texture-option" /> Hairy or Fuzzy</label>
-                  <label><input type="checkbox" value="Thin or Fragile" class="submission-leaf-texture-option" /> Thin or Fragile</label>
-                </div>
-              </details>
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Texture <span style="font-weight:500;color:#64748b;font-size:0.78rem;">(Choose one or more)</span></label>
+              <div id="submission-leaf-texture" style="display:grid;gap:0.4rem;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="Smooth" class="submission-leaf-texture-option" /> Smooth</label>
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="Leathery" class="submission-leaf-texture-option" /> Leathery</label>
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="Hairy or Fuzzy" class="submission-leaf-texture-option" /> Hairy or Fuzzy</label>
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="Thin or Fragile" class="submission-leaf-texture-option" /> Thin or Fragile</label>
+              </div>
             </div>
             <div class="submission-field">
               <label for="submission-leaf-arrangement" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Arrangement</label>
@@ -1721,8 +1721,8 @@
               <select id="submission-seed-capsule-condition" class="submission-select"><option value="" disabled selected hidden>Seed Capsule Condition</option><option value="Immature (Green)">Immature (Green)</option><option value="Mature (Yellow/Brown)">Mature (Yellow/Brown)</option><option value="Dehisced (Split)">Dehisced (Split)</option><option value="Aborted">Aborted</option></select>
             </div>
             <div class="submission-field submission-field--full">
-              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" data-tooltip="Optional. Select the start and end month of the flowering period, or check Unknown.">?</span></label>
-              <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Flowering Season <span class="field-help" data-tooltip="Optional. Select the start and end month of the flowering period, or click Unknown.">?</span></label>
+              <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
                 <select id="submission-flowering-season-start" class="submission-select" style="flex:1;min-width:120px;" onchange="updateFloweringSeasonValue()">
                   <option value="" disabled selected hidden>Start Month</option>
                   <option value="January">January</option><option value="February">February</option><option value="March">March</option>
@@ -1738,11 +1738,8 @@
                   <option value="July">July</option><option value="August">August</option><option value="September">September</option>
                   <option value="October">October</option><option value="November">November</option><option value="December">December</option>
                 </select>
+                <button type="button" id="submission-flowering-season-unknown" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
-              <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#64748b;font-weight:400;cursor:pointer;">
-                <input type="checkbox" id="submission-flowering-season-unknown" onchange="updateFloweringSeasonValue()" />
-                Unknown
-              </label>
               <input type="hidden" id="submission-flowering-season" />
             </div>
           </div>
@@ -1780,19 +1777,13 @@
               <select id="submission-threat-level" class="submission-select"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Least Concern">Least Concern</option></select>
             </div>
             <div class="submission-field submission-field--full">
-              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Type</label>
-              <details id="submission-threat-types" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
-                <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
-                  <span>Choose one or more</span>
-                  <span aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #64748b;flex:0 0 auto;margin-top:2px;"></span>
-                </summary>
-                <div style="display:grid;gap:0.35rem;margin-top:0.55rem;">
-                  <label><input type="checkbox" value="logging" class="submission-threat-type-option" /> Logging</label>
-                  <label><input type="checkbox" value="collection" class="submission-threat-type-option" /> Collection</label>
-                  <label><input type="checkbox" value="Fire" class="submission-threat-type-option" /> Fire</label>
-                  <label><input type="checkbox" value="land conversion" class="submission-threat-type-option" /> Land Conversion</label>
-                </div>
-              </details>
+              <label style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Type <span style="font-weight:500;color:#64748b;font-size:0.78rem;">(Choose one or more)</span></label>
+              <div id="submission-threat-types" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.4rem;padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#fff;">
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="logging" class="submission-threat-type-option" /> Logging</label>
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="collection" class="submission-threat-type-option" /> Collection</label>
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="Fire" class="submission-threat-type-option" /> Fire</label>
+                <label style="display:flex;align-items:center;gap:0.45rem;font-weight:400;cursor:pointer;"><input type="checkbox" value="land conversion" class="submission-threat-type-option" /> Land Conversion</label>
+              </div>
             </div>
           </div>
 
@@ -2788,19 +2779,29 @@
       }
 
       // Populates the "known species" datalist for the Add Orchid scientific-name
-      // field, from the published catalog plus every DENR-approved submission
-      // (whether published yet or not).
+      // field, plus the genus and species-epithet datalists, from the published
+      // catalog and every DENR-approved submission (whether published yet or not).
       async function loadSpeciesNameSuggestions() {
-        const datalist = document.getElementById('known-species-datalist');
-        if (!datalist) return;
+        const speciesDatalist = document.getElementById('known-species-datalist');
+        const genusDatalist = document.getElementById('known-genus-datalist');
+        const epithetDatalist = document.getElementById('known-epithet-datalist');
+        if (!speciesDatalist && !genusDatalist && !epithetDatalist) return;
+
         const names = new Set();
-        (orchidRows || []).forEach((o) => { if (o.name) names.add(String(o.name).trim()); });
+        const genusNames = new Set();
+        (orchidRows || []).forEach((o) => {
+          if (o.name) names.add(String(o.name).trim());
+          if (o.genus) genusNames.add(String(o.genus).trim());
+        });
         if (bloomSupabase) {
           // Query the catalog directly too — orchidRows may still be empty if the
           // researcher hasn't visited the Orchids view yet this session.
           try {
-            const { data } = await bloomSupabase.from('orchid_overview').select('name');
-            (data || []).forEach((row) => { if (row.name) names.add(String(row.name).trim()); });
+            const { data } = await bloomSupabase.from('orchid_overview').select('name, genus');
+            (data || []).forEach((row) => {
+              if (row.name) names.add(String(row.name).trim());
+              if (row.genus) genusNames.add(String(row.genus).trim());
+            });
           } catch (e) {
             console.warn('Failed to load catalog species names:', e);
           }
@@ -2813,8 +2814,31 @@
           } catch (e) {
             console.warn('Failed to load species name suggestions:', e);
           }
+          // Canonical genus list — most authoritative source for the genus field.
+          try {
+            const { data } = await bloomSupabase.from('genus').select('genus_name');
+            (data || []).forEach((row) => { if (row.genus_name) genusNames.add(String(row.genus_name).trim()); });
+          } catch (e) {
+            console.warn('Failed to load genus suggestions:', e);
+          }
         }
-        datalist.innerHTML = Array.from(names).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
+
+        // Species epithet = everything after the genus (first word) of each known name.
+        const epithets = new Set();
+        names.forEach((n) => {
+          const parts = n.split(/\s+/);
+          if (parts.length > 1) epithets.add(parts.slice(1).join(' '));
+        });
+
+        if (speciesDatalist) {
+          speciesDatalist.innerHTML = Array.from(names).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
+        }
+        if (genusDatalist) {
+          genusDatalist.innerHTML = Array.from(genusNames).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
+        }
+        if (epithetDatalist) {
+          epithetDatalist.innerHTML = Array.from(epithets).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
+        }
       }
 
       // Clear placeholder option text from all submission selects — labels above already explain each field
@@ -3089,6 +3113,7 @@
           collection_method:        strOrNull('submission-collection-method'),
           observation_type:         strOrNull('submission-observation-type'),
           voucher_collected:        document.getElementById('submission-voucher-collected')?.value === 'yes',
+          species_count:            numOrNull('submission-species-count'),
           mountain_id:              mountainId,
           specific_site_zone:       strOrNull('submission-specific-site-zone'),
           specific_site_other:      strOrNull('submission-specific-site-other'),
@@ -3157,21 +3182,13 @@
       }
 
       function updateFloweringSeasonValue() {
-        const unknownCb = document.getElementById('submission-flowering-season-unknown');
-        const startSel  = document.getElementById('submission-flowering-season-start');
-        const endSel    = document.getElementById('submission-flowering-season-end');
-        const hidden    = document.getElementById('submission-flowering-season');
-        const isUnknown = unknownCb && unknownCb.checked;
-        if (startSel) startSel.disabled = isUnknown;
-        if (endSel)   endSel.disabled   = isUnknown;
+        const startSel = document.getElementById('submission-flowering-season-start');
+        const endSel   = document.getElementById('submission-flowering-season-end');
+        const hidden   = document.getElementById('submission-flowering-season');
         if (!hidden) return;
-        if (isUnknown) {
-          hidden.value = 'Unknown';
-        } else {
-          const s = startSel ? startSel.value : '';
-          const e = endSel   ? endSel.value   : '';
-          hidden.value = s && e ? s + '–' + e : (s || e || '');
-        }
+        const s = startSel ? startSel.value : '';
+        const e = endSel   ? endSel.value   : '';
+        hidden.value = s && e ? s + '–' + e : (s || e || '');
       }
 
       const researcherSubmissionFormEl = document.getElementById('researcher-submission-form');
@@ -3199,6 +3216,18 @@
         speciesUnknownBtn.addEventListener('click', function() {
           submissionSpeciesEl.value = 'Unknown';
           submissionSpeciesEl.dispatchEvent(new Event('input'));
+        });
+      }
+
+      const floweringSeasonUnknownBtn = document.getElementById('submission-flowering-season-unknown');
+      if (floweringSeasonUnknownBtn) {
+        floweringSeasonUnknownBtn.addEventListener('click', function() {
+          const startSel = document.getElementById('submission-flowering-season-start');
+          const endSel = document.getElementById('submission-flowering-season-end');
+          const hidden = document.getElementById('submission-flowering-season');
+          if (startSel) startSel.value = '';
+          if (endSel) endSel.value = '';
+          if (hidden) hidden.value = 'Unknown';
         });
       }
 
@@ -4508,6 +4537,7 @@
         setVal('submission-collection-method', draft.collection_method || '');
         setVal('submission-observation-type', draft.observation_type || '');
         setVal('submission-voucher-collected', boolToYesNo(draft.voucher_collected));
+        if (draft.species_count !== null && draft.species_count !== undefined) setVal('submission-species-count', draft.species_count);
 
         // ── Location ──
         setVal('submission-specific-site-zone', draft.specific_site_zone || '');
@@ -4562,8 +4592,8 @@
         // Flowering season — stored as "Month – Month" or "Month–Month"
         const seasonStr = String(draft.flowering_season || '').trim();
         if (seasonStr === 'Unknown') {
-          const unknownCb = document.getElementById('submission-flowering-season-unknown');
-          if (unknownCb) { unknownCb.checked = true; updateFloweringSeasonValue(); }
+          const hidden = document.getElementById('submission-flowering-season');
+          if (hidden) hidden.value = 'Unknown';
         } else if (seasonStr) {
           const parts = seasonStr.split(/\s*[–\-]\s*/);
           if (parts.length >= 2) {
