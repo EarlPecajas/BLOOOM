@@ -2853,27 +2853,27 @@ button:active {
   padding: 0.85rem 1.9rem;
   border: none;
   border-radius: 999px;
-  background: #145A1E;
+  background: #b478c9;
   color: #ffffff;
   font-family: 'Inter', 'Roboto', sans-serif;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(20, 90, 30, 0.28);
+  box-shadow: 0 10px 24px rgba(180, 120, 201, 0.35);
   transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
 }
 .researcher-add-orchid-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(20, 90, 30, 0.36);
-  background: #0E4018;
+  box-shadow: 0 14px 30px rgba(180, 120, 201, 0.42);
+  background: #9a5cb2;
 }
 .researcher-add-orchid-btn:active {
   transform: translateY(0);
-  box-shadow: 0 6px 16px rgba(20, 90, 30, 0.3);
+  box-shadow: 0 6px 16px rgba(180, 120, 201, 0.35);
 }
 .researcher-add-orchid-btn:focus-visible {
-  outline: 2px solid rgba(20, 90, 30, 0.5);
+  outline: 2px solid rgba(180, 120, 201, 0.55);
   outline-offset: 3px;
 }
 .researcher-add-orchid-btn-icon {
