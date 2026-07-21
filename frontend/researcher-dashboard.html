@@ -1797,19 +1797,28 @@
               <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span style="color:#b42318;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-whole-plant-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
-              <input id="submission-whole-plant-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
+              <div id="submission-whole-plant-photographer-wrap" style="display:none;margin-top:0.4rem;">
+                <label for="submission-whole-plant-photographer" style="display:block;font-size:0.8rem;font-weight:600;color:#334155;margin-bottom:0.2rem;">Contributor Name</label>
+                <input id="submission-whole-plant-photographer" type="text" placeholder="Photographer name" class="submission-text-input" />
+              </div>
             </div>
             <div>
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Close-up Flower Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-closeup-flower-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-closeup-flower-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
-              <input id="submission-closeup-flower-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
+              <div id="submission-closeup-flower-photographer-wrap" style="display:none;margin-top:0.4rem;">
+                <label for="submission-closeup-flower-photographer" style="display:block;font-size:0.8rem;font-weight:600;color:#334155;margin-bottom:0.2rem;">Contributor Name</label>
+                <input id="submission-closeup-flower-photographer" type="text" placeholder="Photographer name" class="submission-text-input" />
+              </div>
             </div>
             <div>
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Habitat Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-habitat-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-habitat-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
-              <input id="submission-habitat-photographer" type="text" placeholder="Photographer name" class="submission-text-input" style="margin-top:0.4rem;" />
+              <div id="submission-habitat-photographer-wrap" style="display:none;margin-top:0.4rem;">
+                <label for="submission-habitat-photographer" style="display:block;font-size:0.8rem;font-weight:600;color:#334155;margin-bottom:0.2rem;">Contributor Name</label>
+                <input id="submission-habitat-photographer" type="text" placeholder="Photographer name" class="submission-text-input" />
+              </div>
             </div>
           </div>
 
@@ -2588,14 +2597,15 @@
           });
         }
 
-        // Photo file count enforcement (max 3 per photo category)
+        // Photo file count enforcement (max 3 per photo category) + reveal contributor name once a photo is added
         [
-          ['submission-whole-plant-photo', 'submission-whole-plant-photo-err'],
-          ['submission-closeup-flower-photo', 'submission-closeup-flower-photo-err'],
-          ['submission-habitat-photo', 'submission-habitat-photo-err']
-        ].forEach(([inputId, errId]) => {
+          ['submission-whole-plant-photo', 'submission-whole-plant-photo-err', 'submission-whole-plant-photographer-wrap'],
+          ['submission-closeup-flower-photo', 'submission-closeup-flower-photo-err', 'submission-closeup-flower-photographer-wrap'],
+          ['submission-habitat-photo', 'submission-habitat-photo-err', 'submission-habitat-photographer-wrap']
+        ].forEach(([inputId, errId, photographerWrapId]) => {
           const input = document.getElementById(inputId);
           const errEl = document.getElementById(errId);
+          const photographerWrapEl = document.getElementById(photographerWrapId);
           if (input && !input.dataset.bound) {
             input.dataset.bound = '1';
             input.addEventListener('change', function() {
@@ -2604,6 +2614,9 @@
                 this.value = '';
               } else {
                 if (errEl) errEl.style.display = 'none';
+              }
+              if (photographerWrapEl) {
+                photographerWrapEl.style.display = (this.files && this.files.length > 0) ? 'block' : 'none';
               }
             });
           }

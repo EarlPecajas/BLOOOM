@@ -7612,9 +7612,9 @@
           approved: 'Approved',
           rejected: 'Rejected',
           revision: 'For Revision',
-          pending: 'Pending Review'
+          pending: 'Pending'
         };
-        return labels[String(status || '').toLowerCase()] || 'Pending Review';
+        return labels[String(status || '').toLowerCase()] || 'Pending';
       }
 
       async function updateSubmissionReviewStatus(submissionId, nextStatus) {
