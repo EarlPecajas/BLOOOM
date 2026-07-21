@@ -1536,8 +1536,8 @@
               <select id="submission-voucher-collected" class="submission-select"><option value="" disabled selected hidden>Voucher Specimen Collected</option><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
             <div class="submission-field">
-              <label for="submission-species-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Species <span class="field-help" data-tooltip="Optional. How many orchid species were observed during this survey/visit.">?</span></label>
-              <input id="submission-species-count" type="number" min="0" step="1" placeholder="Number of Species" class="submission-text-input submission-number-input" />
+              <label for="submission-population-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Orchids in the Area <span class="field-help" data-tooltip="Optional. How many individual orchids of this species were observed in the area during this survey/visit.">?</span></label>
+              <input id="submission-population-count" type="number" placeholder="Number of Orchids in the Area" class="submission-text-input submission-number-input" />
             </div>
           </div>
 
@@ -1760,10 +1760,6 @@
             <div class="submission-field">
               <label for="submission-phenology" style="font-size:0.88rem;font-weight:600;color:#334155;">Phenology</label>
               <select id="submission-phenology" class="submission-select"><option value="" disabled selected hidden>Phenology</option><option value="Vegetative">Vegetative</option><option value="budding">Budding</option><option value="flowering">Flowering</option><option value="fruiting">Fruiting</option></select>
-            </div>
-            <div class="submission-field">
-              <label for="submission-population-count" style="font-size:0.88rem;font-weight:600;color:#334155;">Number of Orchids in the Area</label>
-              <input id="submission-population-count" type="number" placeholder="Number of Orchids in the Area" class="submission-text-input submission-number-input" />
             </div>
           </div>
 
@@ -3163,7 +3159,6 @@
           collection_method:        strOrNull('submission-collection-method'),
           observation_type:         strOrNull('submission-observation-type'),
           voucher_collected:        document.getElementById('submission-voucher-collected')?.value === 'yes',
-          species_count:            numOrNull('submission-species-count'),
           mountain_id:              mountainId,
           specific_site_zone:       strOrNull('submission-specific-site-zone'),
           specific_site_other:      strOrNull('submission-specific-site-other'),
@@ -3235,6 +3230,8 @@
         const startSel = document.getElementById('submission-flowering-season-start');
         const endSel   = document.getElementById('submission-flowering-season-end');
         const hidden   = document.getElementById('submission-flowering-season');
+        const unknownBtn = document.getElementById('submission-flowering-season-unknown');
+        if (unknownBtn) unknownBtn.classList.remove('is-active');
         if (!hidden) return;
         const s = startSel ? startSel.value : '';
         const e = endSel   ? endSel.value   : '';
@@ -3278,6 +3275,7 @@
           if (startSel) startSel.value = '';
           if (endSel) endSel.value = '';
           if (hidden) hidden.value = 'Unknown';
+          floweringSeasonUnknownBtn.classList.add('is-active');
         });
       }
 
@@ -4587,7 +4585,6 @@
         setVal('submission-collection-method', draft.collection_method || '');
         setVal('submission-observation-type', draft.observation_type || '');
         setVal('submission-voucher-collected', boolToYesNo(draft.voucher_collected));
-        if (draft.species_count !== null && draft.species_count !== undefined) setVal('submission-species-count', draft.species_count);
 
         // ── Location ──
         setVal('submission-specific-site-zone', draft.specific_site_zone || '');
@@ -4644,6 +4641,8 @@
         if (seasonStr === 'Unknown') {
           const hidden = document.getElementById('submission-flowering-season');
           if (hidden) hidden.value = 'Unknown';
+          const unknownBtn = document.getElementById('submission-flowering-season-unknown');
+          if (unknownBtn) unknownBtn.classList.add('is-active');
         } else if (seasonStr) {
           const parts = seasonStr.split(/\s*[–\-]\s*/);
           if (parts.length >= 2) {

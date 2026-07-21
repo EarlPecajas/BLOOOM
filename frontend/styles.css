@@ -3722,7 +3722,14 @@ body.researcher-theme #detailModalCard > div:first-child {
   opacity:0.9;
   vertical-align:middle;
 }
-.field-help:hover { background:#daeaf8; }
+.field-help:hover { background:#ffffff; }
+.submission-leaf-texture-option,
+.submission-threat-type-option {
+  accent-color: #145A1E;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
 .field-help::after {
   content: attr(data-tooltip);
   position:absolute;
@@ -3905,6 +3912,7 @@ body.researcher-theme #detailModalCard > div:first-child {
 #submission-scientific-idk,
 #submission-genus-unknown,
 #submission-species-unknown,
+#submission-flowering-season-unknown,
 #submission-add-common-name,
 #submission-add-local-name {
   background: #ffffff !important;
@@ -3917,6 +3925,7 @@ body.researcher-theme #detailModalCard > div:first-child {
 #submission-scientific-idk,
 #submission-genus-unknown,
 #submission-species-unknown,
+#submission-flowering-season-unknown,
 #submission-add-common-name,
 #submission-add-local-name,
 #submission-add-team-member,
@@ -3931,6 +3940,7 @@ body.researcher-theme #detailModalCard > div:first-child {
 #submission-scientific-idk:hover,
 #submission-genus-unknown:hover,
 #submission-species-unknown:hover,
+#submission-flowering-season-unknown:hover,
 #submission-add-common-name:hover,
 #submission-add-local-name:hover,
 #submission-add-team-member:hover,
@@ -3938,6 +3948,11 @@ body.researcher-theme #detailModalCard > div:first-child {
   background: #eaf3ea !important;
   border-color: #145A1E !important;
   transform: translateY(-1px);
+}
+#submission-flowering-season-unknown.is-active {
+  background: #145A1E !important;
+  border-color: #145A1E !important;
+  color: #ffffff !important;
 }
 [id^="submission-remove-common-"],
 [id^="submission-remove-local-"] {
