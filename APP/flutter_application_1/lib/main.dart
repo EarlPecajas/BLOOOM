@@ -51,6 +51,33 @@ Uri buildApiUri(String path, {Map<String, String>? queryParameters}) {
   return resolved.replace(queryParameters: queryParameters);
 }
 
+/// Resolves the best available display name for a signed-in researcher.
+///
+/// The web app (register.html) stores the name as separate `first_name`/
+/// `last_name` metadata keys, while this app's own sign-up screen stores a
+/// single `name` key. Submissions made from the app previously only checked
+/// `name`/`full_name`, so a researcher who registered on the web (no `name`
+/// key set) showed up on the DENR dashboard as their email instead of their
+/// name. Check every shape so it resolves correctly either way.
+String resolveResearcherDisplayName(User? user) {
+  if (user == null) return '';
+  final Map<String, dynamic> meta = user.userMetadata ?? <String, dynamic>{};
+  final String name = (meta['name'] as String?)?.trim() ?? '';
+  if (name.isNotEmpty) return name;
+  final String fullName = (meta['full_name'] as String?)?.trim() ?? '';
+  if (fullName.isNotEmpty) return fullName;
+  final String firstName = (meta['first_name'] as String?)?.trim() ?? '';
+  final String lastName = (meta['last_name'] as String?)?.trim() ?? '';
+  final String combined = <String>[
+    firstName,
+    lastName,
+  ].where((s) => s.isNotEmpty).join(' ').trim();
+  if (combined.isNotEmpty) return combined;
+  final String email = user.email ?? '';
+  if (email.isNotEmpty) return email.split('@').first;
+  return '';
+}
+
 bool _kIsDark = false;
 
 Color get _appBackgroundColor =>
@@ -9932,7 +9959,7 @@ class UploadSpeciesDraftStore {
       final Map<String, dynamic> row = <String, dynamic>{
         'entry_id': entryId,
         'researcher_email': email,
-        'researcher_name': (supabase.auth.currentUser?.userMetadata?['name'] ?? '').toString(),
+        'researcher_name': resolveResearcherDisplayName(supabase.auth.currentUser),
         'scientific_name': draft.scientificName.trim().isEmpty
             ? 'Unknown'
             : draft.scientificName.trim(),
@@ -10266,10 +10293,9 @@ class UploadSpeciesDraftSubmissionApi {
 
     final SupabaseClient supabase = Supabase.instance.client;
     final String userEmail = supabase.auth.currentUser?.email ?? '';
-    final Map<String, dynamic> userMeta = Map<String, dynamic>.from(
-      supabase.auth.currentUser?.userMetadata ?? <String, dynamic>{},
+    final String userName = resolveResearcherDisplayName(
+      supabase.auth.currentUser,
     );
-    final String userName = (userMeta['name'] ?? '').toString();
 
     // Upload images concurrently
     final List<Future<String?>> uploadFutures = <Future<String?>>[];
