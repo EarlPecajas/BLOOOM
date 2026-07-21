@@ -91,7 +91,7 @@
         opacity:0.9;
         vertical-align:middle;
       }
-      .field-help:hover { background:#daeaf8; }
+      .field-help:hover { background:#ffffff; }
       .field-help::after {
         content: attr(data-tooltip);
         position:absolute;
@@ -172,6 +172,17 @@
       .sub-action-btn.revision { background: #fffbeb !important; border: 1.5px solid #fde68a !important; box-shadow: 0 1px 2px rgba(217,119,6,0.08) !important; }
       .sub-action-btn.revision:hover { background: #fef3c7 !important; border-color: #fbbf24 !important; box-shadow: 0 2px 6px rgba(217,119,6,0.15) !important; transform: translateY(-1px) !important; }
       .sub-action-btn.revision svg { stroke: #d97706 !important; }
+      /* Finalized — action already taken, keep visible but non-interactive */
+      .sub-action-btn:disabled,
+      .sub-action-btn[disabled] {
+        cursor: not-allowed !important;
+        opacity: 0.4 !important;
+        filter: grayscale(0.5);
+      }
+      .sub-action-btn:disabled:hover,
+      .sub-action-btn[disabled]:hover {
+        transform: none !important;
+      }
       /* Revision reason picker */
       .revision-reason-option {
         display: flex;
@@ -1898,7 +1909,7 @@
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-leaf-width" style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Width (cm) <span class="required-asterisk">*</span></label>
-            <input id="submission-leaf-width" type="number" step="0.01" placeholder="Leaf Width (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;" />
+            <input id="submission-leaf-width" type="number" step="0.01" placeholder="Leaf Width (cm)" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;max-width:220px;" />
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label style="font-size:0.88rem;font-weight:600;color:#334155;">Leaf Texture <span class="required-asterisk">*</span></label>
@@ -5112,12 +5123,14 @@
             }
           }
 
-          // Status buttons — only for pending/revision submissions
-          const quickBtns = (isAdminRole && isPending(submission)) ? `
-            <button type="button" class="sub-action-btn approve" title="Approve" onclick="quickUpdateStatus(${sid},'approved')">
+          // Status buttons — visible for every submission; disabled once already reviewed (finalized)
+          const finalized = !isPending(submission);
+          const finalizedAttr = finalized ? 'disabled aria-disabled="true"' : '';
+          const quickBtns = isAdminRole ? `
+            <button type="button" class="sub-action-btn approve" title="${finalized ? 'Already reviewed' : 'Approve'}" ${finalizedAttr} onclick="quickUpdateStatus(${sid},'approved')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
-            <button type="button" class="sub-action-btn revision" title="For Revision" onclick="openRevisionReasonModal(${sid})">
+            <button type="button" class="sub-action-btn revision" title="${finalized ? 'Already reviewed' : 'For Revision'}" ${finalizedAttr} onclick="openRevisionReasonModal(${sid})">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.66"/></svg>
             </button>` : '';
 
