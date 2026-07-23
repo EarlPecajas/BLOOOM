@@ -2293,8 +2293,7 @@
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Notes & Remarks</h4>
               </div>
               <div>
-                <div id="row-ethnobotanical" style="padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Ethnobotanical / Notes</p><p id="value-ethnobotanical" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
-                <div id="row-cultural" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Cultural / Horticulture</p><p id="value-cultural" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
+                <div id="row-researcher-notes" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Notes</p><p id="value-researcher-notes" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
               </div>
             </div>
           </div>
@@ -7609,12 +7608,8 @@
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
         setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
-        // Notes section
-        const ethnoEl = document.getElementById('value-ethnobotanical');
-        if (ethnoEl) ethnoEl.textContent = submission.ethnobotanical || submission.researcher_notes || '-';
-        const culturalEl = document.getElementById('value-cultural');
-        if (culturalEl) culturalEl.textContent = submission.cultural_importance || '-';
-        
+        setDetailFieldAlways('row-researcher-notes', 'value-researcher-notes', submission.researcher_notes || '');
+
         // Populate image gallery
         const imageGallery = document.getElementById('imageGallery');
         if (imageGallery) {
@@ -9042,17 +9037,40 @@
         return url.startsWith(base) ? url.slice(base.length) : url;
       }
 
+      // Matches the label logic the public orchid-detail page uses for the same
+      // underlying value (yes/no/free text), so the export doesn't disagree
+      // with what the catalog already shows.
+      function formatEndemicityDisplay(value) {
+        const v = String(value ?? '').trim().toLowerCase();
+        if (value === true || v === 'yes') return 'Philippine Endemic';
+        if (value === false || v === 'no') return 'Not Philippine Endemic';
+        if (value !== null && value !== undefined && String(value).trim()) return String(value).trim();
+        return '';
+      }
+
       function rowsForExport(dataset, rows) {
         if (dataset !== 'orchids') return rows;
-        return rows.map((row) => ({
-          ...row,
-          image_url: maskStorageUrl(row.image_url),
-          model_3d_url: maskStorageUrl(row.model_3d_url),
-          // Older catalog entries were published before endemicity was wired up to
-          // actually save (see Post to Catalog fix) — show a real placeholder
-          // instead of a blank cell for those.
-          endemicity: row.endemicity || 'Not specified'
-        }));
+        // orchids.endemicity is often blank for catalog entries published before
+        // it was wired up to save — the public orchid-detail page instead shows
+        // the linked submission's "Endemic to Philippines" answer for those, so
+        // fall back to the same source here rather than showing a blank cell.
+        const endemicByName = new Map();
+        (submissionRows || []).forEach((s) => {
+          const key = String(s.species || s.scientific_name || '').trim().toLowerCase();
+          if (key && s.endemic_to_philippines && !endemicByName.has(key)) {
+            endemicByName.set(key, s.endemic_to_philippines);
+          }
+        });
+        return rows.map((row) => {
+          const nameKey = String(row.name || '').trim().toLowerCase();
+          const endemicity = formatEndemicityDisplay(row.endemicity) || formatEndemicityDisplay(endemicByName.get(nameKey)) || 'Not specified';
+          return {
+            ...row,
+            image_url: maskStorageUrl(row.image_url),
+            model_3d_url: maskStorageUrl(row.model_3d_url),
+            endemicity
+          };
+        });
       }
 
       function getExportRows(dataset) {
