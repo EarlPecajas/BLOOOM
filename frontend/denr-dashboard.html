@@ -2557,30 +2557,6 @@
                 </div>
               </div>
 
-              <!-- ── Catalog-Only Details (no equivalent field on the submission form — DENR fills these in directly) ── -->
-              <div class="ptc-section-card">
-                <div class="ptc-section-header">
-                  <span class="ptc-section-icon-chip">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                  </span>
-                  <h4 class="ptc-section-title">Catalog Details</h4>
-                </div>
-                <div class="ptc-section" data-section="catalog-extra" style="display:grid;grid-template-columns:1fr;">
-                  <div class="ptc-row" style="display:block;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);">
-                    <label for="catalogEthnobotanical" style="display:block;font-size:0.78rem;color:var(--dt-muted);font-weight:600;margin-bottom:0.35rem;">Ethnobotanical Value</label>
-                    <textarea id="catalogEthnobotanical" rows="2" placeholder="e.g. Used in traditional medicine for…" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;"></textarea>
-                  </div>
-                  <div class="ptc-row" style="display:block;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);">
-                    <label for="catalogHorticultural" style="display:block;font-size:0.78rem;color:var(--dt-muted);font-weight:600;margin-bottom:0.35rem;">Horticultural Value</label>
-                    <textarea id="catalogHorticultural" rows="2" placeholder="e.g. Popular ornamental species due to…" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;"></textarea>
-                  </div>
-                  <div class="ptc-row" style="display:block;padding:0.6rem 1rem;">
-                    <label for="catalogCulturalImportance" style="display:block;font-size:0.78rem;color:var(--dt-muted);font-weight:600;margin-bottom:0.35rem;">Cultural Importance</label>
-                    <textarea id="catalogCulturalImportance" rows="2" placeholder="e.g. Significant to local indigenous practices…" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;"></textarea>
-                  </div>
-                </div>
-              </div>
-
               <!-- ── Observation Details ── -->
               <div class="ptc-section-card">
                 <div class="ptc-section-header">
@@ -8797,9 +8773,6 @@
           ['common_name', 'Common Name'],
           ['endemicity', 'Endemicity'],
           ['conservation_status', 'Conservation Status'],
-          ['ethnobotanical', 'Ethnobotanical Value'],
-          ['horticulture_value', 'Horticultural Value'],
-          ['cultural_importance', 'Cultural Importance'],
           ['image_url', 'Image URL'],
           ['model_3d_url', '3D Model URL']
         ],
@@ -9071,7 +9044,15 @@
 
       function rowsForExport(dataset, rows) {
         if (dataset !== 'orchids') return rows;
-        return rows.map((row) => ({ ...row, image_url: maskStorageUrl(row.image_url), model_3d_url: maskStorageUrl(row.model_3d_url) }));
+        return rows.map((row) => ({
+          ...row,
+          image_url: maskStorageUrl(row.image_url),
+          model_3d_url: maskStorageUrl(row.model_3d_url),
+          // Older catalog entries were published before endemicity was wired up to
+          // actually save (see Post to Catalog fix) — show a real placeholder
+          // instead of a blank cell for those.
+          endemicity: row.endemicity || 'Not specified'
+        }));
       }
 
       function getExportRows(dataset) {
@@ -9839,10 +9820,9 @@
         // DENR previously chose to hide via the eye toggles.
         let existingStatusLabel = '';
         let existingHiddenFields = [];
-        let existingNarrativeFields = { ethnobotanical: '', horticulture_value: '', cultural_importance: '' };
         try {
           const { data: existingOverview } = await bloomSupabase
-            .from('orchid_overview').select('conservation_status, hidden_fields, ethnobotanical, horticulture_value, cultural_importance')
+            .from('orchid_overview').select('conservation_status, hidden_fields')
             .eq('name', s.species || s.scientific_name || '').maybeSingle();
           if (existingOverview && existingOverview.conservation_status !== 'Unassigned') {
             existingStatusLabel = existingOverview.conservation_status;
@@ -9850,23 +9830,7 @@
           if (existingOverview && Array.isArray(existingOverview.hidden_fields)) {
             existingHiddenFields = existingOverview.hidden_fields;
           }
-          if (existingOverview) {
-            existingNarrativeFields = {
-              ethnobotanical: existingOverview.ethnobotanical || '',
-              horticulture_value: existingOverview.horticulture_value || '',
-              cultural_importance: existingOverview.cultural_importance || ''
-            };
-          }
         } catch (e) { console.warn('Existing conservation status lookup failed:', e); }
-
-        // These have no source on the submission form — pre-fill from the
-        // catalog entry if this species was published before, otherwise blank.
-        const ethnoEl2 = document.getElementById('catalogEthnobotanical');
-        const hortiEl2 = document.getElementById('catalogHorticultural');
-        const culturalEl2 = document.getElementById('catalogCulturalImportance');
-        if (ethnoEl2) ethnoEl2.value = existingNarrativeFields.ethnobotanical;
-        if (hortiEl2) hortiEl2.value = existingNarrativeFields.horticulture_value;
-        if (culturalEl2) culturalEl2.value = existingNarrativeFields.cultural_importance;
 
         // Header
         document.getElementById('ptc-species-name').textContent = s.species || s.scientific_name || '';
@@ -10009,12 +9973,7 @@
 
           // Endemicity comes from the submission (same source the read-only
           // display row above pulls from) — it was never actually saved before.
-          // Ethnobotanical/Horticultural/Cultural Importance have no submission-form
-          // source at all, so they come from the textareas DENR fills in here.
           const endemicityValue = (currentSubmission?.endemicity || currentSubmission?.endemic_to_philippines || '').trim() || null;
-          const ethnobotanicalValue = (document.getElementById('catalogEthnobotanical')?.value || '').trim() || null;
-          const horticulturalValue = (document.getElementById('catalogHorticultural')?.value || '').trim() || null;
-          const culturalImportanceValue = (document.getElementById('catalogCulturalImportance')?.value || '').trim() || null;
 
           // Upsert orchid
           const { data: existingOrchid } = await bloomSupabase
@@ -10024,11 +9983,7 @@
             orchidId = existingOrchid.orchid_id;
             // Re-publishing a hidden orchid — restore visibility (thumbnail is linked via biogeography.picture_id below)
             const { error: updErr } = await bloomSupabase.from('orchids')
-              .update({
-                genus_id: genusId, is_published: true, hidden_fields: hiddenFields,
-                endemicity: endemicityValue, ethnobotanical_value: ethnobotanicalValue,
-                horticultural_value: horticulturalValue, cultural_importance: culturalImportanceValue
-              })
+              .update({ genus_id: genusId, is_published: true, hidden_fields: hiddenFields, endemicity: endemicityValue })
               .eq('orchid_id', orchidId);
             if (updErr) throw updErr;
           } else {
@@ -10037,9 +9992,7 @@
               .insert({
                 sci_name: scientificName, genus_id: genusId,
                 is_published: true, date_discovered: new Date().toISOString(),
-                hidden_fields: hiddenFields,
-                endemicity: endemicityValue, ethnobotanical_value: ethnobotanicalValue,
-                horticultural_value: horticulturalValue, cultural_importance: culturalImportanceValue
+                hidden_fields: hiddenFields, endemicity: endemicityValue
               })
               .select('orchid_id').single();
             if (orchidError) throw orchidError;
