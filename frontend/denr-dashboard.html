@@ -308,6 +308,18 @@
       #model3d-view {
         margin-left: 256px;
       }
+      /* body.dashboard-page has overflow:hidden + a fixed 100vh height (styles.css),
+         so any view-section taller than the viewport gets silently clipped with no
+         way to scroll to the rest of it. Most views dodge this by being position:fixed
+         with their own overflow-y:auto; these two use margin-left instead, so they
+         need their own bounded height + scroll to avoid clipping (e.g. the upload
+         status text below the button on the 3D Image page). */
+      #collection3d-view,
+      #model3d-view {
+        max-height: calc(100vh - 84px);
+        overflow-y: auto;
+        box-sizing: border-box;
+      }
       /* Bootstrap's .container-fluid forces width:100%, which combined with the
          margin above would overflow the viewport by the sidebar's width — clamp it. */
       .dashboard-container {
@@ -485,6 +497,10 @@
       }
       body.dashboard-page.researcher-theme .dashboard-container {
         width: calc(100% - var(--denr-sidebar-w)) !important;
+      }
+      body.dashboard-page.researcher-theme #collection3d-view,
+      body.dashboard-page.researcher-theme #model3d-view {
+        max-height: calc(100vh - var(--denr-header-h)) !important;
       }
 
       /* Remove the cream/khaki tones the shared researcher-theme uses

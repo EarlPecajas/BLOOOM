@@ -44,4 +44,19 @@ LEFT JOIN picture p ON p.picture_id = b.picture_id;
 
 GRANT SELECT ON orchid_overview TO anon, authenticated;
 
+-- The DENR dashboard's 3D Image page updates orchids.model_3d_url directly,
+-- but the orchids table previously only had SELECT/INSERT grants and RLS
+-- policies — no UPDATE — so every save failed with "new row violates row-
+-- level security policy for table orchids", even when replacing an existing
+-- 3D model.
+GRANT UPDATE ON orchids TO authenticated;
+
+DROP POLICY IF EXISTS "Authenticated update orchids" ON orchids;
+
+CREATE POLICY "Authenticated update orchids"
+  ON orchids
+  FOR UPDATE
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
+
 COMMIT;

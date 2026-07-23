@@ -83,6 +83,7 @@ WHERE lower(coalesce(s.review_status, '')) = 'approved';
 GRANT SELECT ON orchid_overview TO anon, authenticated;
 GRANT SELECT ON public_approved_sightings TO anon, authenticated;
 GRANT SELECT ON orchids TO anon, authenticated;
+GRANT UPDATE ON orchids TO authenticated;
 GRANT SELECT ON genus TO anon, authenticated;
 GRANT SELECT ON biogeography TO anon, authenticated;
 GRANT SELECT ON conservation_status TO anon, authenticated;
@@ -104,6 +105,7 @@ ALTER TABLE species_sightings ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Public read orchids" ON orchids;
 DROP POLICY IF EXISTS "Authenticated insert orchids" ON orchids;
+DROP POLICY IF EXISTS "Authenticated update orchids" ON orchids;
 DROP POLICY IF EXISTS "Public read genus" ON genus;
 DROP POLICY IF EXISTS "Public read biogeography" ON biogeography;
 DROP POLICY IF EXISTS "Authenticated insert biogeography" ON biogeography;
@@ -123,6 +125,12 @@ CREATE POLICY "Public read orchids"
 CREATE POLICY "Authenticated insert orchids"
   ON orchids
   FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated update orchids"
+  ON orchids
+  FOR UPDATE
+  USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "Public read genus"
