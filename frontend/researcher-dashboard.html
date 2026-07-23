@@ -2590,8 +2590,10 @@
                 const role = item.querySelector('.submission-team-member-role')?.value || '';
                 return name ? { name, role } : null;
               }).filter(Boolean);
+              const headObserver = (document.getElementById('submission-head-observer')?.value || '').trim() || null;
+              const institution = (document.getElementById('submission-institution')?.value || '').trim() || null;
               await submitNormalizedSighting({
-                entryId, currentEmail, currentName, commonNames, localNames, leafTextures, threatTypes, teamMembers,
+                entryId, currentEmail, currentName, headObserver, institution, commonNames, localNames, leafTextures, threatTypes, teamMembers,
                 reviewStatus: 'draft', editDraftId: editDraftId ? Number(editDraftId) : null
               });
               if (feedback) { feedback.style.color = '#145A1E'; feedback.textContent = 'Draft saved. View it in My Drafts.'; }
@@ -3051,7 +3053,7 @@
       // Writes a sighting to the 3NF schema: inserts/updates sub-tables first,
       // then the main species_sightings row, team members, and media.
       async function submitNormalizedSighting({
-        entryId, currentEmail, currentName = null,
+        entryId, currentEmail, currentName = null, headObserver = null, institution = null,
         commonNames, localNames, leafTextures, threatTypes, teamMembers,
         wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [],
         relatedStudyFileUrls = [],
@@ -3168,7 +3170,8 @@
           entry_id:                 entryId,
           user_id:                  null,
           researcher_email:         currentEmail,
-          researcher_name:          currentName,
+          head_observer_name:       headObserver || currentName,
+          institution_name:         institution,
           scientific_name:          (document.getElementById('submission-scientific-name')?.value || '').trim(),
           common_names:             commonNames,
           local_names:              localNames,
@@ -3399,8 +3402,9 @@
               uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
             ]);
 
+            const institution = (document.getElementById('submission-institution')?.value || '').trim() || null;
             const data = await submitNormalizedSighting({
-              entryId, currentEmail, currentName,
+              entryId, currentEmail, currentName, headObserver: observerName, institution,
               commonNames, localNames, leafTextures, threatTypes, teamMembers,
               wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
               relatedStudyFileUrls,
@@ -3683,7 +3687,8 @@
         return {
           ...row,
           id: row.sighting_id,
-          researcher: row.researcher_name || row.researcher_email || 'Unknown Researcher',
+          researcher: row.head_observer_name || row.researcher_name || row.researcher_email || 'Unknown Researcher',
+          institution: row.institution_name || row.institution || '',
           species: row.scientific_name,
           family: row.family || '',
           genus: row.genus || (row.scientific_name ? row.scientific_name.trim().split(/\s+/)[0] : '') || '',
@@ -3922,7 +3927,7 @@
           return;
         }
         draftsTableBody.innerHTML = rows.map(row => {
-          const researcher = escapeHtml(String(row.researcher_name || row.researcher_email || '—'));
+          const researcher = escapeHtml(String(row.head_observer_name || row.researcher_name || row.researcher_email || '—'));
           const species = escapeHtml(String(row.scientific_name || 'Unnamed draft'));
           const savedTs = row.updated_at || row.created_at;
           const saved = escapeHtml(savedTs ? new Date(savedTs).toLocaleDateString() : '—');
@@ -3959,7 +3964,7 @@
           const currentEmail = String(parsedActiveUser.email || '').trim();
           let query = window.bloomSupabase
             .from('species_sightings')
-            .select('entry_id, scientific_name, created_at, review_status, researcher_name, researcher_email')
+            .select('entry_id, scientific_name, created_at, review_status, head_observer_name, researcher_email')
             .like('entry_id', 'BLOOM-3D-%')
             .order('created_at', { ascending: false });
           if (isResearcherRole && currentEmail) {
@@ -4687,7 +4692,7 @@
         });
 
         // ── Team & Notes ──
-        setVal('submission-head-observer', draft.researcher_name || '');
+        setVal('submission-head-observer', draft.head_observer_name || draft.researcher_name || '');
         setVal('submission-institution', draft.institution || '');
 
         const teamMembersWrap = document.getElementById('submission-team-members-wrap');
