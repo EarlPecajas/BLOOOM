@@ -1201,7 +1201,7 @@
               <!-- Report Type -->
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Report Type</label>
-                <select id="reportType" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);cursor:pointer;outline:none;transition:border-color 150ms;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'">
+                <select id="reportType" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);cursor:pointer;outline:none;transition:border-color 150ms;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" onchange="onReportTypeChange()">
                   <optgroup label="Decision-Support Reports">
                     <option value="conservation-priority">Species Conservation Priority Ranking</option>
                     <option value="elevation-profile">Elevational &amp; Vertical Distribution Profile</option>
@@ -1231,33 +1231,34 @@
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Date Range</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
                   <div>
-                    <label class="block text-xs mb-1" style="color:#94a3b8;">From</label>
-                    <input type="date" id="dateFrom" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);outline:none;transition:border-color 150ms;color-scheme:dark;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" />
+                    <label id="dateFromLabel" class="block text-xs mb-1" style="color:#94a3b8;">From</label>
+                    <input type="date" id="dateFrom" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);outline:none;transition:border-color 150ms,opacity 150ms;color-scheme:light;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" />
                   </div>
                   <div>
-                    <label class="block text-xs mb-1" style="color:#94a3b8;">To</label>
-                    <input type="date" id="dateTo" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);outline:none;transition:border-color 150ms;color-scheme:dark;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" />
+                    <label id="dateToLabel" class="block text-xs mb-1" style="color:#94a3b8;">To</label>
+                    <input type="date" id="dateTo" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);outline:none;transition:border-color 150ms,opacity 150ms;color-scheme:light;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" />
                   </div>
                 </div>
+                <p id="dateRangeHint" style="display:none;margin:0.5rem 0 0;font-size:0.74rem;color:var(--dt-muted);">This report type covers the current catalog and isn't filtered by date — the date range is not used.</p>
               </div>
 
               <!-- Include Sections -->
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Include in Report</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms,opacity 150ms;" onmouseover="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'}" onmouseout="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'}">
                     <input type="checkbox" checked data-section="summary" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
                     <span class="text-xs font-semibold" style="color:var(--dt-text);">Summary Stats</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms,opacity 150ms;" onmouseover="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'}" onmouseout="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'}">
                     <input type="checkbox" checked data-section="details" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
                     <span class="text-xs font-semibold" style="color:var(--dt-text);">Data Tables</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms,opacity 150ms;" onmouseover="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'}" onmouseout="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'}">
                     <input type="checkbox" checked data-section="charts" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
                     <span class="text-xs font-semibold" style="color:var(--dt-text);">Chart Data</span>
                   </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms,opacity 150ms;" onmouseover="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'}" onmouseout="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'}">
                     <input type="checkbox" data-section="recommendations" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
                     <span class="text-xs font-semibold" style="color:var(--dt-text);">Recommendations</span>
                   </label>
@@ -7363,6 +7364,12 @@
           if (viewName === 'model3d') {
             loadModel3DOrchidOptions();
           }
+          if (viewName === 'report') {
+            // Deferred: switchView can run during the initial synchronous page
+            // load (via ?view=report) before reportTypes further down this
+            // script has finished initializing.
+            setTimeout(onReportTypeChange, 0);
+          }
         } else if (viewName === 'dashboard') {
           dashboardContainer.style.display = 'block';
           dashboardContainer.style.pointerEvents = 'auto';
@@ -8377,10 +8384,67 @@
         }
       };
 
+      // Report types that read straight from the orchid catalog (not from
+      // dated submissions) have nothing for a date range to filter.
+      const NO_DATE_RANGE_REPORT_TYPES = new Set(['species-inventory', 'conservation-summary']);
+
+      const REPORT_SECTION_LABELS = {
+        summary: 'Summary Statistics',
+        details: 'Detailed Data Tables',
+        charts: 'Visual Charts & Graphs',
+        recommendations: 'Recommendations'
+      };
+
+      function setDateRangeEnabled(enabled) {
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const hint = document.getElementById('dateRangeHint');
+        [dateFrom, dateTo, document.getElementById('dateFromLabel'), document.getElementById('dateToLabel')].forEach((el) => {
+          if (!el) return;
+          if ('disabled' in el) el.disabled = !enabled;
+          el.style.opacity = enabled ? '1' : '0.45';
+          el.style.cursor = enabled ? '' : 'not-allowed';
+        });
+        if (hint) hint.style.display = enabled ? 'none' : 'block';
+      }
+
+      function setReportSectionState(sectionKey, enabled, checked) {
+        const checkbox = document.querySelector(`#reportForm input[type="checkbox"][data-section="${sectionKey}"]`);
+        if (!checkbox) return;
+        checkbox.disabled = !enabled;
+        checkbox.checked = checked;
+        const label = checkbox.closest('label');
+        if (!label) return;
+        label.style.opacity = enabled ? '1' : '0.45';
+        label.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        if (!enabled) {
+          label.style.borderColor = 'var(--dt-border-md)';
+          label.style.background = 'transparent';
+        }
+      }
+
+      // Syncs the Date Range and Include in Report controls to whichever
+      // report type is currently selected: disables the date range for
+      // catalog-wide reports, and disables/unchecks any section a report
+      // type doesn't produce (per its reportTypes.includesByDefault).
+      function onReportTypeChange() {
+        const reportType = document.getElementById('reportType').value;
+        const config = reportTypes[reportType] || {};
+        const includes = config.includesByDefault || [];
+
+        setDateRangeEnabled(!NO_DATE_RANGE_REPORT_TYPES.has(reportType));
+
+        Object.keys(REPORT_SECTION_LABELS).forEach((sectionKey) => {
+          const isIncluded = includes.includes(REPORT_SECTION_LABELS[sectionKey]);
+          setReportSectionState(sectionKey, isIncluded, isIncluded);
+        });
+      }
+
       function resetReportForm() {
         document.getElementById('reportForm').reset();
         document.getElementById('reportType').value = 'species-inventory';
         selectReportFormat('pdf');
+        onReportTypeChange();
       }
 
       async function getReportSourceData() {
@@ -8906,7 +8970,7 @@
       function buildSummaryRows(reportTitle, dateFrom, dateTo, rows) {
         return [
           { metric: 'Report', value: reportTitle },
-          { metric: 'Period', value: `${dateFrom} to ${dateTo}` },
+          { metric: 'Period', value: (dateFrom && dateTo) ? `${dateFrom} to ${dateTo}` : 'All available data (not date-filtered)' },
           { metric: 'Rows included', value: rows.length }
         ];
       }
@@ -9315,14 +9379,17 @@
 
         const reportConfig = reportTypes[reportType];
         const sections = getSelectedReportSections();
+        const dateRangeNeeded = !NO_DATE_RANGE_REPORT_TYPES.has(reportType);
 
-        if (!dateFrom || !dateTo) {
-          showReportToast('Please select both start and end dates.', 'warn');
-          return;
-        }
-        if (new Date(dateFrom) > new Date(dateTo)) {
-          showReportToast('Start date must be before end date.', 'warn');
-          return;
+        if (dateRangeNeeded) {
+          if (!dateFrom || !dateTo) {
+            showReportToast('Please select both start and end dates.', 'warn');
+            return;
+          }
+          if (new Date(dateFrom) > new Date(dateTo)) {
+            showReportToast('Start date must be before end date.', 'warn');
+            return;
+          }
         }
         if (!sections.summary && !sections.details && !sections.charts && !sections.recommendations) {
           showReportToast('Please select at least one report section.', 'warn');
@@ -9338,7 +9405,9 @@
         try {
           const sourceData = await getReportSourceData();
           const rows = getRowsForReport(reportType, sourceData, dateFrom, dateTo);
-          const fileNameBase = `${reportConfig.title.replace(/\s+/g, '_')}_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}`;
+          const fileNameBase = dateRangeNeeded
+            ? `${reportConfig.title.replace(/\s+/g, '_')}_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}`
+            : `${reportConfig.title.replace(/\s+/g, '_')}_AllData`;
 
           if (format === 'excel') {
             downloadReportAsExcel(fileNameBase, reportConfig.title, dateFrom, dateTo, rows, sections, reportType);
