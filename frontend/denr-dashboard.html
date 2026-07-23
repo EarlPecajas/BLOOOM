@@ -10175,12 +10175,21 @@
           const sevenDaysAgo = new Date();
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+          // Scoped the same way loadSubmissions() scopes the Submissions tab —
+          // excluding drafts and the separate BLOOM-3D-only upload pathway — so
+          // these counts can't disagree with what DENR sees in Submissions.
+          const baseQuery = () => bloomSupabase.from('species_sightings')
+            .select('*', { count: 'exact', head: true })
+            .neq('review_status', 'draft')
+            .not('entry_id', 'like', 'BLOOM-3D-%');
+
           const [totalRes, pendingRes, approvedRes, last7dRes, distinctRes] = await Promise.all([
-            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }),
-            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }).eq('review_status', 'pending'),
-            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }).eq('review_status', 'approved'),
-            bloomSupabase.from('species_sightings').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo.toISOString()),
-            bloomSupabase.from('species_sightings').select('scientific_name').eq('review_status', 'approved'),
+            baseQuery(),
+            baseQuery().eq('review_status', 'pending'),
+            baseQuery().eq('review_status', 'approved'),
+            baseQuery().gte('created_at', sevenDaysAgo.toISOString()),
+            bloomSupabase.from('species_sightings').select('scientific_name')
+              .eq('review_status', 'approved').not('entry_id', 'like', 'BLOOM-3D-%'),
           ]);
 
           const total = totalRes.count ?? 0;
