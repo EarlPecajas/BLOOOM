@@ -1759,8 +1759,12 @@
           </div>
 
           <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
-          <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
-            style="width:100%;padding:0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;margin-bottom:0.5rem;box-sizing:border-box;" />
+          <div style="position:relative;margin-bottom:0.5rem;">
+            <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
+              style="width:100%;padding:0.6rem 2.2rem 0.6rem 0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;box-sizing:border-box;" />
+            <button id="m3d-file-clear-btn" type="button" onclick="m3dClearFile()" title="Remove file" aria-label="Remove selected file" hidden
+              style="position:absolute;top:0.4rem;right:0.5rem;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:var(--dt-bg-panel);color:var(--dt-muted);font-size:0.8rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+          </div>
           <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
 
           <button id="m3d-upload-btn" type="button" onclick="uploadOrchid3DModel()"
@@ -5509,9 +5513,11 @@
         const sel  = document.getElementById('m3d-orchid-select');
         const hint = document.getElementById('m3d-current-hint');
         const fileInput = document.getElementById('m3d-file-input');
+        const clearBtn = document.getElementById('m3d-file-clear-btn');
         if (!sel || !hint) return;
         const row = m3dOrchidRows.find(o => String(o.id) === sel.value);
         if (fileInput) fileInput.value = '';
+        if (clearBtn) clearBtn.hidden = true;
         m3dSetThumbnail(row || null);
         if (row && row.model_3d_url) {
           hint.textContent = 'This orchid already has a 3D model — uploading will replace it.';
@@ -5524,8 +5530,17 @@
 
       function m3dOnFileChange() {
         const fileInput = document.getElementById('m3d-file-input');
+        const clearBtn = document.getElementById('m3d-file-clear-btn');
         const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+        if (clearBtn) clearBtn.hidden = !file;
         if (file) m3dSetPreview(URL.createObjectURL(file));
+      }
+
+      // Clears the chosen file so the user can pick a different one without
+      // resetting the orchid they already selected; falls back to that
+      // orchid's existing model preview (or the empty state) via m3dOnOrchidChange.
+      function m3dClearFile() {
+        m3dOnOrchidChange();
       }
 
       async function uploadOrchid3DModel() {
