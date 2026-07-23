@@ -1347,7 +1347,7 @@
               <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.2rem;">
                 <div>
                   <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Dataset</label>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
                     <label id="ie-ds-orchids" class="report-format-option ie-dataset-option is-active" onclick="selectExportDataset('orchids')">
                       <input type="radio" name="ie-dataset" value="orchids" checked style="display:none;" />
                       <span class="text-xs font-bold fmt-label">Orchid Catalog</span>
@@ -1357,6 +1357,11 @@
                       <input type="radio" name="ie-dataset" value="submissions" style="display:none;" />
                       <span class="text-xs font-bold fmt-label">Submissions</span>
                       <span class="text-xs" style="color:var(--dt-muted);"><span id="ie-count-submissions">–</span> records</span>
+                    </label>
+                    <label id="ie-ds-trails" class="report-format-option ie-dataset-option" onclick="selectExportDataset('trails')">
+                      <input type="radio" name="ie-dataset" value="trails" style="display:none;" />
+                      <span class="text-xs font-bold fmt-label">Map Trails</span>
+                      <span class="text-xs" style="color:var(--dt-muted);"><span id="ie-count-trails">–</span> trails</span>
                     </label>
                   </div>
                 </div>
@@ -1391,7 +1396,7 @@
               <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;">
                 <div>
                   <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Dataset</label>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
                     <label id="ie-import-ds-orchids" class="report-format-option ie-import-dataset-option is-active" onclick="selectImportDataset('orchids')">
                       <input type="radio" name="ie-import-dataset" value="orchids" checked style="display:none;" />
                       <span class="text-xs font-bold fmt-label">Orchid Catalog</span>
@@ -1399,6 +1404,10 @@
                     <label id="ie-import-ds-submissions" class="report-format-option ie-import-dataset-option" onclick="selectImportDataset('submissions')">
                       <input type="radio" name="ie-import-dataset" value="submissions" style="display:none;" />
                       <span class="text-xs font-bold fmt-label">Submissions</span>
+                    </label>
+                    <label id="ie-import-ds-trails" class="report-format-option ie-import-dataset-option" onclick="selectImportDataset('trails')">
+                      <input type="radio" name="ie-import-dataset" value="trails" style="display:none;" />
+                      <span class="text-xs font-bold fmt-label">Map Trails</span>
                     </label>
                   </div>
                 </div>
@@ -2544,6 +2553,30 @@
                   </div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;">
                     <span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Observation Type</span><span id="ptc-obs-type" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Catalog-Only Details (no equivalent field on the submission form — DENR fills these in directly) ── -->
+              <div class="ptc-section-card">
+                <div class="ptc-section-header">
+                  <span class="ptc-section-icon-chip">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  </span>
+                  <h4 class="ptc-section-title">Catalog Details</h4>
+                </div>
+                <div class="ptc-section" data-section="catalog-extra" style="display:grid;grid-template-columns:1fr;">
+                  <div class="ptc-row" style="display:block;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);">
+                    <label for="catalogEthnobotanical" style="display:block;font-size:0.78rem;color:var(--dt-muted);font-weight:600;margin-bottom:0.35rem;">Ethnobotanical Value</label>
+                    <textarea id="catalogEthnobotanical" rows="2" placeholder="e.g. Used in traditional medicine for…" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;"></textarea>
+                  </div>
+                  <div class="ptc-row" style="display:block;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);">
+                    <label for="catalogHorticultural" style="display:block;font-size:0.78rem;color:var(--dt-muted);font-weight:600;margin-bottom:0.35rem;">Horticultural Value</label>
+                    <textarea id="catalogHorticultural" rows="2" placeholder="e.g. Popular ornamental species due to…" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;"></textarea>
+                  </div>
+                  <div class="ptc-row" style="display:block;padding:0.6rem 1rem;">
+                    <label for="catalogCulturalImportance" style="display:block;font-size:0.78rem;color:var(--dt-muted);font-weight:600;margin-bottom:0.35rem;">Cultural Importance</label>
+                    <textarea id="catalogCulturalImportance" rows="2" placeholder="e.g. Significant to local indigenous practices…" style="width:100%;padding:0.5rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.85rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;resize:vertical;"></textarea>
                   </div>
                 </div>
               </div>
@@ -4269,25 +4302,19 @@
               uploadVideoFilesFromInput(document.getElementById('submission-video'), 'video')
             ]);
 
-            const insertPayload = {
-              entry_id: entryId,
-              user_id: null,
-              researcher_email: currentEmail,
-              researcher_name: currentName,
-              scientific_name: submissionScientificNameEl ? submissionScientificNameEl.value.trim() : '',
-              common_names: commonNames,
-              identification_confidence: document.getElementById('submission-identification-confidence')?.value || 'Unidentified',
-              observation_date: document.getElementById('submission-observation-date')?.value || null,
-              observation_time: document.getElementById('submission-observation-time')?.value || null,
-              collection_method: document.getElementById('submission-collection-method')?.value || null,
-              observation_type: document.getElementById('submission-observation-type')?.value || null,
-              voucher_collected: document.getElementById('submission-voucher-collected')?.value === 'yes',
-              mountain_name: document.getElementById('submission-mountain')?.value || 'Mt. Busa',
-              specific_site_zone: document.getElementById('submission-specific-site-zone')?.value || null,
-              specific_site_other: document.getElementById('submission-specific-site-other')?.value || null,
-              latitude,
-              longitude,
-              elevation_meters: Number(document.getElementById('submission-elevation')?.value || 0),
+            // Resolve mountain name -> mountain_id, then write habitat/morphology/
+            // conservation sub-tables first (species_sightings needs their IDs).
+            // This mirrors submitNormalizedSighting() in researcher-dashboard.html —
+            // this form used to POST to /api/sightings, a legacy endpoint that
+            // inserted these same fields as flat columns on species_sightings
+            // directly. Those columns were moved into these sub-tables by the 3NF
+            // migration, so that endpoint would fail on every field below latitude
+            // if run against the current schema.
+            const mountainName = document.getElementById('submission-mountain')?.value || 'Mt. Busa';
+            const { data: mtData } = await bloomSupabase.from('mountain').select('mountain_id').ilike('mountain_name', mountainName).maybeSingle();
+            const mountainId = mtData?.mountain_id ?? null;
+
+            const habitatPayload = {
               habitat_type: document.getElementById('submission-habitat-type')?.value || null,
               microhabitat: document.getElementById('submission-microhabitat')?.value || null,
               growth_substrate: document.getElementById('submission-growth-substrate')?.value || null,
@@ -4296,7 +4323,10 @@
               canopy_cover_percent: document.getElementById('submission-canopy-cover')?.value ? Number(document.getElementById('submission-canopy-cover').value) : null,
               light_exposure: document.getElementById('submission-light-exposure')?.value || null,
               soil_type: document.getElementById('submission-soil-type')?.value || null,
-              nearby_water_source: document.getElementById('submission-nearby-water-source')?.value || null,
+              nearby_water_source: document.getElementById('submission-nearby-water-source')?.value || null
+            };
+
+            const morphologyPayload = {
               plant_height_cm: document.getElementById('submission-plant-height')?.value ? Number(document.getElementById('submission-plant-height').value) : null,
               pseudobulb_present: document.getElementById('submission-pseudobulb-present')?.value === 'yes',
               stem_length_cm: document.getElementById('submission-stem-length')?.value ? Number(document.getElementById('submission-stem-length').value) : null,
@@ -4323,35 +4353,88 @@
               seed_capsule_condition: document.getElementById('submission-seed-capsule-condition')?.value || null,
               life_stage: document.getElementById('submission-life-stage')?.value || null,
               phenology: document.getElementById('submission-phenology')?.value || null,
-              population_count: document.getElementById('submission-population-count')?.value ? Number(document.getElementById('submission-population-count').value) : null,
+              population_count: document.getElementById('submission-population-count')?.value ? Number(document.getElementById('submission-population-count').value) : null
+            };
+
+            const conservationPayload = {
               population_status: document.getElementById('submission-population-status')?.value || null,
               threat_level: document.getElementById('submission-threat-level')?.value || null,
-              threat_types: threatTypes,
-              whole_plant_photo_path: JSON.stringify(wholePlantPhotoEntries),
-              closeup_flower_photo_path: JSON.stringify(closeupFlowerPhotoEntries),
-              habitat_photo_path: JSON.stringify(habitatPhotoEntries),
-              photo_3d_path: JSON.stringify([]),
-              video_path: JSON.stringify(videoUrls),
-              institution: document.getElementById('submission-institution')?.value || null,
-              team_members: teamMemberEntries.length ? JSON.stringify(teamMemberEntries) : null,
+              threat_types: threatTypes
+            };
+
+            const { data: habRow, error: habErr } = await bloomSupabase.from('sighting_habitat').insert(habitatPayload).select('sighting_habitat_id').single();
+            if (habErr) throw new Error(habErr.message);
+            const { data: morRow, error: morErr } = await bloomSupabase.from('sighting_morphology').insert(morphologyPayload).select('sighting_morphology_id').single();
+            if (morErr) throw new Error(morErr.message);
+            const { data: conRow, error: conErr } = await bloomSupabase.from('sighting_conservation').insert(conservationPayload).select('sighting_conservation_id').single();
+            if (conErr) throw new Error(conErr.message);
+
+            const mainPayload = {
+              entry_id: entryId,
+              user_id: null,
+              researcher_email: currentEmail,
+              head_observer_name: (document.getElementById('submission-head-observer')?.value || '').trim() || currentName,
+              institution_name: (document.getElementById('submission-institution')?.value || '').trim() || null,
+              scientific_name: submissionScientificNameEl ? submissionScientificNameEl.value.trim() : '',
+              common_names: commonNames,
+              identification_confidence: document.getElementById('submission-identification-confidence')?.value || 'Unidentified',
+              observation_date: document.getElementById('submission-observation-date')?.value || null,
+              observation_time: document.getElementById('submission-observation-time')?.value || null,
+              collection_method: document.getElementById('submission-collection-method')?.value || null,
+              observation_type: document.getElementById('submission-observation-type')?.value || null,
+              voucher_collected: document.getElementById('submission-voucher-collected')?.value === 'yes',
+              mountain_id: mountainId,
+              specific_site_zone: document.getElementById('submission-specific-site-zone')?.value || null,
+              specific_site_other: document.getElementById('submission-specific-site-other')?.value || null,
+              latitude,
+              longitude,
+              elevation_meters: Number(document.getElementById('submission-elevation')?.value || 0),
+              sighting_habitat_id: habRow.sighting_habitat_id,
+              sighting_morphology_id: morRow.sighting_morphology_id,
+              sighting_conservation_id: conRow.sighting_conservation_id,
               researcher_notes: document.getElementById('submission-researcher-notes')?.value || null,
               review_status: 'pending'
             };
 
-            const submitResponse = await fetch('/api/sightings', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(insertPayload)
-            });
+            const { data: mainRow, error: mainErr } = await bloomSupabase.from('species_sightings')
+              .insert(mainPayload).select('sighting_id, entry_id').single();
+            if (mainErr) throw new Error(mainErr.message);
+            const sightingId = mainRow.sighting_id;
 
-            if (!submitResponse.ok) {
-              const errorText = await submitResponse.text();
-              throw new Error(errorText || `Failed to submit record (${submitResponse.status})`);
+            if (teamMemberEntries.length) {
+              await bloomSupabase.from('sighting_team_member').insert(
+                teamMemberEntries.map((tm) => ({ sighting_id: sightingId, member_name: tm.name, member_role: tm.role || null }))
+              );
             }
 
-            const data = await submitResponse.json();
+            async function insertMediaGroup(entries, category) {
+              for (let i = 0; i < entries.length; i++) {
+                const { url, contributor } = entries[i];
+                if (!url) continue;
+                let { data: pic } = await bloomSupabase.from('picture')
+                  .upsert({ file_path: url }, { onConflict: 'file_path' })
+                  .select('picture_id').single();
+                if (!pic?.picture_id) {
+                  const { data: ex } = await bloomSupabase.from('picture').select('picture_id').eq('file_path', url).single();
+                  pic = ex;
+                }
+                if (pic?.picture_id) {
+                  await bloomSupabase.from('sighting_media').insert({
+                    sighting_id: sightingId, picture_id: pic.picture_id,
+                    media_category: category, photographer_name: contributor || null, sort_order: i
+                  });
+                }
+              }
+            }
+
+            await insertMediaGroup(wholePlantPhotoEntries, 'whole_plant');
+            await insertMediaGroup(closeupFlowerPhotoEntries, 'closeup_flower');
+            await insertMediaGroup(habitatPhotoEntries, 'habitat');
+            if (videoUrls.length) {
+              await insertMediaGroup(videoUrls.map((url) => ({ url, contributor: '' })), 'video');
+            }
+
+            const data = mainRow;
 
             clearSubmissionDraft();
             resetResearcherSubmissionForm();
@@ -4999,12 +5082,34 @@
         const habitatPhotos       = mediaByCategory('habitat').length        ? mediaByCategory('habitat')        : normalizeMediaEntries(row.habitat_photo_path);
         const videoFiles          = mediaByCategory('video').length          ? mediaByCategory('video')          : parseJsonArrayValue(row.video_path);
 
+        // One photographer name is collected per photo group on the submission
+        // form (not per individual photo), so every media row in that category
+        // carries the same name — just take the first one present.
+        function photographerFor(cat) {
+          const entry = mediaEntries.find(m => m.media_category === cat && m.photographer_name);
+          return entry?.photographer_name || '';
+        }
+        const wholePlantPhotographer    = photographerFor('whole_plant');
+        const closeupFlowerPhotographer = photographerFor('closeup_flower');
+        const habitatPhotographer       = photographerFor('habitat');
+
+        // related_study is stored as a JSON string ({title, link, file_url}) —
+        // split it into readable columns rather than exporting raw JSON text.
+        let relatedStudyParsed = { title: '', link: '', file_url: '' };
+        if (row.related_study) {
+          try {
+            const parsed = typeof row.related_study === 'string' ? JSON.parse(row.related_study) : row.related_study;
+            if (parsed && typeof parsed === 'object') relatedStudyParsed = { title: parsed.title || '', link: parsed.link || '', file_url: parsed.file_url || '' };
+          } catch { relatedStudyParsed = { title: String(row.related_study), link: '', file_url: '' }; }
+        }
+
         const location = row.location || [row.mountain_name || 'Mt. Busa', row.specific_site_zone || row.specific_site_other].filter(Boolean).join(', ') || 'Mt. Busa';
 
         return {
           ...row,
           id: row.sighting_id,
-          researcher: row.researcher_name || row.researcher_email || 'Unknown Researcher',
+          researcher: row.head_observer_name || row.researcher_name || row.researcher_email || 'Unknown Researcher',
+          institution: row.institution_name || row.institution || '',
           species: row.scientific_name,
           family: row.family || '',
           genus: row.genus || (row.scientific_name ? row.scientific_name.trim().split(/\s+/)[0] : '') || '',
@@ -5018,6 +5123,12 @@
           closeup_flower_photos: closeupFlowerPhotos,
           habitat_photos: habitatPhotos,
           video_files: videoFiles,
+          whole_plant_photographer: wholePlantPhotographer,
+          closeup_flower_photographer: closeupFlowerPhotographer,
+          habitat_photographer: habitatPhotographer,
+          related_study_title: relatedStudyParsed.title,
+          related_study_link: relatedStudyParsed.link,
+          related_study_file: relatedStudyParsed.file_url,
           // ── Habitat sub-table ──
           habitat_type:          row.habitat_type          || hab.habitat_type,
           microhabitat:          row.microhabitat           || hab.microhabitat,
@@ -5521,7 +5632,7 @@
             return {
               id:          r.entry_id,
               name:        r.scientific_name || 'Unknown Species',
-              researcher:  r.researcher_name || 'Unknown',
+              researcher:  r.head_observer_name || r.researcher_name || 'Unknown',
               email:       r.researcher_email || '',
               date:        r.created_at,
               status:      (r.review_status || 'pending').toLowerCase(),
@@ -8698,6 +8809,7 @@
         submissions: [
           ['entry_id', 'Entry ID'],
           ['species', 'Scientific Name'],
+          ['genus', 'Genus'],
           ['common_names', 'Common Names'],
           ['local_names', 'Local Names'],
           ['identification_confidence', 'Identification Confidence'],
@@ -8754,12 +8866,18 @@
           ['threat_level', 'Threat Level'],
           ['threat_types', 'Threat Types'],
           ['whole_plant_photos', 'Whole Plant Photo Path(s)'],
+          ['whole_plant_photographer', 'Whole Plant Photographer'],
           ['closeup_flower_photos', 'Closeup Flower Photo Path(s)'],
+          ['closeup_flower_photographer', 'Closeup Flower Photographer'],
           ['habitat_photos', 'Habitat Photo Path(s)'],
+          ['habitat_photographer', 'Habitat Photographer'],
           ['video_files', 'Video Path(s)'],
+          ['head_observer_name', 'Head Observer'],
           ['researcher_notes', 'Researcher Notes'],
           ['team_members_display', 'Team Members'],
-          ['related_study', 'Related Study'],
+          ['related_study_title', 'Related Study Title'],
+          ['related_study_link', 'Related Study Link'],
+          ['related_study_file', 'Related Study File'],
           ['researcher', 'Researcher'],
           ['researcher_email', 'Researcher Email'],
           ['institution', 'Institution'],
@@ -8769,34 +8887,70 @@
           ['mountain_id', 'Mountain ID'],
           ['created_at', 'Created At'],
           ['updated_at', 'Updated At']
+        ],
+        // The Map view's trail routes (map_trails table) — a flat table, so no
+        // sub-table flattening needed like submissions.
+        trails: [
+          ['trail_id', 'Trail ID'],
+          ['name', 'Name'],
+          ['description', 'Description'],
+          ['color', 'Color'],
+          ['coordinates', 'Coordinates (lat,lng pairs)'],
+          ['archived', 'Archived'],
+          ['created_at', 'Created At'],
+          ['updated_at', 'Updated At']
         ]
       };
-      const ORCHID_IMPORT_TEMPLATE_COLUMNS = [['name', 'Scientific Name'], ['genus', 'Genus'], ['common_name', 'Common Name'], ['endemicity', 'Endemicity']];
-      // Sighting ID / Mountain ID / Created At / Updated At are DB-generated or
-      // derived (mountain_id is resolved from the Mountain name column) — they're
-      // exported for completeness but excluded from what an import file needs.
-      const SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS = ['sighting_id', 'mountain_id', 'created_at', 'updated_at'];
+      const ORCHID_IMPORT_TEMPLATE_COLUMNS = [
+        ['name', 'Scientific Name'], ['genus', 'Genus'], ['common_name', 'Common Name'], ['endemicity', 'Endemicity'],
+        ['ethnobotanical', 'Ethnobotanical Value'], ['horticulture_value', 'Horticultural Value'], ['cultural_importance', 'Cultural Importance']
+      ];
+      // Columns that are DB-generated or derived rather than something an import
+      // file should supply — exported for completeness but excluded from the
+      // required/optional reference card and from import templates.
+      const SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS = ['sighting_id', 'mountain_id', 'created_at', 'updated_at', 'genus'];
+      const TRAILS_IMPORT_EXCLUDED_COLUMNS = ['trail_id', 'created_at', 'updated_at'];
+      const IMPORT_EXCLUDED_COLUMNS = {
+        orchids: [],
+        submissions: SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS,
+        trails: TRAILS_IMPORT_EXCLUDED_COLUMNS
+      };
       const IMPORT_REQUIRED_FIELDS = {
         orchids: ['name', 'genus'],
-        submissions: ['species', 'latitude', 'longitude']
+        submissions: ['species', 'latitude', 'longitude'],
+        trails: ['name', 'coordinates']
       };
       let ieParsedRows = null;
       let ieExportFormat = 'csv';
       let ieImportDataset = 'orchids';
+      let trailRows = [];
+      let trailRowsLoaded = false;
+
+      async function loadTrailRows() {
+        if (!bloomSupabase) return;
+        const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
+        if (!error) {
+          trailRows = data || [];
+          trailRowsLoaded = true;
+        }
+      }
 
       async function initImportExportView() {
         if (!orchidCatalogLoaded) await loadOrchidCatalog();
         if (!submissionRows || !submissionRows.length) await loadSubmissions();
+        if (!trailRowsLoaded) await loadTrailRows();
         const orchidCountEl = document.getElementById('ie-count-orchids');
         const subCountEl = document.getElementById('ie-count-submissions');
+        const trailCountEl = document.getElementById('ie-count-trails');
         if (orchidCountEl) orchidCountEl.textContent = (orchidRows || []).length;
         if (subCountEl) subCountEl.textContent = (submissionRows || []).length;
+        if (trailCountEl) trailCountEl.textContent = (trailRows || []).length;
         renderImportColumnReference(ieImportDataset);
       }
 
       function selectExportDataset(ds) {
         document.querySelector('input[name="ie-dataset"][value="' + ds + '"]').checked = true;
-        ['orchids', 'submissions'].forEach((candidate) => {
+        ['orchids', 'submissions', 'trails'].forEach((candidate) => {
           const lbl = document.getElementById('ie-ds-' + candidate);
           if (!lbl) return;
           lbl.classList.toggle('is-active', candidate === ds);
@@ -8818,7 +8972,7 @@
 
       function selectImportDataset(ds) {
         ieImportDataset = ds;
-        ['orchids', 'submissions'].forEach((candidate) => {
+        ['orchids', 'submissions', 'trails'].forEach((candidate) => {
           const lbl = document.getElementById('ie-import-ds-' + candidate);
           if (!lbl) return;
           lbl.classList.toggle('is-active', candidate === ds);
@@ -8832,10 +8986,14 @@
           if (titleEl) titleEl.textContent = 'Import Orchid Catalog';
           if (descEl) descEl.innerHTML = 'Bulk add or update species. Rows are matched to existing species by <strong style="color:var(--dt-text);">Scientific Name</strong> — matches are updated, everything else is added as new.';
           if (hintEl) hintEl.textContent = 'Scientific Name and Genus columns required';
-        } else {
+        } else if (ds === 'submissions') {
           if (titleEl) titleEl.textContent = 'Import Submissions';
           if (descEl) descEl.innerHTML = 'Bulk add new sighting records. Rows are validated first — duplicates (matched by <strong style="color:var(--dt-text);">Entry ID</strong>) and invalid rows are skipped and reported; everything else is inserted.';
           if (hintEl) hintEl.textContent = 'Scientific Name, Latitude, and Longitude columns required';
+        } else {
+          if (titleEl) titleEl.textContent = 'Import Map Trails';
+          if (descEl) descEl.innerHTML = 'Bulk add new trail routes for the Map view. Rows are validated first — duplicates (matched by <strong style="color:var(--dt-text);">Name</strong>) and invalid rows are skipped and reported; everything else is inserted.';
+          if (hintEl) hintEl.textContent = 'Name and Coordinates columns required';
         }
         renderImportColumnReference(ds);
         cancelImportExportImport();
@@ -8845,7 +9003,8 @@
         const container = document.getElementById('ieColumnReferenceList');
         if (!container) return;
         const required = IMPORT_REQUIRED_FIELDS[dataset] || [];
-        const cols = IMPORT_EXPORT_COLUMNS[dataset].filter(([key]) => dataset !== 'submissions' || !SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS.includes(key));
+        const excluded = IMPORT_EXCLUDED_COLUMNS[dataset] || [];
+        const cols = IMPORT_EXPORT_COLUMNS[dataset].filter(([key]) => !excluded.includes(key));
         container.innerHTML = cols.map(([key, label], i) => `
           <div style="padding:0.6rem 1.2rem;${i < cols.length - 1 ? 'border-bottom:1px solid var(--dt-border);' : ''}display:flex;justify-content:space-between;gap:0.5rem;">
             <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">${label}</p>
@@ -8898,25 +9057,62 @@
         XLSX.writeFile(wb, `${fileNameBase}.xlsx`);
       }
 
+      // image_url/model_3d_url store the full Supabase Storage public URL
+      // (https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>).
+      // That reveals backend infrastructure that has no business being in a
+      // data export, so exports show just the bucket-relative path instead.
+      // Nothing else about the app changes — the live catalog/detail pages
+      // still use the full URL from the database as normal.
+      function maskStorageUrl(url) {
+        if (typeof url !== 'string' || !url) return url;
+        const base = (window.BLOOM_SUPABASE_URL || '') + '/storage/v1/object/public/';
+        return url.startsWith(base) ? url.slice(base.length) : url;
+      }
+
+      function rowsForExport(dataset, rows) {
+        if (dataset !== 'orchids') return rows;
+        return rows.map((row) => ({ ...row, image_url: maskStorageUrl(row.image_url), model_3d_url: maskStorageUrl(row.model_3d_url) }));
+      }
+
+      function getExportRows(dataset) {
+        if (dataset === 'orchids') return orchidRows || [];
+        if (dataset === 'submissions') return submissionRows || [];
+        return trailRows || [];
+      }
+
       function runImportExportExport() {
         const dataset = document.querySelector('input[name="ie-dataset"]:checked').value;
-        const rows = dataset === 'orchids' ? (orchidRows || []) : (submissionRows || []);
+        const rows = rowsForExport(dataset, getExportRows(dataset));
         if (!rows.length) {
           showReportToast('No data available to export yet.', 'warn');
           return;
         }
         const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const fileNameBase = (dataset === 'orchids' ? 'Orchid_Catalog' : 'Submissions') + '_' + stamp;
+        const fileNameBase = { orchids: 'Orchid_Catalog', submissions: 'Submissions', trails: 'Map_Trails' }[dataset] + '_' + stamp;
         if (ieExportFormat === 'excel') downloadRowsAsExcel(fileNameBase, rows, IMPORT_EXPORT_COLUMNS[dataset]);
         else downloadRowsAsCsv(fileNameBase, rows, IMPORT_EXPORT_COLUMNS[dataset]);
-        showReportToast(`Exported ${rows.length} ${dataset === 'orchids' ? 'species' : 'records'} to ${ieExportFormat === 'excel' ? 'Excel' : 'CSV'}.`, 'success');
+        const noun = { orchids: 'species', submissions: 'records', trails: 'trails' }[dataset];
+        showReportToast(`Exported ${rows.length} ${noun} to ${ieExportFormat === 'excel' ? 'Excel' : 'CSV'}.`, 'success');
       }
 
       function downloadImportTemplate() {
         if (ieImportDataset === 'orchids') {
-          const rows = [{ name: 'Bulbophyllum lobbii', genus: 'Bulbophyllum', common_name: 'Lobb’s Bulbophyllum', endemicity: 'Native' }];
+          const rows = [{
+            name: 'Bulbophyllum lobbii', genus: 'Bulbophyllum', common_name: 'Lobb’s Bulbophyllum', endemicity: 'Native',
+            ethnobotanical: '', horticulture_value: '', cultural_importance: ''
+          }];
           if (ieExportFormat === 'excel') downloadRowsAsExcel('Orchid_Catalog_Import_Template', rows, ORCHID_IMPORT_TEMPLATE_COLUMNS);
           else downloadRowsAsCsv('Orchid_Catalog_Import_Template', rows, ORCHID_IMPORT_TEMPLATE_COLUMNS);
+          return;
+        }
+        if (ieImportDataset === 'trails') {
+          const rows = [{
+            name: 'Mt. Busa Research Trail', description: 'Primary orchid survey trail.', color: '#2563eb',
+            coordinates: '6.0705,124.7412; 6.0758,124.7350; 6.0821,124.7284', archived: 'No'
+          }];
+          const cols = IMPORT_EXPORT_COLUMNS.trails.filter(([key]) => !TRAILS_IMPORT_EXCLUDED_COLUMNS.includes(key));
+          if (ieExportFormat === 'excel') downloadRowsAsExcel('Map_Trails_Import_Template', rows, cols);
+          else downloadRowsAsCsv('Map_Trails_Import_Template', rows, cols);
           return;
         }
         const rows = [{
@@ -8932,8 +9128,10 @@
           inflorescence_type: '', petal_characteristics: '', sepal_characteristics: '', labellum_lip_description: '',
           fragrance: '', blooming_stage: '', flowering_season: '', fruit_present: 'No', fruit_type: '', seed_capsule_condition: '',
           life_stage: '', phenology: '', population_count: '', population_status: 'Rare', threat_level: 'Vulnerable',
-          threat_types: 'Habitat Loss; Illegal Collection', whole_plant_photos: '', closeup_flower_photos: '', habitat_photos: '',
-          video_files: '', researcher_notes: '', team_members_display: 'Juan Dela Cruz (Field Botanist)', related_study: '',
+          threat_types: 'Habitat Loss; Illegal Collection', whole_plant_photos: '', whole_plant_photographer: '',
+          closeup_flower_photos: '', closeup_flower_photographer: '', habitat_photos: '', habitat_photographer: '',
+          video_files: '', head_observer_name: 'Juan Dela Cruz', researcher_notes: '', team_members_display: 'Juan Dela Cruz (Field Botanist)',
+          related_study_title: '', related_study_link: '', related_study_file: '',
           researcher: '', researcher_email: '', institution: '', location: '', review_status: 'pending'
         }];
         const cols = IMPORT_EXPORT_COLUMNS.submissions.filter(([key]) => !SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS.includes(key));
@@ -9016,14 +9214,17 @@
             name: header.indexOf('scientific name'),
             genus: header.indexOf('genus'),
             common: header.indexOf('common name'),
-            endemicity: header.indexOf('endemicity')
+            endemicity: header.indexOf('endemicity'),
+            ethnobotanical: header.indexOf('ethnobotanical value'),
+            horticulture_value: header.indexOf('horticultural value'),
+            cultural_importance: header.indexOf('cultural importance')
           };
           if (col.name === -1 || col.genus === -1) {
             showReportToast('File must include "Scientific Name" and "Genus" columns.', 'error');
             return;
           }
           ieParsedRows = { dataset: 'orchids', rows: table.slice(1), col };
-        } else {
+        } else if (ieImportDataset === 'submissions') {
           const col = {};
           IMPORT_EXPORT_COLUMNS.submissions.forEach(([key, label]) => { col[key] = header.indexOf(label.toLowerCase()); });
           if (col.species === -1 || col.latitude === -1 || col.longitude === -1) {
@@ -9031,6 +9232,14 @@
             return;
           }
           ieParsedRows = { dataset: 'submissions', rows: table.slice(1), col };
+        } else {
+          const col = {};
+          IMPORT_EXPORT_COLUMNS.trails.forEach(([key, label]) => { col[key] = header.indexOf(label.toLowerCase()); });
+          if (col.name === -1 || col.coordinates === -1) {
+            showReportToast('File must include "Name" and "Coordinates (lat,lng pairs)" columns.', 'error');
+            return;
+          }
+          ieParsedRows = { dataset: 'trails', rows: table.slice(1), col };
         }
 
         document.getElementById('ieFileName').textContent = file.name;
@@ -9059,6 +9268,9 @@
           const genusName = (cols[col.genus] || '').trim();
           const commonName = col.common > -1 ? (cols[col.common] || '').trim() : '';
           const endemicity = col.endemicity > -1 ? (cols[col.endemicity] || '').trim() : '';
+          const ethnobotanical = col.ethnobotanical > -1 ? (cols[col.ethnobotanical] || '').trim() : '';
+          const horticultureValue = col.horticulture_value > -1 ? (cols[col.horticulture_value] || '').trim() : '';
+          const culturalImportance = col.cultural_importance > -1 ? (cols[col.cultural_importance] || '').trim() : '';
 
           if (!sciName || !genusName) {
             failed++;
@@ -9086,17 +9298,23 @@
             const { data: existingOrchid } = await bloomSupabase
               .from('orchids').select('orchid_id').ilike('sci_name', sciName).maybeSingle();
 
+            const narrativeFields = {
+              ethnobotanical_value: ethnobotanical || null,
+              horticultural_value: horticultureValue || null,
+              cultural_importance: culturalImportance || null
+            };
+
             if (existingOrchid) {
               const { error: updateError } = await bloomSupabase
                 .from('orchids')
-                .update({ genus_id: genusId, common_name: commonName || null, endemicity: endemicity || null })
+                .update({ genus_id: genusId, common_name: commonName || null, endemicity: endemicity || null, ...narrativeFields })
                 .eq('orchid_id', existingOrchid.orchid_id);
               if (updateError) throw updateError;
               updated++;
             } else {
               const { error: insertError } = await bloomSupabase
                 .from('orchids')
-                .insert({ sci_name: sciName, genus_id: genusId, common_name: commonName || null, endemicity: endemicity || null });
+                .insert({ sci_name: sciName, genus_id: genusId, common_name: commonName || null, endemicity: endemicity || null, ...narrativeFields });
               if (insertError) throw insertError;
               added++;
             }
@@ -9275,6 +9493,8 @@
             main: {
               entry_id: entryId,
               researcher_email: cell(cols, 'researcher_email') || null,
+              head_observer_name: cell(cols, 'head_observer_name') || null,
+              institution_name: cell(cols, 'institution') || null,
               scientific_name: species,
               common_names: splitList(cell(cols, 'common_names')),
               local_names: splitList(cell(cols, 'local_names')),
@@ -9291,7 +9511,12 @@
               latitude, longitude,
               elevation_meters: numericParsed.elevation_meters,
               endemic_to_philippines: cell(cols, 'endemic_to_philippines') || null,
-              related_study: cell(cols, 'related_study') || null,
+              related_study: (function () {
+                const title = cell(cols, 'related_study_title');
+                const link = cell(cols, 'related_study_link');
+                const fileUrl = cell(cols, 'related_study_file');
+                return (title || link || fileUrl) ? JSON.stringify({ title, link, file_url: fileUrl }) : null;
+              })(),
               researcher_notes: cell(cols, 'researcher_notes') || null,
               review_status: reviewStatus
             },
@@ -9339,6 +9564,93 @@
         return results;
       }
 
+      // Bulk import for map_trails. A flat table, so this is a single batched
+      // insert rather than the multi-table dance submissions need. Trails have
+      // no DB unique constraint, so duplicates are detected by name match
+      // (case-insensitive) against existing trails and within the file itself.
+      async function importTrailRows(table, col) {
+        const { data: existingTrails } = await bloomSupabase.from('map_trails').select('name');
+        const existingNames = new Set((existingTrails || []).map((r) => String(r.name || '').trim().toLowerCase()));
+
+        function cell(cols, key) {
+          const idx = col[key];
+          return idx > -1 ? String(cols[idx] ?? '').trim() : '';
+        }
+        function parseCoordinates(value, errors) {
+          const pairs = value.split(';').map((s) => s.trim()).filter(Boolean);
+          if (!pairs.length) { errors.push('Coordinates is required'); return null; }
+          const coords = [];
+          for (const pair of pairs) {
+            const parts = pair.split(',').map((s) => Number(s.trim()));
+            if (parts.length !== 2 || !parts.every(Number.isFinite)) { errors.push(`Coordinates contains an invalid pair: "${pair}"`); return null; }
+            const [lat, lng] = parts;
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) { errors.push(`Coordinates pair out of range: "${pair}"`); return null; }
+            coords.push([lat, lng]);
+          }
+          if (coords.length < 2) { errors.push('Coordinates needs at least 2 points to form a trail'); return null; }
+          return coords;
+        }
+        function parseArchivedCell(value) {
+          return ['yes', 'true', '1'].includes(value.toLowerCase());
+        }
+
+        const seenNamesInFile = new Set();
+        const validRows = [];
+        const results = { imported: 0, duplicates: 0, invalid: 0, errors: [] };
+
+        table.forEach((cols, i) => {
+          const rowNum = i + 2;
+          const errors = [];
+
+          const name = cell(cols, 'name');
+          if (!name) errors.push('Name is required');
+
+          if (name) {
+            const key = name.toLowerCase();
+            if (existingNames.has(key) || seenNamesInFile.has(key)) {
+              results.duplicates++;
+              results.errors.push(`Row ${rowNum}: duplicate trail name "${name}" — skipped`);
+              return;
+            }
+            seenNamesInFile.add(key);
+          }
+
+          const coordinates = parseCoordinates(cell(cols, 'coordinates'), errors);
+
+          if (errors.length) {
+            results.invalid++;
+            errors.forEach((e) => results.errors.push(`Row ${rowNum}: ${e}`));
+            return;
+          }
+
+          validRows.push({
+            rowNum,
+            name,
+            description: cell(cols, 'description') || null,
+            color: cell(cols, 'color') || '#2563eb',
+            coordinates,
+            archived: parseArchivedCell(cell(cols, 'archived'))
+          });
+        });
+
+        const BATCH_SIZE = 25;
+        for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
+          const batch = validRows.slice(i, i + BATCH_SIZE);
+          try {
+            const { error } = await bloomSupabase.from('map_trails').insert(batch.map((r) => ({
+              name: r.name, description: r.description, color: r.color, coordinates: r.coordinates, archived: r.archived
+            })));
+            if (error) throw error;
+            results.imported += batch.length;
+          } catch (batchError) {
+            batch.forEach((r) => results.errors.push(`Row ${r.rowNum}: ${batchError.message || 'insert failed'}`));
+            results.invalid += batch.length;
+          }
+        }
+
+        return results;
+      }
+
       async function confirmImportExportImport() {
         if (!ieParsedRows) return;
         if (!bloomSupabase) {
@@ -9365,7 +9677,7 @@
             orchidCatalogLoaded = false;
             await loadOrchidCatalog();
             document.getElementById('ie-count-orchids').textContent = (orchidRows || []).length;
-          } else {
+          } else if (ieParsedRows.dataset === 'submissions') {
             const { rows: table, col } = ieParsedRows;
             const r = await importSubmissionsRows(table, col);
             summaryText = `Import complete: ${r.imported} imported${r.duplicates ? `, ${r.duplicates} duplicate${r.duplicates === 1 ? '' : 's'} skipped` : ''}${r.invalid ? `, ${r.invalid} invalid` : ''}.`;
@@ -9374,6 +9686,16 @@
             submissionRows = [];
             await loadSubmissions();
             document.getElementById('ie-count-submissions').textContent = (submissionRows || []).length;
+          } else {
+            const { rows: table, col } = ieParsedRows;
+            const r = await importTrailRows(table, col);
+            summaryText = `Import complete: ${r.imported} imported${r.duplicates ? `, ${r.duplicates} duplicate${r.duplicates === 1 ? '' : 's'} skipped` : ''}${r.invalid ? `, ${r.invalid} invalid` : ''}.`;
+            errors = r.errors;
+            hasIssues = !!(r.duplicates || r.invalid);
+            trailRowsLoaded = false;
+            await loadTrailRows();
+            document.getElementById('ie-count-trails').textContent = (trailRows || []).length;
+            if (typeof loadMapTrails === 'function') loadMapTrails();
           }
         } catch (importError) {
           summaryText = `Import failed: ${importError.message || importError}`;
@@ -9517,9 +9839,10 @@
         // DENR previously chose to hide via the eye toggles.
         let existingStatusLabel = '';
         let existingHiddenFields = [];
+        let existingNarrativeFields = { ethnobotanical: '', horticulture_value: '', cultural_importance: '' };
         try {
           const { data: existingOverview } = await bloomSupabase
-            .from('orchid_overview').select('conservation_status, hidden_fields')
+            .from('orchid_overview').select('conservation_status, hidden_fields, ethnobotanical, horticulture_value, cultural_importance')
             .eq('name', s.species || s.scientific_name || '').maybeSingle();
           if (existingOverview && existingOverview.conservation_status !== 'Unassigned') {
             existingStatusLabel = existingOverview.conservation_status;
@@ -9527,7 +9850,23 @@
           if (existingOverview && Array.isArray(existingOverview.hidden_fields)) {
             existingHiddenFields = existingOverview.hidden_fields;
           }
+          if (existingOverview) {
+            existingNarrativeFields = {
+              ethnobotanical: existingOverview.ethnobotanical || '',
+              horticulture_value: existingOverview.horticulture_value || '',
+              cultural_importance: existingOverview.cultural_importance || ''
+            };
+          }
         } catch (e) { console.warn('Existing conservation status lookup failed:', e); }
+
+        // These have no source on the submission form — pre-fill from the
+        // catalog entry if this species was published before, otherwise blank.
+        const ethnoEl2 = document.getElementById('catalogEthnobotanical');
+        const hortiEl2 = document.getElementById('catalogHorticultural');
+        const culturalEl2 = document.getElementById('catalogCulturalImportance');
+        if (ethnoEl2) ethnoEl2.value = existingNarrativeFields.ethnobotanical;
+        if (hortiEl2) hortiEl2.value = existingNarrativeFields.horticulture_value;
+        if (culturalEl2) culturalEl2.value = existingNarrativeFields.cultural_importance;
 
         // Header
         document.getElementById('ptc-species-name').textContent = s.species || s.scientific_name || '';
@@ -9668,6 +10007,15 @@
           if (genusError) throw genusError;
           const genusId = genusData.genus_id;
 
+          // Endemicity comes from the submission (same source the read-only
+          // display row above pulls from) — it was never actually saved before.
+          // Ethnobotanical/Horticultural/Cultural Importance have no submission-form
+          // source at all, so they come from the textareas DENR fills in here.
+          const endemicityValue = (currentSubmission?.endemicity || currentSubmission?.endemic_to_philippines || '').trim() || null;
+          const ethnobotanicalValue = (document.getElementById('catalogEthnobotanical')?.value || '').trim() || null;
+          const horticulturalValue = (document.getElementById('catalogHorticultural')?.value || '').trim() || null;
+          const culturalImportanceValue = (document.getElementById('catalogCulturalImportance')?.value || '').trim() || null;
+
           // Upsert orchid
           const { data: existingOrchid } = await bloomSupabase
             .from('orchids').select('orchid_id').eq('sci_name', scientificName).maybeSingle();
@@ -9676,15 +10024,23 @@
             orchidId = existingOrchid.orchid_id;
             // Re-publishing a hidden orchid — restore visibility (thumbnail is linked via biogeography.picture_id below)
             const { error: updErr } = await bloomSupabase.from('orchids')
-              .update({ genus_id: genusId, is_published: true, hidden_fields: hiddenFields })
+              .update({
+                genus_id: genusId, is_published: true, hidden_fields: hiddenFields,
+                endemicity: endemicityValue, ethnobotanical_value: ethnobotanicalValue,
+                horticultural_value: horticulturalValue, cultural_importance: culturalImportanceValue
+              })
               .eq('orchid_id', orchidId);
             if (updErr) throw updErr;
           } else {
             const { data: newOrchid, error: orchidError } = await bloomSupabase
               .from('orchids')
-              .insert({ sci_name: scientificName, genus_id: genusId,
-                        is_published: true, date_discovered: new Date().toISOString(),
-                        hidden_fields: hiddenFields })
+              .insert({
+                sci_name: scientificName, genus_id: genusId,
+                is_published: true, date_discovered: new Date().toISOString(),
+                hidden_fields: hiddenFields,
+                endemicity: endemicityValue, ethnobotanical_value: ethnobotanicalValue,
+                horticultural_value: horticulturalValue, cultural_importance: culturalImportanceValue
+              })
               .select('orchid_id').single();
             if (orchidError) throw orchidError;
             orchidId = newOrchid.orchid_id;
