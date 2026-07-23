@@ -1186,13 +1186,27 @@
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Report Type</label>
                 <select id="reportType" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);cursor:pointer;outline:none;transition:border-color 150ms;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'">
-                  <option value="species-inventory">Species Inventory Report</option>
-                  <option value="conservation-summary">Conservation Status Summary</option>
-                  <option value="monthly-upload">Monthly Submission Report</option>
-                  <option value="geographic">Geographic Distribution Analysis</option>
-                  <option value="researcher-activity">Researcher Activity Report</option>
-                  <option value="habitat-analysis">Habitat Classification Report</option>
-                  <option value="detailed-report">Detailed Report</option>
+                  <optgroup label="Decision-Support Reports">
+                    <option value="conservation-priority">Species Conservation Priority Ranking</option>
+                    <option value="elevation-profile">Elevational &amp; Vertical Distribution Profile</option>
+                    <option value="phenology-calendar">Flowering Phenology &amp; Survey Timing Calendar</option>
+                    <option value="threat-assessment">Threat &amp; Habitat Disturbance Assessment</option>
+                    <option value="endemism-richness">Endemism &amp; Species Richness Profile</option>
+                    <option value="host-substrate">Host Tree &amp; Growth Substrate Association</option>
+                    <option value="data-quality">Data Completeness &amp; Quality Audit</option>
+                    <option value="validation-audit">Submission Validation &amp; Review Turnaround Audit</option>
+                    <option value="media-coverage">Media &amp; 3D Model Coverage</option>
+                    <option value="survey-effort">Survey Effort &amp; Zone Coverage</option>
+                  </optgroup>
+                  <optgroup label="Standard Reports">
+                    <option value="species-inventory">Species Inventory Report</option>
+                    <option value="conservation-summary">Conservation Status Summary</option>
+                    <option value="monthly-upload">Monthly Submission Report</option>
+                    <option value="geographic">Geographic Distribution Analysis</option>
+                    <option value="researcher-activity">Researcher Activity Report</option>
+                    <option value="habitat-analysis">Habitat Classification Report</option>
+                    <option value="detailed-report">Detailed Report</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -8278,6 +8292,56 @@
           title: 'Detailed Report',
           description: 'Comprehensive record-by-record export combining species, researcher, habitat, morphology, and conservation details for each submission',
           includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'conservation-priority': {
+          title: 'Species Conservation Priority Ranking',
+          description: 'Ranked watchlist combining IUCN status, recorded threat level, population status, and rarity into a single defensible priority score',
+          includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'elevation-profile': {
+          title: 'Elevational & Vertical Distribution Profile',
+          description: 'Per-species elevational range and richness bands, flagging narrow-range species as possible climate-vulnerable specialists',
+          includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'phenology-calendar': {
+          title: 'Flowering Phenology & Survey Timing Calendar',
+          description: 'Per-species bloom windows derived from blooming stage and observation date, useful for survey timing and enforcement scheduling',
+          includesByDefault: ['Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'threat-assessment': {
+          title: 'Threat & Habitat Disturbance Assessment',
+          description: 'Unnests recorded threat types into frequency, affected species, and zone counts to identify the leading pressures on Mt. Busa',
+          includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'endemism-richness': {
+          title: 'Endemism & Species Richness Profile',
+          description: 'Genus-level richness with endemic and threatened-species counts, for SDG 15 and biodiversity-profile reporting',
+          includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'host-substrate': {
+          title: 'Host Tree & Growth Substrate Association',
+          description: 'Which host tree species and size classes carry the most orchid diversity — a concrete input for logging-permit review',
+          includesByDefault: ['Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'data-quality': {
+          title: 'Data Completeness & Quality Audit',
+          description: 'Field-by-field completeness across all submissions (not just approved), naming exactly which fields need better data collection',
+          includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'validation-audit': {
+          title: 'Submission Validation & Review Turnaround Audit',
+          description: 'Per-institution approval rate and review turnaround, proving the review workflow functions and surfacing stalled submissions',
+          includesByDefault: ['Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'media-coverage': {
+          title: 'Media & 3D Model Coverage',
+          description: 'Which catalog species have complete photo sets and a 3D model, with a prioritized modeling backlog list',
+          includesByDefault: ['Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'survey-effort': {
+          title: 'Survey Effort & Zone Coverage',
+          description: 'Sightings, distinct species, and days since last visit per zone — quantifies under-sampled areas and monitoring gaps',
+          includesByDefault: ['Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
         }
       };
 
@@ -8330,11 +8394,35 @@
         };
       }
 
+      // Manuscript §3.5.5: official DENR reports are generated "from approved
+      // data" only. Reports auditing the review workflow itself (data-quality,
+      // validation-audit) intentionally see every status instead.
+      function isApprovedRow(item) {
+        return String(item.review_status || '').toLowerCase() === 'approved';
+      }
+
+      function normKey(v) {
+        return String(v || '').trim().toLowerCase().replace(/\s+/g, '_');
+      }
+
+      function weightFor(map, value, fallback) {
+        const key = normKey(value);
+        return key && map[key] !== undefined ? map[key] : fallback;
+      }
+
+      // Shared across conservation-priority/media-coverage/endemism-richness —
+      // conservation_status_key values from orchid_overview double as the
+      // threat_level vocabulary on the submission form (both are IUCN labels).
+      const IUCN_KEY_WEIGHT = { critically_endangered: 100, endangered: 80, vulnerable: 60, near_threatened: 40, least_concern: 20 };
+      const THREATENED_IUCN_KEYS = new Set(['critically_endangered', 'endangered', 'vulnerable']);
+      const POPULATION_STATUS_WEIGHT = { abundant: 20, common: 40, rare: 80 };
+
       function getRowsForReport(reportType, sourceData, dateFrom, dateTo) {
         const submissionsInRange = sourceData.submissions.filter((item) => {
           const d = String(item.submission_date || '');
           return d >= dateFrom && d <= dateTo;
         });
+        const approvedInRange = submissionsInRange.filter(isApprovedRow);
 
         if (reportType === 'species-inventory') {
           return sourceData.orchids.map((item) => ({
@@ -8357,7 +8445,7 @@
 
         if (reportType === 'monthly-upload') {
           const monthlyCounts = {};
-          submissionsInRange.forEach((item) => {
+          approvedInRange.forEach((item) => {
             const month = String(item.submission_date || '').slice(0, 7);
             if (!monthlyCounts[month]) {
               monthlyCounts[month] = 0;
@@ -8369,7 +8457,7 @@
 
         if (reportType === 'researcher-activity') {
           const researcherCounts = {};
-          submissionsInRange.forEach((item) => {
+          approvedInRange.forEach((item) => {
             const researcher = item.researcher || 'Unknown';
             if (!researcherCounts[researcher]) {
               researcherCounts[researcher] = 0;
@@ -8381,7 +8469,7 @@
 
         if (reportType === 'habitat-analysis') {
           const habitatCounts = {};
-          submissionsInRange.forEach((item) => {
+          approvedInRange.forEach((item) => {
             const habitat = item.habitat || 'Not specified';
             if (!habitatCounts[habitat]) {
               habitatCounts[habitat] = 0;
@@ -8392,7 +8480,7 @@
         }
 
         if (reportType === 'detailed-report') {
-          return submissionsInRange.map((item) => ({
+          return approvedInRange.map((item) => ({
             species: item.species || '-',
             common_name: item.common_name || '-',
             family: item.family || '-',
@@ -8409,7 +8497,348 @@
           }));
         }
 
-        return submissionsInRange.map((item) => ({
+        // ── Report 1: Species Conservation Priority Ranking ──────────────
+        if (reportType === 'conservation-priority') {
+          const bySpecies = {};
+          approvedInRange.forEach((s) => {
+            const key = s.species || 'Unknown';
+            if (!bySpecies[key]) {
+              bySpecies[key] = { count: 0, zones: new Set(), threat: 0, pop: 60, individuals: 0 };
+            }
+            const g = bySpecies[key];
+            g.count += 1;
+            if (s.specific_site_zone) g.zones.add(s.specific_site_zone);
+            g.threat = Math.max(g.threat, weightFor(IUCN_KEY_WEIGHT, s.threat_level, 0));
+            g.pop = Math.max(g.pop, weightFor(POPULATION_STATUS_WEIGHT, s.population_status, 60));
+            g.individuals += Number(s.population_count || 0);
+          });
+
+          const maxCount = Math.max(1, ...Object.values(bySpecies).map((g) => g.count));
+
+          return Object.entries(bySpecies).map(([species, g]) => {
+            const orchid = sourceData.orchids.find((o) => (o.name || '').trim().toLowerCase() === species.trim().toLowerCase()) || {};
+            const iucn = IUCN_KEY_WEIGHT[orchid.conservation_status_key] ?? 50;
+            const rarity = 100 - (g.count / maxCount) * 100;
+            const score = +(iucn * 0.40 + g.threat * 0.25 + g.pop * 0.20 + rarity * 0.15).toFixed(1);
+            const tier = score >= 85 ? 'Tier 1 — Critical'
+                       : score >= 70 ? 'Tier 2 — High'
+                       : score >= 50 ? 'Tier 3 — Moderate'
+                       : 'Tier 4 — Monitor';
+            return {
+              species,
+              genus: orchid.genus || species.split(' ')[0] || '-',
+              iucn_status: orchid.conservation_status || 'Unassigned',
+              sighting_count: g.count,
+              zones_occupied: g.zones.size,
+              est_individuals: g.individuals || '-',
+              priority_score: score,
+              tier
+            };
+          }).sort((a, b) => b.priority_score - a.priority_score)
+            .map((row, i) => ({ rank: i + 1, ...row }));
+        }
+
+        // ── Report 2: Elevational & Vertical Distribution Profile ────────
+        if (reportType === 'elevation-profile') {
+          const bySpecies = {};
+          approvedInRange.forEach((s) => {
+            if (s.elevation_meters === null || s.elevation_meters === undefined || s.elevation_meters === '') return;
+            const e = Number(s.elevation_meters);
+            if (isNaN(e)) return;
+            const key = s.species || 'Unknown';
+            if (!bySpecies[key]) bySpecies[key] = { min: e, max: e, sum: 0, n: 0 };
+            const g = bySpecies[key];
+            g.min = Math.min(g.min, e);
+            g.max = Math.max(g.max, e);
+            g.sum += e;
+            g.n += 1;
+          });
+          // A two-point elevational range is not a range — suppress noisy rows.
+          return Object.entries(bySpecies)
+            .filter(([, g]) => g.n >= 3)
+            .map(([species, g]) => ({
+              species,
+              min_elev_m: Math.round(g.min),
+              max_elev_m: Math.round(g.max),
+              range_m: Math.round(g.max - g.min),
+              mean_elev_m: Math.round(g.sum / g.n),
+              n_records: g.n,
+              band_breadth: (g.max - g.min) < 150 ? 'Narrow (possible specialist)' : (g.max - g.min) < 400 ? 'Moderate' : 'Wide'
+            }))
+            .sort((a, b) => a.mean_elev_m - b.mean_elev_m);
+        }
+
+        // ── Report 3: Flowering Phenology & Survey Timing Calendar ───────
+        if (reportType === 'phenology-calendar') {
+          const bySpecies = {};
+          approvedInRange.forEach((s) => {
+            if (!s.blooming_stage || normKey(s.blooming_stage) === 'senescent') return;
+            const month = String(s.observation_date || s.submission_date || '').slice(0, 7);
+            if (!month) return;
+            const key = s.species || 'Unknown';
+            if (!bySpecies[key]) bySpecies[key] = { months: [], flowerCounts: [] };
+            bySpecies[key].months.push(month);
+            if (s.flower_count !== null && s.flower_count !== undefined && s.flower_count !== '') {
+              bySpecies[key].flowerCounts.push(Number(s.flower_count));
+            }
+          });
+          return Object.entries(bySpecies).map(([species, g]) => {
+            const sorted = [...g.months].sort();
+            const counts = {};
+            sorted.forEach((m) => { counts[m] = (counts[m] || 0) + 1; });
+            const peak = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+            return {
+              species,
+              first_flowering_month: sorted[0],
+              peak_month: peak,
+              last_flowering_month: sorted[sorted.length - 1],
+              mean_flower_count: g.flowerCounts.length ? +(g.flowerCounts.reduce((a, b) => a + b, 0) / g.flowerCounts.length).toFixed(1) : '-',
+              records_in_flower: sorted.length
+            };
+          }).sort((a, b) => a.species.localeCompare(b.species));
+        }
+
+        // ── Report 4: Threat & Habitat Disturbance Assessment ────────────
+        if (reportType === 'threat-assessment') {
+          const totalRecords = approvedInRange.length;
+          const byThreat = {};
+          approvedInRange.forEach((s) => {
+            if (!Array.isArray(s.threat_types) || !s.threat_types.length) return;
+            const zone = s.specific_site_zone || 'Unspecified';
+            const canopy = s.canopy_cover_percent;
+            const seen = new Set();
+            s.threat_types.forEach((t) => {
+              const label = String(t || '').trim();
+              const key = label.toLowerCase();
+              if (!key || seen.has(key)) return;
+              seen.add(key);
+              if (!byThreat[key]) {
+                byThreat[key] = { label: label.replace(/\b\w/g, (c) => c.toUpperCase()), mentions: 0, species: new Set(), zones: new Set(), canopySum: 0, canopyN: 0 };
+              }
+              const g = byThreat[key];
+              g.mentions += 1;
+              if (s.species) g.species.add(s.species);
+              g.zones.add(zone);
+              if (canopy !== null && canopy !== undefined && canopy !== '') { g.canopySum += Number(canopy); g.canopyN += 1; }
+            });
+          });
+          return Object.values(byThreat).map((g) => ({
+            threat_type: g.label,
+            mentions: g.mentions,
+            pct_of_records: totalRecords ? +((g.mentions / totalRecords) * 100).toFixed(1) : 0,
+            affected_species: g.species.size,
+            zones_affected: g.zones.size,
+            mean_canopy_cover: g.canopyN ? +(g.canopySum / g.canopyN).toFixed(1) : '-'
+          })).sort((a, b) => b.mentions - a.mentions);
+        }
+
+        // ── Report 5: Endemism & Species Richness Profile ────────────────
+        if (reportType === 'endemism-richness') {
+          const endemicByName = new Map();
+          approvedInRange.forEach((s) => {
+            const key = (s.species || '').trim().toLowerCase();
+            if (key && s.endemic_to_philippines && !endemicByName.has(key)) endemicByName.set(key, s.endemic_to_philippines);
+          });
+          const sightingCountByName = {};
+          approvedInRange.forEach((s) => {
+            const key = (s.species || '').trim().toLowerCase();
+            if (!key) return;
+            sightingCountByName[key] = (sightingCountByName[key] || 0) + 1;
+          });
+          const byGenus = {};
+          sourceData.orchids.forEach((o) => {
+            const genus = o.genus || (o.name ? o.name.split(' ')[0] : '') || 'Unknown';
+            if (!byGenus[genus]) byGenus[genus] = { species: new Set(), sightings: 0, endemic: 0, threatened: 0 };
+            const g = byGenus[genus];
+            g.species.add(o.name);
+            const key = (o.name || '').trim().toLowerCase();
+            g.sightings += sightingCountByName[key] || 0;
+            const endemicDisplay = formatEndemicityDisplay(o.endemicity) || formatEndemicityDisplay(endemicByName.get(key));
+            if (endemicDisplay && endemicDisplay.toLowerCase().includes('philippine endemic')) g.endemic += 1;
+            if (THREATENED_IUCN_KEYS.has(o.conservation_status_key)) g.threatened += 1;
+          });
+          const totalSightings = Object.values(byGenus).reduce((sum, g) => sum + g.sightings, 0) || 1;
+          return Object.entries(byGenus).map(([genus, g]) => ({
+            genus,
+            species_count: g.species.size,
+            sighting_count: g.sightings,
+            endemic_count: g.endemic,
+            threatened_count: g.threatened,
+            pct_of_all_records: +((g.sightings / totalSightings) * 100).toFixed(1)
+          })).sort((a, b) => b.species_count - a.species_count);
+        }
+
+        // ── Report 6: Host Tree & Growth Substrate Association ───────────
+        if (reportType === 'host-substrate') {
+          const orchidByName = new Map(sourceData.orchids.map((o) => [(o.name || '').trim().toLowerCase(), o]));
+          const byHost = {};
+          approvedInRange.forEach((s) => {
+            const host = (s.host_tree_species || '').trim();
+            if (!host) return;
+            if (!byHost[host]) byHost[host] = { records: 0, species: new Set(), dbhSum: 0, dbhN: 0, threatened: new Set() };
+            const g = byHost[host];
+            g.records += 1;
+            if (s.species) g.species.add(s.species);
+            if (s.host_tree_dbh_cm !== null && s.host_tree_dbh_cm !== undefined && s.host_tree_dbh_cm !== '') { g.dbhSum += Number(s.host_tree_dbh_cm); g.dbhN += 1; }
+            const orchid = orchidByName.get((s.species || '').trim().toLowerCase());
+            if (orchid && THREATENED_IUCN_KEYS.has(orchid.conservation_status_key)) g.threatened.add(s.species);
+          });
+          return Object.entries(byHost).map(([host_tree_species, g]) => ({
+            host_tree_species,
+            orchid_records: g.records,
+            distinct_orchid_species: g.species.size,
+            mean_dbh_cm: g.dbhN ? +(g.dbhSum / g.dbhN).toFixed(1) : '-',
+            threatened_orchids_hosted: g.threatened.size
+          })).sort((a, b) => b.distinct_orchid_species - a.distinct_orchid_species);
+        }
+
+        // ── Report 7: Data Completeness & Quality Audit ───────────────────
+        // Audits itself, so it deliberately looks at every status, not just approved.
+        if (reportType === 'data-quality') {
+          const all = submissionsInRange;
+          const total = all.length;
+          const isBlank = (v) => v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0);
+          const statusFor = (pct) => (pct >= 90 ? 'OK' : pct >= 70 ? 'Watch' : 'Action');
+          const FIELDS = [
+            ['Identification', 'identification_confidence', 'Taxonomic Confidence', 'Required'],
+            ['Identification', 'endemic_to_philippines', 'Endemic to Philippines', 'Recommended'],
+            ['Location', 'elevation_meters', 'Elevation (m)', 'Required'],
+            ['Location', 'specific_site_zone', 'Specific Site / Zone', 'Required'],
+            ['Habitat', 'habitat_type', 'Habitat Type', 'Required'],
+            ['Habitat', 'canopy_cover_percent', 'Canopy Cover %', 'Recommended'],
+            ['Habitat', 'host_tree_species', 'Host Tree Species', 'Recommended'],
+            ['Morphology', 'plant_height_cm', 'Plant Height (cm)', 'Recommended'],
+            ['Morphology', 'flowering_season', 'Flowering Season', 'Recommended'],
+            ['Morphology', 'flower_count', 'Flower Count', 'Optional'],
+            ['Conservation', 'threat_level', 'Threat Level', 'Required'],
+            ['Conservation', 'population_count', 'Population Count', 'Recommended']
+          ];
+          const rows = FIELDS.map(([group, field, label, criticality]) => {
+            const missing = total ? all.filter((s) => isBlank(s[field])).length : 0;
+            const populated = total - missing;
+            const pct = total ? +((populated / total) * 100).toFixed(1) : 0;
+            return { field_group: group, field_name: label, records_populated: populated, records_missing: missing, pct_complete: pct, criticality, status: statusFor(pct) };
+          });
+          const mediaField = (group, label, criticality, hasFn) => {
+            const missing = total ? all.filter((s) => !hasFn(s)).length : 0;
+            const populated = total - missing;
+            const pct = total ? +((populated / total) * 100).toFixed(1) : 0;
+            rows.push({ field_group: group, field_name: label, records_populated: populated, records_missing: missing, pct_complete: pct, criticality, status: statusFor(pct) });
+          };
+          mediaField('Media', 'Whole Plant Photo', 'Required', (s) => Array.isArray(s.whole_plant_photos) && s.whole_plant_photos.length > 0);
+          mediaField('Media', 'Habitat Photo', 'Recommended', (s) => Array.isArray(s.habitat_photos) && s.habitat_photos.length > 0);
+          const catalogTotal = sourceData.orchids.length;
+          const modelMissing = catalogTotal ? sourceData.orchids.filter((o) => !o.model_3d_url).length : 0;
+          const modelPct = catalogTotal ? +(((catalogTotal - modelMissing) / catalogTotal) * 100).toFixed(1) : 0;
+          rows.push({ field_group: 'Media', field_name: '3D Model (per catalog species)', records_populated: catalogTotal - modelMissing, records_missing: modelMissing, pct_complete: modelPct, criticality: 'Optional', status: statusFor(modelPct) });
+          return rows;
+        }
+
+        // ── Report 8: Submission Validation & Review Turnaround Audit ────
+        // Also needs every status — that is the point of a validation audit.
+        if (reportType === 'validation-audit') {
+          const all = submissionsInRange;
+          const byInst = {};
+          all.forEach((s) => {
+            const inst = s.institution || 'Unspecified';
+            if (!byInst[inst]) byInst[inst] = { total: 0, approved: 0, rejected: 0, revision: 0, pending: 0, draft: 0, turnaroundSum: 0, turnaroundN: 0 };
+            const g = byInst[inst];
+            g.total += 1;
+            const status = String(s.review_status || 'pending').toLowerCase();
+            if (g[status] !== undefined) g[status] += 1;
+            if (status !== 'pending' && status !== 'draft' && s.created_at && s.updated_at) {
+              const days = (new Date(s.updated_at) - new Date(s.created_at)) / 86400000;
+              if (!isNaN(days) && days >= 0) { g.turnaroundSum += days; g.turnaroundN += 1; }
+            }
+          });
+          return Object.entries(byInst).map(([institution, g]) => ({
+            institution,
+            submissions: g.total,
+            approved: g.approved,
+            rejected: g.rejected,
+            for_revision: g.revision,
+            pending: g.pending + g.draft,
+            approval_rate_pct: g.total ? +((g.approved / g.total) * 100).toFixed(1) : 0,
+            mean_turnaround_days: g.turnaroundN ? +(g.turnaroundSum / g.turnaroundN).toFixed(1) : '-'
+          })).sort((a, b) => b.submissions - a.submissions);
+        }
+
+        // ── Report 9: Media & 3D Model Coverage ───────────────────────────
+        if (reportType === 'media-coverage') {
+          const byName = new Map();
+          approvedInRange.forEach((s) => {
+            const key = (s.species || '').trim().toLowerCase();
+            if (!key) return;
+            if (!byName.has(key)) byName.set(key, { wholePlant: 0, closeup: 0, habitat: 0, total: 0 });
+            const g = byName.get(key);
+            const wp = (s.whole_plant_photos || []).length;
+            const cf = (s.closeup_flower_photos || []).length;
+            const hb = (s.habitat_photos || []).length;
+            g.wholePlant += wp;
+            g.closeup += cf;
+            g.habitat += hb;
+            g.total += wp + cf + hb;
+          });
+          return sourceData.orchids.map((o) => {
+            const key = (o.name || '').trim().toLowerCase();
+            const m = byName.get(key) || { wholePlant: 0, closeup: 0, habitat: 0, total: 0 };
+            const hasModel = !!o.model_3d_url;
+            const categoriesPresent = [hasModel, m.wholePlant > 0, m.closeup > 0, m.habitat > 0].filter(Boolean).length;
+            const iucnKey = o.conservation_status_key || 'unassigned';
+            const priority_tier = (iucnKey === 'critically_endangered' || iucnKey === 'endangered') ? 'High Priority'
+                                 : iucnKey === 'vulnerable' ? 'Medium Priority'
+                                 : 'Standard';
+            return {
+              species: o.name,
+              has_3d_model: hasModel ? 'Yes' : 'No',
+              whole_plant: m.wholePlant,
+              closeup_flower: m.closeup,
+              habitat_photo: m.habitat,
+              total_images: m.total,
+              media_completeness_pct: +((categoriesPresent / 4) * 100).toFixed(1),
+              priority_tier
+            };
+          }).sort((a, b) => a.media_completeness_pct - b.media_completeness_pct);
+        }
+
+        // ── Report 10: Survey Effort & Zone Coverage ──────────────────────
+        if (reportType === 'survey-effort') {
+          const byZone = {};
+          approvedInRange.forEach((s) => {
+            const zone = s.specific_site_zone || 'Unspecified';
+            if (!byZone[zone]) byZone[zone] = { sightings: 0, species: new Set(), researchers: new Set(), dates: new Set(), elevMin: Infinity, elevMax: -Infinity };
+            const g = byZone[zone];
+            g.sightings += 1;
+            if (s.species) g.species.add(s.species);
+            if (s.researcher) g.researchers.add(s.researcher);
+            const d = s.observation_date || s.submission_date;
+            if (d) g.dates.add(d);
+            if (s.elevation_meters !== null && s.elevation_meters !== undefined && s.elevation_meters !== '') {
+              const e = Number(s.elevation_meters);
+              if (!isNaN(e)) { g.elevMin = Math.min(g.elevMin, e); g.elevMax = Math.max(g.elevMax, e); }
+            }
+          });
+          const today = new Date();
+          return Object.entries(byZone).map(([zone, g]) => {
+            const sortedDates = [...g.dates].sort();
+            const lastSurvey = sortedDates[sortedDates.length - 1];
+            const daysSince = lastSurvey ? Math.round((today - new Date(lastSurvey)) / 86400000) : '-';
+            return {
+              zone,
+              sightings: g.sightings,
+              distinct_species: g.species.size,
+              distinct_researchers: g.researchers.size,
+              survey_days: g.dates.size,
+              first_survey: sortedDates[0] || '-',
+              last_survey: lastSurvey || '-',
+              species_per_survey_day: g.dates.size ? +(g.species.size / g.dates.size).toFixed(2) : 0,
+              elevation_range_covered: (g.elevMax > -Infinity && g.elevMin < Infinity) ? `${Math.round(g.elevMin)}–${Math.round(g.elevMax)}m` : '-',
+              days_since_last_survey: daysSince
+            };
+          }).sort((a, b) => (typeof b.days_since_last_survey === 'number' ? b.days_since_last_survey : -1) - (typeof a.days_since_last_survey === 'number' ? a.days_since_last_survey : -1));
+        }
+
+        return approvedInRange.map((item) => ({
           species: item.species || '-',
           location: item.location || '-',
           review_status: item.review_status || '-',
@@ -8487,10 +8916,147 @@
             .sort()
             .map((genus) => ({ label: genus, value: genusCounts[genus] }));
         }
+        if (reportType === 'conservation-priority') {
+          return rows.slice(0, 15).map((r) => ({ label: r.species, value: r.priority_score }));
+        }
+        if (reportType === 'elevation-profile') {
+          // Species per 300m elevation band — approximates the classic
+          // mid-elevation richness hump from the per-species mean elevation.
+          const bandCounts = {};
+          rows.forEach((r) => {
+            const band = Math.floor(r.mean_elev_m / 300) * 300;
+            const label = `${band}-${band + 299}m`;
+            bandCounts[label] = (bandCounts[label] || 0) + 1;
+          });
+          return Object.keys(bandCounts).sort((a, b) => parseInt(a) - parseInt(b)).map((label) => ({ label, value: bandCounts[label] }));
+        }
+        if (reportType === 'phenology-calendar') {
+          const counts = {};
+          rows.forEach((r) => { if (r.peak_month) counts[r.peak_month] = (counts[r.peak_month] || 0) + 1; });
+          return Object.keys(counts).sort().map((month) => ({ label: month, value: counts[month] }));
+        }
+        if (reportType === 'threat-assessment') {
+          return rows.map((r) => ({ label: r.threat_type, value: r.mentions }));
+        }
+        if (reportType === 'endemism-richness') {
+          return rows.slice(0, 10).map((r) => ({ label: r.genus, value: r.species_count }));
+        }
+        if (reportType === 'host-substrate') {
+          return rows.slice(0, 15).map((r) => ({ label: r.host_tree_species, value: r.distinct_orchid_species }));
+        }
+        if (reportType === 'data-quality') {
+          const byGroup = {};
+          rows.forEach((r) => {
+            if (!byGroup[r.field_group]) byGroup[r.field_group] = { sum: 0, n: 0 };
+            byGroup[r.field_group].sum += Number(r.pct_complete) || 0;
+            byGroup[r.field_group].n += 1;
+          });
+          return Object.keys(byGroup).map((group) => ({ label: group, value: +(byGroup[group].sum / byGroup[group].n).toFixed(1) }));
+        }
+        if (reportType === 'validation-audit') {
+          const totals = { approved: 0, rejected: 0, for_revision: 0, pending: 0 };
+          rows.forEach((r) => {
+            totals.approved += r.approved;
+            totals.rejected += r.rejected;
+            totals.for_revision += r.for_revision;
+            totals.pending += r.pending;
+          });
+          return Object.keys(totals).map((k) => ({ label: k.replace(/_/g, ' '), value: totals[k] }));
+        }
+        if (reportType === 'media-coverage') {
+          const has = rows.filter((r) => r.has_3d_model === 'Yes').length;
+          return [{ label: 'Has 3D Model', value: has }, { label: 'Missing 3D Model', value: rows.length - has }];
+        }
+        if (reportType === 'survey-effort') {
+          return rows.map((r) => ({ label: r.zone, value: r.sightings }));
+        }
         return rows.map((row, index) => ({ label: `Item ${index + 1}`, value: 1 }));
       }
 
-      function buildRecommendationRows(reportTitle) {
+      function buildRecommendationRows(reportTitle, reportType, rows) {
+        rows = rows || [];
+        if (reportType === 'conservation-priority') {
+          const tier1 = rows.filter((r) => r.tier && r.tier.includes('Tier 1'));
+          const unassigned = rows.filter((r) => r.iucn_status === 'Unassigned');
+          const recs = [];
+          if (tier1.length) recs.push({ recommendation: `${tier1.length} species scored Tier 1 — Critical: ${tier1.slice(0, 5).map((r) => r.species).join(', ')}${tier1.length > 5 ? ', …' : ''}. Prioritize ranger patrol assignment and restrict exact coordinate disclosure for these species.` });
+          if (unassigned.length) recs.push({ recommendation: `${unassigned.length} species carry no assigned IUCN status and were scored using the precautionary default (50). Endorse to DENR Biodiversity Management Bureau for formal status assignment.` });
+          recs.push({ recommendation: 'Priority Score = (IUCN×0.40)+(Threat×0.25)+(Population×0.20)+(Rarity×0.15). Weights are a transparent management convention, not a published scientific index, and may be re-tuned with DENR.' });
+          recs.push({ recommendation: 'Rarity is derived from sighting frequency, which reflects survey effort as much as true abundance — cross-check against the Survey Effort & Zone Coverage report before acting on low-sighting species.' });
+          return recs;
+        }
+        if (reportType === 'elevation-profile') {
+          const narrow = rows.filter((r) => r.band_breadth && r.band_breadth.includes('specialist'));
+          const recs = [];
+          if (narrow.length) recs.push({ recommendation: `${narrow.length} species show a narrow elevational range on limited records — possible elevation specialists and climate-vulnerable: ${narrow.slice(0, 5).map((r) => r.species).join(', ')}.` });
+          recs.push({ recommendation: 'Species-level ranges built from fewer than 3 records are excluded from this table — a two-point range is not a reliable range.' });
+          return recs;
+        }
+        if (reportType === 'phenology-calendar') {
+          return [
+            { recommendation: 'Phenology reflects observer effort as much as plant biology — a month with no records is not necessarily a month with no blooms. Cross-check against the Survey Effort & Zone Coverage report before scheduling patrols.' },
+            { recommendation: 'Use each species’ peak_month to schedule enforcement patrols during known bloom windows, when ornamental collection pressure is typically highest.' }
+          ];
+        }
+        if (reportType === 'threat-assessment') {
+          const top = rows.slice(0, 3);
+          const recs = [];
+          if (top.length) recs.push({ recommendation: `The top ${top.length} threats (${top.map((r) => r.threat_type).join(', ')}) account for ${top.reduce((s, r) => s + r.pct_of_records, 0).toFixed(1)}% of all recorded threat mentions. Focus enforcement and outreach on these first.` });
+          recs.push({ recommendation: 'Cross-reference affected species against the Conservation Priority Ranking report to confirm whether Tier 1–2 species are exposed to the top threats.' });
+          return recs;
+        }
+        if (reportType === 'endemism-richness') {
+          const totalEndemic = rows.reduce((s, r) => s + r.endemic_count, 0);
+          const totalSpecies = rows.reduce((s, r) => s + r.species_count, 0);
+          return [
+            { recommendation: `${totalEndemic} of ${totalSpecies} catalog species (${totalSpecies ? ((totalEndemic / totalSpecies) * 100).toFixed(1) : 0}%) are recorded as Philippine endemic — a direct, quotable figure for SDG 15 and protected-area proposals.` },
+            { recommendation: 'Cross-reference endemic species against the Conservation Priority Ranking report — endemic species are frequently disproportionately threatened.' }
+          ];
+        }
+        if (reportType === 'host-substrate') {
+          const top = rows[0];
+          const recs = [];
+          if (top) recs.push({ recommendation: `${top.host_tree_species} hosts the most distinct orchid species (${top.distinct_orchid_species}) recorded in this period — flag for logging-permit review.` });
+          const withThreatened = rows.filter((r) => r.threatened_orchids_hosted > 0);
+          if (withThreatened.length) recs.push({ recommendation: `${withThreatened.length} host tree species carry at least one threatened (CR/EN/VU) orchid — prioritize these for protection in any logging-permit decision.` });
+          return recs.length ? recs : [{ recommendation: 'No host tree associations recorded for the selected period.' }];
+        }
+        if (reportType === 'data-quality') {
+          const actionFields = rows.filter((r) => r.status === 'Action');
+          const watchFields = rows.filter((r) => r.status === 'Watch');
+          const recs = [];
+          recs.push(actionFields.length
+            ? { recommendation: `${actionFields.length} field(s) are below 70% complete: ${actionFields.map((r) => r.field_name).join(', ')}. Prioritize training and form redesign for these.` }
+            : { recommendation: 'No fields fell below the 70% completeness threshold for this period.' });
+          if (watchFields.length) recs.push({ recommendation: `${watchFields.length} field(s) are in the 70–89% "Watch" range: ${watchFields.map((r) => r.field_name).join(', ')}.` });
+          recs.push({ recommendation: 'Resolve any records missing required fields before including them in official DENR exports.' });
+          return recs;
+        }
+        if (reportType === 'validation-audit') {
+          const slowest = [...rows].filter((r) => typeof r.mean_turnaround_days === 'number').sort((a, b) => b.mean_turnaround_days - a.mean_turnaround_days)[0];
+          const totalPending = rows.reduce((s, r) => s + r.pending, 0);
+          const recs = [];
+          if (totalPending) recs.push({ recommendation: `${totalPending} submission(s) remain pending or in draft across all institutions — review to prevent researcher disengagement.` });
+          if (slowest) recs.push({ recommendation: `${slowest.institution} has the longest mean review turnaround (${slowest.mean_turnaround_days} days). Investigate reviewer capacity for this institution.` });
+          recs.push({ recommendation: 'Track turnaround against a defined SLA (e.g. 14 days) and flag any institution consistently over that threshold.' });
+          return recs;
+        }
+        if (reportType === 'media-coverage') {
+          const backlog = rows.filter((r) => r.priority_tier !== 'Standard' && r.media_completeness_pct < 100);
+          const noModel = rows.filter((r) => r.has_3d_model === 'No').length;
+          const recs = [];
+          if (backlog.length) recs.push({ recommendation: `${backlog.length} high/medium priority species still have incomplete media coverage: ${backlog.slice(0, 5).map((r) => r.species).join(', ')}${backlog.length > 5 ? ', …' : ''}. Prioritize these for the next fieldwork cycle.` });
+          recs.push({ recommendation: `${noModel} of ${rows.length} catalog species still lack a 3D model.` });
+          return recs;
+        }
+        if (reportType === 'survey-effort') {
+          const stale = rows.filter((r) => typeof r.days_since_last_survey === 'number' && r.days_since_last_survey > 200);
+          const productive = [...rows].sort((a, b) => b.species_per_survey_day - a.species_per_survey_day)[0];
+          const recs = [];
+          if (stale.length) recs.push({ recommendation: `${stale.length} zone(s) have not been surveyed in over 200 days: ${stale.map((r) => r.zone).join(', ')}. These are monitoring gaps, not confirmed absences.` });
+          if (productive) recs.push({ recommendation: `${productive.zone} has the highest species-per-survey-day ratio (${productive.species_per_survey_day}) — still productive and possibly under-sampled relative to effort.` });
+          return recs.length ? recs : [{ recommendation: 'No zone data available for the selected period.' }];
+        }
         return [
           { recommendation: `Prioritize periodic validation for ${reportTitle}.` },
           { recommendation: 'Review outliers before final publication of this report.' },
@@ -8518,7 +9084,7 @@
         }
 
         if (sections.recommendations) {
-          const recommendationsSheet = XLSX.utils.json_to_sheet(buildRecommendationRows(reportTitle));
+          const recommendationsSheet = XLSX.utils.json_to_sheet(buildRecommendationRows(reportTitle, reportType, rows));
           XLSX.utils.book_append_sheet(workbook, recommendationsSheet, 'Recommendations');
         }
 
@@ -8547,14 +9113,25 @@
           'researcher-activity':  [['researcher','Researcher'],['submissions','Submissions']],
           'habitat-analysis':     [['habitat','Habitat Type'],['submissions','Sightings']],
           'geographic':           [['species','Species'],['location','Location'],['review_status','Status'],['submission_date','Date']],
-          'detailed-report':      [['species','Scientific Name'],['common_name','Common Name'],['family','Family'],['researcher','Researcher'],['location','Location'],['habitat_type','Habitat Type'],['growth_substrate','Growth Substrate'],['plant_height_cm','Height (cm)'],['flower_color','Flower Color'],['population_status','Population Status'],['threat_level','Threat Level'],['review_status','Status'],['submission_date','Date']]
+          'detailed-report':      [['species','Scientific Name'],['common_name','Common Name'],['family','Family'],['researcher','Researcher'],['location','Location'],['habitat_type','Habitat Type'],['growth_substrate','Growth Substrate'],['plant_height_cm','Height (cm)'],['flower_color','Flower Color'],['population_status','Population Status'],['threat_level','Threat Level'],['review_status','Status'],['submission_date','Date']],
+          'conservation-priority': [['rank','Rank'],['species','Scientific Name'],['genus','Genus'],['iucn_status','IUCN Status'],['sighting_count','Sightings'],['zones_occupied','Zones'],['est_individuals','Est. Individuals'],['priority_score','Priority Score'],['tier','Tier']],
+          'elevation-profile':     [['species','Species'],['min_elev_m','Min Elev (m)'],['max_elev_m','Max Elev (m)'],['range_m','Range (m)'],['mean_elev_m','Mean Elev (m)'],['n_records','Records'],['band_breadth','Breadth']],
+          'phenology-calendar':    [['species','Species'],['first_flowering_month','First Flowering'],['peak_month','Peak Month'],['last_flowering_month','Last Flowering'],['mean_flower_count','Mean Flower Count'],['records_in_flower','Records In Flower']],
+          'threat-assessment':     [['threat_type','Threat Type'],['mentions','Mentions'],['pct_of_records','% of Records'],['affected_species','Affected Species'],['zones_affected','Zones Affected'],['mean_canopy_cover','Mean Canopy Cover %']],
+          'endemism-richness':     [['genus','Genus'],['species_count','Species Count'],['sighting_count','Sightings'],['endemic_count','Endemic Species'],['threatened_count','Threatened (CR+EN+VU)'],['pct_of_all_records','% of All Records']],
+          'host-substrate':        [['host_tree_species','Host Tree Species'],['orchid_records','Orchid Records'],['distinct_orchid_species','Distinct Orchid Species'],['mean_dbh_cm','Mean DBH (cm)'],['threatened_orchids_hosted','Threatened Orchids Hosted']],
+          'data-quality':          [['field_group','Field Group'],['field_name','Field'],['records_populated','Populated'],['records_missing','Missing'],['pct_complete','% Complete'],['criticality','Criticality'],['status','Status']],
+          'validation-audit':      [['institution','Institution'],['submissions','Submissions'],['approved','Approved'],['rejected','Rejected'],['for_revision','For Revision'],['pending','Pending/Draft'],['approval_rate_pct','Approval Rate %'],['mean_turnaround_days','Mean Turnaround (days)']],
+          'media-coverage':        [['species','Species'],['has_3d_model','Has 3D Model'],['whole_plant','Whole Plant Photos'],['closeup_flower','Closeup Flower Photos'],['habitat_photo','Habitat Photos'],['total_images','Total Images'],['media_completeness_pct','Media Completeness %'],['priority_tier','Priority Tier']],
+          'survey-effort':         [['zone','Zone'],['sightings','Sightings'],['distinct_species','Distinct Species'],['distinct_researchers','Distinct Researchers'],['survey_days','Survey Days'],['first_survey','First Survey'],['last_survey','Last Survey'],['species_per_survey_day','Species/Survey Day'],['elevation_range_covered','Elevation Range'],['days_since_last_survey','Days Since Last Survey']]
         };
         return maps[reportType] || maps['geographic'];
       }
 
       function downloadReportAsPdf(fileNameBase, reportTitle, dateFrom, dateTo, rows, sections, reportType) {
         const { jsPDF } = window.jspdf;
-        const orientation = reportType === 'detailed-report' ? 'landscape' : 'portrait';
+        const WIDE_REPORT_TYPES = new Set(['detailed-report', 'conservation-priority', 'threat-assessment', 'data-quality', 'validation-audit', 'host-substrate', 'media-coverage', 'survey-effort']);
+        const orientation = WIDE_REPORT_TYPES.has(reportType) ? 'landscape' : 'portrait';
         const doc = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
         const pageH = doc.internal.pageSize.getHeight();
@@ -8674,7 +9251,7 @@
         // ── Recommendations ───────────────────────────────────────
         if (sections.recommendations) {
           sectionHeading('Recommendations');
-          const recBody = buildRecommendationRows(reportTitle).map((r, i) => [`${i + 1}.`, r.recommendation]);
+          const recBody = buildRecommendationRows(reportTitle, reportType, rows).map((r, i) => [`${i + 1}.`, r.recommendation]);
           addAutoTable(['#', 'Recommendation'], recBody);
         }
 
