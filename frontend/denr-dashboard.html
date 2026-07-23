@@ -1763,7 +1763,8 @@
             <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
               style="width:100%;padding:0.6rem 2.2rem 0.6rem 0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;box-sizing:border-box;" />
             <button id="m3d-file-clear-btn" type="button" onclick="m3dClearFile()" title="Remove file" aria-label="Remove selected file" hidden
-              style="position:absolute;top:0.4rem;right:0.5rem;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:var(--dt-bg-panel);color:var(--dt-muted);font-size:0.8rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+              onmouseenter="this.style.background='#FCA5A5'" onmouseleave="this.style.background='#FEE2E2'"
+              style="position:absolute;top:0.4rem;right:0.5rem;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:#FEE2E2;color:#991B1B;font-size:0.8rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 120ms ease;">✕</button>
           </div>
           <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
 
