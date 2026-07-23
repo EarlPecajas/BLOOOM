@@ -82,13 +82,19 @@ async function resolveActiveUser() {
         try {
           const { data: profile } = await supabaseClient
             .from('user_profiles')
-            .select('status, role, affiliation')
+            .select('status, role, affiliation, first_name, last_name, avatar_url')
             .eq('id', session.user.id)
             .single();
           if (profile) {
             parsedUser.status = profile.status || 'approved';
             parsedUser.role = profile.role || parsedUser.role;
             parsedUser.affiliation = profile.affiliation || '';
+            // user_profiles is the cross-platform source of truth for
+            // name/photo (shared with the mobile app); auth user_metadata
+            // is only a fallback for accounts that predate this table sync.
+            parsedUser.first_name = profile.first_name || parsedUser.first_name;
+            parsedUser.last_name = profile.last_name || parsedUser.last_name;
+            parsedUser.avatar_url = profile.avatar_url || parsedUser.avatar_url;
           }
         } catch (_) {}
         localStorage.setItem('bloomUser', JSON.stringify(parsedUser));

@@ -6662,6 +6662,19 @@ function refreshConservationHeatMap(summary) {
           if (meta.avatar_url) merged.avatar_url = meta.avatar_url;
           localStorage.setItem('bloomUser', JSON.stringify(merged));
           sessionStorage.setItem('bloomUser', JSON.stringify(merged));
+          // Mirror into user_profiles too — the canonical cross-platform
+          // store the mobile app reads, since it uses a different set of
+          // auth user_metadata keys and would otherwise never see this edit.
+          if (meta.first_name || meta.last_name || meta.avatar_url) {
+            try {
+              await bloomSupabase.from('user_profiles').update({
+                first_name: merged.first_name || null,
+                last_name: merged.last_name || null,
+                full_name: [merged.first_name, merged.last_name].filter(Boolean).join(' ') || null,
+                avatar_url: merged.avatar_url || null
+              }).eq('id', upData.user.id);
+            } catch (_) {}
+          }
           if (meta.avatar_url) {
             const icon = document.getElementById('role-profile-icon');
             if (icon) { icon.src = meta.avatar_url; icon.style.borderRadius = '50%'; icon.style.objectFit = 'cover'; }
