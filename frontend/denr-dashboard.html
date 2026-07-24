@@ -5645,7 +5645,7 @@
         const { error: upErr } = await bloomSupabase.storage
           .from(uploadBucket)
           .upload(path, file, { upsert: false, contentType: 'model/gltf-binary' });
-        if (upErr) throw upErr;
+        if (upErr) { upErr.m3dStep = 'storage upload'; throw upErr; }
 
         const { data: urlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(path);
         const modelUrl = urlData.publicUrl;
@@ -5654,7 +5654,7 @@
           .from('orchids')
           .update({ model_3d_url: modelUrl })
           .eq('orchid_id', orchidId);
-        if (updErr) throw updErr;
+        if (updErr) { updErr.m3dStep = 'orchids table update'; throw updErr; }
 
         return modelUrl;
       }
@@ -5745,6 +5745,11 @@
         });
       }
 
+      // Holds the last successfully-generated (but not yet saved) model, keyed by
+      // orchid id, so a save failure (e.g. a permissions error) can be retried
+      // without re-submitting to Tripo AI and spending credits again.
+      let m3dPendingGeneratedFile = null;
+
       async function generateOrchid3DModel() {
         const sel   = document.getElementById('m3d-orchid-select');
         const btn   = document.getElementById('m3d-gen-btn');
@@ -5752,6 +5757,25 @@
         const orchidId = sel ? sel.value : '';
 
         if (!orchidId) { m3dGenSetStatus('Select an orchid first.', 'error'); return; }
+
+        if (m3dPendingGeneratedFile && m3dPendingGeneratedFile.orchidId === orchidId) {
+          btn.disabled = true;
+          try {
+            m3dGenSetStatus('Retrying save… (no new credits used)', 'info');
+            await m3dPersistModelFile(orchidId, m3dPendingGeneratedFile.file);
+            m3dPendingGeneratedFile = null;
+            m3dGenSetStatus('3D model generated and linked successfully.', 'success');
+            await loadModel3DOrchidOptions();
+            sel.value = orchidId;
+            m3dOnOrchidChange();
+          } catch (err) {
+            m3dGenSetStatus(`Save failed again (${err.m3dStep || 'saving'}): ${err.message || 'unknown error'} — click Generate 3D Model to retry saving (no credits used).`, 'error');
+            console.warn('generateOrchid3DModel retry-save failed:', err);
+          } finally {
+            btn.disabled = false;
+          }
+          return;
+        }
 
         const row = m3dOrchidRows.find(o => String(o.id) === String(orchidId));
         const photoUrl = row && (row.resolved_image_url || row.image_url);
@@ -5792,15 +5816,24 @@
           const modelBlob = await downloadRes.blob();
           const glbFile = new File([modelBlob], `${orchidId}-tripo-${Date.now()}.glb`, { type: 'model/gltf-binary' });
 
+          // Cached now, before the save attempt: if saving fails, the retry
+          // path above reuses this instead of re-generating with Tripo.
+          m3dPendingGeneratedFile = { orchidId, file: glbFile };
+
           m3dGenSetStatus('Saving to catalog…', 'info');
           await m3dPersistModelFile(orchidId, glbFile);
 
+          m3dPendingGeneratedFile = null;
           m3dGenSetStatus('3D model generated and linked successfully.', 'success');
           await loadModel3DOrchidOptions();
           sel.value = orchidId;
           m3dOnOrchidChange();
         } catch (err) {
-          m3dGenSetStatus('Generation failed: ' + (err.message || 'unknown error'), 'error');
+          if (m3dPendingGeneratedFile && m3dPendingGeneratedFile.orchidId === orchidId) {
+            m3dGenSetStatus(`Model generated, but saving failed (${err.m3dStep || 'saving'}): ${err.message || 'unknown error'} — click Generate 3D Model again to retry saving (no credits used).`, 'error');
+          } else {
+            m3dGenSetStatus('Generation failed: ' + (err.message || 'unknown error'), 'error');
+          }
           console.warn('generateOrchid3DModel failed:', err);
         } finally {
           btn.disabled = false;
