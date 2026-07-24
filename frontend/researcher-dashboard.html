@@ -4904,7 +4904,18 @@
           });
           const trailStart = L.marker(def.coords[0], { icon: endpointIcon(trailColor) }).bindTooltip('Trailhead', { direction: 'top', offset: [0, -6] });
           const trailEnd = L.marker(def.coords[def.coords.length - 1], { icon: endpointIcon(TRAIL_ENDPOINT_COLOR) }).bindTooltip('Survey Zone', { direction: 'top', offset: [0, -6] });
-          mapTrailLayers[trailId] = L.layerGroup([halo, mid, core, trailStart, trailEnd]).addTo(leafletMap);
+          // One dot per turn — every coordinate pair between the trailhead and
+          // survey zone gets its own marker, not just an invisible line vertex.
+          const waypoints = def.coords.slice(1, -1).map((coord, idx) => (
+            L.circleMarker(coord, {
+              radius: 5,
+              color: '#fff',
+              weight: 2,
+              fillColor: trailColor,
+              fillOpacity: 1
+            }).bindTooltip(`Waypoint ${idx + 2}`, { direction: 'top', offset: [0, -6] })
+          ));
+          mapTrailLayers[trailId] = L.layerGroup([halo, mid, core, trailStart, trailEnd, ...waypoints]).addTo(leafletMap);
           if (btn) btn.classList.add('map-trail-toggle-active');
         }
       };
