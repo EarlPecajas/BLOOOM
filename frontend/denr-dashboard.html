@@ -1749,7 +1749,18 @@
     <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="margin-bottom:1.25rem;">
         <h1 class="catalog-title">3D Image</h1>
-        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Upload a 3D (.glb) model and attach it to an orchid species in the catalog.</p>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Attach a 3D model to an orchid species — upload a .glb file, or generate one automatically with Tripo AI.</p>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;">
+        <button id="m3d-tab-btn-upload" type="button" onclick="m3dSwitchTab('upload')"
+          style="padding:0.55rem 1.1rem;border-radius:8px;border:1.5px solid #145A1E;background:#145A1E;color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+          Upload GLB File
+        </button>
+        <button id="m3d-tab-btn-generate" type="button" onclick="m3dSwitchTab('generate')"
+          style="padding:0.55rem 1.1rem;border-radius:8px;border:1.5px solid var(--dt-border-md);background:var(--dt-bg-input);color:var(--dt-text);font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+          Generate with AI (Tripo)
+        </button>
       </div>
 
       <div style="display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:1.5rem;align-items:start;">
@@ -1773,21 +1784,44 @@
             </div>
           </div>
 
-          <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
-          <div style="position:relative;margin-bottom:0.5rem;">
-            <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
-              style="width:100%;padding:0.6rem 2.2rem 0.6rem 0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;box-sizing:border-box;" />
-            <button id="m3d-file-clear-btn" type="button" onclick="m3dClearFile()" title="Remove file" aria-label="Remove selected file" hidden
-              onmouseenter="this.style.background='#FCA5A5'" onmouseleave="this.style.background='#FEE2E2'"
-              style="position:absolute;top:0.4rem;right:0.5rem;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:#FEE2E2;color:#991B1B;font-size:0.8rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 120ms ease;">✕</button>
-          </div>
-          <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
+          <!-- Upload GLB panel -->
+          <div id="m3d-panel-upload">
+            <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
+            <div style="position:relative;margin-bottom:0.5rem;">
+              <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
+                style="width:100%;padding:0.6rem 2.2rem 0.6rem 0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;box-sizing:border-box;" />
+              <button id="m3d-file-clear-btn" type="button" onclick="m3dClearFile()" title="Remove file" aria-label="Remove selected file" hidden
+                onmouseenter="this.style.background='#FCA5A5'" onmouseleave="this.style.background='#FEE2E2'"
+                style="position:absolute;top:0.4rem;right:0.5rem;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:#FEE2E2;color:#991B1B;font-size:0.8rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 120ms ease;">✕</button>
+            </div>
+            <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
 
-          <button id="m3d-upload-btn" type="button" onclick="uploadOrchid3DModel()"
-            style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
-            Upload 3D Model
-          </button>
-          <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+            <button id="m3d-upload-btn" type="button" onclick="uploadOrchid3DModel()"
+              style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+              Upload 3D Model
+            </button>
+            <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+          </div>
+
+          <!-- Generate with AI panel -->
+          <div id="m3d-panel-generate" style="display:none;">
+            <div id="m3d-gen-source-note" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1rem;line-height:1.4;">
+              Select an orchid above — its catalog photo will be sent to Tripo AI to generate a 3D model automatically. No file upload needed.
+            </div>
+
+            <details style="margin-bottom:1.1rem;">
+              <summary style="cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--dt-text);">Use a text description instead</summary>
+              <p style="font-size:0.78rem;color:var(--dt-muted);margin:0.5rem 0;line-height:1.4;">Useful when the orchid has no catalog photo yet. If filled in, this description is used instead of the photo.</p>
+              <textarea id="m3d-gen-prompt-override" rows="3" placeholder="e.g. Vanda sanderiana orchid flower, five broad pink-and-brown petals, photorealistic"
+                style="width:100%;padding:0.6rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.82rem;box-sizing:border-box;resize:vertical;"></textarea>
+            </details>
+
+            <button id="m3d-gen-btn" type="button" onclick="generateOrchid3DModel()"
+              style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+              Generate 3D Model
+            </button>
+            <div id="m3d-gen-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+          </div>
         </div>
 
         <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;height:calc(100vh - 230px);min-height:480px;display:flex;align-items:center;justify-content:center;">
@@ -5553,6 +5587,17 @@
           hint.textContent = '';
           m3dSetPreview(null);
         }
+
+        const genNote = document.getElementById('m3d-gen-source-note');
+        if (genNote) {
+          if (!row) {
+            genNote.textContent = 'Select an orchid above — its catalog photo will be sent to Tripo AI to generate a 3D model automatically. No file upload needed.';
+          } else if (row.resolved_image_url || row.image_url) {
+            genNote.textContent = `Will generate from ${row.name}'s catalog photo shown above.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
+          } else {
+            genNote.textContent = `${row.name} has no catalog photo yet — open "Use a text description instead" below and describe it.`;
+          }
+        }
       }
 
       function m3dOnFileChange() {
@@ -5568,6 +5613,50 @@
       // orchid's existing model preview (or the empty state) via m3dOnOrchidChange.
       function m3dClearFile() {
         m3dOnOrchidChange();
+      }
+
+      // ── 3D IMAGE TABS (Upload GLB vs. Generate with AI) ─────────────
+      function m3dSwitchTab(tab) {
+        const uploadPanel   = document.getElementById('m3d-panel-upload');
+        const generatePanel = document.getElementById('m3d-panel-generate');
+        const uploadBtn     = document.getElementById('m3d-tab-btn-upload');
+        const generateBtn   = document.getElementById('m3d-tab-btn-generate');
+        const active   = { border: '#145A1E', background: '#145A1E', color: '#fff' };
+        const inactive = { border: 'var(--dt-border-md)', background: 'var(--dt-bg-input)', color: 'var(--dt-text)' };
+        const style = (btn, s) => { btn.style.borderColor = s.border; btn.style.background = s.background; btn.style.color = s.color; };
+        if (tab === 'generate') {
+          uploadPanel.style.display = 'none';
+          generatePanel.style.display = '';
+          style(uploadBtn, inactive);
+          style(generateBtn, active);
+        } else {
+          uploadPanel.style.display = '';
+          generatePanel.style.display = 'none';
+          style(uploadBtn, active);
+          style(generateBtn, inactive);
+        }
+      }
+
+      // Uploads/links a .glb file to an orchid: shared by the manual upload
+      // button and the Tripo AI generation flow (once the model is fetched).
+      async function m3dPersistModelFile(orchidId, file) {
+        const path = `orchid-models/${orchidId}-${Date.now()}.glb`;
+        const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+        const { error: upErr } = await bloomSupabase.storage
+          .from(uploadBucket)
+          .upload(path, file, { upsert: false, contentType: 'model/gltf-binary' });
+        if (upErr) throw upErr;
+
+        const { data: urlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(path);
+        const modelUrl = urlData.publicUrl;
+
+        const { error: updErr } = await bloomSupabase
+          .from('orchids')
+          .update({ model_3d_url: modelUrl })
+          .eq('orchid_id', orchidId);
+        if (updErr) throw updErr;
+
+        return modelUrl;
       }
 
       async function uploadOrchid3DModel() {
@@ -5587,21 +5676,7 @@
         statusEl.textContent = 'Uploading…';
 
         try {
-          const path = `orchid-models/${orchidId}-${Date.now()}.glb`;
-          const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
-          const { error: upErr } = await bloomSupabase.storage
-            .from(uploadBucket)
-            .upload(path, file, { upsert: false, contentType: 'model/gltf-binary' });
-          if (upErr) throw upErr;
-
-          const { data: urlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(path);
-          const modelUrl = urlData.publicUrl;
-
-          const { error: updErr } = await bloomSupabase
-            .from('orchids')
-            .update({ model_3d_url: modelUrl })
-            .eq('orchid_id', orchidId);
-          if (updErr) throw updErr;
+          await m3dPersistModelFile(orchidId, file);
 
           statusEl.style.color = '#065F46';
           statusEl.textContent = '3D model uploaded and linked successfully.';
@@ -5613,6 +5688,119 @@
           statusEl.style.color = '#991B1B';
           statusEl.textContent = 'Upload failed: ' + (err.message || 'unknown error');
           console.warn('uploadOrchid3DModel failed:', err);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // ── 3D IMAGE (TRIPO AI) GENERATION ───────────────────────────────
+      function m3dGenSetStatus(text, kind) {
+        const el = document.getElementById('m3d-gen-status');
+        if (!el) return;
+        el.style.color = kind === 'error' ? '#991B1B' : kind === 'success' ? '#065F46' : 'var(--dt-muted)';
+        el.textContent = text;
+      }
+
+      // Polls GET /api/tripo3d?task_id=... until the task succeeds, fails, or times out.
+      // Resolves with the generated model's (temporary) download URL.
+      function m3dPollTripoTask(taskId) {
+        const POLL_MS = 3000;
+        const MAX_ATTEMPTS = 120; // ~6 minutes
+        return new Promise((resolve, reject) => {
+          let attempts = 0;
+          const tick = async () => {
+            attempts += 1;
+            let data;
+            try {
+              const res = await fetch(`/api/tripo3d?task_id=${encodeURIComponent(taskId)}`);
+              data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Status check failed.');
+            } catch (err) {
+              reject(err);
+              return;
+            }
+
+            const status = data.status;
+            if (status === 'success') {
+              const modelUrl = (data.output && (data.output.pbr_model || data.output.model)) || null;
+              if (!modelUrl) { reject(new Error('Tripo AI finished but returned no model file.')); return; }
+              resolve(modelUrl);
+              return;
+            }
+            if (status === 'failed' || status === 'cancelled' || status === 'error') {
+              reject(new Error('Tripo AI reported the generation failed.'));
+              return;
+            }
+
+            const pct = typeof data.progress === 'number' ? ` (${data.progress}%)` : '';
+            m3dGenSetStatus(`Generating 3D model${pct}…`, 'info');
+
+            if (attempts >= MAX_ATTEMPTS) {
+              reject(new Error(`Timed out waiting for Tripo AI (task ${taskId}).`));
+              return;
+            }
+            setTimeout(tick, POLL_MS);
+          };
+          tick();
+        });
+      }
+
+      async function generateOrchid3DModel() {
+        const sel   = document.getElementById('m3d-orchid-select');
+        const btn   = document.getElementById('m3d-gen-btn');
+        const promptEl = document.getElementById('m3d-gen-prompt-override');
+        const orchidId = sel ? sel.value : '';
+
+        if (!orchidId) { m3dGenSetStatus('Select an orchid first.', 'error'); return; }
+
+        const row = m3dOrchidRows.find(o => String(o.id) === String(orchidId));
+        const photoUrl = row && (row.resolved_image_url || row.image_url);
+        const promptOverride = promptEl ? promptEl.value.trim() : '';
+
+        let requestBody;
+        if (promptOverride) {
+          requestBody = { mode: 'text', prompt: promptOverride };
+        } else if (photoUrl) {
+          requestBody = { mode: 'image', imageUrl: photoUrl };
+        } else {
+          m3dGenSetStatus('This orchid has no catalog photo yet — open "Use a text description instead" below and describe it.', 'error');
+          return;
+        }
+
+        btn.disabled = true;
+        try {
+          m3dGenSetStatus('Submitting to Tripo AI…', 'info');
+          const createRes = await fetch('/api/tripo3d', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+          });
+          const createData = await createRes.json();
+          if (!createRes.ok || !createData.task_id) {
+            throw new Error(createData.error || (createData.details && JSON.stringify(createData.details)) || 'Could not start generation.');
+          }
+
+          m3dGenSetStatus('Generating 3D model… this can take a minute or two.', 'info');
+          const modelUrl = await m3dPollTripoTask(createData.task_id);
+
+          m3dGenSetStatus('Downloading generated model…', 'info');
+          // Routed through our own /api/tripo3d proxy (not fetched directly from
+          // Tripo's URL) so the download isn't at the mercy of Tripo's CORS policy.
+          const downloadRes = await fetch(`/api/tripo3d?model_url=${encodeURIComponent(modelUrl)}`);
+          if (!downloadRes.ok) throw new Error('Could not download the generated model.');
+          const modelBlob = await downloadRes.blob();
+          const glbFile = new File([modelBlob], `${orchidId}-tripo-${Date.now()}.glb`, { type: 'model/gltf-binary' });
+
+          m3dGenSetStatus('Saving to catalog…', 'info');
+          await m3dPersistModelFile(orchidId, glbFile);
+
+          m3dGenSetStatus('3D model generated and linked successfully.', 'success');
+          await loadModel3DOrchidOptions();
+          sel.value = orchidId;
+          m3dOnOrchidChange();
+        } catch (err) {
+          m3dGenSetStatus('Generation failed: ' + (err.message || 'unknown error'), 'error');
+          console.warn('generateOrchid3DModel failed:', err);
         } finally {
           btn.disabled = false;
         }

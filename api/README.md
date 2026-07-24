@@ -132,6 +132,50 @@ curl https://blooom-orpin.vercel.app/api/denr-sightings?name=Acanthophippium%20m
 
 ---
 
+### 5. `/api/tripo3d` — Tripo3D AI 3D-model generation proxy
+Keeps the Tripo3D API key server-side. Used by the DENR dashboard's "3D Image → Generate with AI" tab.
+
+**Environment Variable Required:**
+```
+TRIPO_API_KEY=your_tripo_api_key_here
+```
+Get a key from https://platform.tripo3d.ai/api-keys
+
+**POST `/api/tripo3d`** — create a generation task.
+
+Image-to-3D (uses an orchid's existing catalog photo, no upload needed):
+```json
+{ "mode": "image", "imageUrl": "https://.../orchid-photo.jpg" }
+```
+
+Text-to-3D (fallback when no photo exists yet):
+```json
+{ "mode": "text", "prompt": "Vanda sanderiana orchid flower, photorealistic" }
+```
+
+**Response:**
+```json
+{ "task_id": "07764597-9c93-4eb9-92b6-4ea96a8c7d1a" }
+```
+
+**GET `/api/tripo3d?task_id=...`** — poll task status until `status` is `"success"`.
+
+**Response:**
+```json
+{
+  "task_id": "07764597-9c93-4eb9-92b6-4ea96a8c7d1a",
+  "status": "success",
+  "progress": 100,
+  "output": { "model": "https://...glb", "pbr_model": "https://...glb" }
+}
+```
+
+**GET `/api/tripo3d?model_url=<tripo glb url>`** — streams the generated model back through our own origin (avoids relying on Tripo's CORS headers for a direct browser fetch). Restricted to `*.tripo3d.com` / `*.tripo3d.ai` hosts.
+
+The frontend downloads the resulting `.glb` via this route and re-uploads it to Supabase Storage using the same code path as the manual GLB upload, so the link saved to `orchids.model_3d_url` is permanent (Tripo's own URL is temporary).
+
+---
+
 ## Frontend Usage
 
 Update your frontend code to call these endpoints instead of REST API:
