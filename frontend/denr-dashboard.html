@@ -5777,7 +5777,8 @@
           });
           const createData = await createRes.json();
           if (!createRes.ok || !createData.task_id) {
-            throw new Error(createData.error || (createData.details && JSON.stringify(createData.details)) || 'Could not start generation.');
+            const tripoMsg = createData.details && (createData.details.message || createData.details.error);
+            throw new Error(tripoMsg || createData.error || 'Could not start generation.');
           }
 
           m3dGenSetStatus('Generating 3D model… this can take a minute or two.', 'info');
