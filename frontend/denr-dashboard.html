@@ -5686,7 +5686,7 @@
           m3dOnOrchidChange();
         } catch (err) {
           statusEl.style.color = '#991B1B';
-          statusEl.textContent = 'Upload failed: ' + (err.message || 'unknown error');
+          statusEl.textContent = `Upload failed (${err.m3dStep || 'saving'}): ` + (err.message || 'unknown error');
           console.warn('uploadOrchid3DModel failed:', err);
         } finally {
           btn.disabled = false;
