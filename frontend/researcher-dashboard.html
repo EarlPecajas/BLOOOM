@@ -1566,6 +1566,11 @@
               <label for="submission-specific-site-zone" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site / Zone <span class="field-help" data-tooltip="Optional. General area: Trail, Ridge, Streamside, or Others. Helps pinpoint location context.">?</span></label>
               <select id="submission-specific-site-zone" class="submission-select"><option value="" disabled selected hidden>Specific Site / Zone</option><option value="trail">Trail</option><option value="ridge">Ridge</option><option value="streamside">Streamside</option><option value="others">Others</option></select>
             </div>
+            <div id="submission-specific-site-trail-wrap" class="submission-field submission-field--full" style="display:none;">
+              <label for="submission-specific-site-trail" style="font-size:0.88rem;font-weight:600;color:#334155;">Which Trail <span class="field-help" data-tooltip="Choose the known trail this sighting is on. Auto-suggested when your GPS coordinates fall near a mapped trail.">?</span></label>
+              <select id="submission-specific-site-trail" class="submission-select"><option value="" disabled selected hidden>Select Trail</option></select>
+              <span id="submission-trail-hint" style="display:block;font-size:0.78rem;color:#64748b;margin-top:0.3rem;"></span>
+            </div>
             <div id="submission-specific-site-other-wrap" class="submission-field submission-field--full" style="display:none;">
               <label for="submission-specific-site-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site (if Others) <span class="field-help" data-tooltip="Optional. Use this when the zone is set to Others.">?</span></label>
               <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" class="submission-text-input" />
@@ -2740,16 +2745,53 @@
         }
         toggleHabitatOther();
 
-        // Specific site zone → show/hide "Others" text field
+        // Specific site zone → show/hide "Others" text field and "Which Trail" dropdown
         const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
         const specificSiteOtherWrapEl = document.getElementById('submission-specific-site-other-wrap');
         const specificSiteOtherEl = document.getElementById('submission-specific-site-other');
+        const specificSiteTrailWrapEl = document.getElementById('submission-specific-site-trail-wrap');
+        const specificSiteTrailEl = document.getElementById('submission-specific-site-trail');
+        const trailHintEl = document.getElementById('submission-trail-hint');
+
+        // Fills the "Which Trail" dropdown from the DENR-managed map_trails table,
+        // preserving/restoring `desiredTrailId` (by trail_id, falling back to name match).
+        async function populateTrailSelect(desiredTrailId) {
+          if (!specificSiteTrailEl) return;
+          await ensureTrailDefsLoaded();
+          const priorValue = desiredTrailId !== undefined ? String(desiredTrailId) : specificSiteTrailEl.value;
+          specificSiteTrailEl.innerHTML = '<option value="" disabled hidden>Select Trail</option>';
+          Object.keys(MAP_TRAIL_DEFS).forEach(trailId => {
+            const opt = document.createElement('option');
+            opt.value = trailId;
+            opt.textContent = MAP_TRAIL_DEFS[trailId].name;
+            specificSiteTrailEl.appendChild(opt);
+          });
+          if (priorValue && MAP_TRAIL_DEFS[priorValue]) {
+            specificSiteTrailEl.value = priorValue;
+          } else if (priorValue) {
+            // Drafts store the trail's *name* (species_sightings has no trail_id column),
+            // so match on name when the id isn't known.
+            const match = Object.keys(MAP_TRAIL_DEFS).find(id => MAP_TRAIL_DEFS[id].name === priorValue);
+            if (match) specificSiteTrailEl.value = match;
+          }
+        }
+
         function toggleSpecificSiteOther() {
           if (!specificSiteOtherWrapEl) return;
-          const showOther = specificSiteZoneEl?.value === 'others';
+          const zone = specificSiteZoneEl?.value;
+          const showOther = zone === 'others';
+          const showTrail = zone === 'trail';
           specificSiteOtherWrapEl.style.display = showOther ? 'grid' : 'none';
           if (!showOther && specificSiteOtherEl) {
             specificSiteOtherEl.value = '';
+          }
+          if (specificSiteTrailWrapEl) {
+            specificSiteTrailWrapEl.style.display = showTrail ? 'grid' : 'none';
+            if (showTrail) {
+              populateTrailSelect();
+            } else if (trailHintEl) {
+              trailHintEl.textContent = '';
+            }
           }
         }
         if (specificSiteZoneEl && !specificSiteZoneEl.dataset.bound) {
@@ -2757,6 +2799,43 @@
           specificSiteZoneEl.addEventListener('change', toggleSpecificSiteOther);
         }
         toggleSpecificSiteOther();
+
+        // Auto-suggests a trail (and switches the zone to "Trail") once both GPS
+        // fields hold a value that falls within TRAIL_PROXIMITY_METERS of a mapped trail.
+        async function autoDetectTrailFromCoords() {
+          if (!trailHintEl) return;
+          const latEl = document.getElementById('submission-latitude');
+          const lngEl = document.getElementById('submission-longitude');
+          const lat = Number(latEl?.value);
+          const lng = Number(lngEl?.value);
+          if (!latEl?.value || !lngEl?.value || Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+          const nearest = await findNearestTrail(lat, lng);
+          if (!nearest || nearest.distance > TRAIL_PROXIMITY_METERS) {
+            trailHintEl.textContent = '';
+            return;
+          }
+
+          const distText = `~${Math.round(nearest.distance)}m from ${nearest.name}`;
+          const zone = specificSiteZoneEl?.value;
+          if (!zone || zone === 'trail') {
+            if (specificSiteZoneEl && specificSiteZoneEl.value !== 'trail') {
+              specificSiteZoneEl.value = 'trail';
+              toggleSpecificSiteOther();
+            }
+            await populateTrailSelect(nearest.trailId);
+            trailHintEl.textContent = `Auto-detected: ${distText}`;
+          } else {
+            trailHintEl.textContent = `Note: this location is ${distText}`;
+          }
+        }
+        ['submission-latitude', 'submission-longitude'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el && !el.dataset.trailBound) {
+            el.dataset.trailBound = '1';
+            el.addEventListener('input', autoDetectTrailFromCoords);
+          }
+        });
 
         // GPS button
         const gpsBtn = document.getElementById('submission-use-gps');
@@ -2776,6 +2855,7 @@
                 const elev = document.getElementById('submission-elevation');
                 if (lat) lat.value = pos.coords.latitude.toFixed(6);
                 if (lng) lng.value = pos.coords.longitude.toFixed(6);
+                autoDetectTrailFromCoords();
                 if (elev) {
                   if (pos.coords.altitude !== null) {
                     elev.value = pos.coords.altitude.toFixed(1);
@@ -3231,7 +3311,9 @@
           voucher_collected:        document.getElementById('submission-voucher-collected')?.value === 'yes',
           mountain_id:              mountainId,
           specific_site_zone:       strOrNull('submission-specific-site-zone'),
-          specific_site_other:      strOrNull('submission-specific-site-other'),
+          specific_site_other:      strOrNull('submission-specific-site-zone') === 'trail'
+            ? (document.getElementById('submission-specific-site-trail')?.selectedOptions?.[0]?.textContent || null)
+            : strOrNull('submission-specific-site-other'),
           latitude:                 Number(document.getElementById('submission-latitude')?.value || 0),
           longitude:                Number(document.getElementById('submission-longitude')?.value || 0),
           elevation_meters:         numOrNull('submission-elevation'),
@@ -3411,6 +3493,10 @@
 
             const specificSiteZone = document.getElementById('submission-specific-site-zone')?.value || '';
             const specificSiteOther = (document.getElementById('submission-specific-site-other')?.value || '').trim();
+            const specificSiteTrail = document.getElementById('submission-specific-site-trail')?.value || '';
+            if (specificSiteZone === 'trail' && Object.keys(MAP_TRAIL_DEFS).length && !specificSiteTrail) {
+              throw new Error('Please select which trail this sighting is on (Page 3).');
+            }
             if (specificSiteZone === 'others' && !specificSiteOther) {
               throw new Error('Specific Site is required when the zone is set to Others.');
             }
@@ -4664,9 +4750,18 @@
         if (draft.latitude) setVal('submission-latitude', draft.latitude);
         if (draft.longitude) setVal('submission-longitude', draft.longitude);
         if (draft.elevation_meters) setVal('submission-elevation', draft.elevation_meters);
-        // Trigger site zone change to show/hide 'Others' text field
+        // Trigger site zone change to show/hide 'Others' text field / trail dropdown
         const specificSiteZoneEl = document.getElementById('submission-specific-site-zone');
         if (specificSiteZoneEl) specificSiteZoneEl.dispatchEvent(new Event('change', { bubbles: true }));
+        // Drafts store the trail's name (no trail_id column on species_sightings),
+        // so re-select it in the dropdown by matching that name once options load.
+        if (draft.specific_site_zone === 'trail' && draft.specific_site_other) {
+          ensureTrailDefsLoaded().then(() => {
+            const trailSelectEl = document.getElementById('submission-specific-site-trail');
+            const match = Object.keys(MAP_TRAIL_DEFS).find(id => MAP_TRAIL_DEFS[id].name === draft.specific_site_other);
+            if (trailSelectEl && match) trailSelectEl.value = match;
+          });
+        }
 
         // ── Habitat ──
         const habitatEl = document.getElementById('submission-habitat-type');
@@ -4872,6 +4967,96 @@
       let MAP_TRAIL_DEFS = {};
       const mapTrailLayers = {};
 
+      // Distance (in meters) a GPS point can be from a trail line and still count
+      // as "on" that trail for the upload form's auto-suggest feature.
+      const TRAIL_PROXIMITY_METERS = 300;
+
+      async function fetchTrailDefsFromDb() {
+        if (bloomSupabase) {
+          try {
+            const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
+            if (!error && data && data.length) {
+              const defs = {};
+              data.filter(row => !row.archived).forEach(row => {
+                defs[row.trail_id] = {
+                  name: row.name,
+                  desc: row.description || '',
+                  color: row.color || TRAIL_LINE_COLOR,
+                  coords: row.coordinates
+                };
+              });
+              return defs;
+            }
+          } catch (e) {
+            console.warn('Failed to load map trails:', e);
+          }
+        }
+        return { ...FALLBACK_TRAIL_DEFS };
+      }
+
+      // Populates MAP_TRAIL_DEFS on first use and shares one in-flight request,
+      // so the upload form and the map never fire duplicate fetches.
+      let trailDefsLoadPromise = null;
+      function ensureTrailDefsLoaded() {
+        if (Object.keys(MAP_TRAIL_DEFS).length) return Promise.resolve(MAP_TRAIL_DEFS);
+        if (!trailDefsLoadPromise) {
+          trailDefsLoadPromise = fetchTrailDefsFromDb().then(defs => {
+            MAP_TRAIL_DEFS = defs;
+            return MAP_TRAIL_DEFS;
+          });
+        }
+        return trailDefsLoadPromise;
+      }
+
+      function haversineMeters(lat1, lng1, lat2, lng2) {
+        const R = 6371000;
+        const toRad = d => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(a));
+      }
+
+      // Distance from a point to a line segment, using a local flat-earth
+      // projection (accurate enough over the few-km span of a mountain trail).
+      function distanceToSegmentMeters(lat, lng, aLat, aLng, bLat, bLng) {
+        const mPerDegLat = 111320;
+        const mPerDegLng = 111320 * Math.cos(aLat * Math.PI / 180);
+        const px = (lng - aLng) * mPerDegLng, py = (lat - aLat) * mPerDegLat;
+        const bx = (bLng - aLng) * mPerDegLng, by = (bLat - aLat) * mPerDegLat;
+        const lenSq = bx * bx + by * by;
+        let t = lenSq > 0 ? (px * bx + py * by) / lenSq : 0;
+        t = Math.max(0, Math.min(1, t));
+        const dx = px - t * bx, dy = py - t * by;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      function distanceToTrailMeters(lat, lng, coords) {
+        if (!Array.isArray(coords) || !coords.length) return Infinity;
+        if (coords.length === 1) return haversineMeters(lat, lng, coords[0][0], coords[0][1]);
+        let min = Infinity;
+        for (let i = 0; i < coords.length - 1; i++) {
+          const [aLat, aLng] = coords[i];
+          const [bLat, bLng] = coords[i + 1];
+          const d = distanceToSegmentMeters(lat, lng, aLat, aLng, bLat, bLng);
+          if (d < min) min = d;
+        }
+        return min;
+      }
+
+      // Finds the closest known trail to a GPS point, for auto-suggesting
+      // "Which Trail" on the upload form once coordinates are entered.
+      async function findNearestTrail(lat, lng) {
+        await ensureTrailDefsLoaded();
+        let best = null;
+        Object.keys(MAP_TRAIL_DEFS).forEach(trailId => {
+          const def = MAP_TRAIL_DEFS[trailId];
+          const dist = distanceToTrailMeters(lat, lng, def.coords);
+          if (!best || dist < best.distance) best = { trailId, distance: dist, name: def.name };
+        });
+        return best;
+      }
+
       async function loadMapTrails() {
         if (!leafletMap) return;
         Object.keys(mapTrailLayers).forEach(trailId => {
@@ -4879,33 +5064,12 @@
           delete mapTrailLayers[trailId];
         });
         MAP_TRAIL_DEFS = {};
+        trailDefsLoadPromise = null;
 
         const container = document.getElementById('map-trails-row');
         if (container) container.innerHTML = '';
 
-        let loadedFromDb = false;
-        if (bloomSupabase) {
-          try {
-            const { data, error } = await bloomSupabase.from('map_trails').select('*').order('trail_id', { ascending: true });
-            if (!error && data && data.length) {
-              data.filter(row => !row.archived).forEach(row => {
-                MAP_TRAIL_DEFS[row.trail_id] = {
-                  name: row.name,
-                  desc: row.description || '',
-                  color: row.color || TRAIL_LINE_COLOR,
-                  coords: row.coordinates
-                };
-              });
-              loadedFromDb = true;
-            }
-          } catch (e) {
-            console.warn('Failed to load map trails:', e);
-          }
-        }
-
-        if (!loadedFromDb) {
-          MAP_TRAIL_DEFS = { ...FALLBACK_TRAIL_DEFS };
-        }
+        await ensureTrailDefsLoaded();
 
         if (container) {
           Object.keys(MAP_TRAIL_DEFS).forEach(trailId => {
