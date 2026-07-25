@@ -1785,7 +1785,7 @@
               <select id="submission-population-status" class="submission-select"><option value="" disabled selected hidden>Population Status</option><option value="Abundant">Abundant</option><option value="common">Common</option><option value="rare">Rare</option></select>
             </div>
             <div class="submission-field">
-              <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <a href="https://www.iucnredlist.org/search?query=Orchids&searchType=species" target="_blank" rel="noopener noreferrer" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;">(Check IUCN Red List)</a></label>
+              <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <button type="button" onclick="openIucnGuideModal()" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">(Check IUCN Red List)</button></label>
               <select id="submission-threat-level" class="submission-select"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Least Concern">Least Concern</option></select>
             </div>
             <div class="submission-field submission-field--full">
@@ -2123,11 +2123,53 @@
       </div>
     </div>
 
+    <!-- IUCN Red List Reference Modal (in-app substitute for linking out to iucnredlist.org) -->
+    <div id="iucnGuideModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2100;align-items:center;justify-content:center;padding:1.5rem;">
+      <div style="background:white;border-radius:12px;max-width:840px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#145A1E,#3d6c36);padding:1.25rem 1.5rem;color:white;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+          <div>
+            <h2 style="margin:0;font-size:1.2rem;font-family:Inter,Roboto,sans-serif;">IUCN Red List Reference Guide</h2>
+            <p style="margin:0.2rem 0 0 0;font-size:0.78rem;color:#d1f2d8;">Curated offline reference for choosing a Threat Level -- no need to leave BLOOM.</p>
+          </div>
+          <button onclick="closeModal('iucnGuideModal')" aria-label="Close" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:1.4rem;cursor:pointer;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 200ms ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
+        </div>
+
+        <div style="display:flex;gap:0.4rem;padding:0.75rem 1.5rem 0 1.5rem;border-bottom:1px solid #e2e8f0;flex-shrink:0;">
+          <button type="button" class="iucn-tab-btn" data-tab="guide" onclick="switchIucnTab('guide')" style="padding:0.5rem 0.9rem;border:none;background:none;border-bottom:2.5px solid #145A1E;color:#145A1E;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;">Category Guide</button>
+          <button type="button" class="iucn-tab-btn" data-tab="search" onclick="switchIucnTab('search')" style="padding:0.5rem 0.9rem;border:none;background:none;border-bottom:2.5px solid transparent;color:#64748b;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;">Search Assessed Orchids</button>
+        </div>
+
+        <div style="padding:1.25rem 1.5rem;overflow-y:auto;">
+          <!-- Category Guide tab -->
+          <div id="iucn-tab-panel-guide" style="display:grid;gap:0.7rem;">
+            <div id="iucnCategoryCards" style="display:grid;gap:0.7rem;"></div>
+          </div>
+
+          <!-- Search tab -->
+          <div id="iucn-tab-panel-search" style="display:none;">
+            <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.9rem;">
+              <input id="iucnSearchInput" type="text" placeholder="Search scientific, common name, or genus..." oninput="renderIucnSpeciesList()" style="flex:1 1 220px;padding:0.55rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-size:0.85rem;font-family:inherit;" />
+              <select id="iucnCategoryFilter" onchange="renderIucnSpeciesList()" style="padding:0.55rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-size:0.85rem;font-family:inherit;background:#fff;">
+                <option value="">All Categories</option>
+              </select>
+              <select id="iucnGenusFilter" onchange="renderIucnSpeciesList()" style="padding:0.55rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;font-size:0.85rem;font-family:inherit;background:#fff;">
+                <option value="">All Genera</option>
+              </select>
+            </div>
+            <div id="iucnSpeciesListCount" style="font-size:0.76rem;color:#64748b;margin-bottom:0.5rem;"></div>
+            <div id="iucnSpeciesList" style="display:grid;gap:0.6rem;"></div>
+            <p style="margin:1rem 0 0 0;font-size:0.72rem;color:#94a3b8;line-height:1.5;">This is a curated reference set, not a live mirror of the full IUCN Red List. Most field morphospecies (e.g. "sp. 1", "cf.", "aff.") have never been formally assessed -- use these entries as comparison points, not exact matches, and note "Not Evaluated" is expected for undescribed specimens.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="iucn-orchid-reference.js"></script>
     <script>
       // Restore the sidebar collapse preference before the page becomes visible.
       try {
@@ -5387,6 +5429,11 @@ function refreshConservationHeatMap(summary) {
         if (e.key === 'Escape' && !dashboardOrchidDetailModal.hidden) {
           closeDashboardOrchidDetails();
         }
+
+        const iucnGuideModalEl = document.getElementById('iucnGuideModal');
+        if (e.key === 'Escape' && iucnGuideModalEl && iucnGuideModalEl.style.display === 'flex') {
+          closeModal('iucnGuideModal');
+        }
       });
 
       // Initialize dashboard map on page load
@@ -5754,6 +5801,112 @@ function refreshConservationHeatMap(summary) {
           const scrollMiddle = modal.querySelector('#detailModalCard > div[style*="overflow-y"]');
           if (scrollMiddle) scrollMiddle.scrollTop = 0;
         }
+      }
+
+      // ── IUCN Red List Reference Modal ──────────────────────────────────
+      function openIucnGuideModal() {
+        const modal = document.getElementById('iucnGuideModal');
+        if (!modal) return;
+        renderIucnCategoryCards();
+        populateIucnFilters();
+        renderIucnSpeciesList();
+        modal.style.display = 'flex';
+      }
+
+      function switchIucnTab(tab) {
+        const isGuide = tab === 'guide';
+        document.getElementById('iucn-tab-panel-guide').style.display = isGuide ? 'grid' : 'none';
+        document.getElementById('iucn-tab-panel-search').style.display = isGuide ? 'none' : 'block';
+        document.querySelectorAll('.iucn-tab-btn').forEach((btn) => {
+          const active = btn.getAttribute('data-tab') === tab;
+          btn.style.color = active ? '#145A1E' : '#64748b';
+          btn.style.borderBottomColor = active ? '#145A1E' : 'transparent';
+        });
+      }
+
+      function renderIucnCategoryCards() {
+        const container = document.getElementById('iucnCategoryCards');
+        const categories = window.IUCN_RED_LIST_CATEGORIES || [];
+        if (!container || container.dataset.rendered === '1') return;
+        container.innerHTML = categories.map((cat) => `
+          <div style="border:1px solid #e2e8f0;border-left:4px solid ${cat.color};border-radius:8px;padding:0.75rem 0.9rem;background:${cat.bg};">
+            <div style="display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap;">
+              <span style="font-weight:800;font-size:0.92rem;color:${cat.color};">${cat.label}</span>
+              <span style="font-size:0.72rem;font-weight:700;color:${cat.color};opacity:0.75;">(${cat.code})</span>
+            </div>
+            <p style="margin:0.35rem 0 0 0;font-size:0.82rem;color:#334155;line-height:1.45;">${cat.definition}</p>
+            <p style="margin:0.3rem 0 0 0;font-size:0.74rem;color:#64748b;line-height:1.5;"><strong>Criteria: </strong>${cat.criteria}</p>
+          </div>
+        `).join('');
+        container.dataset.rendered = '1';
+      }
+
+      function populateIucnFilters() {
+        const categorySelect = document.getElementById('iucnCategoryFilter');
+        const genusSelect = document.getElementById('iucnGenusFilter');
+        if (!categorySelect || !genusSelect || categorySelect.dataset.populated === '1') return;
+
+        (window.IUCN_RED_LIST_CATEGORIES || []).forEach((cat) => {
+          const opt = document.createElement('option');
+          opt.value = cat.code;
+          opt.textContent = `${cat.label} (${cat.code})`;
+          categorySelect.appendChild(opt);
+        });
+
+        const genera = Array.from(new Set((window.IUCN_ORCHID_REFERENCE || []).map((s) => s.genus))).sort();
+        genera.forEach((genus) => {
+          const opt = document.createElement('option');
+          opt.value = genus;
+          opt.textContent = genus;
+          genusSelect.appendChild(opt);
+        });
+
+        categorySelect.dataset.populated = '1';
+      }
+
+      function renderIucnSpeciesList() {
+        const listEl = document.getElementById('iucnSpeciesList');
+        const countEl = document.getElementById('iucnSpeciesListCount');
+        if (!listEl) return;
+
+        const query = (document.getElementById('iucnSearchInput')?.value || '').trim().toLowerCase();
+        const categoryFilter = document.getElementById('iucnCategoryFilter')?.value || '';
+        const genusFilter = document.getElementById('iucnGenusFilter')?.value || '';
+        const categoryByCode = Object.fromEntries((window.IUCN_RED_LIST_CATEGORIES || []).map((c) => [c.code, c]));
+
+        const results = (window.IUCN_ORCHID_REFERENCE || []).filter((s) => {
+          if (categoryFilter && s.category !== categoryFilter) return false;
+          if (genusFilter && s.genus !== genusFilter) return false;
+          if (query) {
+            const haystack = `${s.sci} ${s.common} ${s.genus}`.toLowerCase();
+            if (!haystack.includes(query)) return false;
+          }
+          return true;
+        });
+
+        if (countEl) countEl.textContent = `${results.length} of ${(window.IUCN_ORCHID_REFERENCE || []).length} reference species`;
+
+        if (!results.length) {
+          listEl.innerHTML = '<p style="font-size:0.82rem;color:#94a3b8;">No matches. Try a different search term or clear the filters.</p>';
+          return;
+        }
+
+        listEl.innerHTML = results.map((s) => {
+          const cat = categoryByCode[s.category] || { label: s.category, color: '#475569', bg: '#f8fafc' };
+          return `
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:0.7rem 0.9rem;display:flex;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
+              <div style="min-width:0;">
+                <div style="font-weight:700;font-size:0.85rem;color:#1e293b;font-style:italic;">${s.sci}</div>
+                <div style="font-size:0.78rem;color:#475569;">${s.common} &middot; <span style="color:#64748b;">${s.genus}</span></div>
+                <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.25rem;">${s.region}</div>
+                <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.15rem;"><strong>Threats:</strong> ${s.threats}</div>
+              </div>
+              <div style="flex-shrink:0;align-self:flex-start;">
+                <span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:999px;background:${cat.bg};color:${cat.color};font-size:0.72rem;font-weight:800;border:1px solid ${cat.color}33;">${cat.label}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
       function openLightbox(imageSrc) {
@@ -6405,6 +6558,7 @@ function refreshConservationHeatMap(summary) {
 
       // Close modals when clicking outside
       document.addEventListener('click', function(e) {
+        if (e.target.id === 'iucnGuideModal') closeModal('iucnGuideModal');
         if (e.target.id === 'detailModal') closeModal('detailModal');
         if (e.target.id === 'imageLightbox') closeLightbox();
         if (e.target.id === 'conservationModal') closeModal('conservationModal');
