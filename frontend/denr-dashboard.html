@@ -1231,6 +1231,7 @@
                   <option value="researcher-activity">Researcher Activity Report</option>
                   <option value="habitat-analysis">Habitat Classification Report</option>
                   <option value="detailed-report">Detailed Report</option>
+                  <option value="species-profile">Species Profile Report</option>
                 </select>
               </div>
 
@@ -1250,25 +1251,38 @@
               </div>
 
               <!-- Include Sections -->
-              <div>
-                <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Include in Report</label>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
-                    <input type="checkbox" checked data-section="summary" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
-                    <span class="text-xs font-semibold" style="color:var(--dt-text);">Summary Stats</span>
-                  </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
-                    <input type="checkbox" checked data-section="details" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
-                    <span class="text-xs font-semibold" style="color:var(--dt-text);">Data Tables</span>
-                  </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
-                    <input type="checkbox" checked data-section="charts" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
-                    <span class="text-xs font-semibold" style="color:var(--dt-text);">Chart Data</span>
-                  </label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
-                    <input type="checkbox" data-section="recommendations" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
-                    <span class="text-xs font-semibold" style="color:var(--dt-text);">Recommendations</span>
-                  </label>
+              <div id="genericSectionCheckboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+                <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="grid-column:1/-1;color:var(--dt-text);letter-spacing:0.07em;">Include in Report</label>
+                <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <input type="checkbox" checked data-section="summary" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
+                  <span class="text-xs font-semibold" style="color:var(--dt-text);">Summary Stats</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <input type="checkbox" checked data-section="details" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
+                  <span class="text-xs font-semibold" style="color:var(--dt-text);">Data Tables</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <input type="checkbox" checked data-section="charts" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
+                  <span class="text-xs font-semibold" style="color:var(--dt-text);">Chart Data</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms;" onmouseover="this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'" onmouseout="this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'">
+                  <input type="checkbox" data-section="recommendations" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
+                  <span class="text-xs font-semibold" style="color:var(--dt-text);">Recommendations</span>
+                </label>
+              </div>
+
+              <!-- Species Profile: orchid picker + selectable field groups (hidden unless
+                   Report Type = Species Profile Report) -->
+              <div id="speciesProfileFields" style="display:none;flex-direction:column;gap:1.1rem;">
+                <div>
+                  <label class="report-field-label">Select Orchid</label>
+                  <select id="reportOrchidId" class="report-select-input">
+                    <option value="">Loading species…</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="report-field-label">Include in Report</label>
+                  <div id="profileFieldGroups" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
                 </div>
               </div>
 
@@ -1348,9 +1362,13 @@
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Researcher Activity</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Per-researcher submission count in selected period</p>
                 </div>
-                <div style="padding:0.75rem 1.2rem;">
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);">
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Habitat Classification</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Sightings grouped by habitat type</p>
+                </div>
+                <div style="padding:0.75rem 1.2rem;">
+                  <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Species Profile</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Pick one orchid and choose exactly which identity &amp; sighting fields to include — a dossier, not a table</p>
                 </div>
               </div>
             </div>
@@ -8463,12 +8481,197 @@
           title: 'Detailed Report',
           description: 'Comprehensive record-by-record export combining species, researcher, habitat, morphology, and conservation details for each submission',
           includesByDefault: ['Summary Statistics', 'Detailed Data Tables', 'Visual Charts & Graphs', 'Recommendations']
+        },
+        'species-profile': {
+          title: 'Species Profile Report',
+          description: 'A single-orchid dossier combining catalog identity fields with matching approved field sightings, both selectable field-by-field'
         }
       };
+
+      // ── Species Profile Report ──────────────────────────────────────────
+      // Unlike the other report types (which all shape one flat rows[] array
+      // through the generic sections/columns pipeline above), a profile has
+      // two genuinely different shapes: a single orchid's catalog identity
+      // (one row, key/value) and its matching field sightings (many rows,
+      // tabular) — so it gets its own small pipeline instead of being forced
+      // through getRowsForReport/getReportColumnDefs.
+      const SPECIES_PROFILE_FIELD_GROUPS = [
+        {
+          id: 'identity', label: 'Species Identity', kind: 'profile',
+          fields: [
+            ['genus', 'Genus'],
+            ['common_name', 'Common Name'],
+            ['endemicity', 'Endemicity'],
+            ['date_discovered', 'Date Discovered'],
+            ['conservation_status', 'Conservation Status'],
+            ['ethnobotanical', 'Ethnobotanical Value'],
+            ['horticulture_value', 'Horticultural Value'],
+            ['cultural_importance', 'Cultural Importance'],
+            ['image_url', 'Catalog Photo URL'],
+            ['model_3d_url', '3D Model URL']
+          ]
+        },
+        {
+          id: 'observation', label: 'Sightings: Observation Info', kind: 'sightings',
+          fields: [
+            ['researcher', 'Researcher'],
+            ['submission_date', 'Observation Date'],
+            ['location', 'Location'],
+            ['institution_name', 'Institution']
+          ]
+        },
+        {
+          id: 'habitat', label: 'Sightings: Habitat', kind: 'sightings',
+          fields: [
+            ['habitat_type', 'Habitat Type'],
+            ['growth_substrate', 'Growth Substrate'],
+            ['light_exposure', 'Light Exposure']
+          ]
+        },
+        {
+          id: 'morphology', label: 'Sightings: Morphology', kind: 'sightings',
+          fields: [
+            ['plant_height_cm', 'Plant Height (cm)'],
+            ['leaf_shape', 'Leaf Shape'],
+            ['flower_color', 'Flower Color'],
+            ['flower_count', 'Flower Count'],
+            ['fragrance', 'Fragrance'],
+            ['flowering_season', 'Flowering Season']
+          ]
+        },
+        {
+          id: 'conservation', label: 'Sightings: Conservation', kind: 'sightings',
+          fields: [
+            ['threat_level', 'Threat Level'],
+            ['population_status', 'Population Status']
+          ]
+        }
+      ];
+
+      const SPECIES_PROFILE_SIGHTING_ACCESSORS = {
+        researcher:        (s) => s.researcher || '-',
+        submission_date:   (s) => s.submission_date || '-',
+        location:          (s) => s.location || '-',
+        institution_name:  (s) => s.institution_name || s.institution || '-',
+        habitat_type:      (s) => s.habitat_type || '-',
+        growth_substrate:  (s) => s.growth_substrate || '-',
+        light_exposure:    (s) => s.light_exposure || '-',
+        plant_height_cm:   (s) => (s.plant_height_cm != null ? String(s.plant_height_cm) : '-'),
+        leaf_shape:        (s) => s.leaf_shape || '-',
+        flower_color:      (s) => s.flower_color || '-',
+        flower_count:      (s) => (s.flower_count != null ? String(s.flower_count) : '-'),
+        fragrance:         (s) => s.fragrance || '-',
+        flowering_season:  (s) => s.flowering_season || '-',
+        threat_level:      (s) => s.threat_level || '-',
+        population_status: (s) => s.population_status || '-'
+      };
+
+      function profileIdentityValue(fieldKey, orchid) {
+        switch (fieldKey) {
+          case 'genus':              return orchid.genus || '-';
+          case 'common_name':        return orchid.common_name || '-';
+          case 'endemicity':         return orchid.endemicity || '-';
+          case 'date_discovered':    return orchid.date_discovered
+            ? new Date(orchid.date_discovered).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
+            : 'Not recorded';
+          case 'conservation_status':return orchid.conservation_status || 'Unassigned';
+          case 'ethnobotanical':     return orchid.ethnobotanical || 'Not documented';
+          case 'horticulture_value':return orchid.horticulture_value || 'Not documented';
+          case 'cultural_importance':return orchid.cultural_importance || 'Not documented';
+          case 'image_url':          return orchid.image_url || 'No photo on file';
+          case 'model_3d_url':       return orchid.model_3d_url || 'No 3D model on file';
+          default:                   return '-';
+        }
+      }
+
+      let reportOrchidOptionsLoaded = false;
+      async function ensureReportOrchidOptionsLoaded() {
+        const sel = document.getElementById('reportOrchidId');
+        if (!sel || reportOrchidOptionsLoaded || !bloomSupabase) return;
+        const { data, error } = await bloomSupabase
+          .from('orchid_overview')
+          .select('id, name, common_name')
+          .order('name', { ascending: true });
+        if (error) {
+          sel.innerHTML = '<option value="">Failed to load species</option>';
+          return;
+        }
+        reportOrchidOptionsLoaded = true;
+        sel.innerHTML = (data || []).length
+          ? data.map((o) => `<option value="${o.id}">${escapeHtml(o.name)}${o.common_name ? ' — ' + escapeHtml(o.common_name) : ''}</option>`).join('')
+          : '<option value="">No species in catalog yet</option>';
+      }
+
+      function toggleProfileFieldGroup(groupId) {
+        const body = document.getElementById('profileGroupBody-' + groupId);
+        const header = document.getElementById('profileGroupHeader-' + groupId);
+        if (!body) return;
+        const isOpen = body.style.display === 'flex';
+        body.style.display = isOpen ? 'none' : 'flex';
+        if (header) header.classList.toggle('is-open', !isOpen);
+      }
+
+      function updateProfileFieldGroupCount(groupId) {
+        const countEl = document.getElementById('profileGroupCount-' + groupId);
+        if (!countEl) return;
+        const boxes = document.querySelectorAll('#profileGroupBody-' + groupId + ' input[type="checkbox"]');
+        const checked = Array.from(boxes).filter((b) => b.checked).length;
+        countEl.textContent = `${checked} of ${boxes.length}`;
+      }
+
+      function renderProfileFieldGroups() {
+        const container = document.getElementById('profileFieldGroups');
+        if (!container || container.dataset.rendered) return;
+        container.dataset.rendered = '1';
+        container.innerHTML = SPECIES_PROFILE_FIELD_GROUPS.map((group) => `
+          <div class="profile-field-group" data-group="${group.id}">
+            <button type="button" id="profileGroupHeader-${group.id}" class="profile-field-group-header" onclick="toggleProfileFieldGroup('${group.id}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <span>${escapeHtml(group.label)}</span>
+              <span class="profile-field-group-count" id="profileGroupCount-${group.id}">${group.fields.length} of ${group.fields.length}</span>
+            </button>
+            <div class="profile-field-group-body" id="profileGroupBody-${group.id}">
+              ${group.fields.map(([key, label]) => `
+                <label class="profile-field-checkbox">
+                  <input type="checkbox" checked data-profile-field="${key}" onchange="updateProfileFieldGroupCount('${group.id}')" />
+                  <span>${escapeHtml(label)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function getSelectedSpeciesProfileFields() {
+        const selected = {};
+        document.querySelectorAll('#profileFieldGroups input[type="checkbox"][data-profile-field]').forEach((el) => {
+          selected[el.getAttribute('data-profile-field')] = el.checked;
+        });
+        return selected;
+      }
+
+      function syncReportTypeUI() {
+        const reportType = document.getElementById('reportType').value;
+        const isProfile = reportType === 'species-profile';
+        const generic = document.getElementById('genericSectionCheckboxes');
+        const profile = document.getElementById('speciesProfileFields');
+        if (generic) generic.style.display = isProfile ? 'none' : 'grid';
+        if (profile) profile.style.display = isProfile ? 'flex' : 'none';
+        if (isProfile) {
+          renderProfileFieldGroups();
+          ensureReportOrchidOptionsLoaded();
+        }
+      }
+
+      const reportTypeSelectEl = document.getElementById('reportType');
+      if (reportTypeSelectEl) {
+        reportTypeSelectEl.addEventListener('change', syncReportTypeUI);
+      }
 
       function resetReportForm() {
         document.getElementById('reportForm').reset();
         document.getElementById('reportType').value = 'species-inventory';
+        syncReportTypeUI();
         selectReportFormat('pdf');
       }
 
@@ -8889,9 +9092,6 @@
         const format = document.querySelector('input[name="format"]:checked').value;
         const btn = document.getElementById('generateReportBtn');
 
-        const reportConfig = reportTypes[reportType];
-        const sections = getSelectedReportSections();
-
         if (!dateFrom || !dateTo) {
           showReportToast('Please select both start and end dates.', 'warn');
           return;
@@ -8900,6 +9100,15 @@
           showReportToast('Start date must be before end date.', 'warn');
           return;
         }
+
+        if (reportType === 'species-profile') {
+          await generateSpeciesProfileReport(dateFrom, dateTo, format, btn);
+          return;
+        }
+
+        const reportConfig = reportTypes[reportType];
+        const sections = getSelectedReportSections();
+
         if (!sections.summary && !sections.details && !sections.charts && !sections.recommendations) {
           showReportToast('Please select at least one report section.', 'warn');
           return;
@@ -8930,6 +9139,207 @@
           btn.style.background = '#145A1E';
           btn.innerHTML = originalHTML;
         }
+      }
+
+      async function generateSpeciesProfileReport(dateFrom, dateTo, format, btn) {
+        const orchidId = document.getElementById('reportOrchidId').value;
+        if (!orchidId) {
+          showReportToast('Please select an orchid.', 'warn');
+          return;
+        }
+        const fields = getSelectedSpeciesProfileFields();
+        if (!Object.values(fields).some(Boolean)) {
+          showReportToast('Please select at least one field to include.', 'warn');
+          return;
+        }
+
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.background = '#2d6fa0';
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;animation:spin 0.8s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Generating…';
+
+        try {
+          const sourceData = await getReportSourceData();
+          const orchid = sourceData.orchids.find((o) => String(o.id) === String(orchidId));
+          if (!orchid) throw new Error('Selected orchid could not be found.');
+
+          const orchidKey = String(orchid.name || '').trim().toLowerCase();
+          const sightings = sourceData.submissions.filter((s) => {
+            if (String(s.species || '').trim().toLowerCase() !== orchidKey) return false;
+            if (String(s.review_status || '').toLowerCase() !== 'approved') return false;
+            const d = String(s.submission_date || '');
+            return d >= dateFrom && d <= dateTo;
+          });
+
+          const fileNameBase = `Species_Profile_${(orchid.name || 'orchid').replace(/\s+/g, '_')}_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}`;
+
+          if (format === 'excel') {
+            downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields, dateFrom, dateTo);
+          } else {
+            downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, dateFrom, dateTo);
+          }
+
+          showReportToast('Report downloaded successfully!', 'success');
+        } catch (error) {
+          showReportToast('Could not generate report: ' + error.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.style.background = '#145A1E';
+          btn.innerHTML = originalHTML;
+        }
+      }
+
+      function downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields, dateFrom, dateTo) {
+        const workbook = XLSX.utils.book_new();
+
+        const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
+        const identityFields = identityGroup ? identityGroup.fields.filter(([key]) => fields[key]) : [];
+        if (identityFields.length) {
+          const rows = identityFields.map(([key, label]) => ({ field: label, value: profileIdentityValue(key, orchid) }));
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Species_Identity');
+        }
+
+        const activeSightingColumns = [];
+        SPECIES_PROFILE_FIELD_GROUPS
+          .filter((g) => g.kind === 'sightings')
+          .forEach((g) => g.fields.forEach(([key, label]) => { if (fields[key]) activeSightingColumns.push([key, label]); }));
+
+        if (activeSightingColumns.length) {
+          const rows = sightings.length
+            ? sightings.map((s) => {
+                const row = {};
+                activeSightingColumns.forEach(([key, label]) => { row[label] = SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s); });
+                return row;
+              })
+            : [{ message: `No approved field sightings for ${orchid.name} between ${dateFrom} and ${dateTo}` }];
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Field_Sightings');
+        }
+
+        if (workbook.SheetNames.length === 0) {
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{ message: 'No fields selected' }]), 'Report');
+        }
+
+        XLSX.writeFile(workbook, `${fileNameBase}.xlsx`);
+      }
+
+      function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, dateFrom, dateTo) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const marginL = 14;
+        const marginR = 14;
+        const contentW = pageW - marginL - marginR;
+        const navy = [30, 79, 112];
+        const navyLight = [235, 245, 250];
+        const gray = [100, 116, 139];
+        const grayLight = [248, 250, 252];
+        const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+        const orchidName = orchid.name || 'Unnamed species';
+
+        doc.setFillColor(...navy);
+        doc.rect(0, 0, pageW, 36, 'F');
+        doc.setFontSize(7);
+        doc.setTextColor(180, 210, 230);
+        doc.setFont('helvetica', 'bold');
+        doc.text('BLOOM · DENR BIODIVERSITY MONITORING', marginL, 10);
+
+        doc.setFontSize(15);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.text(orchidName, marginL, 21);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(180, 210, 230);
+        doc.text(`Sighting period: ${dateFrom || 'All dates'} – ${dateTo || 'All dates'}   ·   Generated: ${generated}`, marginL, 30);
+
+        doc.setFillColor(255, 255, 255, 0.15);
+        doc.setTextColor(200, 225, 240);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SPECIES PROFILE', pageW - marginR, 20, { align: 'right' });
+
+        let y = 46;
+
+        function sectionHeading(title) {
+          if (y > pageH - 30) { doc.addPage(); y = 18; }
+          doc.setFillColor(...navyLight);
+          doc.roundedRect(marginL, y - 4, contentW, 8, 1, 1, 'F');
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...navy);
+          doc.text(title.toUpperCase(), marginL + 3, y + 0.5);
+          y += 10;
+        }
+
+        function addAutoTable(head, body) {
+          if (y > pageH - 40) { doc.addPage(); y = 18; }
+          doc.autoTable({
+            startY: y,
+            head: [head],
+            body: body,
+            margin: { left: marginL, right: marginR },
+            styles: { font: 'helvetica', fontSize: 8, cellPadding: 3, overflow: 'linebreak', textColor: [30, 40, 50] },
+            headStyles: { fillColor: navy, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            alternateRowStyles: { fillColor: grayLight },
+            tableLineColor: [220, 230, 235],
+            tableLineWidth: 0.2,
+            didDrawPage: function(data) {
+              doc.setFontSize(7);
+              doc.setTextColor(...gray);
+              doc.setFont('helvetica', 'normal');
+              doc.text(`BLOOM – Species Profile: ${orchidName}`, marginL, pageH - 8);
+              doc.text(`Page ${data.pageNumber}`, pageW - marginR, pageH - 8, { align: 'right' });
+              doc.setDrawColor(...navy);
+              doc.setLineWidth(0.3);
+              doc.line(marginL, pageH - 12, pageW - marginR, pageH - 12);
+            }
+          });
+          y = doc.lastAutoTable.finalY + 10;
+        }
+
+        const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
+        const identityFields = identityGroup ? identityGroup.fields.filter(([key]) => fields[key]) : [];
+        if (identityFields.length) {
+          sectionHeading('Species Identity');
+          addAutoTable(['Field', 'Value'], identityFields.map(([key, label]) => [label, String(profileIdentityValue(key, orchid))]));
+        }
+
+        const activeSightingColumns = [];
+        SPECIES_PROFILE_FIELD_GROUPS
+          .filter((g) => g.kind === 'sightings')
+          .forEach((g) => g.fields.forEach(([key, label]) => { if (fields[key]) activeSightingColumns.push([key, label]); }));
+
+        if (activeSightingColumns.length) {
+          sectionHeading(`Field Sightings (${sightings.length} approved, ${dateFrom} to ${dateTo})`);
+          if (!sightings.length) {
+            doc.setFontSize(9); doc.setTextColor(...gray); doc.setFont('helvetica', 'italic');
+            doc.text(`No approved field sightings for ${orchidName} in the selected period.`, marginL, y);
+            y += 8;
+          } else {
+            const head = activeSightingColumns.map(([, label]) => label);
+            const body = sightings.map((s) => activeSightingColumns.map(([key]) => String(SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s))));
+            addAutoTable(head, body);
+          }
+        }
+
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let p = 1; p <= totalPages; p++) {
+          doc.setPage(p);
+          doc.setFontSize(7);
+          doc.setTextColor(...gray);
+          doc.setFont('helvetica', 'normal');
+          if (p === totalPages) {
+            doc.text(`BLOOM – Species Profile: ${orchidName}`, marginL, pageH - 8);
+            doc.text(`Page ${p} of ${totalPages}`, pageW - marginR, pageH - 8, { align: 'right' });
+            doc.setDrawColor(...navy);
+            doc.setLineWidth(0.3);
+            doc.line(marginL, pageH - 12, pageW - marginR, pageH - 12);
+          }
+        }
+
+        doc.save(`${fileNameBase}.pdf`);
       }
 
       function showReportToast(message, type) {

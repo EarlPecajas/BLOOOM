@@ -4444,6 +4444,68 @@ hr, .border-bottom, .border-top { border-color: var(--dt-border) !important; }
   flex-shrink: 0;
 }
 
+/* ── Generate Report: Species Profile field-group checklist ──
+   Collapsed-by-default groups (like a filter sidebar) so a long field list
+   doesn't dominate the form; each field is its own checkbox so DENR can
+   drop specific fields without losing the whole section. */
+.profile-field-group {
+  border: 1.5px solid var(--dt-border-md, #e0e0e0);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.profile-field-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.8rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: Inter, Roboto, sans-serif;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--dt-text, #1a3a1a);
+  text-align: left;
+  transition: background 150ms;
+}
+.profile-field-group-header:hover { background: rgba(77,184,106,.08); }
+.profile-field-group-header svg {
+  flex-shrink: 0;
+  color: var(--dt-muted);
+  transition: transform 150ms;
+}
+.profile-field-group-header.is-open svg { transform: rotate(90deg); }
+.profile-field-group-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--dt-muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.profile-field-group-body {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.8rem 0.75rem 2.15rem;
+}
+.profile-field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--dt-text, #1a3a1a);
+}
+.profile-field-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #145A1E;
+  flex-shrink: 0;
+}
+
 /* ── Generate Report: Clear button ── */
 #report-view button[onclick="resetReportForm()"] {
   background: var(--dt-bg-input) !important;
