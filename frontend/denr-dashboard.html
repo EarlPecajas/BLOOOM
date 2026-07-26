@@ -9238,7 +9238,10 @@
 
       function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields) {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        // Landscape: a fully-checked field list can span 15+ sighting columns —
+        // portrait's ~182mm content width squeezes that down to single-character-
+        // per-line garbage, same reason detailed-report uses landscape below.
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
         const pageH = doc.internal.pageSize.getHeight();
         const marginL = 14;
@@ -9313,6 +9316,15 @@
           y = doc.lastAutoTable.finalY + 10;
         }
 
+        function subLabel(text) {
+          if (y > pageH - 34) { doc.addPage(); y = 18; }
+          doc.setFontSize(8.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...navy);
+          doc.text(text, marginL, y);
+          y += 5;
+        }
+
         const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
         const identityFields = identityGroup ? identityGroup.fields.filter(([key]) => fields[key]) : [];
         if (identityFields.length) {
@@ -9320,21 +9332,31 @@
           addAutoTable(['Field', 'Value'], identityFields.map(([key, label]) => [label, String(profileIdentityValue(key, orchid))]));
         }
 
-        const activeSightingColumns = [];
-        SPECIES_PROFILE_FIELD_GROUPS
-          .filter((g) => g.kind === 'sightings')
-          .forEach((g) => g.fields.forEach(([key, label]) => { if (fields[key]) activeSightingColumns.push([key, label]); }));
+        const sightingGroups = SPECIES_PROFILE_FIELD_GROUPS.filter((g) => g.kind === 'sightings');
+        const anyActiveSightingField = sightingGroups.some((g) => g.fields.some(([key]) => fields[key]));
 
-        if (activeSightingColumns.length) {
+        if (anyActiveSightingField) {
           sectionHeading(`Field Sightings (${sightings.length} approved)`);
           if (!sightings.length) {
             doc.setFontSize(9); doc.setTextColor(...gray); doc.setFont('helvetica', 'italic');
             doc.text(`No approved field sightings on file for ${orchidName}.`, marginL, y);
             y += 8;
           } else {
-            const head = activeSightingColumns.map(([, label]) => label);
-            const body = sightings.map((s) => activeSightingColumns.map(([key]) => String(SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s))));
-            addAutoTable(head, body);
+            // One table per group instead of one giant combined table — a fully
+            // checked field list is 15+ columns, which even in landscape reads
+            // better split up. Habitat/Morphology/Conservation get a date +
+            // researcher anchor column so each table stays self-contained
+            // without requiring the Observation Info group to also be checked.
+            const ANCHOR_COLUMNS = [['submission_date', 'Observation Date'], ['researcher', 'Researcher']];
+            sightingGroups.forEach((group) => {
+              const activeFields = group.fields.filter(([key]) => fields[key]);
+              if (!activeFields.length) return;
+              const columns = group.id === 'observation' ? activeFields : [...ANCHOR_COLUMNS, ...activeFields];
+              subLabel(group.label.replace(/^Sightings: /, ''));
+              const head = columns.map(([, label]) => label);
+              const body = sightings.map((s) => columns.map(([key]) => String(SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s))));
+              addAutoTable(head, body);
+            });
           }
         }
 
