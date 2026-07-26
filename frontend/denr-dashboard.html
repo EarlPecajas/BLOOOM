@@ -1236,10 +1236,10 @@
                 </select>
               </div>
 
-              <!-- Date Range — only report types that actually filter by date show this;
-                   hidden until a report type is chosen, and hidden for Species Profile
-                   (which reports on a single orchid's full history instead of a period) -->
-              <div id="dateRangeField" style="display:none;">
+              <!-- Date Range — shown by default (including before any report type is
+                   chosen) so the form doesn't look empty; hidden only for Species
+                   Profile, which reports on one orchid's full history, not a period -->
+              <div id="dateRangeField">
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Date Range</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
                   <div>
@@ -8505,13 +8505,10 @@
             ['genus', 'Genus'],
             ['common_name', 'Common Name'],
             ['endemicity', 'Endemicity'],
-            ['date_discovered', 'Date Discovered'],
+            ['date_discovered', 'Date Recorded'],
             ['conservation_status', 'Conservation Status'],
-            ['ethnobotanical', 'Ethnobotanical Value'],
-            ['horticulture_value', 'Horticultural Value'],
-            ['cultural_importance', 'Cultural Importance'],
-            ['image_url', 'Catalog Photo URL'],
-            ['model_3d_url', '3D Model URL']
+            ['image_url', 'Photo'],
+            ['model_3d_url', '3D Model']
           ]
         },
         {
@@ -8578,12 +8575,45 @@
             ? new Date(orchid.date_discovered).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Not recorded';
           case 'conservation_status':return orchid.conservation_status || 'Unassigned';
-          case 'ethnobotanical':     return orchid.ethnobotanical || 'Not documented';
-          case 'horticulture_value':return orchid.horticulture_value || 'Not documented';
-          case 'cultural_importance':return orchid.cultural_importance || 'Not documented';
+          // Excel keeps this as the raw URL (a spreadsheet has nowhere to embed
+          // the image); the PDF builder pulls the photo out separately to render
+          // it as a real image instead of listing it as a text row.
           case 'image_url':          return orchid.image_url || 'No photo on file';
-          case 'model_3d_url':       return orchid.model_3d_url || 'No 3D model on file';
+          case 'model_3d_url':       return orchid.model_3d_url ? 'Recorded' : 'Not recorded';
           default:                   return '-';
+        }
+      }
+
+      // jsPDF's addImage needs the bytes already in hand (a data: URL or loaded
+      // Image element) — it can't fetch a remote URL itself. Resolves to null
+      // on any failure so a broken/CORS-blocked photo just gets skipped rather
+      // than failing the whole report.
+      async function loadImageAsDataUrl(url) {
+        if (!url) return null;
+        let objectUrl;
+        try {
+          const response = await fetch(url, { mode: 'cors' });
+          if (!response.ok) return null;
+          const blob = await response.blob();
+          objectUrl = URL.createObjectURL(blob);
+          const img = await new Promise((resolve, reject) => {
+            const el = new Image();
+            el.onload = () => resolve(el);
+            el.onerror = () => reject(new Error('Could not decode image'));
+            el.src = objectUrl;
+          });
+          // Re-encode through canvas as PNG regardless of source format — jsPDF
+          // can't decode WEBP (which some catalog photos are), but every browser
+          // can draw a WEBP to canvas and re-export it as something jsPDF can read.
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 1;
+          canvas.height = img.naturalHeight || 1;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          return { dataUrl: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height };
+        } catch (err) {
+          return null;
+        } finally {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
         }
       }
 
@@ -8656,15 +8686,15 @@
       function syncReportTypeUI() {
         const reportType = document.getElementById('reportType').value;
         const isProfile = reportType === 'species-profile';
-        // Date range only applies to the generic report types (species-profile
-        // reports on one orchid's full history, and nothing is chosen yet
-        // while the "Choose a report type" placeholder is selected).
-        const isGenericType = reportType !== '' && !isProfile;
+        // Date range and the generic checkboxes show by default (including
+        // before any report type is chosen) so the form doesn't look empty —
+        // Species Profile is the only type that hides them, since it reports
+        // on one orchid's full history rather than a period.
         const dateRange = document.getElementById('dateRangeField');
         const generic = document.getElementById('genericSectionCheckboxes');
         const profile = document.getElementById('speciesProfileFields');
-        if (dateRange) dateRange.style.display = isGenericType ? 'block' : 'none';
-        if (generic) generic.style.display = isGenericType ? 'grid' : 'none';
+        if (dateRange) dateRange.style.display = isProfile ? 'none' : 'block';
+        if (generic) generic.style.display = isProfile ? 'none' : 'grid';
         if (profile) profile.style.display = isProfile ? 'flex' : 'none';
         if (isProfile) {
           renderProfileFieldGroups();
@@ -9190,7 +9220,10 @@
           if (format === 'excel') {
             downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields);
           } else {
-            downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields);
+            // Only fetch the image if it's actually going in the PDF — the
+            // Excel path never needs the bytes, just the URL text.
+            const photo = fields.image_url ? await loadImageAsDataUrl(orchid.image_url) : null;
+            downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, photo);
           }
 
           showReportToast('Report downloaded successfully!', 'success');
@@ -9236,7 +9269,7 @@
         XLSX.writeFile(workbook, `${fileNameBase}.xlsx`);
       }
 
-      function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields) {
+      function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, photo) {
         const { jsPDF } = window.jspdf;
         // Landscape: a fully-checked field list can span 15+ sighting columns —
         // portrait's ~182mm content width squeezes that down to single-character-
@@ -9269,7 +9302,7 @@
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(180, 210, 230);
-        doc.text(`${sightings.length} approved field sighting${sightings.length === 1 ? '' : 's'} on file   ·   Generated: ${generated}`, marginL, 30);
+        doc.text(`Generated: ${generated}`, marginL, 30);
 
         doc.setFillColor(255, 255, 255, 0.15);
         doc.setTextColor(200, 225, 240);
@@ -9290,13 +9323,14 @@
           y += 10;
         }
 
-        function addAutoTable(head, body) {
+        function addAutoTable(head, body, marginLeftOverride) {
+          const tableMarginL = marginLeftOverride != null ? marginLeftOverride : marginL;
           if (y > pageH - 40) { doc.addPage(); y = 18; }
           doc.autoTable({
             startY: y,
             head: [head],
             body: body,
-            margin: { left: marginL, right: marginR },
+            margin: { left: tableMarginL, right: marginR },
             styles: { font: 'helvetica', fontSize: 8, cellPadding: 3, overflow: 'linebreak', textColor: [30, 40, 50] },
             headStyles: { fillColor: navy, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
             alternateRowStyles: { fillColor: grayLight },
@@ -9325,11 +9359,45 @@
           y += 5;
         }
 
+        // The photo is pulled out of the identity rows and drawn as a real
+        // image beside the table instead of listing "Photo: <url>" as text —
+        // that's also why it isn't repeated as a second image at the very
+        // top of the page; this is the one place it appears.
         const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
-        const identityFields = identityGroup ? identityGroup.fields.filter(([key]) => fields[key]) : [];
-        if (identityFields.length) {
+        const identityRows = identityGroup ? identityGroup.fields.filter(([key]) => fields[key] && key !== 'image_url') : [];
+        const showPhoto = !!(identityGroup && fields.image_url && photo);
+
+        if (identityRows.length || showPhoto) {
           sectionHeading('Species Identity');
-          addAutoTable(['Field', 'Value'], identityFields.map(([key, label]) => [label, String(profileIdentityValue(key, orchid))]));
+
+          const photoBoxSize = 50;
+          if (showPhoto && y + photoBoxSize > pageH - 20) { doc.addPage(); y = 18; }
+          const boxX = marginL;
+          const boxY = y;
+
+          if (showPhoto) {
+            doc.setFillColor(...grayLight);
+            doc.roundedRect(boxX, boxY, photoBoxSize, photoBoxSize, 2, 2, 'F');
+            doc.setDrawColor(...navy);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(boxX, boxY, photoBoxSize, photoBoxSize, 2, 2, 'S');
+            const inset = 2;
+            const scale = Math.min((photoBoxSize - inset * 2) / photo.width, (photoBoxSize - inset * 2) / photo.height);
+            const drawW = photo.width * scale;
+            const drawH = photo.height * scale;
+            doc.addImage(photo.dataUrl, boxX + (photoBoxSize - drawW) / 2, boxY + (photoBoxSize - drawH) / 2, drawW, drawH);
+          }
+
+          if (identityRows.length) {
+            addAutoTable(
+              ['Field', 'Value'],
+              identityRows.map(([key, label]) => [label, String(profileIdentityValue(key, orchid))]),
+              showPhoto ? boxX + photoBoxSize + 8 : marginL
+            );
+            if (showPhoto) y = Math.max(y, boxY + photoBoxSize + 10);
+          } else {
+            y = boxY + photoBoxSize + 10;
+          }
         }
 
         const sightingGroups = SPECIES_PROFILE_FIELD_GROUPS.filter((g) => g.kind === 'sightings');
