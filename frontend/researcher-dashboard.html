@@ -120,6 +120,18 @@
       body.dashboard-page.researcher-theme .dashboard-container {
         width: calc(100% - var(--rd-sidebar-w)) !important;
       }
+      /* body.dashboard-page has overflow:hidden + a fixed 100vh height (styles.css),
+         so any view-section taller than the viewport gets silently clipped with no
+         way to scroll to the rest of it. Most views dodge this by being position:fixed
+         with their own overflow-y:auto; these two use margin-left instead, so they
+         need their own bounded height + scroll to avoid clipping (e.g. the 3D model
+         viewer content below the fold on the 3D Collection page). */
+      body.dashboard-page.researcher-theme #collection3d-view,
+      body.dashboard-page.researcher-theme #my3d-view {
+        max-height: calc(100vh - var(--rd-header-h)) !important;
+        overflow-y: auto !important;
+        box-sizing: border-box !important;
+      }
       body.dashboard-page.researcher-theme .dashboard-container,
       body.dashboard-page.researcher-theme #orchids-view,
       body.dashboard-page.researcher-theme #conservation-view,
@@ -4587,7 +4599,7 @@
             <div style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:#eef4f0;margin-bottom:0.75rem;">
               <model-viewer src="${escapeHtml(o.model_3d_url)}" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>
             </div>
-            <h3 style="margin:0 0 0.35rem 0;color:#145A1E;font-family:Inter,Roboto,sans-serif;">${escapeHtml(o.name || 'Unnamed species')}</h3>
+            <h3 class="scientific-name" style="margin:0 0 0.35rem 0;color:#145A1E;font-family:Inter,Roboto,sans-serif;">${escapeHtml(o.name || 'Unnamed species')}</h3>
             <p style="margin:0;color:#66786e;font-size:0.92rem;line-height:1.5;">${escapeHtml(o.common_name || o.genus || '')}</p>
           </div>
         `).join('');

@@ -202,9 +202,31 @@
       /* Publish */
       .sub-action-btn.publish { background: #2E9E44 !important; border: 1.5px solid #2E9E44 !important; box-shadow: 0 1px 2px rgba(46,158,68,0.18) !important; }
       .sub-action-btn.publish:hover { background: #248238 !important; border-color: #248238 !important; box-shadow: 0 2px 6px rgba(46,158,68,0.25) !important; transform: translateY(-1px) !important; }
-      /* Unpublish */
-      .sub-action-btn.unpublish { background: #fff1f2 !important; border: 1.5px solid #fca5a5 !important; box-shadow: 0 1px 2px rgba(220,38,38,0.08) !important; }
-      .sub-action-btn.unpublish:hover { background: #fee2e2 !important; border-color: #f87171 !important; box-shadow: 0 2px 6px rgba(220,38,38,0.15) !important; transform: translateY(-1px) !important; }
+      /* Unpublish — solid fill (not a pale tint) so it reads as clickable at a
+         glance, matching Publish's visual weight instead of blending into its
+         own dimmed/disabled state. */
+      .sub-action-btn.unpublish { background: #dc2626 !important; border: 1.5px solid #dc2626 !important; box-shadow: 0 1px 2px rgba(220,38,38,0.18) !important; }
+      .sub-action-btn.unpublish:hover { background: #b91c1c !important; border-color: #b91c1c !important; box-shadow: 0 2px 6px rgba(220,38,38,0.3) !important; transform: translateY(-1px) !important; }
+      .sub-action-btn.unpublish svg { stroke: #fff !important; }
+      /* Disabled Publish/Unpublish — flatten to neutral gray (rather than just
+         dimming the colored fill) so "can't click this one" is obvious without
+         hovering to compare. */
+      .sub-action-btn.publish:disabled,
+      .sub-action-btn.publish[disabled],
+      .sub-action-btn.unpublish:disabled,
+      .sub-action-btn.unpublish[disabled] {
+        background: #e5e7eb !important;
+        border-color: #d1d5db !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+      }
+      .sub-action-btn.publish:disabled svg,
+      .sub-action-btn.publish[disabled] svg,
+      .sub-action-btn.unpublish:disabled svg,
+      .sub-action-btn.unpublish[disabled] svg {
+        stroke: #9ca3af !important;
+      }
 
       /* ── Submissions page redesign (DENR only) ── */
       .denrsub-tabbar { display:inline-flex; gap:0.25rem; padding:0.3rem; background:var(--dt-bg-panel); border:1px solid var(--dt-border-md); border-radius:12px; margin-bottom:1.5rem; }
@@ -5178,7 +5200,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
               </button>
               <button type="button" class="sub-action-btn unpublish" title="${unpublishTitle}" ${unpublishDisabledAttr} ${(!notApproved && inCatalog) ? `onclick="denrClickUnpublish(${sid})"` : ''}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
               </button>`;
           }
 
