@@ -1224,6 +1224,8 @@
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Report Type</label>
                 <select id="reportType" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);cursor:pointer;outline:none;transition:border-color 150ms;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'">
+                  <option value="" selected disabled>Choose a report type</option>
+                  <option value="species-profile">Species Profile Report</option>
                   <option value="species-inventory">Species Inventory Report</option>
                   <option value="conservation-summary">Conservation Status Summary</option>
                   <option value="monthly-upload">Monthly Submission Report</option>
@@ -1231,12 +1233,13 @@
                   <option value="researcher-activity">Researcher Activity Report</option>
                   <option value="habitat-analysis">Habitat Classification Report</option>
                   <option value="detailed-report">Detailed Report</option>
-                  <option value="species-profile">Species Profile Report</option>
                 </select>
               </div>
 
-              <!-- Date Range -->
-              <div>
+              <!-- Date Range — only report types that actually filter by date show this;
+                   hidden until a report type is chosen, and hidden for Species Profile
+                   (which reports on a single orchid's full history instead of a period) -->
+              <div id="dateRangeField" style="display:none;">
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Date Range</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
                   <div>
@@ -1346,6 +1349,10 @@
                 <p class="m-0 text-sm font-bold" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Report Types</p>
               </div>
               <div style="display:flex;flex-direction:column;">
+                <div style="padding:1.05rem 1.2rem;border-bottom:1px solid var(--dt-border-md);background:rgba(20,90,30,.14);border-left:3px solid #145A1E;">
+                  <p class="m-0 text-sm font-bold" style="color:var(--dt-accent-lt);">Species Profile</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:var(--dt-text);">Pick one orchid and choose exactly which identity &amp; sighting fields to include — a dossier, not a table</p>
+                </div>
                 <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);">
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Species Inventory</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">All orchids with genus, common names &amp; endemicity</p>
@@ -1362,13 +1369,9 @@
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Researcher Activity</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Per-researcher submission count in selected period</p>
                 </div>
-                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);">
+                <div style="padding:0.75rem 1.2rem;">
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Habitat Classification</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Sightings grouped by habitat type</p>
-                </div>
-                <div style="padding:0.75rem 1.2rem;">
-                  <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Species Profile</p>
-                  <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">Pick one orchid and choose exactly which identity &amp; sighting fields to include — a dossier, not a table</p>
                 </div>
               </div>
             </div>
@@ -8653,9 +8656,15 @@
       function syncReportTypeUI() {
         const reportType = document.getElementById('reportType').value;
         const isProfile = reportType === 'species-profile';
+        // Date range only applies to the generic report types (species-profile
+        // reports on one orchid's full history, and nothing is chosen yet
+        // while the "Choose a report type" placeholder is selected).
+        const isGenericType = reportType !== '' && !isProfile;
+        const dateRange = document.getElementById('dateRangeField');
         const generic = document.getElementById('genericSectionCheckboxes');
         const profile = document.getElementById('speciesProfileFields');
-        if (generic) generic.style.display = isProfile ? 'none' : 'grid';
+        if (dateRange) dateRange.style.display = isGenericType ? 'block' : 'none';
+        if (generic) generic.style.display = isGenericType ? 'grid' : 'none';
         if (profile) profile.style.display = isProfile ? 'flex' : 'none';
         if (isProfile) {
           renderProfileFieldGroups();
@@ -8666,11 +8675,12 @@
       const reportTypeSelectEl = document.getElementById('reportType');
       if (reportTypeSelectEl) {
         reportTypeSelectEl.addEventListener('change', syncReportTypeUI);
+        syncReportTypeUI();
       }
 
       function resetReportForm() {
         document.getElementById('reportForm').reset();
-        document.getElementById('reportType').value = 'species-inventory';
+        document.getElementById('reportType').value = '';
         syncReportTypeUI();
         selectReportFormat('pdf');
       }
@@ -9087,10 +9097,21 @@
 
       async function generateReport() {
         const reportType = document.getElementById('reportType').value;
-        const dateFrom = document.getElementById('dateFrom').value;
-        const dateTo = document.getElementById('dateTo').value;
         const format = document.querySelector('input[name="format"]:checked').value;
         const btn = document.getElementById('generateReportBtn');
+
+        if (!reportType) {
+          showReportToast('Please choose a report type.', 'warn');
+          return;
+        }
+
+        if (reportType === 'species-profile') {
+          await generateSpeciesProfileReport(format, btn);
+          return;
+        }
+
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
 
         if (!dateFrom || !dateTo) {
           showReportToast('Please select both start and end dates.', 'warn');
@@ -9098,11 +9119,6 @@
         }
         if (new Date(dateFrom) > new Date(dateTo)) {
           showReportToast('Start date must be before end date.', 'warn');
-          return;
-        }
-
-        if (reportType === 'species-profile') {
-          await generateSpeciesProfileReport(dateFrom, dateTo, format, btn);
           return;
         }
 
@@ -9141,7 +9157,7 @@
         }
       }
 
-      async function generateSpeciesProfileReport(dateFrom, dateTo, format, btn) {
+      async function generateSpeciesProfileReport(format, btn) {
         const orchidId = document.getElementById('reportOrchidId').value;
         if (!orchidId) {
           showReportToast('Please select an orchid.', 'warn');
@@ -9166,17 +9182,15 @@
           const orchidKey = String(orchid.name || '').trim().toLowerCase();
           const sightings = sourceData.submissions.filter((s) => {
             if (String(s.species || '').trim().toLowerCase() !== orchidKey) return false;
-            if (String(s.review_status || '').toLowerCase() !== 'approved') return false;
-            const d = String(s.submission_date || '');
-            return d >= dateFrom && d <= dateTo;
+            return String(s.review_status || '').toLowerCase() === 'approved';
           });
 
-          const fileNameBase = `Species_Profile_${(orchid.name || 'orchid').replace(/\s+/g, '_')}_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}`;
+          const fileNameBase = `Species_Profile_${(orchid.name || 'orchid').replace(/\s+/g, '_')}`;
 
           if (format === 'excel') {
-            downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields, dateFrom, dateTo);
+            downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields);
           } else {
-            downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, dateFrom, dateTo);
+            downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields);
           }
 
           showReportToast('Report downloaded successfully!', 'success');
@@ -9189,7 +9203,7 @@
         }
       }
 
-      function downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields, dateFrom, dateTo) {
+      function downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields) {
         const workbook = XLSX.utils.book_new();
 
         const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
@@ -9211,7 +9225,7 @@
                 activeSightingColumns.forEach(([key, label]) => { row[label] = SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s); });
                 return row;
               })
-            : [{ message: `No approved field sightings for ${orchid.name} between ${dateFrom} and ${dateTo}` }];
+            : [{ message: `No approved field sightings on file for ${orchid.name}` }];
           XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Field_Sightings');
         }
 
@@ -9222,7 +9236,7 @@
         XLSX.writeFile(workbook, `${fileNameBase}.xlsx`);
       }
 
-      function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, dateFrom, dateTo) {
+      function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
@@ -9252,7 +9266,7 @@
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(180, 210, 230);
-        doc.text(`Sighting period: ${dateFrom || 'All dates'} – ${dateTo || 'All dates'}   ·   Generated: ${generated}`, marginL, 30);
+        doc.text(`${sightings.length} approved field sighting${sightings.length === 1 ? '' : 's'} on file   ·   Generated: ${generated}`, marginL, 30);
 
         doc.setFillColor(255, 255, 255, 0.15);
         doc.setTextColor(200, 225, 240);
@@ -9312,10 +9326,10 @@
           .forEach((g) => g.fields.forEach(([key, label]) => { if (fields[key]) activeSightingColumns.push([key, label]); }));
 
         if (activeSightingColumns.length) {
-          sectionHeading(`Field Sightings (${sightings.length} approved, ${dateFrom} to ${dateTo})`);
+          sectionHeading(`Field Sightings (${sightings.length} approved)`);
           if (!sightings.length) {
             doc.setFontSize(9); doc.setTextColor(...gray); doc.setFont('helvetica', 'italic');
-            doc.text(`No approved field sightings for ${orchidName} in the selected period.`, marginL, y);
+            doc.text(`No approved field sightings on file for ${orchidName}.`, marginL, y);
             y += 8;
           } else {
             const head = activeSightingColumns.map(([, label]) => label);
