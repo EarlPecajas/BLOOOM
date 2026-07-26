@@ -5163,19 +5163,20 @@
           const sid = submission.id;
           const speciesKey = (submission.species || '').trim().toLowerCase();
 
-          // Publish / Unpublish button — approved submissions only
+          // Publish / Unpublish buttons — always shown for approved submissions; whichever
+          // action doesn't apply to the current state is disabled (not hidden), so the
+          // action cluster stays visually uniform across rows.
           const inCatalog = catalogNames.has(speciesKey);
           let publishBtn = '';
           if (isAdminRole && isApproved(submission)) {
-            if (inCatalog) {
-              publishBtn = `<button type="button" class="sub-action-btn unpublish" title="Unpublish from catalog" onclick="denrClickUnpublish(${sid})">
+            const publishDisabledAttr = inCatalog ? 'disabled aria-disabled="true"' : '';
+            const unpublishDisabledAttr = inCatalog ? '' : 'disabled aria-disabled="true"';
+            publishBtn = `<button type="button" class="sub-action-btn publish sub-post-btn" data-submission-id="${sid}" title="${inCatalog ? 'Already published' : 'Publish to catalog'}" ${publishDisabledAttr}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+              </button>
+              <button type="button" class="sub-action-btn unpublish" title="${inCatalog ? 'Unpublish from catalog' : 'Not yet published'}" ${unpublishDisabledAttr} ${inCatalog ? `onclick="denrClickUnpublish(${sid})"` : ''}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
               </button>`;
-            } else {
-              publishBtn = `<button type="button" class="sub-action-btn publish sub-post-btn" data-submission-id="${sid}" title="Publish to catalog">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-              </button>`;
-            }
           }
 
           // Status buttons — visible for every submission; disabled once already reviewed (finalized)
