@@ -1352,6 +1352,13 @@
       if (oidView3dBtn) {
         oidView3dBtn.addEventListener('click', function() {
           openOrchidDetailsModal(currentSrc || null, '3d');
+          // Skip straight to fullscreen instead of making the user open the modal
+          // then hunt for the small expand icon on the card-sized viewer.
+          var mv = document.querySelector('#odm-3d-inner model-viewer');
+          if (mv) {
+            if (mv.requestFullscreen) mv.requestFullscreen();
+            else if (mv.webkitRequestFullscreen) mv.webkitRequestFullscreen();
+          }
         });
       }
 
