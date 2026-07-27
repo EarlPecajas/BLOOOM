@@ -8511,59 +8511,197 @@
             ['model_3d_url', '3D Model']
           ]
         },
+        // Everything below mirrors the "New Orchid Submission" modal's own 9 pages,
+        // in the same order, so the report reads as the same record the researcher
+        // filled out — group labels and field labels are taken straight from that
+        // form (see submission-page[data-page] in researcher-dashboard.html).
         {
-          id: 'observation', label: 'Sightings: Observation Info', kind: 'sightings',
+          id: 'taxonomic', label: 'Sightings: Basic Taxonomic Information', kind: 'sightings',
           fields: [
-            ['researcher', 'Researcher'],
-            ['submission_date', 'Observation Date'],
-            ['location', 'Location'],
-            ['institution_name', 'Institution']
+            ['identification_confidence', 'Taxonomic Identification Confidence'],
+            ['endemic_to_philippines', 'Endemic to the Philippines'],
+            ['common_names_list', 'Vernacular / Common Name(s)'],
+            ['local_names_list', 'Local Name(s)']
           ]
         },
         {
-          id: 'habitat', label: 'Sightings: Habitat', kind: 'sightings',
+          id: 'observation', label: 'Sightings: Observation / Collection Details', kind: 'sightings',
+          fields: [
+            ['researcher', 'Head Observer / Researcher Name'],
+            ['submission_date', 'Observation Date'],
+            ['observation_time', 'Observation Time'],
+            ['collection_method', 'Sampling Methodology'],
+            ['observation_type', 'Specimen Observation Type'],
+            ['voucher_collected', 'Voucher Specimen Collected'],
+            ['population_count', 'Number of Orchids in the Area']
+          ]
+        },
+        {
+          id: 'location', label: 'Sightings: Geographical / Location Data', kind: 'sightings',
+          fields: [
+            ['location', 'Mountain / Specific Site'],
+            ['latitude', 'GPS Latitude'],
+            ['longitude', 'GPS Longitude'],
+            ['elevation_meters', 'Elevation / Altitude (m)']
+          ]
+        },
+        {
+          id: 'habitat', label: 'Sightings: Habitat Information', kind: 'sightings',
           fields: [
             ['habitat_type', 'Habitat Type'],
+            ['microhabitat', 'Microhabitat'],
             ['growth_substrate', 'Growth Substrate'],
-            ['light_exposure', 'Light Exposure']
+            ['host_tree_species', 'Tree Species'],
+            ['host_tree_dbh_cm', 'Tree Diameter / DBH (cm)'],
+            ['canopy_cover_percent', 'Canopy Cover (%)'],
+            ['light_exposure', 'Light Exposure'],
+            ['soil_type', 'Soil Type'],
+            ['nearby_water_source', 'Nearby Water Source']
           ]
         },
         {
-          id: 'morphology', label: 'Sightings: Morphology', kind: 'sightings',
+          id: 'morphology', label: 'Sightings: Morphological Characteristics', kind: 'sightings',
           fields: [
             ['plant_height_cm', 'Plant Height (cm)'],
+            ['pseudobulb_present', 'Pseudobulb Present'],
+            ['stem_length_cm', 'Stem Length (cm)'],
+            ['root_length_cm', 'Root Length (cm)'],
+            ['leaf_count', 'Number of Leaves'],
             ['leaf_shape', 'Leaf Shape'],
+            ['leaf_shape_other', 'Leaf Shape (Others)'],
+            ['leaf_length_cm', 'Leaf Length (cm)'],
+            ['leaf_width_cm', 'Leaf Width (cm)'],
+            ['leaf_textures', 'Leaf Texture'],
+            ['leaf_arrangement', 'Leaf Arrangement'],
             ['flower_color', 'Flower Color'],
-            ['flower_count', 'Flower Count'],
+            ['flower_count', 'Number of Flowers'],
+            ['flower_diameter_cm', 'Flower Diameter (cm)'],
+            ['inflorescence_type', 'Inflorescence Type'],
+            ['petal_characteristics', 'Petal Characteristics'],
+            ['sepal_characteristics', 'Sepal Characteristics'],
+            ['labellum_lip_description', 'Labellum / Lip Description'],
             ['fragrance', 'Fragrance'],
+            ['blooming_stage', 'Blooming Stage'],
+            ['fruit_present', 'Fruit Present'],
+            ['fruit_type', 'Fruit Type'],
+            ['seed_capsule_condition', 'Seed Capsule Condition'],
             ['flowering_season', 'Flowering Season']
           ]
         },
         {
-          id: 'conservation', label: 'Sightings: Conservation', kind: 'sightings',
+          id: 'ecological', label: 'Sightings: Ecological / Biological Data', kind: 'sightings',
           fields: [
+            ['life_stage', 'Life Stage'],
+            ['phenology', 'Phenology']
+          ]
+        },
+        {
+          id: 'conservation', label: 'Sightings: Conservation & Threat Data', kind: 'sightings',
+          fields: [
+            ['population_status', 'Population Status'],
             ['threat_level', 'Threat Level'],
-            ['population_status', 'Population Status']
+            ['threat_types_list', 'Threat Type']
+          ]
+        },
+        {
+          id: 'media', label: 'Sightings: Multimedia Documentation', kind: 'sightings',
+          fields: [
+            ['whole_plant_photos', 'Whole Plant Photo'],
+            ['closeup_flower_photos', 'Close-up Flower Photo'],
+            ['habitat_photos', 'Habitat Photo']
+          ]
+        },
+        {
+          id: 'notes', label: 'Sightings: Notes, Remarks, and Researchers', kind: 'sightings',
+          fields: [
+            ['institution_name', 'Institution / Organization'],
+            ['team_members_list', 'Team Members'],
+            ['researcher_notes', 'Researcher Notes'],
+            ['related_study', 'Related Study']
           ]
         }
       ];
 
+      function joinListOrDash(list) {
+        return Array.isArray(list) && list.length ? list.join(', ') : '-';
+      }
+
+      function photoCountOrDash(list, label) {
+        const n = Array.isArray(list) ? list.length : 0;
+        return n ? `${n} ${label}${n === 1 ? '' : 's'} on file` : 'None on file';
+      }
+
+      function yesNoOrDash(value) {
+        if (value === true) return 'Yes';
+        if (value === false) return 'No';
+        return value || '-';
+      }
+
       const SPECIES_PROFILE_SIGHTING_ACCESSORS = {
-        researcher:        (s) => s.researcher || '-',
-        submission_date:   (s) => s.submission_date || '-',
-        location:          (s) => s.location || '-',
-        institution_name:  (s) => s.institution_name || s.institution || '-',
-        habitat_type:      (s) => s.habitat_type || '-',
-        growth_substrate:  (s) => s.growth_substrate || '-',
-        light_exposure:    (s) => s.light_exposure || '-',
-        plant_height_cm:   (s) => (s.plant_height_cm != null ? String(s.plant_height_cm) : '-'),
-        leaf_shape:        (s) => s.leaf_shape || '-',
-        flower_color:      (s) => s.flower_color || '-',
-        flower_count:      (s) => (s.flower_count != null ? String(s.flower_count) : '-'),
-        fragrance:         (s) => s.fragrance || '-',
-        flowering_season:  (s) => s.flowering_season || '-',
-        threat_level:      (s) => s.threat_level || '-',
-        population_status: (s) => s.population_status || '-'
+        identification_confidence: (s) => s.identification_confidence || '-',
+        endemic_to_philippines:    (s) => s.endemic_to_philippines || '-',
+        common_names_list:         (s) => joinListOrDash(s.common_names),
+        local_names_list:          (s) => joinListOrDash(parseJsonArrayValue(s.local_names)),
+        researcher:                (s) => s.head_observer_name || s.researcher || '-',
+        submission_date:           (s) => s.submission_date || '-',
+        observation_time:         (s) => s.observation_time || '-',
+        collection_method:        (s) => s.collection_method || '-',
+        observation_type:         (s) => s.observation_type || '-',
+        voucher_collected:        (s) => yesNoOrDash(s.voucher_collected),
+        population_count:         (s) => (s.population_count != null ? String(s.population_count) : '-'),
+        location:                  (s) => s.location || '-',
+        latitude:                  (s) => (s.latitude != null ? String(s.latitude) : '-'),
+        longitude:                 (s) => (s.longitude != null ? String(s.longitude) : '-'),
+        elevation_meters:          (s) => (s.elevation_meters != null ? String(s.elevation_meters) : '-'),
+        institution_name:         (s) => s.institution_name || s.institution || '-',
+        habitat_type:              (s) => s.habitat_type || '-',
+        microhabitat:              (s) => s.microhabitat || '-',
+        growth_substrate:          (s) => s.growth_substrate || '-',
+        host_tree_species:        (s) => s.host_tree_species || '-',
+        host_tree_dbh_cm:         (s) => (s.host_tree_dbh_cm != null ? String(s.host_tree_dbh_cm) : '-'),
+        canopy_cover_percent:     (s) => (s.canopy_cover_percent != null ? String(s.canopy_cover_percent) : '-'),
+        light_exposure:            (s) => s.light_exposure || '-',
+        soil_type:                 (s) => s.soil_type || '-',
+        nearby_water_source:      (s) => s.nearby_water_source || '-',
+        plant_height_cm:           (s) => (s.plant_height_cm != null ? String(s.plant_height_cm) : '-'),
+        pseudobulb_present:       (s) => yesNoOrDash(s.pseudobulb_present),
+        stem_length_cm:           (s) => (s.stem_length_cm != null ? String(s.stem_length_cm) : '-'),
+        root_length_cm:           (s) => (s.root_length_cm != null ? String(s.root_length_cm) : '-'),
+        leaf_count:                (s) => (s.leaf_count != null ? String(s.leaf_count) : '-'),
+        leaf_shape:                (s) => s.leaf_shape || '-',
+        leaf_shape_other:         (s) => s.leaf_shape_other || '-',
+        leaf_length_cm:           (s) => (s.leaf_length_cm != null ? String(s.leaf_length_cm) : '-'),
+        leaf_width_cm:            (s) => (s.leaf_width_cm != null ? String(s.leaf_width_cm) : '-'),
+        leaf_textures:             (s) => joinListOrDash(parseJsonArrayValue(s.leaf_textures)),
+        leaf_arrangement:          (s) => s.leaf_arrangement || '-',
+        flower_color:              (s) => s.flower_color || '-',
+        flower_count:              (s) => (s.flower_count != null ? String(s.flower_count) : '-'),
+        flower_diameter_cm:       (s) => (s.flower_diameter_cm != null ? String(s.flower_diameter_cm) : '-'),
+        inflorescence_type:       (s) => s.inflorescence_type || '-',
+        petal_characteristics:    (s) => s.petal_characteristics || '-',
+        sepal_characteristics:    (s) => s.sepal_characteristics || '-',
+        labellum_lip_description: (s) => s.labellum_lip_description || '-',
+        fragrance:                 (s) => s.fragrance || '-',
+        blooming_stage:            (s) => s.blooming_stage || '-',
+        fruit_present:             (s) => yesNoOrDash(s.fruit_present),
+        fruit_type:                (s) => s.fruit_type || '-',
+        seed_capsule_condition:   (s) => s.seed_capsule_condition || '-',
+        flowering_season:          (s) => s.flowering_season || '-',
+        life_stage:                (s) => s.life_stage || '-',
+        phenology:                 (s) => s.phenology || '-',
+        population_status:        (s) => s.population_status || '-',
+        threat_level:              (s) => s.threat_level || '-',
+        threat_types_list:         (s) => joinListOrDash(parseJsonArrayValue(s.threat_types)),
+        whole_plant_photos:       (s) => photoCountOrDash(s.whole_plant_photos, 'photo'),
+        closeup_flower_photos:    (s) => photoCountOrDash(s.closeup_flower_photos, 'photo'),
+        habitat_photos:            (s) => photoCountOrDash(s.habitat_photos, 'photo'),
+        team_members_list:        (s) => {
+          const members = Array.isArray(s.sighting_team_member) ? s.sighting_team_member : [];
+          if (!members.length) return '-';
+          return members.map((m) => (m.member_role ? `${m.member_name} (${m.member_role})` : m.member_name)).join(', ');
+        },
+        researcher_notes:          (s) => s.researcher_notes || '-',
+        related_study:             (s) => s.related_study || '-'
       };
 
       function profileIdentityValue(fieldKey, orchid) {
@@ -8722,7 +8860,7 @@
 
         const [orchidsResponse, submissionsResponse, conservationResponse] = await Promise.all([
           bloomSupabase.from('orchid_overview').select('id, name, genus, common_name, endemicity, ethnobotanical, horticulture_value, cultural_importance, image_url, model_3d_url, conservation_status_key, conservation_status').order('name', { ascending: true }),
-          bloomSupabase.from('species_sightings').select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))').order('created_at', { ascending: false }),
+          bloomSupabase.from('species_sightings').select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*)), sighting_team_member(*)').order('created_at', { ascending: false }),
           bloomSupabase.from('orchid_overview').select('conservation_status_key')
         ]);
 
@@ -9271,9 +9409,9 @@
 
       function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, photo) {
         const { jsPDF } = window.jspdf;
-        // Landscape: a fully-checked field list can span 15+ sighting columns —
-        // portrait's ~182mm content width squeezes that down to single-character-
-        // per-line garbage, same reason detailed-report uses landscape below.
+        // Landscape gives the catalog photo room to sit beside the identity
+        // table instead of stacking above it, and keeps consistent margins
+        // with the per-sighting record cards below.
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
         const pageH = doc.internal.pageSize.getHeight();
@@ -9359,6 +9497,19 @@
           y += 5;
         }
 
+        function sightingHeading(index, total, sighting) {
+          if (y > pageH - 40) { doc.addPage(); y = 18; }
+          const who = sighting.head_observer_name || sighting.researcher || 'Unknown observer';
+          const when = sighting.submission_date || 'Undated';
+          doc.setFillColor(...navy);
+          doc.roundedRect(marginL, y - 4, contentW, 7, 1, 1, 'F');
+          doc.setFontSize(8.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(255, 255, 255);
+          doc.text(`SIGHTING ${index} OF ${total} — ${String(who).toUpperCase()}, ${when}`, marginL + 3, y + 0.5);
+          y += 9;
+        }
+
         // The photo is pulled out of the identity rows and drawn as a real
         // image beside the table instead of listing "Photo: <url>" as text —
         // that's also why it isn't repeated as a second image at the very
@@ -9410,20 +9561,24 @@
             doc.text(`No approved field sightings on file for ${orchidName}.`, marginL, y);
             y += 8;
           } else {
-            // One table per group instead of one giant combined table — a fully
-            // checked field list is 15+ columns, which even in landscape reads
-            // better split up. Habitat/Morphology/Conservation get a date +
-            // researcher anchor column so each table stays self-contained
-            // without requiring the Observation Info group to also be checked.
-            const ANCHOR_COLUMNS = [['submission_date', 'Observation Date'], ['researcher', 'Researcher']];
-            sightingGroups.forEach((group) => {
-              const activeFields = group.fields.filter(([key]) => fields[key]);
-              if (!activeFields.length) return;
-              const columns = group.id === 'observation' ? activeFields : [...ANCHOR_COLUMNS, ...activeFields];
-              subLabel(group.label.replace(/^Sightings: /, ''));
-              const head = columns.map(([, label]) => label);
-              const body = sightings.map((s) => columns.map(([key]) => String(SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s))));
-              addAutoTable(head, body);
+            // One record card per sighting (heading + a small Field/Value table
+            // per active group) instead of one wide table per group across every
+            // sighting — with up to ~50 selectable fields across 9 groups, a
+            // columnar table would need that many columns per row, which is
+            // unreadable at any page size. A vertical card per sighting scales
+            // to however many fields are checked and mirrors how the submission
+            // form itself presents one field group per page.
+            sightings.forEach((s, i) => {
+              sightingHeading(i + 1, sightings.length, s);
+              sightingGroups.forEach((group) => {
+                const activeFields = group.fields.filter(([key]) => fields[key]);
+                if (!activeFields.length) return;
+                subLabel(group.label.replace(/^Sightings: /, ''));
+                addAutoTable(
+                  ['Field', 'Value'],
+                  activeFields.map(([key, label]) => [label, String(SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s))])
+                );
+              });
             });
           }
         }
