@@ -741,8 +741,13 @@
 
         var src = allSightings[0] || {};
         var count = allSightings.length;
-        var status = src.threat_level_generalized || src.threat_level ||
-          orchid.conservation_status || '—';
+        // The catalog's own conservation_status is DENR's vetted IUCN classification
+        // and should win — a per-sighting threat_level is one researcher's field
+        // note, and for sightings recorded before the 3NF conservation split it can
+        // still hold pre-migration free text ("High", "Low", "Moderate"...) that was
+        // never in IUCN vocabulary to begin with. Only fall back to it when the
+        // catalog genuinely has no status on file.
+        var status = orchid.conservation_status || src.threat_level_generalized || src.threat_level || '—';
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
         card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';

@@ -1026,8 +1026,11 @@
           : (orchid.common_name ? [orchid.common_name] : []);
         setField('oid-local-names', displayNames.length > 0 ? displayNames.join(', ') : null, 'local-names');
 
-        // Conservation status — use actual threat_level value
-        setField('oid-conservation-status', src.threat_level || src.threat_level_generalized || null, 'con-status');
+        // Conservation status — the catalog's own conservation_status is DENR's
+        // vetted IUCN classification and should win over a per-sighting threat_level,
+        // which for pre-3NF sightings can still hold legacy free text ("High", "Low",
+        // "Moderate"...) that predates the IUCN-category vocabulary entirely.
+        setField('oid-conservation-status', orchid.conservation_status || src.threat_level || src.threat_level_generalized || null, 'con-status');
 
         // Habitat & morphology
         setField('oid-habitat', src.habitat_type || null, 'habitat-type');
@@ -1099,8 +1102,10 @@
 
         var src = allSightings[0] || {};
         var count = allSightings.length;
-        var status = src.threat_level_generalized || src.threat_level ||
-          orchid.conservation_status || '—';
+        // See populateIdentityPanel above — catalog conservation_status is the
+        // vetted IUCN classification and must win over a per-sighting threat_level,
+        // which can still carry pre-3NF legacy text for older sightings.
+        var status = orchid.conservation_status || src.threat_level_generalized || src.threat_level || '—';
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
         card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
