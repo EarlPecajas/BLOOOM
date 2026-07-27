@@ -684,6 +684,12 @@
           </span>
           <span>3D Image</span>
         </a>
+        <a href="#" class="sidebar-item" data-view="collection3d" id="sidebar-collection3d-item">
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </span>
+          <span>3D Collection</span>
+        </a>
       </nav>
       <div class="sidebar-bottom">
         <button type="button" class="sidebar-signout-btn" id="signout-button">
@@ -1555,20 +1561,9 @@
     <div id="collection3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <h1 class="catalog-title">3D Collection</h1>
       <div style="background:var(--dt-bg-input);border-radius:12px;padding:2rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:1100px;margin:0 auto;">
-        <p style="margin:0 0 1rem 0;color:var(--dt-muted);font-size:1rem;">Learn orchid anatomy with our three- dimentional models.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;">
-          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Phalaenopsis Flower</h3>
-            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">Petal layers, lip structure, and pollinia placement for beginner anatomy study.</p>
-          </div>
-          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Dendrobium Stem</h3>
-            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">Understand node spacing, pseudobulb regions, and active growth points.</p>
-          </div>
-          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Root Network</h3>
-            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">Explore velamen layers and moisture adaptation features in epiphytic roots.</p>
-          </div>
+        <p style="margin:0 0 1rem 0;color:var(--dt-muted);font-size:1rem;">Explore uploaded 3D models of orchid species.</p>
+        <div id="collection3d-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;">
+          <p style="margin:0;color:var(--dt-muted);font-size:0.95rem;">Loading 3D models…</p>
         </div>
       </div>
     </div>
@@ -1807,6 +1802,16 @@
               style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
               Generate 3D Model
             </button>
+            <div id="m3d-gen-approval-actions" hidden style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+              <button id="m3d-gen-approve-btn" type="button" onclick="approveOrchid3DModel()"
+                style="padding:0.7rem 1.3rem;background:#065F46;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+                Approve &amp; Upload to Catalog
+              </button>
+              <button id="m3d-gen-regenerate-btn" type="button" onclick="regenerateOrchid3DModel()"
+                style="padding:0.7rem 1.3rem;background:var(--dt-bg-input);border:1.5px solid var(--dt-border-md);border-radius:8px;color:var(--dt-text);font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+                Regenerate
+              </button>
+            </div>
             <div id="m3d-gen-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
           </div>
 
@@ -5498,6 +5503,15 @@
         const fileInput = document.getElementById('m3d-file-input');
         const clearBtn = document.getElementById('m3d-file-clear-btn');
         if (!sel || !hint) return;
+
+        // Switching orchids abandons any unapproved generated model so it can
+        // never be saved against the wrong species.
+        if (!m3dPendingGeneratedFile || m3dPendingGeneratedFile.orchidId !== sel.value) {
+          m3dPendingGeneratedFile = null;
+          m3dAwaitingApproval = false;
+          m3dHideApprovalUI();
+        }
+
         const row = m3dOrchidRows.find(o => String(o.id) === sel.value);
         if (fileInput) fileInput.value = '';
         if (clearBtn) clearBtn.hidden = true;
@@ -5668,9 +5682,25 @@
       }
 
       // Holds the last successfully-generated (but not yet saved) model, keyed by
-      // orchid id, so a save failure (e.g. a permissions error) can be retried
-      // without re-submitting to Tripo AI and spending credits again.
+      // orchid id. Nothing is written to the orchid catalog until the user
+      // explicitly approves it via approveOrchid3DModel() below; Regenerate
+      // discards it and starts a fresh Tripo AI request.
       let m3dPendingGeneratedFile = null;
+      let m3dAwaitingApproval = false;
+
+      function m3dShowApprovalUI() {
+        const genBtn  = document.getElementById('m3d-gen-btn');
+        const actions = document.getElementById('m3d-gen-approval-actions');
+        if (genBtn) genBtn.hidden = true;
+        if (actions) actions.hidden = false;
+      }
+
+      function m3dHideApprovalUI() {
+        const genBtn  = document.getElementById('m3d-gen-btn');
+        const actions = document.getElementById('m3d-gen-approval-actions');
+        if (genBtn) genBtn.hidden = false;
+        if (actions) actions.hidden = true;
+      }
 
       async function generateOrchid3DModel() {
         const sel   = document.getElementById('m3d-orchid-select');
@@ -5679,25 +5709,6 @@
         const orchidId = sel ? sel.value : '';
 
         if (!orchidId) { m3dGenSetStatus('Select an orchid first.', 'error'); return; }
-
-        if (m3dPendingGeneratedFile && m3dPendingGeneratedFile.orchidId === orchidId) {
-          btn.disabled = true;
-          try {
-            m3dGenSetStatus('Retrying save… (no new credits used)', 'info');
-            await m3dPersistModelFile(orchidId, m3dPendingGeneratedFile.file);
-            m3dPendingGeneratedFile = null;
-            m3dGenSetStatus('3D model generated and linked successfully.', 'success');
-            await loadModel3DOrchidOptions();
-            sel.value = orchidId;
-            m3dOnOrchidChange();
-          } catch (err) {
-            m3dGenSetStatus(`Save failed again (${err.m3dStep || 'saving'}): ${err.message || 'unknown error'} — click Generate 3D Model to retry saving (no credits used).`, 'error');
-            console.warn('generateOrchid3DModel retry-save failed:', err);
-          } finally {
-            btn.disabled = false;
-          }
-          return;
-        }
 
         const row = m3dOrchidRows.find(o => String(o.id) === String(orchidId));
         const photoUrl = row && (row.resolved_image_url || row.image_url);
@@ -5712,6 +5723,10 @@
           m3dGenSetStatus('This orchid has no catalog photo yet — open "Use a text description instead" below and describe it.', 'error');
           return;
         }
+
+        m3dPendingGeneratedFile = null;
+        m3dAwaitingApproval = false;
+        m3dHideApprovalUI();
 
         btn.disabled = true;
         try {
@@ -5738,28 +5753,57 @@
           const modelBlob = await downloadRes.blob();
           const glbFile = new File([modelBlob], `${orchidId}-tripo-${Date.now()}.glb`, { type: 'model/gltf-binary' });
 
-          // Cached now, before the save attempt: if saving fails, the retry
-          // path above reuses this instead of re-generating with Tripo.
+          // Held for review — nothing is saved to the catalog until Approve is clicked.
           m3dPendingGeneratedFile = { orchidId, file: glbFile };
-
-          m3dGenSetStatus('Saving to catalog…', 'info');
-          await m3dPersistModelFile(orchidId, glbFile);
-
-          m3dPendingGeneratedFile = null;
-          m3dGenSetStatus('3D model generated and linked successfully.', 'success');
-          await loadModel3DOrchidOptions();
-          sel.value = orchidId;
-          m3dOnOrchidChange();
+          m3dAwaitingApproval = true;
+          m3dSetPreview(URL.createObjectURL(glbFile));
+          m3dGenSetStatus('3D model generated. Review it in the preview, then Approve to upload it to the orchid catalog, or Regenerate to try again.', 'success');
+          m3dShowApprovalUI();
         } catch (err) {
-          if (m3dPendingGeneratedFile && m3dPendingGeneratedFile.orchidId === orchidId) {
-            m3dGenSetStatus(`Model generated, but saving failed (${err.m3dStep || 'saving'}): ${err.message || 'unknown error'} — click Generate 3D Model again to retry saving (no credits used).`, 'error');
-          } else {
-            m3dGenSetStatus('Generation failed: ' + (err.message || 'unknown error'), 'error');
-          }
+          m3dGenSetStatus('Generation failed: ' + (err.message || 'unknown error'), 'error');
           console.warn('generateOrchid3DModel failed:', err);
         } finally {
           btn.disabled = false;
         }
+      }
+
+      async function approveOrchid3DModel() {
+        const approveBtn = document.getElementById('m3d-gen-approve-btn');
+        const regenBtn   = document.getElementById('m3d-gen-regenerate-btn');
+        const sel        = document.getElementById('m3d-orchid-select');
+
+        if (!m3dPendingGeneratedFile) {
+          m3dGenSetStatus('No generated model waiting for approval — generate one first.', 'error');
+          return;
+        }
+
+        const { orchidId, file } = m3dPendingGeneratedFile;
+        if (approveBtn) approveBtn.disabled = true;
+        if (regenBtn) regenBtn.disabled = true;
+        try {
+          m3dGenSetStatus('Uploading to catalog…', 'info');
+          await m3dPersistModelFile(orchidId, file);
+          m3dPendingGeneratedFile = null;
+          m3dAwaitingApproval = false;
+          m3dHideApprovalUI();
+          m3dGenSetStatus('3D model approved and published to the orchid catalog.', 'success');
+          await loadModel3DOrchidOptions();
+          if (sel) sel.value = orchidId;
+          m3dOnOrchidChange();
+        } catch (err) {
+          m3dGenSetStatus(`Upload failed (${err.m3dStep || 'saving'}): ${err.message || 'unknown error'} — click Approve to retry (no credits used).`, 'error');
+          console.warn('approveOrchid3DModel failed:', err);
+        } finally {
+          if (approveBtn) approveBtn.disabled = false;
+          if (regenBtn) regenBtn.disabled = false;
+        }
+      }
+
+      function regenerateOrchid3DModel() {
+        m3dPendingGeneratedFile = null;
+        m3dAwaitingApproval = false;
+        m3dHideApprovalUI();
+        generateOrchid3DModel();
       }
 
       // ── 3D SUBMISSIONS ─────────────────────────────────────────────
@@ -6991,6 +7035,32 @@
         }
       }
 
+      let collection3dLoaded = false;
+      async function loadCollection3D() {
+        if (!orchidCatalogLoaded) await loadOrchidCatalog();
+        renderCollection3D();
+        collection3dLoaded = true;
+      }
+
+      function renderCollection3D() {
+        const grid = document.getElementById('collection3d-grid');
+        if (!grid) return;
+        const withModels = (orchidRows || []).filter((o) => o.model_3d_url);
+        if (!withModels.length) {
+          grid.innerHTML = '<p style="margin:0;color:var(--dt-muted);font-size:0.95rem;">No 3D models have been uploaded yet.</p>';
+          return;
+        }
+        grid.innerHTML = withModels.map((o) => `
+          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
+            <div style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:var(--dt-bg-panel);margin-bottom:0.75rem;">
+              <model-viewer src="${escapeHtml(o.model_3d_url)}" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>
+            </div>
+            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">${escapeHtml(o.name || 'Unnamed species')}</h3>
+            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">${escapeHtml(o.common_name || o.genus || '')}</p>
+          </div>
+        `).join('');
+      }
+
       async function loadApprovedSightings() {
         try {
           const response = await fetch('/api/sightings');
@@ -7519,6 +7589,9 @@
           if (viewName === 'model3d') {
             loadModel3DOrchidOptions();
           }
+          if (viewName === 'collection3d') {
+            loadCollection3D();
+          }
         } else if (viewName === 'dashboard') {
           dashboardContainer.style.display = 'block';
           dashboardContainer.style.pointerEvents = 'auto';
@@ -7537,7 +7610,7 @@
       const requestedView = initialSearchParams.get('view');
       const allowedViews = isResearcherRole
         ? new Set(['dashboard', 'orchids', 'map', 'collection3d', 'submissions'])
-        : new Set(['dashboard', 'orchids', 'report', 'importexport', 'map', 'submissions', 'model3d']);
+        : new Set(['dashboard', 'orchids', 'report', 'importexport', 'map', 'submissions', 'model3d', 'collection3d']);
       if (requestedView && allowedViews.has(requestedView)) {
         switchView(requestedView);
       } else {
