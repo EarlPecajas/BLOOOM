@@ -342,6 +342,10 @@
         overflow-y: auto;
         box-sizing: border-box;
       }
+      .collection3d-model-wrap { position: relative; }
+      .collection3d-model-wrap model-viewer:fullscreen { width: 100vw; height: 100vh; }
+      .collection3d-fs-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; background: rgba(0,0,0,0.55); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; backdrop-filter: blur(3px); transition: background .15s; }
+      .collection3d-fs-btn:hover { background: rgba(0,0,0,0.75); }
       /* Bootstrap's .container-fluid forces width:100%, which combined with the
          margin above would overflow the viewport by the sidebar's width — clamp it. */
       .dashboard-container {
@@ -682,7 +686,7 @@
           <span class="sidebar-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </span>
-          <span>3D Image</span>
+          <span>Generate 3D Model</span>
         </a>
         <a href="#" class="sidebar-item" data-view="collection3d" id="sidebar-collection3d-item">
           <span class="sidebar-icon">
@@ -1749,7 +1753,7 @@
     <!-- 3D Image View -->
     <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="margin-bottom:1.25rem;">
-        <h1 class="catalog-title">3D Image</h1>
+        <h1 class="catalog-title">Generate 3D Model</h1>
         <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Attach a 3D model to an orchid species — upload a .glb file, or generate one automatically with Tripo AI.</p>
       </div>
 
@@ -7052,13 +7056,24 @@
         }
         grid.innerHTML = withModels.map((o) => `
           <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <div style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:var(--dt-bg-panel);margin-bottom:0.75rem;">
+            <div class="collection3d-model-wrap" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:var(--dt-bg-panel);margin-bottom:0.75rem;">
               <model-viewer src="${escapeHtml(o.model_3d_url)}" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>
+              <button type="button" class="collection3d-fs-btn" onclick="collection3DFullscreen(this)" title="View fullscreen" aria-label="View 3D model fullscreen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+              </button>
             </div>
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">${escapeHtml(o.name || 'Unnamed species')}</h3>
+            <h3 class="scientific-name" style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">${escapeHtml(o.name || 'Unnamed species')}</h3>
             <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">${escapeHtml(o.common_name || o.genus || '')}</p>
           </div>
         `).join('');
+      }
+
+      function collection3DFullscreen(btn) {
+        const wrap = btn.closest('.collection3d-model-wrap');
+        const mv = wrap ? wrap.querySelector('model-viewer') : null;
+        if (!mv) return;
+        if (mv.requestFullscreen) mv.requestFullscreen();
+        else if (mv.webkitRequestFullscreen) mv.webkitRequestFullscreen();
       }
 
       async function loadApprovedSightings() {
