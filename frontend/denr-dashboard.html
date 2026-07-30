@@ -6964,11 +6964,11 @@
           const pill = CON_STATUS_PILL_STYLE[statusKey] || CON_STATUS_PILL_STYLE.unassigned;
           return `
           <div class="orchid-card" data-dashboard-orchid-id="${orchid.id}" style="width:100%;">
+            <span class="orchid-status-pill" style="position:absolute;top:0.55rem;left:0.55rem;right:2.2rem;z-index:2;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;line-height:1.3;padding:0.22rem 0.55rem;border-radius:10px;background:${pill.bg};color:${pill.color};border:1px solid ${pill.border};">${statusLabel}</span>
             <button type="button" class="orchid-status-edit-btn" title="Edit conservation status" data-edit-orchid-id="${orchid.id}"
-              style="position:absolute;top:0.55rem;right:0.55rem;z-index:2;width:26px;height:26px;border-radius:999px;border:1.5px solid rgba(20,90,30,0.18);background:rgba(255,255,255,0.92);color:#145A1E;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.12);padding:0;">
+              style="position:absolute;top:0.55rem;right:0.55rem;z-index:3;width:26px;height:26px;flex-shrink:0;border-radius:999px;border:1.5px solid rgba(20,90,30,0.18);background:rgba(255,255,255,0.92);color:#145A1E;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.12);padding:0;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             </button>
-            <span class="orchid-status-pill" style="position:absolute;top:0.55rem;left:0.55rem;z-index:2;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;padding:0.22rem 0.55rem;border-radius:999px;background:${pill.bg};color:${pill.color};border:1px solid ${pill.border};">${statusLabel}</span>
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${scientificNameCardHtml(orchid.name)}</p>
