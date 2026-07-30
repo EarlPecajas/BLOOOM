@@ -1244,17 +1244,11 @@
       async () => {
         closeModal();
         try {
-          const { data: sessionData } = await bloomSupabase.auth.getSession();
-          const token = sessionData?.session?.access_token;
-          if (!token) {
-            showToast('You must be signed in to do this.', true);
-            return;
-          }
           const res = await fetch('/api/delete-user', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + token
+              'X-Superadmin-Password': ADMIN_PASS
             },
             body: JSON.stringify({ userId: id })
           });
