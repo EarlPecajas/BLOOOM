@@ -2096,8 +2096,8 @@
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#145A1E;">Notes &amp; Remarks</h4>
               </div>
               <div>
-                <div id="row-ethnobotanical" style="padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Ethnobotanical / Notes</p><p id="value-ethnobotanical" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
-                <div id="row-cultural" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Cultural / Horticulture</p><p id="value-cultural" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
+                <div id="row-notes" style="padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Notes</p><p id="value-notes" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
+                <div id="row-related-study" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Related Study</p><p id="value-related-study" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
               </div>
             </div>
           </div>
@@ -3919,6 +3919,22 @@
           }
         } catch { /* fall through */ }
         return String(value).trim();
+      }
+
+      // related_study is stored as JSON — {title, link, file_url} — by the
+      // submission form; returns null when there's nothing usable to show.
+      function parseRelatedStudy(value) {
+        if (!value) return null;
+        try {
+          const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+          const title = String(parsed?.title || '').trim();
+          const link = String(parsed?.link || '').trim();
+          const fileUrl = String(parsed?.file_url || '').trim();
+          if (!title && !link && !fileUrl) return null;
+          return { title, link, fileUrl };
+        } catch {
+          return null;
+        }
       }
 
       function parseJsonArrayValue(value) {
@@ -6014,10 +6030,25 @@ function refreshConservationHeatMap(summary) {
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
         setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
-        const ethnoEl = document.getElementById('value-ethnobotanical');
-        if (ethnoEl) ethnoEl.textContent = submission.ethnobotanical || submission.researcher_notes || '-';
-        const culturalEl = document.getElementById('value-cultural');
-        if (culturalEl) culturalEl.textContent = submission.cultural_importance || '-';
+        // Notes & Remarks section — ethnobotanical/cultural are orchid-catalog
+        // metadata, not fields the submission form ever collects, so they
+        // always rendered blank here; Notes + Related Study are what the
+        // researcher actually fills in on Page 9.
+        const notesEl = document.getElementById('value-notes');
+        if (notesEl) notesEl.textContent = submission.researcher_notes || '-';
+        const relatedStudyEl = document.getElementById('value-related-study');
+        if (relatedStudyEl) {
+          const rs = parseRelatedStudy(submission.related_study);
+          if (!rs) {
+            relatedStudyEl.textContent = '-';
+          } else {
+            const parts = [];
+            if (rs.title) parts.push(escapeHtml(rs.title));
+            if (rs.link) parts.push(`<a href="${escapeHtml(rs.link)}" target="_blank" rel="noopener noreferrer" style="color:#145A1E;">Link</a>`);
+            if (rs.fileUrl) parts.push(`<a href="${escapeHtml(rs.fileUrl)}" target="_blank" rel="noopener noreferrer" style="color:#145A1E;">Download</a>`);
+            relatedStudyEl.innerHTML = parts.length ? parts.join(' &middot; ') : '-';
+          }
+        }
 
         // Populate image gallery
         const imageGallery = document.getElementById('imageGallery');
