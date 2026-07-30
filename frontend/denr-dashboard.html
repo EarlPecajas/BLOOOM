@@ -2386,8 +2386,8 @@
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-accent-lt);">Notes & Remarks</h4>
               </div>
               <div>
-                <div id="row-ethnobotanical" style="padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Ethnobotanical / Notes</p><p id="value-ethnobotanical" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
-                <div id="row-cultural" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Cultural / Horticulture</p><p id="value-cultural" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
+                <div id="row-notes" style="padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Notes</p><p id="value-notes" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
+                <div id="row-related-study" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Related Study</p><p id="value-related-study" style="margin:0;font-size:0.8rem;color:var(--dt-text);line-height:1.5;"></p></div>
               </div>
             </div>
           </div>
@@ -3473,6 +3473,22 @@
         }
 
         return String(value).trim();
+      }
+
+      // related_study is stored as JSON — {title, link, file_url} — by the
+      // submission form; returns null when there's nothing usable to show.
+      function parseRelatedStudy(value) {
+        if (!value) return null;
+        try {
+          const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+          const title = String(parsed?.title || '').trim();
+          const link = String(parsed?.link || '').trim();
+          const fileUrl = String(parsed?.file_url || '').trim();
+          if (!title && !link && !fileUrl) return null;
+          return { title, link, fileUrl };
+        } catch {
+          return null;
+        }
       }
 
       function updateScientificNamePreview() {
@@ -5134,16 +5150,28 @@
 
         const location = row.location || [row.mountain_name || 'Mt. Busa', row.specific_site_zone || row.specific_site_other].filter(Boolean).join(', ') || 'Mt. Busa';
 
+        // Team members moved to the sighting_team_member sub-table in the 3NF
+        // migration — species_sightings.team_members is a legacy column the
+        // current submit flow never writes to.
+        const teamMemberRows = Array.isArray(row.sighting_team_member) ? row.sighting_team_member : [];
+        const teamMembers = teamMemberRows.length
+          ? teamMemberRows.map((tm) => ({ name: tm.member_name || '', role: tm.member_role || '' }))
+          : row.team_members;
+
         return {
           ...row,
           id: row.sighting_id,
-          researcher: row.researcher_name || row.researcher_email || 'Unknown Researcher',
+          // head_observer_name is what the submission form actually writes;
+          // researcher_name is a legacy column nothing currently populates,
+          // so without this it fell straight through to the email address.
+          researcher: row.head_observer_name || row.researcher_name || row.researcher_email || 'Unknown Researcher',
           species: row.scientific_name,
           family: row.family || '',
           genus: row.genus || (row.scientific_name ? row.scientific_name.trim().split(/\s+/)[0] : '') || '',
           common_name: commonNames[0] || row.common_name || '-',
           common_names: commonNames,
-          team_members_display: formatTeamMembersValue(row.team_members),
+          team_members: teamMembers,
+          team_members_display: formatTeamMembersValue(teamMembers),
           submission_date: row.submission_date || row.observation_date || row.created_at?.slice(0, 10) || '-',
           review_status: row.review_status || 'pending',
           location,
@@ -5330,7 +5358,7 @@
           if (bloomSupabase) {
             let query = bloomSupabase
               .from('species_sightings')
-              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
+              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*)), sighting_team_member(*)')
               .neq('review_status', 'draft')
               .not('entry_id', 'like', 'BLOOM-3D-%')
               .order('created_at', { ascending: false });
@@ -8064,12 +8092,26 @@
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
         setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
-        // Notes section
-        const ethnoEl = document.getElementById('value-ethnobotanical');
-        if (ethnoEl) ethnoEl.textContent = submission.ethnobotanical || submission.researcher_notes || '-';
-        const culturalEl = document.getElementById('value-cultural');
-        if (culturalEl) culturalEl.textContent = submission.cultural_importance || '-';
-        
+        // Notes & Remarks section — ethnobotanical/cultural are orchid-catalog
+        // metadata, not fields the submission form ever collects, so they
+        // always rendered blank here; Notes + Related Study are what the
+        // researcher actually fills in on Page 9.
+        const notesEl = document.getElementById('value-notes');
+        if (notesEl) notesEl.textContent = submission.researcher_notes || '-';
+        const relatedStudyEl = document.getElementById('value-related-study');
+        if (relatedStudyEl) {
+          const rs = parseRelatedStudy(submission.related_study);
+          if (!rs) {
+            relatedStudyEl.textContent = '-';
+          } else {
+            const parts = [];
+            if (rs.title) parts.push(escapeHtml(rs.title));
+            if (rs.link) parts.push(`<a href="${escapeHtml(rs.link)}" target="_blank" rel="noopener noreferrer" style="color:#4db86a;">Link</a>`);
+            if (rs.fileUrl) parts.push(`<a href="${escapeHtml(rs.fileUrl)}" target="_blank" rel="noopener noreferrer" style="color:#4db86a;">Download</a>`);
+            relatedStudyEl.innerHTML = parts.length ? parts.join(' &middot; ') : '-';
+          }
+        }
+
         // Populate image gallery
         const imageGallery = document.getElementById('imageGallery');
         if (imageGallery) {

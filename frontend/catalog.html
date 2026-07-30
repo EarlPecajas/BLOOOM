@@ -320,6 +320,7 @@
             <option value="endangered">Endangered</option>
             <option value="vulnerable">Vulnerable</option>
             <option value="least concern">Least Concern</option>
+            <option value="unassigned">Not Listed</option>
           </select>
           <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
@@ -394,10 +395,6 @@
             <div class="odm-section">
               <div class="odm-section-title">Taxonomy &amp; Identification</div>
               <div class="odm-rows-wrap" id="odm-rows-taxonomy"></div>
-            </div>
-            <div class="odm-section">
-              <div class="odm-section-title">Morphological Characteristics</div>
-              <div class="odm-rows-wrap" id="odm-rows-morphology"></div>
             </div>
             <div class="odm-section">
               <div class="odm-section-title">Location &amp; Habitat</div>
@@ -736,13 +733,27 @@
           '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
       }
 
+      // orchid_overview.conservation_status defaults to the literal text
+      // "Unassigned" for orchids with no DENR-set status. Route every
+      // conservation-status display string through this so it reads "Not
+      // Listed" instead — matching the label DENR's own dashboard uses.
+      function conStatusDisplayLabel(text) {
+        var t = String(text || '').trim();
+        return (!t || t.toLowerCase() === 'unassigned') ? 'Not Listed' : t;
+      }
+
       function odmPopulateValue(orchid, allSightings) {
         odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
 
         var src = allSightings[0] || {};
         var count = allSightings.length;
-        var status = src.threat_level_generalized || src.threat_level ||
-          orchid.conservation_status || '—';
+        // The catalog's own conservation_status is DENR's vetted IUCN classification
+        // and should win — a per-sighting threat_level is one researcher's field
+        // note, and for sightings recorded before the 3NF conservation split it can
+        // still hold pre-migration free text ("High", "Low", "Moderate"...) that was
+        // never in IUCN vocabulary to begin with. Only fall back to it when the
+        // catalog genuinely has no status on file.
+        var status = conStatusDisplayLabel(orchid.conservation_status || src.threat_level_generalized || src.threat_level);
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
         card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
@@ -771,36 +782,7 @@
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
 
-        var leafTextures = Array.isArray(src.leaf_textures) && src.leaf_textures.length ? src.leaf_textures.join(', ') : (src.leaf_texture_legacy || '');
-        var flowerDiameter = src.flower_diameter_cm ? '~' + Math.round(Number(src.flower_diameter_cm)) + ' cm' : (src.flower_diameter_legacy || '');
-        var plantHeight = src.plant_height_cm ? src.plant_height_cm + ' cm' : (src.plant_height_legacy || '');
-        var floweringStage = src.blooming_stage || src.flowering_stage || '';
-        var fruitPresent = src.fruit_present === true ? 'Present'
-          : src.fruit_present === false ? 'Not observed'
-          : (src.fruit_present_legacy ? (/^y/i.test(src.fruit_present_legacy) ? 'Present' : 'Not observed') : '');
-        var morphHtml = odmRow('Plant Height', plantHeight, 'height') +
-          odmRow('Leaf Shape', src.leaf_shape, 'leaf-shape') +
-          odmRow('Leaf Count', src.leaf_count) +
-          odmRow('Leaf Textures', leafTextures) +
-          odmRow('Leaf Arrangement', src.leaf_arrangement) +
-          odmRow('Flower Color', src.flower_color, 'flower-color') +
-          odmRow('Flower Count', src.flower_count, 'flower-count') +
-          odmRow('Flower Size', flowerDiameter) +
-          odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
-          odmRow('Petal Characteristics', src.petal_characteristics) +
-          odmRow('Labellum / Lip', src.labellum_lip_description) +
-          odmRow('Fragrance', src.fragrance, 'fragrance') +
-          odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
-          odmRow('Flowering Stage', floweringStage, 'blooming') +
-          odmRow('Fruit Present', fruitPresent) +
-          odmRow('Fruit Type', src.fruit_type);
-        document.getElementById('odm-rows-morphology').innerHTML = morphHtml ||
-          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No morphological data</span></div>';
-
-        var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
         var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa', 'mountain') +
-          odmRow('Site / Zone', src.specific_site_zone, 'site') +
-          odmRow('Elevation', elev, 'elevation') +
           odmRow('Habitat', src.habitat_type, 'habitat-type') +
           odmRow('Microhabitat', src.microhabitat, 'microhabitat');
         document.getElementById('odm-rows-location').innerHTML = locHtml ||
@@ -817,33 +799,21 @@
           var date = s.observation_date
             ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
             : '—';
-          var rows = [
-            ['Location', s.mountain_name || ''],
-            ['Site', s.specific_site_zone || ''],
-            ['Elevation', s.elevation_meters ? s.elevation_meters + ' m' : ''],
-            ['Researcher', s.researcher_name || ''],
-            ['Institution', s.institution || ''],
-          ].filter(function(r){ return r[1]; });
           return '<div class="odm-sighting-item">' +
             '<div class="odm-sighting-item-hd">' +
               '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
               '<span class="odm-sighting-item-date">' + date + '</span>' +
-            '</div>' +
-            '<div class="odm-sighting-item-rows">' +
-              rows.map(function(r){
-                return '<div class="odm-sighting-item-row">' +
-                  '<span class="odm-sighting-item-row-lbl">' + r[0] + '</span>' +
-                  '<span>' + escapeHtml(r[1]) + '</span></div>';
-              }).join('') +
             '</div></div>';
         }).join('');
       }
 
       function getOrchidThumbnailUrl(orchid, allSightings) {
+        // orchid.image_url (DENR's actual published thumbnail) must win over
+        // the hardcoded seed placeholder photos — see renderCatalog above.
+        if (orchid.image_url) return orchid.image_url;
         var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
         var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
         if (seedImg) return seedImg;
-        if (orchid.image_url) return orchid.image_url;
         for (var i = 0; i < allSightings.length; i++) {
           var photos = getPublicSightingImages(allSightings[i]).filter(function(u){ return u && String(u).indexOf('http') === 0; });
           if (photos.length) return photos[0];
@@ -867,10 +837,12 @@
       async function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
         var imgs = [];
+        // Real published thumbnail leads the gallery; hardcoded seed
+        // placeholder (if any) comes after it rather than in front of it.
+        if (orchid.image_url) imgs.push(orchid.image_url);
         var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
         var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
-        if (seedImg) imgs.push(seedImg);
-        if (orchid.image_url && imgs.indexOf(orchid.image_url) < 0) imgs.push(orchid.image_url);
+        if (seedImg && imgs.indexOf(seedImg) < 0) imgs.push(seedImg);
         allSightings.forEach(function(s) {
           getPublicSightingImages(s).forEach(function(url) {
             if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
@@ -992,6 +964,25 @@
       }
 
       async function openOrchidDetails(orchid) {
+        // conservation_status can change after this page's initial load (DENR
+        // edits it from their dashboard), so refresh it on every detail open
+        // instead of trusting whatever `orchids` held when the catalog first
+        // loaded — mutating `orchid` in place also keeps its catalog card and
+        // the conservation-status filter in sync without a full page reload.
+        if (orchid.name && window.bloomSupabase) {
+          try {
+            const { data: freshOverview } = await window.bloomSupabase
+              .from('orchid_overview')
+              .select('conservation_status, conservation_status_key')
+              .ilike('name', orchid.name.trim())
+              .maybeSingle();
+            if (freshOverview) {
+              orchid.conservation_status = freshOverview.conservation_status || orchid.conservation_status;
+              orchid.conservation_status_key = freshOverview.conservation_status_key || orchid.conservation_status_key;
+            }
+          } catch {}
+        }
+
         var scientificKey = normalizeScientificKey(orchid.name);
         var allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
@@ -1108,14 +1099,17 @@
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
 
-          // Mirror the researcher/DENR dashboard thumbnail logic:
-          // seed images by species name → seed images by genus → DB image_url → sighting photos → fallback
+          // orchid.image_url is the real thumbnail DENR actually chose when
+          // publishing — it must win over the hardcoded seed placeholder
+          // photos (only ~10 demo genera), or every newly-published orchid of
+          // one of those genera would silently show the generic seed photo
+          // instead of what was actually picked during publish.
           const scientificKey = normalizeScientificKey(orchid.name);
           const approvedSighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
 
-          let thumbnailImage = storageImagesByGenus.get(fullName)
+          let thumbnailImage = orchid.image_url
+            || storageImagesByGenus.get(fullName)
             || storageImagesByGenus.get(genus)
-            || orchid.image_url
             || null;
 
           // If no seed/DB image found, try approved sighting photos (full public URLs only)
@@ -1159,16 +1153,25 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = normalizeScientificKey(orchid.name);
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          // orchid.conservation_status is the catalog's own DENR-assigned status
+          // (see odmPopulateValue below) — it must win over a sighting's raw
+          // self-reported threat_level, or this filter can disagree with what
+          // the detail modal and card actually show for the same orchid.
           const rawStatus =
+            orchid.conservation_status ||
             sighting?.threat_level_generalized ||
             sighting?.threat_level ||
-            orchid.conservation_status ||
             orchid.threat_level_generalized ||
             orchid.threat_level ||
             '';
-          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
+          // orchid_overview.conservation_status defaults to the literal text
+          // "Unassigned" for orchids with no DENR-set status — fold that (and
+          // any genuinely empty value) into the "unassigned" filter key so the
+          // "Not Listed" option actually matches them.
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ') || 'unassigned';
+          const normalizedStatus = status === 'unassigned' || status === 'not listed' ? 'unassigned' : status;
 
-          if (conservationValue !== 'all' && status !== conservationValue) {
+          if (conservationValue !== 'all' && normalizedStatus !== conservationValue) {
             return false;
           }
 

@@ -512,7 +512,7 @@
             </div>
             <div class="submission-field">
               <label for="submission-microhabitat" style="font-size:0.88rem;font-weight:600;color:#334155;">Microhabitat</label>
-              <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+              <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option><option value="twigs or branches">Twigs or Branches</option></select>
             </div>
             <div class="submission-field">
               <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" data-tooltip="Optional. Surface orchid grows on: Tree Bark, Soil, Rock, or Decaying Wood.">?</span></label>
@@ -542,7 +542,7 @@
             </div>
             <div class="submission-field">
               <label for="submission-nearby-water-source" style="font-size:0.88rem;font-weight:600;color:#334155;">Nearby Water Source</label>
-              <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
+              <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="riparian">Riparian</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
             </div>
           </div>
 
@@ -901,7 +901,16 @@
       };
 
       function getBestPhotoUrl(src, orchid) {
-        // 1. Genus/species storage lookup — same source as catalog thumbnails
+        // 1. orchid.image_url is the real thumbnail DENR actually chose when
+        // publishing (via biogeography.picture_id) — it must win over both
+        // the hardcoded seed placeholder lookup and raw sighting photos, or
+        // a species with a valid published thumbnail but no seed-map entry
+        // and no photos on its own sighting record (e.g. published using an
+        // existing-photo pick or a manual upload) shows no photo at all here
+        // despite having one on the catalog card.
+        if (orchid?.image_url) return orchid.image_url;
+
+        // 2. Genus/species storage lookup — same source as catalog thumbnails
         const sciName = (src?.scientific_name || orchid?.name || '').toLowerCase().trim();
         const genus = sciName.split(' ')[0];
         const seedFile = SEED_CLOSEUP_MAP[sciName] || SEED_CLOSEUP_MAP[genus];
@@ -909,7 +918,7 @@
           const url = resolvePhotoUrl(seedFile);
           if (url) return url;
         }
-        // 2. DB photo paths
+        // 3. DB photo paths
         const paths = [
           ...(Array.isArray(src?.closeup_flower_photo_path) ? src.closeup_flower_photo_path : []),
           ...(Array.isArray(src?.whole_plant_photo_path) ? src.whole_plant_photo_path : []),
@@ -919,7 +928,7 @@
           const url = resolvePhotoUrl(p);
           if (url) return url;
         }
-        return orchid?.image_url || null;
+        return null;
       }
 
       function normalizeObservationMonth(observationDate, fallbackMonth) {
@@ -990,6 +999,15 @@
         return 'Probable';
       }
 
+      // orchid_overview.conservation_status defaults to the literal text
+      // "Unassigned" for orchids with no DENR-set status. Route every
+      // conservation-status display string through this so it reads "Not
+      // Listed" instead — matching the label DENR's own dashboard uses.
+      function conStatusDisplayLabel(text) {
+        const t = String(text || '').trim();
+        return (!t || t.toLowerCase() === 'unassigned') ? 'Not Listed' : t;
+      }
+
       // ── Identity panel ─────────────────────────────────────────────
       function setField(id, value, fieldKey) {
         const el = document.getElementById(id);
@@ -1026,8 +1044,11 @@
           : (orchid.common_name ? [orchid.common_name] : []);
         setField('oid-local-names', displayNames.length > 0 ? displayNames.join(', ') : null, 'local-names');
 
-        // Conservation status — use actual threat_level value
-        setField('oid-conservation-status', src.threat_level || src.threat_level_generalized || null, 'con-status');
+        // Conservation status — the catalog's own conservation_status is DENR's
+        // vetted IUCN classification and should win over a per-sighting threat_level,
+        // which for pre-3NF sightings can still hold legacy free text ("High", "Low",
+        // "Moderate"...) that predates the IUCN-category vocabulary entirely.
+        setField('oid-conservation-status', conStatusDisplayLabel(orchid.conservation_status || src.threat_level || src.threat_level_generalized), 'con-status');
 
         // Habitat & morphology
         setField('oid-habitat', src.habitat_type || null, 'habitat-type');
@@ -1094,13 +1115,19 @@
           '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
       }
 
-      function odmPopulateValue(orchid, allSightings) {
+      function odmPopulateValue(orchid, allSightings, activeSighting) {
         odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
 
-        var src = allSightings[0] || {};
+        // Show exactly what was submitted for the sighting the "Sighting #N"
+        // bar is currently pointing at — not a merge across every sighting on
+        // file, and not always the newest one regardless of which sighting is
+        // actually selected.
+        var src = activeSighting || allSightings[0] || {};
         var count = allSightings.length;
-        var status = src.threat_level_generalized || src.threat_level ||
-          orchid.conservation_status || '—';
+        // See populateIdentityPanel above — catalog conservation_status is the
+        // vetted IUCN classification and must win over a per-sighting threat_level,
+        // which can still carry pre-3NF legacy text for older sightings.
+        var status = conStatusDisplayLabel(orchid.conservation_status || src.threat_level_generalized || src.threat_level);
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
         card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
@@ -1175,24 +1202,10 @@
           var date = s.observation_date
             ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
             : '—';
-          var rows = [
-            ['Location', s.mountain_name || ''],
-            ['Site', s.specific_site_zone || ''],
-            ['Elevation', s.elevation_meters ? s.elevation_meters + ' m' : ''],
-            ['Researcher', s.researcher_name || ''],
-            ['Institution', s.institution || ''],
-          ].filter(function(r){ return r[1]; });
           return '<div class="odm-sighting-item">' +
             '<div class="odm-sighting-item-hd">' +
               '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
               '<span class="odm-sighting-item-date">' + date + '</span>' +
-            '</div>' +
-            '<div class="odm-sighting-item-rows">' +
-              rows.map(function(r){
-                return '<div class="odm-sighting-item-row">' +
-                  '<span class="odm-sighting-item-row-lbl">' + r[0] + '</span>' +
-                  '<span>' + escapeHtml(r[1]) + '</span></div>';
-              }).join('') +
             '</div></div>';
         }).join('');
       }
@@ -1322,7 +1335,7 @@
         }
 
         odmSwitchTab(initialTab || 'value');
-        odmPopulateValue(orchid, allSightings);
+        odmPopulateValue(orchid, allSightings, activeSighting);
         odmPopulateSightings(allSightings);
         odmPopulateImages(orchid, allSightings);
         odmPopulateStudy(allSightings);
@@ -2297,19 +2310,24 @@
           orchid = { name: nameFromUrl || 'Unknown Orchid', genus: '', common_name: '', image_url: '' };
         }
 
-        // model_3d_url changes far more often than the rest of this cached
-        // snapshot (DENR staff replace it from the dashboard), so always
-        // refresh it from the DB instead of trusting whatever sessionStorage
-        // held when the user first opened the catalog — otherwise a newly
-        // uploaded model won't show until the cache happens to expire.
+        // model_3d_url and conservation_status both change far more often than
+        // the rest of this cached snapshot (DENR staff replace/edit them from
+        // the dashboard), so always refresh them from the DB instead of
+        // trusting whatever sessionStorage held when the user first opened the
+        // catalog — otherwise a newly uploaded model or a just-edited
+        // conservation status won't show until the cache happens to expire.
         if (orchid.name && window.bloomSupabase) {
           try {
-            const { data: freshModel } = await window.bloomSupabase
+            const { data: freshOverview } = await window.bloomSupabase
               .from('orchid_overview')
-              .select('model_3d_url')
+              .select('model_3d_url, conservation_status, conservation_status_key')
               .ilike('name', orchid.name.trim())
               .maybeSingle();
-            if (freshModel) orchid.model_3d_url = freshModel.model_3d_url || null;
+            if (freshOverview) {
+              orchid.model_3d_url = freshOverview.model_3d_url || null;
+              orchid.conservation_status = freshOverview.conservation_status || orchid.conservation_status;
+              orchid.conservation_status_key = freshOverview.conservation_status_key || orchid.conservation_status_key;
+            }
           } catch {}
         }
 

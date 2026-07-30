@@ -903,6 +903,7 @@
             <option value="endangered">Endangered</option>
             <option value="vulnerable">Vulnerable</option>
             <option value="least concern">Least Concern</option>
+            <option value="unassigned">Not Listed</option>
           </select>
           <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
@@ -1623,7 +1624,7 @@
             </div>
             <div class="submission-field">
               <label for="submission-microhabitat" style="font-size:0.88rem;font-weight:600;color:#334155;">Microhabitat</label>
-              <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+              <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option><option value="twigs or branches">Twigs or Branches</option></select>
             </div>
             <div class="submission-field">
               <label for="submission-growth-substrate" style="font-size:0.88rem;font-weight:600;color:#334155;">Growth Substrate <span class="field-help" data-tooltip="Optional. Surface orchid grows on: Tree Bark, Soil, Rock, or Decaying Wood.">?</span></label>
@@ -1653,7 +1654,7 @@
             </div>
             <div class="submission-field">
               <label for="submission-nearby-water-source" style="font-size:0.88rem;font-weight:600;color:#334155;">Nearby Water Source</label>
-              <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
+              <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="riparian">Riparian</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
             </div>
           </div>
 
@@ -1832,6 +1833,7 @@
               <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span style="color:#b42318;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-whole-plant-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <div id="submission-whole-plant-photo-existing" class="submission-existing-photos" style="display:none;margin-top:0.5rem;gap:0.5rem;flex-wrap:wrap;"></div>
               <div id="submission-whole-plant-photographer-wrap" style="display:none;margin-top:0.4rem;">
                 <label for="submission-whole-plant-photographer" style="display:block;font-size:0.8rem;font-weight:600;color:#334155;margin-bottom:0.2rem;">Contributor Name</label>
                 <input id="submission-whole-plant-photographer" type="text" placeholder="Photographer name" class="submission-text-input" />
@@ -1841,6 +1843,7 @@
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Close-up Flower Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-closeup-flower-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-closeup-flower-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <div id="submission-closeup-flower-photo-existing" class="submission-existing-photos" style="display:none;margin-top:0.5rem;gap:0.5rem;flex-wrap:wrap;"></div>
               <div id="submission-closeup-flower-photographer-wrap" style="display:none;margin-top:0.4rem;">
                 <label for="submission-closeup-flower-photographer" style="display:block;font-size:0.8rem;font-weight:600;color:#334155;margin-bottom:0.2rem;">Contributor Name</label>
                 <input id="submission-closeup-flower-photographer" type="text" placeholder="Photographer name" class="submission-text-input" />
@@ -1850,6 +1853,7 @@
               <label style="display:block;font-size:0.88rem;margin-bottom:0.25rem;">Habitat Photo <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-habitat-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-habitat-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
+              <div id="submission-habitat-photo-existing" class="submission-existing-photos" style="display:none;margin-top:0.5rem;gap:0.5rem;flex-wrap:wrap;"></div>
               <div id="submission-habitat-photographer-wrap" style="display:none;margin-top:0.4rem;">
                 <label for="submission-habitat-photographer" style="display:block;font-size:0.8rem;font-weight:600;color:#334155;margin-bottom:0.2rem;">Contributor Name</label>
                 <input id="submission-habitat-photographer" type="text" placeholder="Photographer name" class="submission-text-input" />
@@ -2092,8 +2096,8 @@
                 <h4 style="margin:0;font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#145A1E;">Notes &amp; Remarks</h4>
               </div>
               <div>
-                <div id="row-ethnobotanical" style="padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Ethnobotanical / Notes</p><p id="value-ethnobotanical" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
-                <div id="row-cultural" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Cultural / Horticulture</p><p id="value-cultural" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
+                <div id="row-notes" style="padding:0.6rem 1rem;border-bottom:1px solid #f1f5f9;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Notes</p><p id="value-notes" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
+                <div id="row-related-study" style="padding:0.6rem 1rem;"><p style="margin:0 0 0.2rem;font-size:0.78rem;color:#64748b;font-weight:600;">Related Study</p><p id="value-related-study" style="margin:0;font-size:0.8rem;color:#1e293b;line-height:1.5;"></p></div>
               </div>
             </div>
           </div>
@@ -2553,6 +2557,118 @@
         return wrap;
       }
 
+      // ── Existing-photo previews (revision/edit flow) ─────────────────
+      // Populated from sighting_media when opening a draft for editing, so a
+      // researcher revising a submission can see what's already on file
+      // instead of a blank file input — and isn't forced to re-upload the
+      // same photo just to satisfy the "Whole Plant Photo is required" check,
+      // which used to create a duplicate sighting_media row on every resubmit.
+      let existingDraftMedia = { whole_plant: [], closeup_flower: [], habitat: [] };
+      let removedMediaPictureIds = new Set();
+      const MEDIA_CATEGORY_PREVIEW_CONTAINER = {
+        whole_plant: 'submission-whole-plant-photo-existing',
+        closeup_flower: 'submission-closeup-flower-photo-existing',
+        habitat: 'submission-habitat-photo-existing'
+      };
+
+      function resetExistingPhotoPreviews() {
+        existingDraftMedia = { whole_plant: [], closeup_flower: [], habitat: [] };
+        removedMediaPictureIds = new Set();
+        Object.values(MEDIA_CATEGORY_PREVIEW_CONTAINER).forEach(function(id) {
+          const el = document.getElementById(id);
+          if (el) { el.innerHTML = ''; el.style.display = 'none'; }
+        });
+      }
+
+      function renderExistingPhotoPreviews() {
+        Object.keys(MEDIA_CATEGORY_PREVIEW_CONTAINER).forEach(function(category) {
+          const container = document.getElementById(MEDIA_CATEGORY_PREVIEW_CONTAINER[category]);
+          if (!container) return;
+          const items = (existingDraftMedia[category] || []).filter(function(m) { return !removedMediaPictureIds.has(m.picture_id); });
+          if (!items.length) { container.innerHTML = ''; container.style.display = 'none'; return; }
+          container.style.display = 'flex';
+          container.innerHTML = items.map(function(m) {
+            return '<div style="position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:1.5px solid #d4ddd7;flex-shrink:0;">' +
+              '<img src="' + escapeHtml(m.file_path) + '" alt="Existing photo" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\'" />' +
+              '<button type="button" title="Remove this photo" onclick="removeExistingPhotoPreview(\'' + category + '\',' + m.picture_id + ')" ' +
+              'style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">&times;</button>' +
+              '</div>';
+          }).join('') + '<div style="flex-basis:100%;font-size:0.72rem;color:#64748b;">Already on file — click &times; to remove, or add more above.</div>';
+        });
+      }
+
+      window.removeExistingPhotoPreview = function(category, pictureId) {
+        removedMediaPictureIds.add(pictureId);
+        renderExistingPhotoPreviews();
+      };
+
+      async function loadExistingDraftMedia(sightingId) {
+        resetExistingPhotoPreviews();
+        if (!sightingId || !bloomSupabase) return;
+        try {
+          const { data } = await bloomSupabase
+            .from('sighting_media')
+            .select('media_category, picture_id, picture(file_path)')
+            .eq('sighting_id', sightingId)
+            .order('sort_order');
+          (data || []).forEach(function(row) {
+            const filePath = row.picture?.file_path;
+            if (!filePath || !existingDraftMedia[row.media_category]) return;
+            existingDraftMedia[row.media_category].push({ picture_id: row.picture_id, file_path: filePath });
+          });
+          renderExistingPhotoPreviews();
+        } catch (e) {
+          console.warn('Failed to load existing photos for draft:', e);
+        }
+      }
+
+      // ── Revision reason → which form page(s) stay editable ───────────
+      // DENR's revision-reason modal (denr-dashboard.html) writes one of five
+      // canned sentences (or free text for "Other") into review_notes. When a
+      // canned reason is recognized, everything outside the page(s) it
+      // actually concerns is locked read-only, so a researcher revising e.g.
+      // "GPS coordinates" can't accidentally change unrelated identification
+      // or morphology data. Unrecognized/free-text reasons leave the whole
+      // form editable, same as today.
+      const REVISION_REASON_PAGES = {
+        'Photos are missing, unclear, or low quality.': [8],
+        'Taxonomic identification is incomplete or uncertain.': [1],
+        'GPS coordinates appear invalid or inaccurate.': [3],
+        'Habitat or morphological details are insufficient.': [4, 5]
+      };
+
+      function clearRevisionFieldLock() {
+        document.querySelectorAll('.submission-page').forEach(function(page) {
+          page.style.opacity = '';
+          const badge = page.querySelector('.submission-page-lock-badge');
+          if (badge) badge.remove();
+          page.querySelectorAll('input, select, textarea, button').forEach(function(el) {
+            el.disabled = false;
+          });
+        });
+      }
+
+      function applyRevisionFieldLock(reasonText) {
+        clearRevisionFieldLock();
+        const text = String(reasonText || '');
+        const matchedPrefix = Object.keys(REVISION_REASON_PAGES).find(function(prefix) { return text.startsWith(prefix); });
+        if (!matchedPrefix) return;
+        const allowedPages = new Set(REVISION_REASON_PAGES[matchedPrefix]);
+        document.querySelectorAll('.submission-page').forEach(function(page) {
+          const pageNum = Number(page.getAttribute('data-page'));
+          if (allowedPages.has(pageNum)) return;
+          page.style.opacity = '0.55';
+          page.querySelectorAll('input, select, textarea, button').forEach(function(el) {
+            el.disabled = true;
+          });
+          const badge = document.createElement('div');
+          badge.className = 'submission-page-lock-badge';
+          badge.style.cssText = 'grid-column:1/-1;font-size:0.8rem;font-weight:600;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:0.5rem 0.75rem;margin-bottom:0.5rem;';
+          badge.textContent = 'Locked — not part of this revision request.';
+          page.prepend(badge);
+        });
+      }
+
       function initializeResearcherSightingForm() {
         const entryIdEl = document.getElementById('submission-entry-id');
         const observationDateEl = document.getElementById('submission-observation-date');
@@ -2566,6 +2682,8 @@
 
         // Reset to page 1
         goToSubmissionPage(1);
+        resetExistingPhotoPreviews();
+        clearRevisionFieldLock();
 
         if (entryIdEl) {
           const generatedPreviewId = `PENDING-${Date.now().toString().slice(-8)}`;
@@ -3202,7 +3320,7 @@
         entryId, currentEmail, currentName = null, headObserver = null, institution = null,
         commonNames, localNames, leafTextures, threatTypes, teamMembers,
         wholePlantPhotoUrls = [], closeupFlowerPhotoUrls = [], habitatPhotoUrls = [],
-        relatedStudyFileUrls = [],
+        relatedStudyFileUrls = [], removedPictureIds = [],
         reviewStatus = 'pending', editDraftId = null
       }) {
         function numOrNull(id) {
@@ -3369,6 +3487,17 @@
           );
         }
 
+        // Photos the researcher explicitly removed from an existing draft's
+        // previews — drop the link row so it stops showing up anywhere, then
+        // append whatever new files were uploaded. Doing this before the
+        // insert (rather than skipping upload entirely) is what lets a
+        // researcher swap out one bad photo for a new one without leaving
+        // both attached to the sighting.
+        if (removedPictureIds.length) {
+          await supabase.from('sighting_media').delete()
+            .eq('sighting_id', sightingId).in('picture_id', removedPictureIds);
+        }
+
         // Media — append any newly uploaded files
         async function insertMediaGroup(urls, category, photographerName) {
           for (let i = 0; i < urls.length; i++) {
@@ -3472,7 +3601,10 @@
             const lng = document.getElementById('submission-longitude')?.value;
             if (!lat || !lng) throw new Error('GPS Latitude and Longitude are required (Page 3).');
             const wholePlantInput = document.getElementById('submission-whole-plant-photo');
-            if (!wholePlantInput || !wholePlantInput.files || wholePlantInput.files.length === 0) {
+            const hasNewWholePlantPhoto = !!(wholePlantInput && wholePlantInput.files && wholePlantInput.files.length > 0);
+            const hasExistingWholePlantPhoto = existingDraftMedia.whole_plant
+              .some((m) => !removedMediaPictureIds.has(m.picture_id));
+            if (!hasNewWholePlantPhoto && !hasExistingWholePlantPhoto) {
               throw new Error('Whole Plant Photo is required (Page 8).');
             }
 
@@ -3560,6 +3692,7 @@
               commonNames, localNames, leafTextures, threatTypes, teamMembers,
               wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
               relatedStudyFileUrls,
+              removedPictureIds: Array.from(removedMediaPictureIds),
               reviewStatus: 'pending',
               editDraftId: editDraftId ? Number(editDraftId) : null
             });
@@ -3788,6 +3921,22 @@
         return String(value).trim();
       }
 
+      // related_study is stored as JSON — {title, link, file_url} — by the
+      // submission form; returns null when there's nothing usable to show.
+      function parseRelatedStudy(value) {
+        if (!value) return null;
+        try {
+          const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+          const title = String(parsed?.title || '').trim();
+          const link = String(parsed?.link || '').trim();
+          const fileUrl = String(parsed?.file_url || '').trim();
+          if (!title && !link && !fileUrl) return null;
+          return { title, link, fileUrl };
+        } catch {
+          return null;
+        }
+      }
+
       function parseJsonArrayValue(value) {
         if (Array.isArray(value)) {
           return value.filter(Boolean);
@@ -3834,6 +3983,17 @@
         const habitatPhotos      = mediaByCategory('habitat').length       ? mediaByCategory('habitat')       : parseJsonArrayValue(row.habitat_photo_path);
         const videoFiles         = mediaByCategory('video').length         ? mediaByCategory('video')         : parseJsonArrayValue(row.video_path);
 
+        // Team members moved to the sighting_team_member sub-table in the 3NF
+        // migration — species_sightings.team_members is a legacy column the
+        // current submit flow never writes to, so without this join/flatten
+        // (added alongside the loadSubmissions/loadDrafts select above),
+        // reopening any submission for editing showed an empty Team Members
+        // section even though members were saved.
+        const teamMemberRows = Array.isArray(row.sighting_team_member) ? row.sighting_team_member : [];
+        const teamMembers = teamMemberRows.length
+          ? teamMemberRows.map((tm) => ({ name: tm.member_name || '', role: tm.member_role || '' }))
+          : row.team_members;
+
         const location = row.location || [row.mountain_name || 'Mt. Busa', row.specific_site_zone || row.specific_site_other].filter(Boolean).join(', ') || 'Mt. Busa';
 
         return {
@@ -3846,7 +4006,8 @@
           genus: row.genus || (row.scientific_name ? row.scientific_name.trim().split(/\s+/)[0] : '') || '',
           common_name: commonNames[0] || row.common_name || '-',
           common_names: commonNames,
-          team_members_display: formatTeamMembersValue(row.team_members),
+          team_members: teamMembers,
+          team_members_display: formatTeamMembersValue(teamMembers),
           submission_date: (row.submission_date || row.observation_date || row.created_at || '').slice(0, 10) || '-',
           review_status: row.review_status || 'pending',
           location,
@@ -3976,7 +4137,7 @@
           if (window.bloomSupabase) {
             let query = window.bloomSupabase
               .from('species_sightings')
-              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*))')
+              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*)), sighting_team_member(*)')
               .not('entry_id', 'like', 'BLOOM-3D-%')
               .order('created_at', { ascending: false });
 
@@ -4046,7 +4207,7 @@
           // Primary query — by researcher_email (works for both web and mobile drafts)
           let emailQuery = window.bloomSupabase
             .from('species_sightings')
-            .select('*')
+            .select('*, sighting_team_member(*)')
             .eq('review_status', 'draft')
             .order('created_at', { ascending: false });
           if (isResearcherRole && currentEmail) {
@@ -4333,11 +4494,15 @@
           try {
             const client = window.bloomSupabase || window.supabase;
             if (client && typeof client.from === 'function') {
+              // public_approved_sightings joins the sighting_habitat/morphology/
+              // conservation sub-tables and flattens them into this view — a plain
+              // species_sightings select('*') doesn't carry those fields since the
+              // 3NF migration moved them out, which left Morphological
+              // Characteristics (and Habitat) empty on this page.
               const { data, error } = await client
-                .from('species_sightings')
+                .from('public_approved_sightings')
                 .select('*')
                 .ilike('scientific_name', orchid.name.trim())
-                .eq('review_status', 'approved')
                 .order('observation_date', { ascending: false })
                 .limit(10);
               if (!error && data) sightings = data;
@@ -4521,7 +4686,15 @@
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
-          const thumbnail = storageImagesByGenus.get(genus) || storageImagesByGenus.get(fullName) || orchid.image_url || orchidImage;
+          // orchid.image_url is the real thumbnail DENR actually chose when
+          // publishing (via biogeography.picture_id) — it must win. The
+          // storageImagesByGenus lookup is only a handful of hardcoded seed
+          // placeholder photos left over from the original 10 demo genera; it
+          // was being checked first, so every newly-published orchid whose
+          // genus happened to match one of those ten (e.g. any new Aerides
+          // species) silently showed that generic seed photo instead of the
+          // thumbnail actually picked during publish.
+          const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
           return `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
@@ -4720,6 +4893,12 @@
             revisionBanner.style.display = 'none';
           }
         }
+        applyRevisionFieldLock(needsRevision ? draft.review_notes : '');
+
+        // Show whatever photos are already on file for this sighting so a
+        // researcher revising it isn't forced to re-upload just to satisfy
+        // the "photo required" check — see loadExistingDraftMedia above.
+        loadExistingDraftMedia(draft.id);
 
         const setVal = (id, val) => {
           if (val == null || val === '') return;
@@ -4950,14 +5129,22 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = name.trim();
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          // orchid.conservation_status is the catalog's own DENR-assigned status —
+          // it must win over a sighting's raw self-reported threat_level, or this
+          // filter can disagree with what the detail view actually shows.
           const rawStatus =
+            orchid.conservation_status ||
             sighting?.threat_level_generalized ||
             sighting?.threat_level ||
-            orchid.conservation_status ||
             '';
-          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
+          // orchid_overview.conservation_status defaults to the literal text
+          // "Unassigned" for orchids with no DENR-set status — fold that (and
+          // any genuinely empty value) into the "unassigned" filter key so the
+          // "Not Listed" option actually matches them.
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ') || 'unassigned';
+          const normalizedStatus = status === 'unassigned' || status === 'not listed' ? 'unassigned' : status;
 
-          if (conservationValue !== 'all' && status !== conservationValue) {
+          if (conservationValue !== 'all' && normalizedStatus !== conservationValue) {
             return false;
           }
 
@@ -5843,10 +6030,25 @@ function refreshConservationHeatMap(summary) {
         setDetailFieldAlways('row-threat-types', 'value-threat-types', fmtArray(submission.threat_types));
         setDetailFieldAlways('row-institution', 'value-institution', submission.institution || '');
         setDetailFieldAlways('row-team-members', 'value-team-members', submission.team_members_display || formatTeamMembersValue(submission.team_members) || '');
-        const ethnoEl = document.getElementById('value-ethnobotanical');
-        if (ethnoEl) ethnoEl.textContent = submission.ethnobotanical || submission.researcher_notes || '-';
-        const culturalEl = document.getElementById('value-cultural');
-        if (culturalEl) culturalEl.textContent = submission.cultural_importance || '-';
+        // Notes & Remarks section — ethnobotanical/cultural are orchid-catalog
+        // metadata, not fields the submission form ever collects, so they
+        // always rendered blank here; Notes + Related Study are what the
+        // researcher actually fills in on Page 9.
+        const notesEl = document.getElementById('value-notes');
+        if (notesEl) notesEl.textContent = submission.researcher_notes || '-';
+        const relatedStudyEl = document.getElementById('value-related-study');
+        if (relatedStudyEl) {
+          const rs = parseRelatedStudy(submission.related_study);
+          if (!rs) {
+            relatedStudyEl.textContent = '-';
+          } else {
+            const parts = [];
+            if (rs.title) parts.push(escapeHtml(rs.title));
+            if (rs.link) parts.push(`<a href="${escapeHtml(rs.link)}" target="_blank" rel="noopener noreferrer" style="color:#145A1E;">Link</a>`);
+            if (rs.fileUrl) parts.push(`<a href="${escapeHtml(rs.fileUrl)}" target="_blank" rel="noopener noreferrer" style="color:#145A1E;">Download</a>`);
+            relatedStudyEl.innerHTML = parts.length ? parts.join(' &middot; ') : '-';
+          }
+        }
 
         // Populate image gallery
         const imageGallery = document.getElementById('imageGallery');
