@@ -4962,10 +4962,13 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = name.trim();
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          // orchid.conservation_status is the catalog's own DENR-assigned status —
+          // it must win over a sighting's raw self-reported threat_level, or this
+          // filter can disagree with what the detail view actually shows.
           const rawStatus =
+            orchid.conservation_status ||
             sighting?.threat_level_generalized ||
             sighting?.threat_level ||
-            orchid.conservation_status ||
             '';
           const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
 
