@@ -1535,9 +1535,13 @@
               <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
               <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Taxonomic Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
             </div>
-            <div class="submission-field">
+            <div class="submission-field" style="position:relative;">
               <label for="submission-endemic-philippines" style="font-size:0.88rem;font-weight:600;color:#334155;">Endemic to the Philippines <span class="field-help" data-tooltip="Optional. Is this orchid species endemic (found only) in the Philippines?">?</span></label>
-              <select id="submission-endemic-philippines" class="submission-select"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
+              <div style="display:flex;gap:0.4rem;align-items:center;">
+                <select id="submission-endemic-philippines" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
+                <button type="button" onclick="autoDetectEndemicStatus()" title="Look up the Scientific Name against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+              </div>
+              <div id="submission-endemic-status" style="position:absolute;top:100%;left:0;right:0;margin-top:0.3rem;padding:0.2rem 0;background:#fff;font-size:0.76rem;line-height:1.35;display:none;z-index:2;"></div>
             </div>
           </div>
 
@@ -1808,13 +1812,13 @@
               <label for="submission-population-status" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Status</label>
               <select id="submission-population-status" class="submission-select"><option value="" disabled selected hidden>Population Status</option><option value="Abundant">Abundant</option><option value="common">Common</option><option value="rare">Rare</option></select>
             </div>
-            <div class="submission-field">
+            <div class="submission-field" style="position:relative;">
               <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <button type="button" onclick="openIucnGuideModal()" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">(Check DAO 2026-20)</button></label>
               <div style="display:flex;gap:0.4rem;align-items:center;">
                 <select id="submission-threat-level" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Other Threatened Species">Other Threatened Species</option><option value="Not Listed">Not Listed</option></select>
                 <button type="button" onclick="autoDetectThreatLevel()" title="Look up the Scientific Name (Page 1, Basic Taxonomic Information) against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
               </div>
-              <div id="submission-threat-level-status" style="font-size:0.76rem;margin-top:0.3rem;display:none;"></div>
+              <div id="submission-threat-level-status" style="position:absolute;top:100%;left:0;right:0;margin-top:0.3rem;padding:0.2rem 0;background:#fff;font-size:0.76rem;line-height:1.35;display:none;z-index:2;"></div>
             </div>
             <div class="submission-field submission-field--full">
               <label style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Type <span style="font-weight:500;color:#64748b;font-size:0.78rem;">(Choose one or more)</span></label>
@@ -6381,6 +6385,40 @@ function refreshConservationHeatMap(summary) {
           selectEl.value = 'Not Listed';
           statusEl.style.color = '#64748b';
           statusEl.textContent = `"${sciName}" was not found in the DAO 2026-20 threatened list — set to Not Listed.`;
+        }
+      }
+
+      // Same DAO 2026-20 lookup as Threat Level, using the endemism flag
+      // (the source document's "*" marker before a scientific name) each
+      // entry already carries. DAO 2026-20 only covers threatened species,
+      // so a species it doesn't list gives no endemism evidence either way
+      // — that's recorded as "Unknown", not "No".
+      function autoDetectEndemicStatus() {
+        const statusEl = document.getElementById('submission-endemic-status');
+        const selectEl = document.getElementById('submission-endemic-philippines');
+        if (!statusEl || !selectEl) return;
+
+        const sciName = (document.getElementById('submission-scientific-name')?.value || '').trim();
+        statusEl.style.display = 'block';
+
+        if (!sciName) {
+          statusEl.style.color = '#b42318';
+          statusEl.textContent = 'Enter the Scientific Name first.';
+          return;
+        }
+
+        const target = normalizeDaoSciName(sciName);
+        const match = (window.DAO_2026_20_ORCHID_REFERENCE || [])
+          .find((s) => normalizeDaoSciName(s.sci) === target);
+
+        if (match) {
+          selectEl.value = match.endemic ? 'yes' : 'no';
+          statusEl.style.color = '#145A1E';
+          statusEl.textContent = `Matched "${match.fullName}" in DAO 2026-20 — set to ${match.endemic ? 'Yes' : 'No'}.`;
+        } else {
+          selectEl.value = 'unknown';
+          statusEl.style.color = '#64748b';
+          statusEl.textContent = `"${sciName}" was not found in DAO 2026-20 — endemicity set to Unknown.`;
         }
       }
 
