@@ -1097,6 +1097,27 @@
           '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
       }
 
+      // Morphological measurements are recorded per-sighting, and different
+      // researchers fill in different subsets of fields — the most recent
+      // sighting might skip a measurement an older one has. Scan every
+      // recorded sighting (newest first) and use the first one that actually
+      // has a value for each field, instead of only ever reading sighting #1.
+      function odmFirstAvailable(list, key) {
+        for (var i = 0; i < list.length; i++) {
+          var v = list[i][key];
+          if (Array.isArray(v)) { if (v.length) return v; continue; }
+          if (v !== null && v !== undefined && v !== '') return v;
+        }
+        return '';
+      }
+      function odmFirstAvailableBoolean(list, key) {
+        for (var i = 0; i < list.length; i++) {
+          var v = list[i][key];
+          if (v === true || v === false) return v;
+        }
+        return null;
+      }
+
       function odmPopulateValue(orchid, allSightings) {
         odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
 
@@ -1133,27 +1154,32 @@
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
 
-        var leafTextures = Array.isArray(src.leaf_textures) ? src.leaf_textures.join(', ') : (src.leaf_textures || '');
-        var flowerDiameter = src.flower_diameter_cm ? '~' + Math.round(Number(src.flower_diameter_cm)) + ' cm' : '';
-        var plantHeight = src.plant_height_cm ? src.plant_height_cm + ' cm' : '';
-        var floweringStage = src.blooming_stage || src.flowering_stage || '';
-        var fruitPresent = src.fruit_present === true ? 'Present' : (src.fruit_present === false ? 'Not observed' : '');
+        var mPlantHeight = odmFirstAvailable(allSightings, 'plant_height_cm');
+        var mLeafTextures = odmFirstAvailable(allSightings, 'leaf_textures');
+        var mFlowerDiameter = odmFirstAvailable(allSightings, 'flower_diameter_cm');
+        var mFloweringStage = odmFirstAvailable(allSightings, 'blooming_stage') || odmFirstAvailable(allSightings, 'flowering_stage');
+        var mFruitPresentVal = odmFirstAvailableBoolean(allSightings, 'fruit_present');
+
+        var leafTextures = Array.isArray(mLeafTextures) ? mLeafTextures.join(', ') : (mLeafTextures || '');
+        var flowerDiameter = mFlowerDiameter ? '~' + Math.round(Number(mFlowerDiameter)) + ' cm' : '';
+        var plantHeight = mPlantHeight ? mPlantHeight + ' cm' : '';
+        var fruitPresent = mFruitPresentVal === true ? 'Present' : (mFruitPresentVal === false ? 'Not observed' : '');
         var morphHtml = odmRow('Plant Height', plantHeight, 'height') +
-          odmRow('Leaf Shape', src.leaf_shape, 'leaf-shape') +
-          odmRow('Leaf Count', src.leaf_count) +
+          odmRow('Leaf Shape', odmFirstAvailable(allSightings, 'leaf_shape'), 'leaf-shape') +
+          odmRow('Leaf Count', odmFirstAvailable(allSightings, 'leaf_count')) +
           odmRow('Leaf Textures', leafTextures) +
-          odmRow('Leaf Arrangement', src.leaf_arrangement) +
-          odmRow('Flower Color', src.flower_color, 'flower-color') +
-          odmRow('Flower Count', src.flower_count, 'flower-count') +
+          odmRow('Leaf Arrangement', odmFirstAvailable(allSightings, 'leaf_arrangement')) +
+          odmRow('Flower Color', odmFirstAvailable(allSightings, 'flower_color'), 'flower-color') +
+          odmRow('Flower Count', odmFirstAvailable(allSightings, 'flower_count'), 'flower-count') +
           odmRow('Flower Size', flowerDiameter) +
-          odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
-          odmRow('Petal Characteristics', src.petal_characteristics) +
-          odmRow('Labellum / Lip', src.labellum_lip_description) +
-          odmRow('Fragrance', src.fragrance, 'fragrance') +
-          odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
-          odmRow('Flowering Stage', floweringStage, 'blooming') +
+          odmRow('Inflorescence Type', odmFirstAvailable(allSightings, 'inflorescence_type'), 'inflorescence') +
+          odmRow('Petal Characteristics', odmFirstAvailable(allSightings, 'petal_characteristics')) +
+          odmRow('Labellum / Lip', odmFirstAvailable(allSightings, 'labellum_lip_description')) +
+          odmRow('Fragrance', odmFirstAvailable(allSightings, 'fragrance'), 'fragrance') +
+          odmRow('Flowering Season', odmFirstAvailable(allSightings, 'flowering_season'), 'flowering-season') +
+          odmRow('Flowering Stage', mFloweringStage, 'blooming') +
           odmRow('Fruit Present', fruitPresent) +
-          odmRow('Fruit Type', src.fruit_type);
+          odmRow('Fruit Type', odmFirstAvailable(allSightings, 'fruit_type'));
         document.getElementById('odm-rows-morphology').innerHTML = morphHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No morphological data</span></div>';
 
