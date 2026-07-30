@@ -2455,6 +2455,32 @@
     <!-- Toast notification -->
     <div id="denr-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:5000;background:#1a3a1c;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;font-family:Inter,Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:340px;line-height:1.45;"></div>
 
+    <!-- Edit Conservation Status modal -->
+    <div id="edit-con-status-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:4000;align-items:center;justify-content:center;padding:1.5rem;">
+      <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.28);padding:1.75rem 1.75rem 1.4rem;font-family:Inter,Roboto,sans-serif;">
+        <h3 style="margin:0 0 .2rem;font-size:1.05rem;font-weight:700;color:#1a3a1c;">Edit Conservation Status</h3>
+        <p id="edit-con-status-orchid-name" style="margin:0 0 1.1rem;font-size:.85rem;color:#577A5C;font-style:italic;"></p>
+        <label style="display:block;font-size:.8rem;font-weight:600;color:#4a5a4c;margin-bottom:.4rem;">Conservation Status</label>
+        <select id="edit-con-status-select" style="width:100%;padding:.6rem .7rem;border-radius:8px;border:1.5px solid #d1d5db;font-size:.9rem;font-family:inherit;color:#1a3a1c;margin-bottom:1.4rem;">
+          <option value="">Unassigned</option>
+          <option value="Least Concern">Least Concern</option>
+          <option value="Vulnerable">Vulnerable</option>
+          <option value="Endangered">Endangered</option>
+          <option value="Critically Endangered">Critically Endangered</option>
+        </select>
+        <div style="display:flex;justify-content:flex-end;gap:.65rem;">
+          <button onclick="closeModal('edit-con-status-modal')"
+            style="padding:.48rem 1.2rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;">
+            Cancel
+          </button>
+          <button id="edit-con-status-save-btn" onclick="saveEditConservationStatus()"
+            style="padding:.48rem 1.2rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Add / Edit Trail Modal -->
     <div id="addTrailModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:4500;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px);">
       <div style="background:var(--dt-bg);border-radius:16px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.55);border:1px solid var(--dt-border-md);overflow:hidden;">
@@ -6905,6 +6931,14 @@
         });
       }
 
+      const CON_STATUS_PILL_STYLE = {
+        critically_endangered: { bg: '#FEF2F2', color: '#991B1B', border: '#FECACA' },
+        endangered:            { bg: '#FEF3C7', color: '#92400E', border: '#FDE68A' },
+        vulnerable:             { bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
+        least_concern:          { bg: '#ECFDF5', color: '#065F46', border: '#A7F3D0' },
+        unassigned:             { bg: '#F3F4F6', color: '#4B5563', border: '#E5E7EB' }
+      };
+
       function renderOrchidCatalog(items) {
         if (!catalogGrid) return;
 
@@ -6925,14 +6959,22 @@
           // species) silently showed that generic seed photo instead of the
           // thumbnail actually picked during publish.
           const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
+          const statusKey = normalizeConservationKey(orchid.conservation_status);
+          const statusLabel = orchid.conservation_status && statusKey !== 'unassigned' ? orchid.conservation_status : 'Unassigned';
+          const pill = CON_STATUS_PILL_STYLE[statusKey] || CON_STATUS_PILL_STYLE.unassigned;
           return `
-          <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
+          <div class="orchid-card" data-dashboard-orchid-id="${orchid.id}" style="width:100%;">
+            <button type="button" class="orchid-status-edit-btn" title="Edit conservation status" data-edit-orchid-id="${orchid.id}"
+              style="position:absolute;top:0.55rem;right:0.55rem;z-index:2;width:26px;height:26px;border-radius:999px;border:1.5px solid rgba(20,90,30,0.18);background:rgba(255,255,255,0.92);color:#145A1E;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.12);padding:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <span class="orchid-status-pill" style="position:absolute;top:0.55rem;left:0.55rem;z-index:2;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;padding:0.22rem 0.55rem;border-radius:999px;background:${pill.bg};color:${pill.color};border:1px solid ${pill.border};">${statusLabel}</span>
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${scientificNameCardHtml(orchid.name)}</p>
               <p class="orchid-card-genus">${orchid.common_name || ''}</p>
             </div>
-          </button>
+          </div>
         `;
         }).join('');
       }
@@ -7216,6 +7258,13 @@
       }
 
       catalogGrid.addEventListener('click', function(e) {
+        const editBtn = e.target.closest('.orchid-status-edit-btn');
+        if (editBtn) {
+          e.stopPropagation();
+          openEditConservationStatusModal(editBtn.getAttribute('data-edit-orchid-id'));
+          return;
+        }
+
         const card = e.target.closest('[data-dashboard-orchid-id]');
         if (!card) {
           return;
@@ -8193,6 +8242,86 @@
         if (modalId === 'detailModal') {
           const scrollMiddle = modal.querySelector('#detailModalCard > div[style*="overflow-y"]');
           if (scrollMiddle) scrollMiddle.scrollTop = 0;
+        }
+      }
+
+      let editConStatusOrchidId = null;
+
+      function openEditConservationStatusModal(orchidId) {
+        const orchid = orchidRows.find((o) => String(o.id) === String(orchidId));
+        if (!orchid) return;
+        editConStatusOrchidId = orchidId;
+        document.getElementById('edit-con-status-orchid-name').textContent = orchid.name || '';
+        const select = document.getElementById('edit-con-status-select');
+        const key = normalizeConservationKey(orchid.conservation_status);
+        const keyToLabel = {
+          least_concern: 'Least Concern',
+          vulnerable: 'Vulnerable',
+          endangered: 'Endangered',
+          critically_endangered: 'Critically Endangered'
+        };
+        select.value = keyToLabel[key] || '';
+        document.getElementById('edit-con-status-modal').style.display = 'flex';
+      }
+
+      async function saveEditConservationStatus() {
+        if (!editConStatusOrchidId) return;
+        const orchid = orchidRows.find((o) => String(o.id) === String(editConStatusOrchidId));
+        if (!orchid) return;
+
+        const saveBtn = document.getElementById('edit-con-status-save-btn');
+        const selectedStatusLabel = document.getElementById('edit-con-status-select').value;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try {
+          const { data: sessionData } = await bloomSupabase.auth.getSession();
+          if (!sessionData || !sessionData.session) {
+            throw new Error('Your session has expired. Please sign out and sign in again, then retry.');
+          }
+
+          let conservationId = null;
+          if (selectedStatusLabel) {
+            const { data: existingStatus } = await bloomSupabase
+              .from('conservation_status').select('conservation_id')
+              .ilike('conservation_status', selectedStatusLabel).maybeSingle();
+            if (existingStatus) {
+              conservationId = existingStatus.conservation_id;
+            } else {
+              const { data: newStatus, error: statusErr } = await bloomSupabase
+                .from('conservation_status').insert({ conservation_status: selectedStatusLabel })
+                .select('conservation_id').single();
+              if (statusErr) throw statusErr;
+              conservationId = newStatus.conservation_id;
+            }
+          }
+
+          const { data: existingBio } = await bloomSupabase
+            .from('biogeography').select('biogeographic_id').eq('orchid_id', orchid.id).maybeSingle();
+          if (existingBio) {
+            const { error: bioErr } = await bloomSupabase.from('biogeography')
+              .update({ conservation_id: conservationId })
+              .eq('orchid_id', orchid.id);
+            if (bioErr) throw bioErr;
+          } else {
+            const { error: bioErr } = await bloomSupabase.from('biogeography')
+              .insert({ orchid_id: orchid.id, conservation_id: conservationId, submission_status: 'approved' });
+            if (bioErr) throw bioErr;
+          }
+
+          orchid.conservation_status = selectedStatusLabel || 'Unassigned';
+          orchid.conservation_status_key = normalizeConservationKey(selectedStatusLabel);
+
+          closeModal('edit-con-status-modal');
+          showToast(`Conservation status for "${orchid.name}" updated.`);
+          renderOrchidCatalog(orchidRows);
+        } catch (error) {
+          console.error('Failed to update conservation status:', error);
+          const detail = [error.message, error.details, error.hint].filter(Boolean).join(' — ');
+          showToast('Failed to update conservation status: ' + (detail || 'Unknown error'), true);
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save';
         }
       }
 
