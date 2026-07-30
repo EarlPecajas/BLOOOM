@@ -8,7 +8,12 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('bloom-uploads', 'bloom-uploads', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
 
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Not ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY here — that table
+-- is owned by a Supabase-internal role, not the postgres role the SQL Editor
+-- runs as, so that statement always fails with "must be owner of table
+-- objects". RLS is already enabled on it by Supabase's own setup; only the
+-- policies below need to exist, and creating policies doesn't require
+-- ownership.
 
 DROP POLICY IF EXISTS "Public read bloom uploads" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated upload bloom files" ON storage.objects;
