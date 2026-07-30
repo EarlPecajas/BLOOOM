@@ -5696,9 +5696,26 @@
         }
       }
 
+      // A stale/expired session silently degrades every request to anon-level
+      // access — every "authenticated"-scoped storage RLS policy then rejects
+      // with a generic "row-level security policy" error that looks identical
+      // to a genuinely missing policy. Check explicitly so that case fails
+      // with an actionable message instead (same fix already applied to the
+      // Publish to Catalog flow).
+      async function m3dRequireSession() {
+        const { data: sessionData } = await bloomSupabase.auth.getSession();
+        if (!sessionData || !sessionData.session) {
+          const err = new Error('Your session has expired. Please sign out and sign in again, then retry.');
+          err.m3dStep = 'session check';
+          throw err;
+        }
+      }
+
       // Uploads/links a .glb file to an orchid: shared by the manual upload
       // button and the Tripo AI generation flow (once the model is fetched).
       async function m3dPersistModelFile(orchidId, file) {
+        await m3dRequireSession();
+
         const path = `orchid-models/${orchidId}-${Date.now()}.glb`;
         const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
         const { error: upErr } = await bloomSupabase.storage
@@ -5829,6 +5846,8 @@
       // slots to storage (Tripo AI needs a fetchable URL, not raw file bytes)
       // and returns its public URL.
       async function m3dUploadReferencePhoto(orchidId, view, file) {
+        await m3dRequireSession();
+
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
         const path = `tripo-uploads/${orchidId}-${view}-${Date.now()}.${ext}`;
         const bucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
