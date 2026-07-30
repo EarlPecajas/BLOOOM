@@ -931,7 +931,7 @@
               <p class="text-xs font-semibold" style="color:#15803d;">View species →</p>
             </div>
 
-            <div onclick="showConservationList('unassigned','Unassigned')"
+            <div onclick="showConservationList('unassigned','Not Listed')"
                  class="p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
                  style="background:linear-gradient(165deg,#ffffff 0%,#fafafa 100%);border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 8px 22px rgba(20,90,30,.08);"
                  onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 4px 8px rgba(107,114,128,0.08),0 14px 30px rgba(107,114,128,0.18)';"
@@ -944,7 +944,7 @@
                 </span>
               </div>
               <p id="count-unassigned" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Unassigned</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Not Listed</p>
               <p class="text-xs font-semibold" style="color:var(--dt-muted);">View species →</p>
             </div>
 
@@ -1792,7 +1792,15 @@
           <!-- Generate with AI panel -->
           <div id="m3d-panel-generate">
             <div id="m3d-gen-source-note" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1rem;line-height:1.4;">
-              Select an orchid above — its catalog photo will be sent to Tripo AI to generate a 3D model automatically. No file upload needed.
+              Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be sent to Tripo AI automatically.
+            </div>
+
+            <div style="margin-bottom:1.1rem;">
+              <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.35rem;">Upload Your Own Photos (optional)</label>
+              <p style="font-size:0.78rem;color:var(--dt-muted);margin:0 0 0.6rem;line-height:1.4;">
+                Upload a Front photo alone for a quick single-image model, or add Left / Right / Back for a more accurate multi-angle model. Any angle left blank falls back to the orchid's catalog photo (Front only) or is simply skipped.
+              </p>
+              <div id="m3d-upload-slots" style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.6rem;"></div>
             </div>
 
             <details style="margin-bottom:1.1rem;">
@@ -1968,7 +1976,7 @@
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-microhabitat" style="font-size:0.88rem;font-weight:600;color:#334155;">Microhabitat <span class="required-asterisk">*</span></label>
-            <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Choose microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option></select>
+            <select id="submission-microhabitat" class="submission-select"><option value="" disabled selected hidden>Choose microhabitat</option><option value="canopy">Canopy</option><option value="understory">Understory</option><option value="forest floor">Forest Floor</option><option value="rock surface">Rock Surface</option><option value="twigs or branches">Twigs or Branches</option></select>
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-soil-type" style="font-size:0.88rem;font-weight:600;color:#334155;">Soil Type <span class="required-asterisk">*</span></label>
@@ -1976,7 +1984,7 @@
           </div>
           <div style="display:grid;gap:0.35rem;">
             <label for="submission-nearby-water-source" style="font-size:0.88rem;font-weight:600;color:#334155;">Nearby Water Source <span class="required-asterisk">*</span></label>
-            <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="stream">Stream</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
+            <select id="submission-nearby-water-source" class="submission-select"><option value="" disabled selected hidden>Nearby Water Source</option><option value="riparian">Riparian</option><option value="spring">Spring</option><option value="river">River</option><option value="seep">Seep</option><option value="pond">Pond</option><option value="none">None</option><option value="unidentified">Unidentified</option></select>
           </div>
 
           <div style="grid-column:1/-1;padding:0.75rem;border:1px solid #e4ece7;border-radius:10px;background:#f9fcfa;">
@@ -2455,6 +2463,32 @@
     <!-- Toast notification -->
     <div id="denr-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:5000;background:#1a3a1c;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;font-family:Inter,Roboto,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:340px;line-height:1.45;"></div>
 
+    <!-- Edit Conservation Status modal -->
+    <div id="edit-con-status-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:4000;align-items:center;justify-content:center;padding:1.5rem;">
+      <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.28);padding:1.75rem 1.75rem 1.4rem;font-family:Inter,Roboto,sans-serif;">
+        <h3 style="margin:0 0 .2rem;font-size:1.05rem;font-weight:700;color:#1a3a1c;">Edit Conservation Status</h3>
+        <p id="edit-con-status-orchid-name" style="margin:0 0 1.1rem;font-size:.85rem;color:#577A5C;font-style:italic;"></p>
+        <label style="display:block;font-size:.8rem;font-weight:600;color:#4a5a4c;margin-bottom:.4rem;">Conservation Status</label>
+        <select id="edit-con-status-select" style="width:100%;padding:.6rem .7rem;border-radius:8px;border:1.5px solid #d1d5db;font-size:.9rem;font-family:inherit;color:#1a3a1c;margin-bottom:1.4rem;">
+          <option value="">Not Listed</option>
+          <option value="Least Concern">Least Concern</option>
+          <option value="Vulnerable">Vulnerable</option>
+          <option value="Endangered">Endangered</option>
+          <option value="Critically Endangered">Critically Endangered</option>
+        </select>
+        <div style="display:flex;justify-content:flex-end;gap:.65rem;">
+          <button onclick="closeModal('edit-con-status-modal')"
+            style="padding:.48rem 1.2rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;">
+            Cancel
+          </button>
+          <button id="edit-con-status-save-btn" onclick="saveEditConservationStatus()"
+            style="padding:.48rem 1.2rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Add / Edit Trail Modal -->
     <div id="addTrailModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:4500;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px);">
       <div style="background:var(--dt-bg);border-radius:16px;max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.55);border:1px solid var(--dt-border-md);overflow:hidden;">
@@ -2746,7 +2780,7 @@
                   <h4 class="ptc-section-title">Conservation & Threat Data</h4>
                 </div>
                 <div class="ptc-section" data-section="con" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
-                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="con-status" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><select id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;border:1.5px solid var(--dt-border-md);border-radius:6px;background:var(--dt-bg-input);padding:0.25rem 0.4rem;outline:none;"><option value="">Unassigned</option><option value="Least Concern">Least Concern</option><option value="Vulnerable">Vulnerable</option><option value="Endangered">Endangered</option><option value="Critically Endangered">Critically Endangered</option></select></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="con-status" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><select id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;border:1.5px solid var(--dt-border-md);border-radius:6px;background:var(--dt-bg-input);padding:0.25rem 0.4rem;outline:none;"><option value="">Not Listed</option><option value="Least Concern">Least Concern</option><option value="Vulnerable">Vulnerable</option><option value="Endangered">Endangered</option><option value="Critically Endangered">Critically Endangered</option></select></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="threat" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Level</span><span id="ptc-threat" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="pop-status" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Population Status</span><span id="ptc-pop-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="threat-types" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Types</span><span id="ptc-threat-types" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span></div>
@@ -2784,7 +2818,12 @@
                   <span style="font-size:0.72rem;color:var(--dt-muted);">Shown as the card image in all catalogs</span>
                 </div>
                 <div style="padding:1rem;">
-                  <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed var(--dt-border-md);border-radius:10px;cursor:pointer;background:rgba(77,184,106,0.06);font-size:0.84rem;color:var(--dt-accent-lt);font-weight:600;transition:background 150ms;" onmouseover="this.style.background='rgba(77,184,106,0.12)'" onmouseout="this.style.background='rgba(77,184,106,0.06)'">
+                  <div id="thumbnailFromPhotosWrap" style="display:none;margin-bottom:0.85rem;">
+                    <p style="margin:0 0 0.5rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Choose from this submission's photos</p>
+                    <div id="thumbnailPhotoOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:0.55rem;"></div>
+                    <p style="margin:0.6rem 0 0;font-size:0.76rem;color:var(--dt-muted);">— or —</p>
+                  </div>
+                  <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed var(--dt-border-md);border-radius:10px;cursor:pointer;background:rgba(77,184,106,0.06);font-size:0.84rem;color:var(--dt-accent-lt);font-weight:600;transition:background 150ms;margin-top:0.6rem;" onmouseover="this.style.background='rgba(77,184,106,0.12)'" onmouseout="this.style.background='rgba(77,184,106,0.06)'">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     Upload custom thumbnail
                     <input type="file" id="catalogThumbnailUpload" accept="image/*" style="display:none;" onchange="previewCustomThumbnail(this)">
@@ -4618,7 +4657,7 @@
         endangered: 'Endangered',
         vulnerable: 'Vulnerable',
         least_concern: 'Least Concern',
-        unassigned: 'Unassigned'
+        unassigned: 'Not Listed'
       };
       const CONSERVATION_STATUS_COLORS = {
         critically_endangered: '#d32f2f',
@@ -5157,7 +5196,7 @@
           // ── Derived display fields ──
           habitat:               row.habitat || hab.habitat_type || '-',
           endemicity:            row.endemicity || con.population_status || '-',
-          conservation_status:   row.conservation_status || con.threat_level || 'Unassigned',
+          conservation_status:   row.conservation_status || con.threat_level || 'Not Listed',
           ethnobotanical:        row.ethnobotanical || row.researcher_notes || '-',
           horticulture_value:    row.horticulture_value || row.institution || '-',
           cultural_importance:   row.cultural_importance || '-',
@@ -5330,48 +5369,20 @@
       const m3dOrchidSearchEl  = document.getElementById('m3d-orchid-search');
       const m3dOrchidResultsEl = document.getElementById('m3d-orchid-results');
 
-      // Same genus/species → seed-photo filename map the catalog uses for its
-      // thumbnails, so this picker shows the same image as the public catalog.
-      const M3D_SEED_CLOSEUP_MAP = {
-        'aerides quinquevulnera':    'seed_closeup_aerides.jpg',
-        'bulbophyllum lobbii':       'seed_closeup_bulbophyllum.jpg',
-        'calanthe triplicata':       'seed_closeup_calanthe.jpg',
-        'coelogyne asperata':        'seed_closeup_coelogyne.jpg',
-        'dendrobium secundum':       'seed_closeup_dendrobium.jpg',
-        'paphiopedilum fowliei':     'seed_closeup_paphiopedilum.jpg',
-        'phalaenopsis schilleriana': 'seed_closeup_phalaenopsis.jpg',
-        'spathoglottis plicata':     'seed_closeup_spathoglottis.jpg',
-        'trichoglottis brachiata':   'seed_closeup_trichoglottis.jpg',
-        'vanda sanderiana':          'seed_closeup_vanda.jpg',
-        'aerides':       'seed_closeup_aerides.jpg',
-        'bulbophyllum':  'seed_closeup_bulbophyllum.jpg',
-        'calanthe':      'seed_closeup_calanthe.jpg',
-        'coelogyne':     'seed_closeup_coelogyne.jpg',
-        'dendrobium':    'seed_closeup_dendrobium.jpg',
-        'paphiopedilum': 'seed_closeup_paphiopedilum.jpg',
-        'phalaenopsis':  'seed_closeup_phalaenopsis.jpg',
-        'spathoglottis': 'seed_closeup_spathoglottis.jpg',
-        'trichoglottis': 'seed_closeup_trichoglottis.jpg',
-        'vanda':         'seed_closeup_vanda.jpg'
-      };
-
-      function m3dResolveSeedPhotoUrl(filename) {
-        if (!filename || !bloomSupabase?.storage) return null;
-        const bucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
-        const { data } = bloomSupabase.storage.from(bucket).getPublicUrl('sightings/' + filename);
-        return data?.publicUrl || null;
-      }
-
-      // Mirrors the catalog's thumbnail priority: seed photo by species/genus, then the DB image_url.
+      // Mirrors the catalog grid's thumbnail priority (see renderOrchidCatalog):
+      // the real per-orchid image_url DENR chose at publish time must win —
+      // storageImagesByGenus is only a handful of leftover demo-genus seed
+      // photos and must stay a last resort, or every orchid of a matching
+      // genus would show the wrong (generic) photo instead of its own.
       function m3dResolveOrchidPhoto(row) {
         const sciName = (row.name || '').toLowerCase().trim();
         const genus = sciName.split(' ')[0];
-        const seedFile = M3D_SEED_CLOSEUP_MAP[sciName] || M3D_SEED_CLOSEUP_MAP[genus];
-        return (seedFile && m3dResolveSeedPhotoUrl(seedFile)) || row.image_url || null;
+        return row.image_url || storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
       }
 
       async function loadModel3DOrchidOptions() {
         if (!bloomSupabase) return;
+        if (storageImagesByGenus.size === 0) loadStorageImages();
         if (m3dOrchidSearchEl) m3dOrchidSearchEl.placeholder = 'Loading orchids…';
         try {
           const { data, error } = await bloomSupabase
@@ -5528,16 +5539,10 @@
           m3dSetPreview(null);
         }
 
-        const genNote = document.getElementById('m3d-gen-source-note');
-        if (genNote) {
-          if (!row) {
-            genNote.textContent = 'Select an orchid above — its catalog photo will be sent to Tripo AI to generate a 3D model automatically. No file upload needed.';
-          } else if (row.resolved_image_url || row.image_url) {
-            genNote.textContent = `Will generate from ${row.name}'s catalog photo shown above.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
-          } else {
-            genNote.textContent = `${row.name} has no catalog photo yet — open "Use a text description instead" below and describe it.`;
-          }
-        }
+        // Uploaded reference photos are per-orchid — abandon them on switch so
+        // a photo meant for one species can never be sent for another.
+        m3dResetUploadSlots();
+        m3dUpdateGenSourceNote();
       }
 
       function m3dOnFileChange() {
@@ -5553,6 +5558,92 @@
       // orchid's existing model preview (or the empty state) via m3dOnOrchidChange.
       function m3dClearFile() {
         m3dOnOrchidChange();
+      }
+
+      // ── 3D IMAGE (TRIPO AI) — user-uploaded reference photos ────────
+      // Lets the user supply their own Front/Left/Right/Back photos instead of
+      // the catalog thumbnail. Front upload overrides the catalog photo; the
+      // other angles have no catalog equivalent, so they're simply omitted
+      // from the Tripo AI request when left blank.
+      const M3D_UPLOAD_VIEWS = [
+        { key: 'front', label: 'Front' },
+        { key: 'left',  label: 'Left' },
+        { key: 'right', label: 'Right' },
+        { key: 'back',  label: 'Back' },
+      ];
+      const m3dUploadSlots = { front: null, left: null, right: null, back: null };
+
+      (function m3dBuildUploadSlots() {
+        const container = document.getElementById('m3d-upload-slots');
+        if (!container) return;
+        container.innerHTML = M3D_UPLOAD_VIEWS.map(({ key, label }) => `
+          <div style="border:1.5px dashed var(--dt-border-md);border-radius:8px;padding:0.5rem;display:flex;flex-direction:column;align-items:center;gap:0.35rem;position:relative;">
+            <div style="width:100%;height:70px;border-radius:6px;overflow:hidden;background:var(--dt-bg-panel);display:flex;align-items:center;justify-content:center;">
+              <img id="m3d-upload-${key}-preview" alt="${label}" style="width:100%;height:100%;object-fit:cover;display:none;" />
+              <span id="m3d-upload-${key}-label" style="font-size:0.72rem;color:var(--dt-muted);">${label}${key === 'front' ? '' : ' (optional)'}</span>
+            </div>
+            <input id="m3d-upload-${key}-input" type="file" accept="image/*" style="font-size:0.68rem;width:100%;color:var(--dt-text);" onchange="m3dOnUploadSlotChange('${key}')" />
+            <button type="button" id="m3d-upload-${key}-clear" hidden onclick="m3dClearUploadSlot('${key}')" title="Remove ${label} photo"
+              style="position:absolute;top:4px;right:4px;width:18px;height:18px;padding:0;border:none;border-radius:50%;background:#FEE2E2;color:#991B1B;font-size:0.68rem;font-weight:700;line-height:1;cursor:pointer;">✕</button>
+          </div>
+        `).join('');
+      })();
+
+      function m3dRefreshUploadSlotPreview(view) {
+        const file     = m3dUploadSlots[view];
+        const img      = document.getElementById(`m3d-upload-${view}-preview`);
+        const label    = document.getElementById(`m3d-upload-${view}-label`);
+        const clearBtn = document.getElementById(`m3d-upload-${view}-clear`);
+        if (!img || !label) return;
+        if (file) {
+          img.src = URL.createObjectURL(file);
+          img.style.display = '';
+          label.style.display = 'none';
+          if (clearBtn) clearBtn.hidden = false;
+        } else {
+          img.removeAttribute('src');
+          img.style.display = 'none';
+          label.style.display = '';
+          if (clearBtn) clearBtn.hidden = true;
+        }
+      }
+
+      function m3dOnUploadSlotChange(view) {
+        const input = document.getElementById(`m3d-upload-${view}-input`);
+        m3dUploadSlots[view] = (input && input.files ? input.files[0] : null) || null;
+        m3dRefreshUploadSlotPreview(view);
+        m3dUpdateGenSourceNote();
+      }
+
+      function m3dClearUploadSlot(view) {
+        const input = document.getElementById(`m3d-upload-${view}-input`);
+        if (input) input.value = '';
+        m3dUploadSlots[view] = null;
+        m3dRefreshUploadSlotPreview(view);
+        m3dUpdateGenSourceNote();
+      }
+
+      function m3dResetUploadSlots() {
+        M3D_UPLOAD_VIEWS.forEach(({ key }) => m3dClearUploadSlot(key));
+      }
+
+      // Reflects current orchid + upload state in the note above the Generate button.
+      function m3dUpdateGenSourceNote() {
+        const genNote = document.getElementById('m3d-gen-source-note');
+        if (!genNote) return;
+        const sel = document.getElementById('m3d-orchid-select');
+        const row = sel ? m3dOrchidRows.find(o => String(o.id) === sel.value) : null;
+        const uploadedLabels = M3D_UPLOAD_VIEWS.filter(({ key }) => m3dUploadSlots[key]).map(({ label }) => label);
+
+        if (!row) {
+          genNote.textContent = 'Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be sent to Tripo AI automatically.';
+        } else if (uploadedLabels.length) {
+          genNote.textContent = `Will generate from your uploaded photo${uploadedLabels.length > 1 ? 's' : ''} (${uploadedLabels.join(', ')}) instead of ${row.name}'s catalog photo.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
+        } else if (row.resolved_image_url || row.image_url) {
+          genNote.textContent = `Will generate from ${row.name}'s catalog photo shown above.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
+        } else {
+          genNote.textContent = `${row.name} has no catalog photo yet — upload a photo above, or open "Use a text description instead" below.`;
+        }
       }
 
       // ── 3D IMAGE TABS (Upload GLB vs. Generate with AI) ─────────────
@@ -5706,6 +5797,21 @@
         if (actions) actions.hidden = true;
       }
 
+      // Uploads a reference photo the user picked for the Front/Left/Right/Back
+      // slots to storage (Tripo AI needs a fetchable URL, not raw file bytes)
+      // and returns its public URL.
+      async function m3dUploadReferencePhoto(orchidId, view, file) {
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `tripo-uploads/${orchidId}-${view}-${Date.now()}.${ext}`;
+        const bucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+        const { error: upErr } = await bloomSupabase.storage
+          .from(bucket)
+          .upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
+        if (upErr) { upErr.m3dStep = `uploading ${view} photo`; throw upErr; }
+        const { data } = bloomSupabase.storage.from(bucket).getPublicUrl(path);
+        return data?.publicUrl || null;
+      }
+
       async function generateOrchid3DModel() {
         const sel   = document.getElementById('m3d-orchid-select');
         const btn   = document.getElementById('m3d-gen-btn');
@@ -5715,18 +5821,8 @@
         if (!orchidId) { m3dGenSetStatus('Select an orchid first.', 'error'); return; }
 
         const row = m3dOrchidRows.find(o => String(o.id) === String(orchidId));
-        const photoUrl = row && (row.resolved_image_url || row.image_url);
+        const catalogPhotoUrl = row && (row.resolved_image_url || row.image_url);
         const promptOverride = promptEl ? promptEl.value.trim() : '';
-
-        let requestBody;
-        if (promptOverride) {
-          requestBody = { mode: 'text', prompt: promptOverride };
-        } else if (photoUrl) {
-          requestBody = { mode: 'image', imageUrl: photoUrl };
-        } else {
-          m3dGenSetStatus('This orchid has no catalog photo yet — open "Use a text description instead" below and describe it.', 'error');
-          return;
-        }
 
         m3dPendingGeneratedFile = null;
         m3dAwaitingApproval = false;
@@ -5734,6 +5830,37 @@
 
         btn.disabled = true;
         try {
+          let requestBody;
+          if (promptOverride) {
+            requestBody = { mode: 'text', prompt: promptOverride };
+          } else {
+            const hasUpload = M3D_UPLOAD_VIEWS.some(({ key }) => m3dUploadSlots[key]);
+            if (hasUpload) {
+              m3dGenSetStatus('Uploading your photos…', 'info');
+              const uploadedUrls = {};
+              for (const { key } of M3D_UPLOAD_VIEWS) {
+                const file = m3dUploadSlots[key];
+                if (file) uploadedUrls[key] = await m3dUploadReferencePhoto(orchidId, key, file);
+              }
+              // Front is the only slot with a catalog fallback — Left/Right/Back
+              // have no equivalent catalog photo and are simply omitted if blank.
+              const front = uploadedUrls.front || catalogPhotoUrl;
+              if (!front) {
+                m3dGenSetStatus('Upload a Front photo, or pick an orchid with a catalog photo, before generating.', 'error');
+                return;
+              }
+              const hasOtherAngles = ['left', 'right', 'back'].some((k) => uploadedUrls[k]);
+              requestBody = hasOtherAngles
+                ? { mode: 'multiview', images: { front, left: uploadedUrls.left, right: uploadedUrls.right, back: uploadedUrls.back } }
+                : { mode: 'image', imageUrl: front };
+            } else if (catalogPhotoUrl) {
+              requestBody = { mode: 'image', imageUrl: catalogPhotoUrl };
+            } else {
+              m3dGenSetStatus('This orchid has no catalog photo yet — upload a photo above, or open "Use a text description instead" below and describe it.', 'error');
+              return;
+            }
+          }
+
           m3dGenSetStatus('Submitting to Tripo AI…', 'info');
           const createRes = await fetch('/api/tripo3d', {
             method: 'POST',
@@ -5764,7 +5891,8 @@
           m3dGenSetStatus('3D model generated. Review it in the preview, then Approve to upload it to the orchid catalog, or Regenerate to try again.', 'success');
           m3dShowApprovalUI();
         } catch (err) {
-          m3dGenSetStatus('Generation failed: ' + (err.message || 'unknown error'), 'error');
+          const stepPrefix = err.m3dStep ? `Generation failed (${err.m3dStep}): ` : 'Generation failed: ';
+          m3dGenSetStatus(stepPrefix + (err.message || 'unknown error'), 'error');
           console.warn('generateOrchid3DModel failed:', err);
         } finally {
           btn.disabled = false;
@@ -6719,11 +6847,15 @@
           try {
             const client = window.bloomSupabase || window.supabase;
             if (client && typeof client.from === 'function') {
+              // public_approved_sightings joins the sighting_habitat/morphology/
+              // conservation sub-tables and flattens them into this view — a plain
+              // species_sightings select('*') doesn't carry those fields since the
+              // 3NF migration moved them out, which left Morphological
+              // Characteristics (and Habitat) empty on this page.
               const { data, error } = await client
-                .from('species_sightings')
+                .from('public_approved_sightings')
                 .select('*')
                 .ilike('scientific_name', orchid.name.trim())
-                .eq('review_status', 'approved')
                 .order('observation_date', { ascending: false })
                 .limit(10);
               if (!error && data) sightings = data;
@@ -6896,6 +7028,14 @@
         });
       }
 
+      const CON_STATUS_PILL_STYLE = {
+        critically_endangered: { bg: '#FEF2F2', color: '#991B1B', border: '#FECACA' },
+        endangered:            { bg: '#FEF3C7', color: '#92400E', border: '#FDE68A' },
+        vulnerable:             { bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
+        least_concern:          { bg: '#ECFDF5', color: '#065F46', border: '#A7F3D0' },
+        unassigned:             { bg: '#F3F4F6', color: '#4B5563', border: '#E5E7EB' }
+      };
+
       function renderOrchidCatalog(items) {
         if (!catalogGrid) return;
 
@@ -6907,15 +7047,31 @@
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
-          const thumbnail = storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchid.image_url || orchidImage;
+          // orchid.image_url is the real thumbnail DENR actually chose when
+          // publishing (via biogeography.picture_id) — it must win. The
+          // storageImagesByGenus lookup is only a handful of hardcoded seed
+          // placeholder photos left over from the original 10 demo genera; it
+          // was being checked first, so every newly-published orchid whose
+          // genus happened to match one of those ten (e.g. any new Aerides
+          // species) silently showed that generic seed photo instead of the
+          // thumbnail actually picked during publish.
+          const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
+          const statusKey = normalizeConservationKey(orchid.conservation_status);
+          const statusLabel = orchid.conservation_status && statusKey !== 'unassigned' ? orchid.conservation_status : 'Not Listed';
+          const pill = CON_STATUS_PILL_STYLE[statusKey] || CON_STATUS_PILL_STYLE.unassigned;
           return `
-          <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
+          <div class="orchid-card" data-dashboard-orchid-id="${orchid.id}" style="width:100%;">
+            <span class="orchid-status-pill" style="position:absolute;top:0.55rem;left:0.55rem;right:2.2rem;z-index:2;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;line-height:1.3;padding:0.22rem 0.55rem;border-radius:10px;background:${pill.bg};color:${pill.color};border:1px solid ${pill.border};">${statusLabel}</span>
+            <button type="button" class="orchid-status-edit-btn" title="Edit conservation status" data-edit-orchid-id="${orchid.id}"
+              style="position:absolute;top:0.55rem;right:0.55rem;z-index:3;width:26px;height:26px;flex-shrink:0;border-radius:999px;border:1.5px solid rgba(20,90,30,0.18);background:rgba(255,255,255,0.92);color:#145A1E;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.12);padding:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${scientificNameCardHtml(orchid.name)}</p>
               <p class="orchid-card-genus">${orchid.common_name || ''}</p>
             </div>
-          </button>
+          </div>
         `;
         }).join('');
       }
@@ -7199,6 +7355,13 @@
       }
 
       catalogGrid.addEventListener('click', function(e) {
+        const editBtn = e.target.closest('.orchid-status-edit-btn');
+        if (editBtn) {
+          e.stopPropagation();
+          openEditConservationStatusModal(editBtn.getAttribute('data-edit-orchid-id'));
+          return;
+        }
+
         const card = e.target.closest('[data-dashboard-orchid-id]');
         if (!card) {
           return;
@@ -7234,11 +7397,14 @@
           const genus = (orchid.genus || '').toLowerCase();
           const scientificKey = name.trim();
           const sighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
+          // orchid.conservation_status is the catalog's own DENR-assigned status —
+          // it must win over a sighting's raw self-reported threat_level, or this
+          // filter can disagree with what the catalog card/pill actually shows.
           const rawStatus =
-            sighting?.threat_level_generalized ||
-            sighting?.threat_level ||
             orchid.conservation_status ||
             orchid.conservation_status_key ||
+            sighting?.threat_level_generalized ||
+            sighting?.threat_level ||
             '';
           const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
 
@@ -7527,7 +7693,7 @@
         barInsightList.appendChild(createConservationInsightItem(`${CONSERVATION_STATUS_LABELS[mostCommon.key]} is the largest segment with ${mostCommon.count} orchids, exceeding ${CONSERVATION_STATUS_LABELS[secondMostCommon.key]} by ${topGap}.`));
         barInsightList.appendChild(createConservationInsightItem(`${threatenedCount} of ${total} orchids (${threatenedRatio}%) are currently in threatened classes.`));
         barInsightList.appendChild(createConservationInsightItem(`Only ${safeCount} orchids (${safeRatio}%) are in Least Concern, while Critically Endangered alone accounts for ${summary.critically_endangered || 0} (${criticalRatio}%).`));
-        barInsightList.appendChild(createConservationInsightItem(`Unassigned records are ${summary.unassigned || 0}, which keeps the chart fully attributable to known conservation categories.`));
+        barInsightList.appendChild(createConservationInsightItem(`Not Listed records are ${summary.unassigned || 0}, which keeps the chart fully attributable to known conservation categories.`));
       }
 
       function refreshConservationAnalytics(rawData) {
@@ -7720,7 +7886,7 @@
           L.marker([lat, lng], { icon })
             .bindPopup(
               `<b style="color:${col};">${r.scientific_name || 'Unknown Species'}</b>` +
-              `<br><span style="font-size:0.82rem;color:#555;">${r.conservation_status || 'Unassigned'}</span>` +
+              `<br><span style="font-size:0.82rem;color:#555;">${conStatusDisplayLabel(r.conservation_status)}</span>` +
               `<br><span style="font-size:0.75rem;color:#888;">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`
             )
             .addTo(dashboardMap);
@@ -8179,6 +8345,86 @@
         }
       }
 
+      let editConStatusOrchidId = null;
+
+      function openEditConservationStatusModal(orchidId) {
+        const orchid = orchidRows.find((o) => String(o.id) === String(orchidId));
+        if (!orchid) return;
+        editConStatusOrchidId = orchidId;
+        document.getElementById('edit-con-status-orchid-name').textContent = orchid.name || '';
+        const select = document.getElementById('edit-con-status-select');
+        const key = normalizeConservationKey(orchid.conservation_status);
+        const keyToLabel = {
+          least_concern: 'Least Concern',
+          vulnerable: 'Vulnerable',
+          endangered: 'Endangered',
+          critically_endangered: 'Critically Endangered'
+        };
+        select.value = keyToLabel[key] || '';
+        document.getElementById('edit-con-status-modal').style.display = 'flex';
+      }
+
+      async function saveEditConservationStatus() {
+        if (!editConStatusOrchidId) return;
+        const orchid = orchidRows.find((o) => String(o.id) === String(editConStatusOrchidId));
+        if (!orchid) return;
+
+        const saveBtn = document.getElementById('edit-con-status-save-btn');
+        const selectedStatusLabel = document.getElementById('edit-con-status-select').value;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try {
+          const { data: sessionData } = await bloomSupabase.auth.getSession();
+          if (!sessionData || !sessionData.session) {
+            throw new Error('Your session has expired. Please sign out and sign in again, then retry.');
+          }
+
+          let conservationId = null;
+          if (selectedStatusLabel) {
+            const { data: existingStatus } = await bloomSupabase
+              .from('conservation_status').select('conservation_id')
+              .ilike('conservation_status', selectedStatusLabel).maybeSingle();
+            if (existingStatus) {
+              conservationId = existingStatus.conservation_id;
+            } else {
+              const { data: newStatus, error: statusErr } = await bloomSupabase
+                .from('conservation_status').insert({ conservation_status: selectedStatusLabel })
+                .select('conservation_id').single();
+              if (statusErr) throw statusErr;
+              conservationId = newStatus.conservation_id;
+            }
+          }
+
+          const { data: existingBio } = await bloomSupabase
+            .from('biogeography').select('biogeographic_id').eq('orchid_id', orchid.id).maybeSingle();
+          if (existingBio) {
+            const { error: bioErr } = await bloomSupabase.from('biogeography')
+              .update({ conservation_id: conservationId })
+              .eq('orchid_id', orchid.id);
+            if (bioErr) throw bioErr;
+          } else {
+            const { error: bioErr } = await bloomSupabase.from('biogeography')
+              .insert({ orchid_id: orchid.id, conservation_id: conservationId, submission_status: 'approved' });
+            if (bioErr) throw bioErr;
+          }
+
+          orchid.conservation_status = selectedStatusLabel || 'Not Listed';
+          orchid.conservation_status_key = normalizeConservationKey(selectedStatusLabel);
+
+          closeModal('edit-con-status-modal');
+          showToast(`Conservation status for "${orchid.name}" updated.`);
+          renderOrchidCatalog(orchidRows);
+        } catch (error) {
+          console.error('Failed to update conservation status:', error);
+          const detail = [error.message, error.details, error.hint].filter(Boolean).join(' — ');
+          showToast('Failed to update conservation status: ' + (detail || 'Unknown error'), true);
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save';
+        }
+      }
+
       function openLightbox(imageSrc) {
         const lightbox = document.getElementById('imageLightbox');
         const lightboxImage = document.getElementById('lightboxImage');
@@ -8334,6 +8580,14 @@
         if (s.includes('vulnerable')) return 'vulnerable';
         if (s.includes('least') || s.includes('concern')) return 'least_concern';
         return 'unassigned';
+      }
+
+      // Some rows still carry the literal legacy text "Unassigned" straight from the
+      // database (a pre-existing default for orchids with no conservation_status row),
+      // so a plain `|| 'Not Listed'` fallback wouldn't catch it — route every
+      // conservation-status display string through this instead.
+      function conStatusDisplayLabel(statusText) {
+        return normalizeConservationKey(statusText) === 'unassigned' ? 'Not Listed' : statusText;
       }
 
       async function loadConservationSummary() {
@@ -8800,7 +9054,7 @@
           case 'date_discovered':    return orchid.date_discovered
             ? new Date(orchid.date_discovered).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Not recorded';
-          case 'conservation_status':return orchid.conservation_status || 'Unassigned';
+          case 'conservation_status':return conStatusDisplayLabel(orchid.conservation_status);
           // Excel keeps this as the raw URL (a spreadsheet has nowhere to embed
           // the image); the PDF builder pulls the photo out separately to render
           // it as a real image instead of listing it as a text row.
@@ -9005,7 +9259,7 @@
             { status: 'Endangered', count: sourceData.conservationSummary.endangered || 0 },
             { status: 'Vulnerable', count: sourceData.conservationSummary.vulnerable || 0 },
             { status: 'Least Concern', count: sourceData.conservationSummary.least_concern || 0 },
-            { status: 'Unassigned', count: sourceData.conservationSummary.unassigned || 0 }
+            { status: 'Not Listed', count: sourceData.conservationSummary.unassigned || 0 }
           ];
         }
 
@@ -10030,11 +10284,20 @@
 
       // Post to Catalog functionality
       let catalogCustomThumbnailFile = null;
+      // Mutually exclusive with catalogCustomThumbnailFile — picking one clears the other.
+      let catalogSelectedExistingThumbnailUrl = null;
 
       function previewCustomThumbnail(input) {
         const file = input.files[0];
         if (!file) return;
         catalogCustomThumbnailFile = file;
+        catalogSelectedExistingThumbnailUrl = null;
+        document.querySelectorAll('#thumbnailPhotoOptions img').forEach((img) => {
+          img.style.borderColor = '#e2e8f0';
+        });
+        document.querySelectorAll('#thumbnailPhotoOptions .thumb-pick-badge').forEach((b) => {
+          b.style.display = 'none';
+        });
         const reader = new FileReader();
         reader.onload = function(e) {
           const preview = document.getElementById('customThumbnailPreview');
@@ -10046,6 +10309,31 @@
             </div>`;
         };
         reader.readAsDataURL(file);
+      }
+
+      function makeThumbnailPhotoCard(img, index) {
+        return `<div style="position:relative;cursor:pointer;" onclick="selectExistingThumbnail(this, '${img.replace(/'/g, "\\'")}')">
+          <img src="${img}" alt="Photo ${index + 1}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2.5px solid #e2e8f0;transition:border-color 150ms;">
+          <span class="thumb-pick-badge" style="display:none;position:absolute;top:4px;right:4px;background:#145A1E;color:#fff;font-size:0.6rem;font-weight:800;padding:0.15rem 0.4rem;border-radius:999px;">SELECTED</span>
+        </div>`;
+      }
+
+      function selectExistingThumbnail(el, url) {
+        catalogSelectedExistingThumbnailUrl = url;
+        catalogCustomThumbnailFile = null;
+
+        const uploadInput = document.getElementById('catalogThumbnailUpload');
+        if (uploadInput) uploadInput.value = '';
+        const preview = document.getElementById('customThumbnailPreview');
+        if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+
+        document.querySelectorAll('#thumbnailPhotoOptions > div').forEach((node) => {
+          const img = node.querySelector('img');
+          const badge = node.querySelector('.thumb-pick-badge');
+          const selected = node === el;
+          if (img) img.style.borderColor = selected ? '#145A1E' : '#e2e8f0';
+          if (badge) badge.style.display = selected ? 'block' : 'none';
+        });
       }
 
       function makeGalleryCard(img, index) {
@@ -10127,6 +10415,7 @@
       async function openPostToCatalogModal() {
         if (!currentSubmission) return;
         catalogCustomThumbnailFile = null;
+        catalogSelectedExistingThumbnailUrl = null;
         document.getElementById('customThumbnailPreview').style.display = 'none';
         document.getElementById('customThumbnailPreview').innerHTML = '';
         const uploadInput = document.getElementById('catalogThumbnailUpload');
@@ -10219,8 +10508,9 @@
           }
         } catch(e) { console.error('Genus load error:', e); }
 
-        // Photos — the catalog thumbnail is always a manual upload (see Upload custom
-        // thumbnail above); only the gallery picker offers the submission's own photos.
+        // Photos — the catalog thumbnail can be picked from the submission's own
+        // photos, or a fresh custom upload; the gallery picker separately offers
+        // the same photos for the orchid's public gallery.
         const galleryOptions = document.getElementById('galleryOptions');
         const galleryEmpty   = document.getElementById('galleryOptionsEmpty');
         // whole_plant_photos/etc. can hold plain string URLs (3NF sighting_media path)
@@ -10230,6 +10520,16 @@
           ...(s.closeup_flower_photos|| []),
           ...(s.habitat_photos       || [])
         ].map(item => normalizeMediaItem(item).src).filter(Boolean);
+
+        const thumbnailFromPhotosWrap = document.getElementById('thumbnailFromPhotosWrap');
+        const thumbnailPhotoOptions = document.getElementById('thumbnailPhotoOptions');
+        if (allImages.length === 0) {
+          if (thumbnailFromPhotosWrap) thumbnailFromPhotosWrap.style.display = 'none';
+          if (thumbnailPhotoOptions) thumbnailPhotoOptions.innerHTML = '';
+        } else {
+          if (thumbnailFromPhotosWrap) thumbnailFromPhotosWrap.style.display = 'block';
+          if (thumbnailPhotoOptions) thumbnailPhotoOptions.innerHTML = allImages.map((img, i) => makeThumbnailPhotoCard(img, i)).join('');
+        }
 
         if (allImages.length === 0) {
           galleryOptions.innerHTML = '';
@@ -10254,16 +10554,17 @@
         const hiddenFields = ptcGetHiddenFields();
         const submitBtn = event.target.querySelector('[type="submit"]');
 
-        // The catalog thumbnail is always a manual upload — never auto-suggested from
-        // submission photos, since those don't necessarily represent the species well.
-        let thumbnailUrl = catalogCustomThumbnailFile ? '__upload__' : null;
+        // The thumbnail is either a fresh upload (needs the storage round-trip
+        // below) or one of the submission's own already-uploaded photos, whose
+        // URL can be used directly with no upload required.
+        let thumbnailUrl = catalogCustomThumbnailFile ? '__upload__' : catalogSelectedExistingThumbnailUrl;
 
         if (!scientificName || !genusName) {
           showToast('Please fill in Scientific Name and Genus.', true);
           return;
         }
         if (!thumbnailUrl) {
-          showToast('Please upload a catalog thumbnail.', true);
+          showToast('Please choose or upload a catalog thumbnail.', true);
           return;
         }
 
@@ -10271,6 +10572,16 @@
         submitBtn.textContent = 'Publishing…';
 
         try {
+          // A stale/expired session silently degrades every request to
+          // anon-level access — every "authenticated"-scoped RLS policy below
+          // then rejects with a generic "row-level security policy" error
+          // that looks identical to a genuinely missing policy. Check
+          // explicitly so that case fails with an actionable message instead.
+          const { data: sessionData } = await bloomSupabase.auth.getSession();
+          if (!sessionData || !sessionData.session) {
+            throw new Error('Your session has expired. Please sign out and sign in again, then retry.');
+          }
+
           // Upload custom thumbnail if provided
           if (catalogCustomThumbnailFile) {
             const ext = catalogCustomThumbnailFile.name.split('.').pop();
@@ -10308,8 +10619,27 @@
                         is_published: true, date_discovered: new Date().toISOString(),
                         hidden_fields: hiddenFields })
               .select('orchid_id').single();
-            if (orchidError) throw orchidError;
-            orchidId = newOrchid.orchid_id;
+            if (orchidError && orchidError.code === '23505') {
+              // Unique-constraint race: the orchid row already exists server-side
+              // even though our existence check above just missed it (e.g. an
+              // earlier publish attempt that the client saw fail — from RLS,
+              // a dropped connection, etc. — but actually landed). Recover by
+              // updating that row instead of aborting the whole publish, which
+              // is also why a broken thumbnail could survive a prior failed
+              // attempt: this is the code path that fixes it back up below.
+              const { data: raceOrchid, error: raceErr } = await bloomSupabase
+                .from('orchids').select('orchid_id').eq('sci_name', scientificName).single();
+              if (raceErr) throw raceErr;
+              orchidId = raceOrchid.orchid_id;
+              const { error: raceUpdErr } = await bloomSupabase.from('orchids')
+                .update({ genus_id: genusId, is_published: true, hidden_fields: hiddenFields })
+                .eq('orchid_id', orchidId);
+              if (raceUpdErr) throw raceUpdErr;
+            } else if (orchidError) {
+              throw orchidError;
+            } else {
+              orchidId = newOrchid.orchid_id;
+            }
           }
 
           // Upsert picture row for thumbnail — tag with orchid_id so the public
@@ -10387,7 +10717,11 @@
 
         } catch (error) {
           console.error('Failed to post to catalog:', error);
-          showToast('Failed to publish: ' + (error.message || 'Unknown error'), true);
+          // Supabase/PostgREST errors often carry the actually-useful info in
+          // details/hint rather than message (e.g. which policy rejected the
+          // row) — surface all of it instead of just the generic top-level text.
+          const detail = [error.message, error.details, error.hint].filter(Boolean).join(' — ');
+          showToast('Failed to publish: ' + (detail || 'Unknown error'), true);
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Publish to Catalog';

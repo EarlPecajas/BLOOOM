@@ -2,10 +2,12 @@
 // Keeps TRIPO_API_KEY out of the browser: the frontend never talks to
 // api.tripo3d.ai directly, only to this endpoint.
 //
-//   POST /api/tripo3d   { mode: 'image', imageUrl }     -> create an image_to_model task
-//   POST /api/tripo3d   { mode: 'text',  prompt }        -> create a text_to_model task
-//   GET  /api/tripo3d?task_id=...                        -> poll task status/result
-//   GET  /api/tripo3d?model_url=<tripo glb url>           -> stream the generated model
+//   POST /api/tripo3d   { mode: 'image', imageUrl }                  -> create an image_to_model task
+//   POST /api/tripo3d   { mode: 'multiview', images: { front, left, right, back } }
+//                                                                     -> create a multiview_to_model task (front required)
+//   POST /api/tripo3d   { mode: 'text',  prompt }                     -> create a text_to_model task
+//   GET  /api/tripo3d?task_id=...                                     -> poll task status/result
+//   GET  /api/tripo3d?model_url=<tripo glb url>                       -> stream the generated model
 //
 // The model_url route exists so the browser downloads the generated .glb
 // from our own origin instead of fetching a third-party Tripo URL directly,
@@ -57,18 +59,25 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'POST') {
-      const { mode, imageUrl, prompt, negativePrompt } = req.body || {};
+      const { mode, imageUrl, images, prompt, negativePrompt } = req.body || {};
 
       let taskBody;
       if (mode === 'image') {
         if (!imageUrl) return res.status(400).json({ error: 'imageUrl is required for image mode.' });
         taskBody = { type: 'image_to_model', file: { type: guessImageType(imageUrl), url: imageUrl } };
+      } else if (mode === 'multiview') {
+        const { front, left, back, right } = images || {};
+        if (!front) return res.status(400).json({ error: 'images.front is required for multiview mode.' });
+        // Tripo3D's multiview_to_model expects a fixed 4-slot array in this
+        // order; a missing angle is an empty object, not an omitted element.
+        const toFile = (url) => (url ? { type: guessImageType(url), url } : {});
+        taskBody = { type: 'multiview_to_model', files: [toFile(front), toFile(left), toFile(back), toFile(right)] };
       } else if (mode === 'text') {
         if (!prompt) return res.status(400).json({ error: 'prompt is required for text mode.' });
         taskBody = { type: 'text_to_model', prompt };
         if (negativePrompt) taskBody.negative_prompt = negativePrompt;
       } else {
-        return res.status(400).json({ error: 'mode must be "image" or "text".' });
+        return res.status(400).json({ error: 'mode must be "image", "multiview", or "text".' });
       }
 
       const tripoRes = await fetch(`${TRIPO_API_BASE}/task`, {
