@@ -3073,6 +3073,32 @@
       let knownGenusNames = [];
       let knownEpithets = [];
 
+      // species_sightings.scientific_name is free text a researcher typed
+      // when submitting a sighting, so it occasionally holds a placeholder
+      // ("Unknown", "IDK", "Or chid"...) instead of a real identification.
+      // Only accept it as a suggestion if it actually looks like a binomial:
+      // a capitalized genus word plus one or more lowercase epithet words,
+      // none of them a known placeholder.
+      const TAXON_SUGGESTION_JUNK_WORDS = new Set([
+        'unknown', 'idk', 'tbd', 'tba', 'na', 'n/a', 'test', 'testing',
+        'none', 'null', 'undefined', 'orchid', 'orchidaceae', 'species',
+        'sp', 'spp', 'xxx', 'asdf', 'unidentified', 'pending', 'placeholder',
+        'sample', 'demo'
+      ]);
+
+      function isPlausibleGenusWord(word) {
+        const w = String(word || '').trim();
+        return w.length >= 3 && /^[A-Z][a-z]+$/.test(w) && !TAXON_SUGGESTION_JUNK_WORDS.has(w.toLowerCase());
+      }
+
+      function isPlausibleScientificName(name) {
+        const words = String(name || '').trim().split(/\s+/);
+        if (words.length < 2 || !isPlausibleGenusWord(words[0])) return false;
+        return words.slice(1).every((w) =>
+          w.length >= 2 && /^[a-z][a-z-]*$/.test(w) && !TAXON_SUGGESTION_JUNK_WORDS.has(w.toLowerCase())
+        );
+      }
+
       // Populates the "known species" datalist for the Add Orchid scientific-name
       // field, plus the genus/epithet suggestion lists, from the published
       // catalog and every DENR-approved submission (whether published yet or not).
@@ -3115,17 +3141,20 @@
           }
         }
 
+        const plausibleNames = Array.from(names).filter(isPlausibleScientificName);
+        const plausibleGenusNames = Array.from(genusNames).filter(isPlausibleGenusWord);
+
         // Species epithet = everything after the genus (first word) of each known name.
         const epithets = new Set();
-        names.forEach((n) => {
+        plausibleNames.forEach((n) => {
           const parts = n.split(/\s+/);
-          if (parts.length > 1) epithets.add(parts.slice(1).join(' '));
+          epithets.add(parts.slice(1).join(' '));
         });
 
         if (speciesDatalist) {
-          speciesDatalist.innerHTML = Array.from(names).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
+          speciesDatalist.innerHTML = plausibleNames.sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
         }
-        knownGenusNames = Array.from(genusNames).filter(Boolean).sort();
+        knownGenusNames = plausibleGenusNames.sort();
         knownEpithets = Array.from(epithets).filter(Boolean).sort();
       }
 
