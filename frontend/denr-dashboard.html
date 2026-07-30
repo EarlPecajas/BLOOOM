@@ -10374,8 +10374,27 @@
                         is_published: true, date_discovered: new Date().toISOString(),
                         hidden_fields: hiddenFields })
               .select('orchid_id').single();
-            if (orchidError) throw orchidError;
-            orchidId = newOrchid.orchid_id;
+            if (orchidError && orchidError.code === '23505') {
+              // Unique-constraint race: the orchid row already exists server-side
+              // even though our existence check above just missed it (e.g. an
+              // earlier publish attempt that the client saw fail — from RLS,
+              // a dropped connection, etc. — but actually landed). Recover by
+              // updating that row instead of aborting the whole publish, which
+              // is also why a broken thumbnail could survive a prior failed
+              // attempt: this is the code path that fixes it back up below.
+              const { data: raceOrchid, error: raceErr } = await bloomSupabase
+                .from('orchids').select('orchid_id').eq('sci_name', scientificName).single();
+              if (raceErr) throw raceErr;
+              orchidId = raceOrchid.orchid_id;
+              const { error: raceUpdErr } = await bloomSupabase.from('orchids')
+                .update({ genus_id: genusId, is_published: true, hidden_fields: hiddenFields })
+                .eq('orchid_id', orchidId);
+              if (raceUpdErr) throw raceUpdErr;
+            } else if (orchidError) {
+              throw orchidError;
+            } else {
+              orchidId = newOrchid.orchid_id;
+            }
           }
 
           // Upsert picture row for thumbnail — tag with orchid_id so the public
