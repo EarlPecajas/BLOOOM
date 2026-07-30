@@ -819,24 +819,10 @@
           var date = s.observation_date
             ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
             : '—';
-          var rows = [
-            ['Location', s.mountain_name || ''],
-            ['Site', s.specific_site_zone || ''],
-            ['Elevation', s.elevation_meters ? s.elevation_meters + ' m' : ''],
-            ['Researcher', s.researcher_name || ''],
-            ['Institution', s.institution || ''],
-          ].filter(function(r){ return r[1]; });
           return '<div class="odm-sighting-item">' +
             '<div class="odm-sighting-item-hd">' +
               '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
               '<span class="odm-sighting-item-date">' + date + '</span>' +
-            '</div>' +
-            '<div class="odm-sighting-item-rows">' +
-              rows.map(function(r){
-                return '<div class="odm-sighting-item-row">' +
-                  '<span class="odm-sighting-item-row-lbl">' + r[0] + '</span>' +
-                  '<span>' + escapeHtml(r[1]) + '</span></div>';
-              }).join('') +
             '</div></div>';
         }).join('');
       }
