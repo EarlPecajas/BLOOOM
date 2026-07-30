@@ -1368,8 +1368,7 @@
         <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
           <thead>
             <tr class="submissions-table-head">
-              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Researcher Name</th>
-              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Species</th>
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Scientific Name</th>
               <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Submission Date</th>
               <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Review Status</th>
               <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Actions</th>
@@ -1377,7 +1376,7 @@
           </thead>
           <tbody id="submissions-table-body">
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions from database...</td>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions from database...</td>
             </tr>
           </tbody>
         </table>
@@ -4128,7 +4127,7 @@
         if (!items.length) {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
             </tr>
           `;
           return;
@@ -4136,7 +4135,6 @@
 
         submissionsTableBody.innerHTML = items.map((submission) => {
           const badgeClass = getSubmissionStatusBadgeClass(submission.review_status);
-          const safeResearcher = escapeHtml(submission.researcher_name || submission.researcher || '');
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
@@ -4145,7 +4143,6 @@
           const needsRevision = statusLower === 'revision';
           return `
             <tr class="submission-row">
-              <td class="submission-researcher-cell">${safeResearcher}</td>
               <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
@@ -4228,7 +4225,7 @@
         } catch {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
             </tr>
           `;
         }
