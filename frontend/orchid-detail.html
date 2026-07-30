@@ -901,7 +901,16 @@
       };
 
       function getBestPhotoUrl(src, orchid) {
-        // 1. Genus/species storage lookup — same source as catalog thumbnails
+        // 1. orchid.image_url is the real thumbnail DENR actually chose when
+        // publishing (via biogeography.picture_id) — it must win over both
+        // the hardcoded seed placeholder lookup and raw sighting photos, or
+        // a species with a valid published thumbnail but no seed-map entry
+        // and no photos on its own sighting record (e.g. published using an
+        // existing-photo pick or a manual upload) shows no photo at all here
+        // despite having one on the catalog card.
+        if (orchid?.image_url) return orchid.image_url;
+
+        // 2. Genus/species storage lookup — same source as catalog thumbnails
         const sciName = (src?.scientific_name || orchid?.name || '').toLowerCase().trim();
         const genus = sciName.split(' ')[0];
         const seedFile = SEED_CLOSEUP_MAP[sciName] || SEED_CLOSEUP_MAP[genus];
@@ -909,7 +918,7 @@
           const url = resolvePhotoUrl(seedFile);
           if (url) return url;
         }
-        // 2. DB photo paths
+        // 3. DB photo paths
         const paths = [
           ...(Array.isArray(src?.closeup_flower_photo_path) ? src.closeup_flower_photo_path : []),
           ...(Array.isArray(src?.whole_plant_photo_path) ? src.whole_plant_photo_path : []),
@@ -919,7 +928,7 @@
           const url = resolvePhotoUrl(p);
           if (url) return url;
         }
-        return orchid?.image_url || null;
+        return null;
       }
 
       function normalizeObservationMonth(observationDate, fallbackMonth) {
