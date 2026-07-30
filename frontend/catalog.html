@@ -802,10 +802,7 @@
         document.getElementById('odm-rows-morphology').innerHTML = morphHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No morphological data</span></div>';
 
-        var elev = src.elevation_meters ? src.elevation_meters + ' m' : '';
         var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa', 'mountain') +
-          odmRow('Site / Zone', src.specific_site_zone, 'site') +
-          odmRow('Elevation', elev, 'elevation') +
           odmRow('Habitat', src.habitat_type, 'habitat-type') +
           odmRow('Microhabitat', src.microhabitat, 'microhabitat');
         document.getElementById('odm-rows-location').innerHTML = locHtml ||
