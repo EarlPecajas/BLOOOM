@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="loo.png" />
+    <title>Confirm Email - BLOOM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* ── Clean, professional auth shell (matches signin.html / reset-password.html) ── */
+      body.signin-page {
+        position: relative;
+        background: linear-gradient(165deg, #FFFFFF 0%, #F4F7F5 100%) !important;
+        background-attachment: fixed !important;
+        animation: none !important;
+        color: #1a3a1c !important;
+        overflow-x: hidden;
+      }
+      body.signin-page::before {
+        content: '';
+        position: fixed;
+        top: -140px;
+        right: -120px;
+        width: 460px;
+        height: 460px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(22,163,74,.10), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body.signin-page::after {
+        content: '';
+        position: fixed;
+        bottom: -160px;
+        left: -140px;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59,130,246,.08), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body.signin-page .top-nav {
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #E7ECE7 !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+      }
+      body.signin-page .bloom-text { color: #145A1E !important; }
+      body.signin-page .brand-tagline span { color: rgba(20,90,30,.6) !important; }
+
+      .confirm-email-container {
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - 90px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+      .confirm-email-card {
+        background: #FFFFFF !important;
+        border: 1px solid #E7ECE7 !important;
+        box-shadow: 0 6px 32px rgba(20,90,30,0.1) !important;
+        border-radius: 18px !important;
+        max-width: 420px;
+        width: 100%;
+        padding: 2.5rem 2.25rem !important;
+        text-align: center;
+      }
+      .confirm-email-card .signin-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1.5rem;
+      }
+      .confirm-email-card .signin-brand img { width: 52px; height: 52px; border-radius: 50%; }
+      .confirm-email-card .signin-brand-name {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #145A1E;
+        letter-spacing: -.02em;
+      }
+      .confirm-email-icon { font-size: 2.2rem; margin-bottom: .75rem; }
+      .confirm-email-card h1 {
+        font-size: 1.1rem;
+        color: #145A1E;
+        margin: 0 0 .6rem 0;
+      }
+      .confirm-email-card p {
+        font-size: .875rem;
+        color: #5a7a5c;
+        line-height: 1.6;
+        margin: 0 0 1.25rem 0;
+      }
+      .confirm-email-btn {
+        display: inline-block;
+        padding: .6rem 1.5rem;
+        background: #145A1E;
+        color: #FFFFFF !important;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: .875rem;
+      }
+      .confirm-email-btn:hover { background: #0E4018; }
+    </style>
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+  </head>
+  <body class="signin-page">
+    <header class="top-nav navbar navbar-expand-lg px-3 px-md-4">
+      <a href="index.html" class="brand-link">
+        <div class="brand-container">
+          <div class="brand-logo">
+            <img src="./loo.png" alt="Orchid logo" class="brand-logo-image" />
+          </div>
+          <div class="brand">
+            <span class="bloom-text">BLOOM</span>
+            <div class="brand-tagline">
+              <span>Botanical Locator</span>
+              <span>and Orchid Observation</span>
+              <span>Mapping System</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      <div class="auth-actions"></div>
+    </header>
+
+    <main class="confirm-email-container">
+      <div class="confirm-email-card">
+        <div class="signin-brand">
+          <img src="./loo.png" alt="BLOOM" />
+          <span class="signin-brand-name">BLOOM</span>
+        </div>
+
+        <div id="confirm-email-checking">
+          <div class="confirm-email-icon">⏳</div>
+          <h1>Confirming your email…</h1>
+          <p>One moment while we verify your confirmation link.</p>
+        </div>
+
+        <div id="confirm-email-success" style="display:none;">
+          <div class="confirm-email-icon">✅</div>
+          <h1>Email confirmed!</h1>
+          <p id="confirm-email-success-message">Your account is pending approval by the administrator. You'll be able to sign in once it's approved.</p>
+          <a href="signin.html" class="confirm-email-btn">Go to Sign In</a>
+        </div>
+
+        <div id="confirm-email-invalid" style="display:none;">
+          <div class="confirm-email-icon">⚠️</div>
+          <h1>Link expired or invalid</h1>
+          <p>This confirmation link is no longer valid, or your email may already be confirmed. Try signing in, or register again if needed.</p>
+          <a href="signin.html" class="confirm-email-btn">Go to Sign In</a>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const bloomSupabase = window.bloomSupabase;
+
+      const checkingEl = document.getElementById('confirm-email-checking');
+      const successEl = document.getElementById('confirm-email-success');
+      const successMessageEl = document.getElementById('confirm-email-success-message');
+      const invalidEl = document.getElementById('confirm-email-invalid');
+
+      function showSuccess(statusMessage) {
+        checkingEl.style.display = 'none';
+        invalidEl.style.display = 'none';
+        if (statusMessage) successMessageEl.textContent = statusMessage;
+        successEl.style.display = 'block';
+      }
+      function showInvalid() {
+        checkingEl.style.display = 'none';
+        successEl.style.display = 'none';
+        invalidEl.style.display = 'block';
+      }
+
+      let confirmed = false;
+
+      async function handleConfirmedSession(session) {
+        if (confirmed) return;
+        confirmed = true;
+
+        let statusMessage = "Your account is pending approval by the administrator. You'll be able to sign in once it's approved.";
+        try {
+          const { data: profile } = await bloomSupabase
+            .from('user_profiles')
+            .select('status')
+            .eq('id', session.user.id)
+            .single();
+          if (profile?.status === 'approved') {
+            statusMessage = 'Your account is already approved — you can sign in now.';
+          } else if (profile?.status === 'disabled') {
+            statusMessage = 'Your account has been disabled. Please contact the administrator.';
+          }
+        } catch (_) {}
+
+        // Don't leave a live session sitting in this tab just from opening an
+        // email link — send them through the normal Sign In flow instead.
+        try { await bloomSupabase.auth.signOut(); } catch (_) {}
+
+        showSuccess(statusMessage);
+      }
+
+      if (!bloomSupabase) {
+        showInvalid();
+      } else {
+        bloomSupabase.auth.onAuthStateChange(function(_event, session) {
+          if (session) handleConfirmedSession(session);
+        });
+
+        bloomSupabase.auth.getSession().then(function(result) {
+          if (result?.data?.session) handleConfirmedSession(result.data.session);
+        });
+
+        setTimeout(function() {
+          if (!confirmed) showInvalid();
+        }, 3000);
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
