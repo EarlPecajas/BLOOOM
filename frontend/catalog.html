@@ -954,6 +954,25 @@
       }
 
       async function openOrchidDetails(orchid) {
+        // conservation_status can change after this page's initial load (DENR
+        // edits it from their dashboard), so refresh it on every detail open
+        // instead of trusting whatever `orchids` held when the catalog first
+        // loaded — mutating `orchid` in place also keeps its catalog card and
+        // the conservation-status filter in sync without a full page reload.
+        if (orchid.name && window.bloomSupabase) {
+          try {
+            const { data: freshOverview } = await window.bloomSupabase
+              .from('orchid_overview')
+              .select('conservation_status, conservation_status_key')
+              .ilike('name', orchid.name.trim())
+              .maybeSingle();
+            if (freshOverview) {
+              orchid.conservation_status = freshOverview.conservation_status || orchid.conservation_status;
+              orchid.conservation_status_key = freshOverview.conservation_status_key || orchid.conservation_status_key;
+            }
+          } catch {}
+        }
+
         var scientificKey = normalizeScientificKey(orchid.name);
         var allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';

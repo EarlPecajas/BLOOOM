@@ -2301,19 +2301,24 @@
           orchid = { name: nameFromUrl || 'Unknown Orchid', genus: '', common_name: '', image_url: '' };
         }
 
-        // model_3d_url changes far more often than the rest of this cached
-        // snapshot (DENR staff replace it from the dashboard), so always
-        // refresh it from the DB instead of trusting whatever sessionStorage
-        // held when the user first opened the catalog — otherwise a newly
-        // uploaded model won't show until the cache happens to expire.
+        // model_3d_url and conservation_status both change far more often than
+        // the rest of this cached snapshot (DENR staff replace/edit them from
+        // the dashboard), so always refresh them from the DB instead of
+        // trusting whatever sessionStorage held when the user first opened the
+        // catalog — otherwise a newly uploaded model or a just-edited
+        // conservation status won't show until the cache happens to expire.
         if (orchid.name && window.bloomSupabase) {
           try {
-            const { data: freshModel } = await window.bloomSupabase
+            const { data: freshOverview } = await window.bloomSupabase
               .from('orchid_overview')
-              .select('model_3d_url')
+              .select('model_3d_url, conservation_status, conservation_status_key')
               .ilike('name', orchid.name.trim())
               .maybeSingle();
-            if (freshModel) orchid.model_3d_url = freshModel.model_3d_url || null;
+            if (freshOverview) {
+              orchid.model_3d_url = freshOverview.model_3d_url || null;
+              orchid.conservation_status = freshOverview.conservation_status || orchid.conservation_status;
+              orchid.conservation_status_key = freshOverview.conservation_status_key || orchid.conservation_status_key;
+            }
           } catch {}
         }
 
