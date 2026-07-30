@@ -4333,11 +4333,15 @@
           try {
             const client = window.bloomSupabase || window.supabase;
             if (client && typeof client.from === 'function') {
+              // public_approved_sightings joins the sighting_habitat/morphology/
+              // conservation sub-tables and flattens them into this view — a plain
+              // species_sightings select('*') doesn't carry those fields since the
+              // 3NF migration moved them out, which left Morphological
+              // Characteristics (and Habitat) empty on this page.
               const { data, error } = await client
-                .from('species_sightings')
+                .from('public_approved_sightings')
                 .select('*')
                 .ilike('scientific_name', orchid.name.trim())
-                .eq('review_status', 'approved')
                 .order('observation_date', { ascending: false })
                 .limit(10);
               if (!error && data) sightings = data;
