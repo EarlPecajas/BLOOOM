@@ -931,7 +931,7 @@
               <p class="text-xs font-semibold" style="color:#15803d;">View species →</p>
             </div>
 
-            <div onclick="showConservationList('unassigned','Unassigned')"
+            <div onclick="showConservationList('unassigned','Not Listed')"
                  class="p-5 cursor-pointer relative overflow-hidden transition-all duration-200"
                  style="background:linear-gradient(165deg,#ffffff 0%,#fafafa 100%);border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 8px 22px rgba(20,90,30,.08);"
                  onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 4px 8px rgba(107,114,128,0.08),0 14px 30px rgba(107,114,128,0.18)';"
@@ -944,7 +944,7 @@
                 </span>
               </div>
               <p id="count-unassigned" class="text-4xl font-black leading-none mb-1" style="font-family:Inter,Roboto,sans-serif;color:var(--dt-text);">0</p>
-              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Unassigned</p>
+              <p class="text-xs font-medium mb-3" style="color:var(--dt-muted);">Not Listed</p>
               <p class="text-xs font-semibold" style="color:var(--dt-muted);">View species →</p>
             </div>
 
@@ -2462,7 +2462,7 @@
         <p id="edit-con-status-orchid-name" style="margin:0 0 1.1rem;font-size:.85rem;color:#577A5C;font-style:italic;"></p>
         <label style="display:block;font-size:.8rem;font-weight:600;color:#4a5a4c;margin-bottom:.4rem;">Conservation Status</label>
         <select id="edit-con-status-select" style="width:100%;padding:.6rem .7rem;border-radius:8px;border:1.5px solid #d1d5db;font-size:.9rem;font-family:inherit;color:#1a3a1c;margin-bottom:1.4rem;">
-          <option value="">Unassigned</option>
+          <option value="">Not Listed</option>
           <option value="Least Concern">Least Concern</option>
           <option value="Vulnerable">Vulnerable</option>
           <option value="Endangered">Endangered</option>
@@ -2772,7 +2772,7 @@
                   <h4 class="ptc-section-title">Conservation & Threat Data</h4>
                 </div>
                 <div class="ptc-section" data-section="con" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));">
-                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="con-status" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><select id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;border:1.5px solid var(--dt-border-md);border-radius:6px;background:var(--dt-bg-input);padding:0.25rem 0.4rem;outline:none;"><option value="">Unassigned</option><option value="Least Concern">Least Concern</option><option value="Vulnerable">Vulnerable</option><option value="Endangered">Endangered</option><option value="Critically Endangered">Critically Endangered</option></select></div>
+                  <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);border-right:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="con-status" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Conservation Status</span><select id="ptc-con-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;border:1.5px solid var(--dt-border-md);border-radius:6px;background:var(--dt-bg-input);padding:0.25rem 0.4rem;outline:none;"><option value="">Not Listed</option><option value="Least Concern">Least Concern</option><option value="Vulnerable">Vulnerable</option><option value="Endangered">Endangered</option><option value="Critically Endangered">Critically Endangered</option></select></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-bottom:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="threat" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Level</span><span id="ptc-threat" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-right:1px solid var(--dt-border);"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="pop-status" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Population Status</span><span id="ptc-pop-status" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;"></span></div>
                   <div class="ptc-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;"><label class="ptc-eye-toggle"><input type="checkbox" class="ptc-field-check" data-field="threat-types" checked onchange="ptcFieldToggled(this)"><svg class="ptc-eye-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ptc-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></label><span class="ptc-row-label-text" style="font-size:0.78rem;color:var(--dt-muted);font-weight:600;flex:1;">Threat Types</span><span id="ptc-threat-types" style="font-size:0.8rem;color:var(--dt-text);font-weight:500;text-align:right;max-width:55%;"></span></div>
@@ -4649,7 +4649,7 @@
         endangered: 'Endangered',
         vulnerable: 'Vulnerable',
         least_concern: 'Least Concern',
-        unassigned: 'Unassigned'
+        unassigned: 'Not Listed'
       };
       const CONSERVATION_STATUS_COLORS = {
         critically_endangered: '#d32f2f',
@@ -5188,7 +5188,7 @@
           // ── Derived display fields ──
           habitat:               row.habitat || hab.habitat_type || '-',
           endemicity:            row.endemicity || con.population_status || '-',
-          conservation_status:   row.conservation_status || con.threat_level || 'Unassigned',
+          conservation_status:   row.conservation_status || con.threat_level || 'Not Listed',
           ethnobotanical:        row.ethnobotanical || row.researcher_notes || '-',
           horticulture_value:    row.horticulture_value || row.institution || '-',
           cultural_importance:   row.cultural_importance || '-',
@@ -6960,7 +6960,7 @@
           // thumbnail actually picked during publish.
           const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
           const statusKey = normalizeConservationKey(orchid.conservation_status);
-          const statusLabel = orchid.conservation_status && statusKey !== 'unassigned' ? orchid.conservation_status : 'Unassigned';
+          const statusLabel = orchid.conservation_status && statusKey !== 'unassigned' ? orchid.conservation_status : 'Not Listed';
           const pill = CON_STATUS_PILL_STYLE[statusKey] || CON_STATUS_PILL_STYLE.unassigned;
           return `
           <div class="orchid-card" data-dashboard-orchid-id="${orchid.id}" style="width:100%;">
@@ -7593,7 +7593,7 @@
         barInsightList.appendChild(createConservationInsightItem(`${CONSERVATION_STATUS_LABELS[mostCommon.key]} is the largest segment with ${mostCommon.count} orchids, exceeding ${CONSERVATION_STATUS_LABELS[secondMostCommon.key]} by ${topGap}.`));
         barInsightList.appendChild(createConservationInsightItem(`${threatenedCount} of ${total} orchids (${threatenedRatio}%) are currently in threatened classes.`));
         barInsightList.appendChild(createConservationInsightItem(`Only ${safeCount} orchids (${safeRatio}%) are in Least Concern, while Critically Endangered alone accounts for ${summary.critically_endangered || 0} (${criticalRatio}%).`));
-        barInsightList.appendChild(createConservationInsightItem(`Unassigned records are ${summary.unassigned || 0}, which keeps the chart fully attributable to known conservation categories.`));
+        barInsightList.appendChild(createConservationInsightItem(`Not Listed records are ${summary.unassigned || 0}, which keeps the chart fully attributable to known conservation categories.`));
       }
 
       function refreshConservationAnalytics(rawData) {
@@ -7786,7 +7786,7 @@
           L.marker([lat, lng], { icon })
             .bindPopup(
               `<b style="color:${col};">${r.scientific_name || 'Unknown Species'}</b>` +
-              `<br><span style="font-size:0.82rem;color:#555;">${r.conservation_status || 'Unassigned'}</span>` +
+              `<br><span style="font-size:0.82rem;color:#555;">${conStatusDisplayLabel(r.conservation_status)}</span>` +
               `<br><span style="font-size:0.75rem;color:#888;">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`
             )
             .addTo(dashboardMap);
@@ -8309,7 +8309,7 @@
             if (bioErr) throw bioErr;
           }
 
-          orchid.conservation_status = selectedStatusLabel || 'Unassigned';
+          orchid.conservation_status = selectedStatusLabel || 'Not Listed';
           orchid.conservation_status_key = normalizeConservationKey(selectedStatusLabel);
 
           closeModal('edit-con-status-modal');
@@ -8480,6 +8480,14 @@
         if (s.includes('vulnerable')) return 'vulnerable';
         if (s.includes('least') || s.includes('concern')) return 'least_concern';
         return 'unassigned';
+      }
+
+      // Some rows still carry the literal legacy text "Unassigned" straight from the
+      // database (a pre-existing default for orchids with no conservation_status row),
+      // so a plain `|| 'Not Listed'` fallback wouldn't catch it — route every
+      // conservation-status display string through this instead.
+      function conStatusDisplayLabel(statusText) {
+        return normalizeConservationKey(statusText) === 'unassigned' ? 'Not Listed' : statusText;
       }
 
       async function loadConservationSummary() {
@@ -8946,7 +8954,7 @@
           case 'date_discovered':    return orchid.date_discovered
             ? new Date(orchid.date_discovered).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Not recorded';
-          case 'conservation_status':return orchid.conservation_status || 'Unassigned';
+          case 'conservation_status':return conStatusDisplayLabel(orchid.conservation_status);
           // Excel keeps this as the raw URL (a spreadsheet has nowhere to embed
           // the image); the PDF builder pulls the photo out separately to render
           // it as a real image instead of listing it as a text row.
@@ -9151,7 +9159,7 @@
             { status: 'Endangered', count: sourceData.conservationSummary.endangered || 0 },
             { status: 'Vulnerable', count: sourceData.conservationSummary.vulnerable || 0 },
             { status: 'Least Concern', count: sourceData.conservationSummary.least_concern || 0 },
-            { status: 'Unassigned', count: sourceData.conservationSummary.unassigned || 0 }
+            { status: 'Not Listed', count: sourceData.conservationSummary.unassigned || 0 }
           ];
         }
 
