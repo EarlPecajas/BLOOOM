@@ -515,6 +515,8 @@
     .sa-btn-enable:hover   { background: #fde68a; }
     .sa-btn-primary  { background: var(--green); color: var(--cream); border: 1px solid var(--green); }
     .sa-btn-primary:hover  { background: var(--green-dark); }
+    .sa-btn-delete   { background: #dc2626; color: #fff; border: 1px solid #dc2626; }
+    .sa-btn-delete:hover   { background: #b91c1c; }
 
     /* Role select */
     .sa-role-select {
@@ -1124,6 +1126,7 @@
       } else if (u.status === 'disabled') {
         actions.push(`<button class="sa-btn sa-btn-enable" onclick="enableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">Enable</button>`);
       }
+      actions.push(`<button class="sa-btn sa-btn-delete" onclick="deleteUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">🗑 Delete</button>`);
       return `
         <tr>
           <td style="font-weight:600;">${esc(u.full_name || '—')}</td>
@@ -1231,6 +1234,46 @@
         );
       },
       false
+    );
+  }
+
+  async function deleteUser(id, name) {
+    openModal(
+      'Delete Account',
+      `Permanently delete the account for "${name}"? This cannot be undone — their login and all account data will be removed.`,
+      async () => {
+        closeModal();
+        try {
+          const { data: sessionData } = await bloomSupabase.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          if (!token) {
+            showToast('You must be signed in to do this.', true);
+            return;
+          }
+          const res = await fetch('/api/delete-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ userId: id })
+          });
+          const result = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            showToast('Failed: ' + (result.error || res.statusText), true);
+            return;
+          }
+          allProfiles = allProfiles.filter(u => u.id !== id);
+          showToast(`"${name}" has been permanently deleted.`);
+          updateStats(); renderRecentPending(); renderPending(); renderUsers(
+            document.getElementById('users-search').value.trim().toLowerCase(),
+            document.getElementById('status-filter').value
+          );
+        } catch (err) {
+          showToast('Failed: ' + err.message, true);
+        }
+      },
+      true
     );
   }
 </script>
