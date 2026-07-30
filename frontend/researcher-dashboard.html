@@ -4525,7 +4525,15 @@
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
-          const thumbnail = storageImagesByGenus.get(genus) || storageImagesByGenus.get(fullName) || orchid.image_url || orchidImage;
+          // orchid.image_url is the real thumbnail DENR actually chose when
+          // publishing (via biogeography.picture_id) — it must win. The
+          // storageImagesByGenus lookup is only a handful of hardcoded seed
+          // placeholder photos left over from the original 10 demo genera; it
+          // was being checked first, so every newly-published orchid whose
+          // genus happened to match one of those ten (e.g. any new Aerides
+          // species) silently showed that generic seed photo instead of the
+          // thumbnail actually picked during publish.
+          const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
           return `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />

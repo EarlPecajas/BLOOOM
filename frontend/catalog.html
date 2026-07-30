@@ -798,10 +798,12 @@
       }
 
       function getOrchidThumbnailUrl(orchid, allSightings) {
+        // orchid.image_url (DENR's actual published thumbnail) must win over
+        // the hardcoded seed placeholder photos — see renderCatalog above.
+        if (orchid.image_url) return orchid.image_url;
         var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
         var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
         if (seedImg) return seedImg;
-        if (orchid.image_url) return orchid.image_url;
         for (var i = 0; i < allSightings.length; i++) {
           var photos = getPublicSightingImages(allSightings[i]).filter(function(u){ return u && String(u).indexOf('http') === 0; });
           if (photos.length) return photos[0];
@@ -825,10 +827,12 @@
       async function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
         var imgs = [];
+        // Real published thumbnail leads the gallery; hardcoded seed
+        // placeholder (if any) comes after it rather than in front of it.
+        if (orchid.image_url) imgs.push(orchid.image_url);
         var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
         var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
-        if (seedImg) imgs.push(seedImg);
-        if (orchid.image_url && imgs.indexOf(orchid.image_url) < 0) imgs.push(orchid.image_url);
+        if (seedImg && imgs.indexOf(seedImg) < 0) imgs.push(seedImg);
         allSightings.forEach(function(s) {
           getPublicSightingImages(s).forEach(function(url) {
             if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
@@ -1066,14 +1070,17 @@
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
 
-          // Mirror the researcher/DENR dashboard thumbnail logic:
-          // seed images by species name → seed images by genus → DB image_url → sighting photos → fallback
+          // orchid.image_url is the real thumbnail DENR actually chose when
+          // publishing — it must win over the hardcoded seed placeholder
+          // photos (only ~10 demo genera), or every newly-published orchid of
+          // one of those genera would silently show the generic seed photo
+          // instead of what was actually picked during publish.
           const scientificKey = normalizeScientificKey(orchid.name);
           const approvedSighting = (approvedSightingsByScientificName.get(scientificKey) || [])[0];
 
-          let thumbnailImage = storageImagesByGenus.get(fullName)
+          let thumbnailImage = orchid.image_url
+            || storageImagesByGenus.get(fullName)
             || storageImagesByGenus.get(genus)
-            || orchid.image_url
             || null;
 
           // If no seed/DB image found, try approved sighting photos (full public URLs only)
