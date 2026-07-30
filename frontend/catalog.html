@@ -320,6 +320,7 @@
             <option value="endangered">Endangered</option>
             <option value="vulnerable">Vulnerable</option>
             <option value="least concern">Least Concern</option>
+            <option value="unassigned">Not Listed</option>
           </select>
           <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
@@ -732,6 +733,15 @@
           '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
       }
 
+      // orchid_overview.conservation_status defaults to the literal text
+      // "Unassigned" for orchids with no DENR-set status. Route every
+      // conservation-status display string through this so it reads "Not
+      // Listed" instead — matching the label DENR's own dashboard uses.
+      function conStatusDisplayLabel(text) {
+        var t = String(text || '').trim();
+        return (!t || t.toLowerCase() === 'unassigned') ? 'Not Listed' : t;
+      }
+
       function odmPopulateValue(orchid, allSightings) {
         odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
 
@@ -743,7 +753,7 @@
         // still hold pre-migration free text ("High", "Low", "Moderate"...) that was
         // never in IUCN vocabulary to begin with. Only fall back to it when the
         // catalog genuinely has no status on file.
-        var status = orchid.conservation_status || src.threat_level_generalized || src.threat_level || '—';
+        var status = conStatusDisplayLabel(orchid.conservation_status || src.threat_level_generalized || src.threat_level);
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
         card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
@@ -1154,9 +1164,14 @@
             orchid.threat_level_generalized ||
             orchid.threat_level ||
             '';
-          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
+          // orchid_overview.conservation_status defaults to the literal text
+          // "Unassigned" for orchids with no DENR-set status — fold that (and
+          // any genuinely empty value) into the "unassigned" filter key so the
+          // "Not Listed" option actually matches them.
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ') || 'unassigned';
+          const normalizedStatus = status === 'unassigned' || status === 'not listed' ? 'unassigned' : status;
 
-          if (conservationValue !== 'all' && status !== conservationValue) {
+          if (conservationValue !== 'all' && normalizedStatus !== conservationValue) {
             return false;
           }
 

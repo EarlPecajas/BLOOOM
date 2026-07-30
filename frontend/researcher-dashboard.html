@@ -903,6 +903,7 @@
             <option value="endangered">Endangered</option>
             <option value="vulnerable">Vulnerable</option>
             <option value="least concern">Least Concern</option>
+            <option value="unassigned">Not Listed</option>
           </select>
           <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
         </div>
@@ -4970,9 +4971,14 @@
             sighting?.threat_level_generalized ||
             sighting?.threat_level ||
             '';
-          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ');
+          // orchid_overview.conservation_status defaults to the literal text
+          // "Unassigned" for orchids with no DENR-set status — fold that (and
+          // any genuinely empty value) into the "unassigned" filter key so the
+          // "Not Listed" option actually matches them.
+          const status = rawStatus.toLowerCase().trim().replace(/_/g, ' ') || 'unassigned';
+          const normalizedStatus = status === 'unassigned' || status === 'not listed' ? 'unassigned' : status;
 
-          if (conservationValue !== 'all' && status !== conservationValue) {
+          if (conservationValue !== 'all' && normalizedStatus !== conservationValue) {
             return false;
           }
 

@@ -999,6 +999,15 @@
         return 'Probable';
       }
 
+      // orchid_overview.conservation_status defaults to the literal text
+      // "Unassigned" for orchids with no DENR-set status. Route every
+      // conservation-status display string through this so it reads "Not
+      // Listed" instead — matching the label DENR's own dashboard uses.
+      function conStatusDisplayLabel(text) {
+        const t = String(text || '').trim();
+        return (!t || t.toLowerCase() === 'unassigned') ? 'Not Listed' : t;
+      }
+
       // ── Identity panel ─────────────────────────────────────────────
       function setField(id, value, fieldKey) {
         const el = document.getElementById(id);
@@ -1039,7 +1048,7 @@
         // vetted IUCN classification and should win over a per-sighting threat_level,
         // which for pre-3NF sightings can still hold legacy free text ("High", "Low",
         // "Moderate"...) that predates the IUCN-category vocabulary entirely.
-        setField('oid-conservation-status', orchid.conservation_status || src.threat_level || src.threat_level_generalized || null, 'con-status');
+        setField('oid-conservation-status', conStatusDisplayLabel(orchid.conservation_status || src.threat_level || src.threat_level_generalized), 'con-status');
 
         // Habitat & morphology
         setField('oid-habitat', src.habitat_type || null, 'habitat-type');
@@ -1118,7 +1127,7 @@
         // See populateIdentityPanel above — catalog conservation_status is the
         // vetted IUCN classification and must win over a per-sighting threat_level,
         // which can still carry pre-3NF legacy text for older sightings.
-        var status = orchid.conservation_status || src.threat_level_generalized || src.threat_level || '—';
+        var status = conStatusDisplayLabel(orchid.conservation_status || src.threat_level_generalized || src.threat_level);
         var card = document.getElementById('odm-conservation-card');
         var sl = status.toLowerCase();
         card.style.display = odmHiddenFields.has('con-status') ? 'none' : '';
