@@ -4927,13 +4927,16 @@
 
         try {
           if (editId) {
-            const { error } = await bloomSupabase.from('map_trails').update({
+            const { data, error } = await bloomSupabase.from('map_trails').update({
               name,
               description: description || null,
               coordinates: coords,
               updated_at: new Date().toISOString()
-            }).eq('trail_id', editId);
+            }).eq('trail_id', editId).select('trail_id');
             if (error) throw error;
+            if (!data || data.length === 0) {
+              throw new Error('No permission to update this trail, or it no longer exists.');
+            }
             showToast(`Trail "${name}" updated.`);
           } else {
             const { error } = await bloomSupabase.from('map_trails').insert({
@@ -4968,10 +4971,17 @@
       async function doArchiveTrail(trailId, trailName) {
         if (!bloomSupabase) return;
         try {
-          const { error } = await bloomSupabase.from('map_trails')
+          const { data, error } = await bloomSupabase.from('map_trails')
             .update({ archived: true, updated_at: new Date().toISOString() })
-            .eq('trail_id', trailId);
+            .eq('trail_id', trailId)
+            .select('trail_id');
           if (error) throw error;
+          // Supabase returns success with zero rows (no error) when RLS
+          // silently blocks/filters the write, so an empty result here means
+          // the archive did NOT actually happen even though there's no error.
+          if (!data || data.length === 0) {
+            throw new Error('No permission to archive this trail, or it no longer exists.');
+          }
           showToast(`Trail "${trailName}" archived.`);
           await loadMapTrails();
         } catch (e) {
@@ -4982,10 +4992,14 @@
       async function restoreTrail(trailId, trailName) {
         if (!bloomSupabase) return;
         try {
-          const { error } = await bloomSupabase.from('map_trails')
+          const { data, error } = await bloomSupabase.from('map_trails')
             .update({ archived: false, updated_at: new Date().toISOString() })
-            .eq('trail_id', trailId);
+            .eq('trail_id', trailId)
+            .select('trail_id');
           if (error) throw error;
+          if (!data || data.length === 0) {
+            throw new Error('No permission to restore this trail, or it no longer exists.');
+          }
           showToast(`Trail "${trailName}" restored.`);
           closeModal('archivedTrailsModal');
           await loadMapTrails();
