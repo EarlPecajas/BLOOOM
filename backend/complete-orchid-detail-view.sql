@@ -1,9 +1,11 @@
 -- Completes public_approved_sightings so the catalog's orchid-detail modal can
 -- show everything the mobile app's species-detail screen shows: full location
--- (province/municipality, not just mountain), Population & Conservation
--- (life stage, phenology, population count), Related Study text, and named
--- Contributors (head researcher + team members, each with their role) instead
--- of a flat comma-joined "team_members" string.
+-- (province/municipality, not just mountain), full Plant Structure / Leaf /
+-- Flower / Fruit & Seeds morphology, full Habitat & Environment (host tree,
+-- canopy, light, soil), Population & Conservation (life stage, phenology,
+-- population count), Related Study text, and named Contributors (head
+-- researcher + team members, each with their role) instead of a flat
+-- comma-joined "team_members" string.
 --
 -- Safe to re-run. Run this in the Supabase SQL Editor against the project
 -- that already has 3nf-migration.sql applied (mountain/municipality/province,
@@ -40,9 +42,19 @@ SELECT
   s.elevation_meters,
   sh.habitat_type,
   sh.microhabitat,
+  sh.host_tree_species,
+  sh.host_tree_dbh_cm,
+  sh.canopy_cover_percent,
+  sh.light_exposure,
+  sh.soil_type,
   sm.plant_height_cm,
+  sm.pseudobulb_present,
+  sm.stem_length_cm,
+  sm.root_length_cm,
   sm.leaf_shape,
   sm.leaf_count,
+  sm.leaf_length_cm,
+  sm.leaf_width_cm,
   sm.leaf_textures,
   sm.leaf_arrangement,
   sm.flower_color,
@@ -50,12 +62,14 @@ SELECT
   sm.flower_diameter_cm,
   sm.inflorescence_type,
   sm.petal_characteristics,
+  sm.sepal_characteristics,
   sm.labellum_lip_description,
   sm.fragrance,
   sm.flowering_season,
   sm.blooming_stage,
   sm.fruit_present,
   sm.fruit_type,
+  sm.seed_capsule_condition,
   sm.life_stage,
   sm.phenology,
   sm.population_count,

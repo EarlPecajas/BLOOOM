@@ -70,22 +70,27 @@
       .odm-section{margin:0 1rem .9rem;}
       .odm-section-title{display:flex;align-items:center;font-size:.8rem;font-weight:800;color:#12321a;margin:.85rem 0 .5rem;letter-spacing:.01em;padding-left:.65rem;border-left:3px solid #145A1E;}
       .odm-rows-wrap{background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e0e9df;box-shadow:0 1px 2px rgba(20,90,30,.05);}
-      .odm-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.68rem 1rem;border-bottom:1px solid #eef4ed;gap:.75rem;transition:background .12s;}
+      /* Stacked label-above-value layout, matching the mobile app's field
+         rows, instead of a same-line label/value pair. */
+      .odm-row{display:flex;flex-direction:column;gap:.2rem;padding:.6rem 1rem;border-bottom:1px solid #eef4ed;transition:background .12s;}
       .odm-row:hover{background:#fafdf9;}
       .odm-row:last-child{border-bottom:none;}
-      .odm-row-label{font-size:.66rem;font-weight:700;color:#3e6639;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0;min-width:95px;line-height:1.3;padding-top:.1rem;}
-      .odm-row-value{font-size:.88rem;color:#162b14;font-weight:600;text-align:right;line-height:1.4;}
+      .odm-row-label{font-size:.66rem;font-weight:700;color:#3e6639;text-transform:uppercase;letter-spacing:.07em;line-height:1.3;}
+      .odm-row-value{font-size:.88rem;color:#162b14;font-weight:600;text-align:left;line-height:1.4;}
+      .odm-row-value--blank{color:#9AA6A0;font-weight:400;}
+      .odm-date-pill{display:inline-flex;align-items:center;gap:.35rem;margin:.75rem 1rem 0;padding:.3rem .7rem;background:#E8F5E3;border:1px solid #D0E8CC;border-radius:20px;font-size:.76rem;color:#0D530E;font-weight:600;}
 
-      /* Sightings list */
-      .odm-sighting-item{background:#fff;margin:.8rem 1rem;border-radius:14px;border:1px solid #e0e9df;overflow:hidden;box-shadow:0 1px 2px rgba(20,90,30,.05);}
-      .odm-sighting-item-hd{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem .55rem;border-bottom:1px solid #eef4ed;}
+      /* Sightings list — each sighting is a "Sighting #N" header followed by
+         its own stack of white section cards sitting directly on the tab's
+         cream background, matching mobile's flat card-per-section look
+         rather than one big nested card. */
+      .odm-sighting-item{padding-top:1rem;margin-top:.4rem;border-top:1px solid #e0e9df;}
+      .odm-sighting-item:first-child{border-top:none;padding-top:0;}
+      .odm-sighting-item-hd{display:flex;align-items:center;justify-content:space-between;padding:0 1rem .3rem;}
       .odm-sighting-item-num{font-weight:800;color:#145A1E;font-size:.88rem;}
       .odm-sighting-item-date{font-size:.76rem;color:#5a8a54;font-weight:600;}
-      .odm-sighting-item-rows{padding:.25rem 0 .35rem;}
-      .odm-sighting-item-row{display:flex;gap:.5rem;font-size:.81rem;color:#3e3e3e;padding:.25rem 1rem;}
-      .odm-sighting-item-row-lbl{color:#5a8a54;font-weight:700;min-width:70px;flex-shrink:0;}
-      .odm-sighting-item-subhd{font-size:.68rem;font-weight:800;color:#145A1E;text-transform:uppercase;letter-spacing:.05em;padding:.6rem 1rem .1rem;}
-      .odm-sighting-item--active{border-color:#145A1E;box-shadow:0 0 0 2px rgba(20,90,30,.28);}
+      .odm-sighting-item-subhd{font-size:.8rem;font-weight:800;color:#12321a;margin:.85rem 1rem .5rem;padding-left:.65rem;border-left:3px solid #145A1E;}
+      .odm-sighting-item--active .odm-sighting-item-num{color:#0D530E;}
       .odm-sighting-item-pin-badge{display:inline-block;margin-left:.4rem;font-size:.62rem;font-weight:800;color:#fff;background:#145A1E;border-radius:20px;padding:.1rem .5rem;text-transform:uppercase;letter-spacing:.03em;vertical-align:middle;}
       .odm-contributor-card{background:#E8F5E3;border-radius:14px;overflow:hidden;margin:.4rem 1rem .8rem;}
       .odm-contributor-card-hd{background:#0D530E;color:#fff;font-weight:700;font-size:.74rem;padding:.55rem .9rem;}
@@ -406,10 +411,6 @@
               <div class="odm-section-title">Taxonomy &amp; Identification</div>
               <div class="odm-rows-wrap" id="odm-rows-taxonomy"></div>
             </div>
-            <div class="odm-section">
-              <div class="odm-section-title">Location &amp; Habitat</div>
-              <div class="odm-rows-wrap" id="odm-rows-location"></div>
-            </div>
             <div id="odm-value-extra"></div>
           </div>
 
@@ -581,9 +582,19 @@
           elevation_meters: row.elevation_meters ?? '',
           habitat_type: row.habitat_type || '',
           microhabitat: row.microhabitat || '',
+          host_tree_species: row.host_tree_species || '',
+          host_tree_dbh_cm: row.host_tree_dbh_cm ?? '',
+          canopy_cover_percent: row.canopy_cover_percent ?? '',
+          light_exposure: row.light_exposure || '',
+          soil_type: row.soil_type || '',
           plant_height_cm: row.plant_height_cm ?? '',
+          pseudobulb_present: row.pseudobulb_present,
+          stem_length_cm: row.stem_length_cm ?? '',
+          root_length_cm: row.root_length_cm ?? '',
           leaf_shape: row.leaf_shape || '',
           leaf_count: row.leaf_count ?? '',
+          leaf_length_cm: row.leaf_length_cm ?? '',
+          leaf_width_cm: row.leaf_width_cm ?? '',
           leaf_textures: parseJsonArrayValue(row.leaf_textures),
           leaf_arrangement: row.leaf_arrangement || '',
           flower_color: row.flower_color || '',
@@ -591,6 +602,7 @@
           flower_diameter_cm: row.flower_diameter_cm ?? '',
           inflorescence_type: row.inflorescence_type || '',
           petal_characteristics: row.petal_characteristics || '',
+          sepal_characteristics: row.sepal_characteristics || '',
           labellum_lip_description: row.labellum_lip_description || '',
           fragrance: row.fragrance || '',
           flowering_season: row.flowering_season || '',
@@ -598,6 +610,7 @@
           flowering_stage: row.blooming_stage || row.flowering_stage || '',
           fruit_present: row.fruit_present,
           fruit_type: row.fruit_type || '',
+          seed_capsule_condition: row.seed_capsule_condition || '',
           // Fallbacks for legacy seed sightings never linked to sighting_morphology (see api/sightings.js)
           plant_height_legacy: row.plant_height_legacy || '',
           flower_diameter_legacy: row.flower_diameter_legacy || '',
@@ -767,11 +780,22 @@
       // Publish to Catalog modal. Set once per open, in odmPopulateValue().
       var odmHiddenFields = new Set();
 
+      // Always renders the row — matches the mobile app, which shows every
+      // field with a "-" placeholder when blank rather than hiding it. The
+      // only reason a row disappears entirely is DENR hiding that field key
+      // via the "eye" toggles in the Publish to Catalog modal.
       function odmRow(label, value, fieldKey) {
-        if (value === null || value === undefined || value === '') return '';
         if (fieldKey && odmHiddenFields.has(fieldKey)) return '';
-        return '<div class="odm-row"><span class="odm-row-label">' + label +
-          '</span><span class="odm-row-value">' + escapeHtml(String(value)) + '</span></div>';
+        var isBlank = value === null || value === undefined || value === '';
+        var display = isBlank ? '-' : String(value);
+        return '<div class="odm-row"><span class="odm-row-label">' + escapeHtml(label) +
+          '</span><span class="odm-row-value' + (isBlank ? ' odm-row-value--blank' : '') + '">' +
+          escapeHtml(display) + '</span></div>';
+      }
+
+      function odmSection(title, rowsHtml) {
+        return '<div class="odm-section"><div class="odm-section-title">' + title + '</div>' +
+          '<div class="odm-rows-wrap">' + rowsHtml + '</div></div>';
       }
 
       // orchid_overview.conservation_status defaults to the literal text
@@ -816,61 +840,84 @@
         document.getElementById('odm-con-desc').textContent = count > 0
           ? 'Recorded ' + count + ' time' + (count === 1 ? '' : 's') + ' in the wild'
           : 'No recorded sightings';
-        var genus = orchid.genus || (orchid.name || '').split(' ')[0] || '';
         var commonNames = Array.isArray(src.common_names) && src.common_names.length
           ? src.common_names.join(', ') : (orchid.common_name || '');
         var localNames = Array.isArray(src.local_names) && src.local_names.length
           ? src.local_names.join(', ') : '';
         var endemic = src.endemic_to_philippines == null ? ''
           : (src.endemic_to_philippines ? 'Yes' : 'No');
-        var taxHtml = odmRow('Local Name(s)', localNames, 'local-names') +
+        // Taxonomy & Identification — matches mobile exactly (no Genus row).
+        document.getElementById('odm-rows-taxonomy').innerHTML =
+          odmRow('Local Name(s)', localNames, 'local-names') +
           odmRow('Common Name(s)', commonNames, 'common-names') +
           odmRow('Endemic to Philippines', endemic, 'endemicity') +
-          odmRow('Genus', genus) +
           odmRow('Confidence', src.identification_confidence, 'id-confidence');
-        document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
-          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
 
-        var locHtml = odmRow('Mountain', src.mountain_name || 'Mt. Busa', 'mountain') +
-          odmRow('Habitat', src.habitat_type, 'habitat-type') +
-          odmRow('Microhabitat', src.microhabitat, 'microhabitat');
-        document.getElementById('odm-rows-location').innerHTML = locHtml ||
-          '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
-
-        // Population & Conservation — per the active (tapped-pin) sighting.
-        var popHtml = odmRow('Population Count', src.population_count !== '' && src.population_count != null
-            ? (src.population_count + ' individual' + (Number(src.population_count) === 1 ? '' : 's')) : '', 'pop-count') +
-          odmRow('Life Stage', src.life_stage, 'life-stage') +
-          odmRow('Phenology', src.phenology, 'phenology') +
-          odmRow('Population Status', src.population_status, 'pop-status') +
-          odmRow('Threat Level', src.threat_level, 'threat-level');
-
-        // Species Value & Importance — catalog-wide, DENR-curated narrative
-        // fields (not per-sighting), matching orchid_overview.
-        var valueHtml = odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
-          odmRow('Aesthetic / Horticultural Value', orchid.horticulture_value, 'horticulture-value') +
-          odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance');
-
-        var extraSections = '';
-        if (popHtml) {
-          extraSections += '<div class="odm-section"><div class="odm-section-title">Population &amp; Conservation</div>' +
-            '<div class="odm-rows-wrap">' + popHtml + '</div></div>';
+        function num(value, unit) {
+          return (value === '' || value === null || value === undefined) ? '' : (value + (unit || ''));
         }
-        if (valueHtml) {
-          extraSections += '<div class="odm-section"><div class="odm-section-title">Species Value &amp; Importance</div>' +
-            '<div class="odm-rows-wrap">' + valueHtml + '</div></div>';
-        }
-        if (src.researcher_notes) {
-          extraSections += '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
-            '<div class="odm-study-note" style="margin:0;">' + escapeHtml(src.researcher_notes) + '</div></div>';
-        }
+
+        var leafTextures = Array.isArray(src.leaf_textures) && src.leaf_textures.length
+          ? src.leaf_textures.join(', ') : '';
+
+        var extraSections =
+          odmSection('Plant Structure',
+            odmRow('Plant Height', num(src.plant_height_cm, ' cm')) +
+            odmRow('Pseudobulb Present', src.pseudobulb_present == null ? '' : (src.pseudobulb_present ? 'Yes' : 'No')) +
+            odmRow('Stem Length', num(src.stem_length_cm, ' cm')) +
+            odmRow('Root Length', num(src.root_length_cm, ' cm'))
+          ) +
+          odmSection('Leaf Characteristics',
+            odmRow('Leaf Shape / Type', src.leaf_shape) +
+            odmRow('Leaf Length', num(src.leaf_length_cm, ' cm')) +
+            odmRow('Leaf Width', num(src.leaf_width_cm, ' cm')) +
+            odmRow('Leaf Texture', leafTextures) +
+            odmRow('Leaf Arrangement', src.leaf_arrangement) +
+            odmRow('Number of Leaves', src.leaf_count)
+          ) +
+          odmSection('Flower Characteristics',
+            odmRow('Flower Color', src.flower_color) +
+            odmRow('Flowering Season', src.flowering_season) +
+            odmRow('Number of Flowers', src.flower_count) +
+            odmRow('Flower Diameter', num(src.flower_diameter_cm, ' cm')) +
+            odmRow('Inflorescence Type', src.inflorescence_type) +
+            odmRow('Petal Characteristics', src.petal_characteristics) +
+            odmRow('Sepal Characteristics', src.sepal_characteristics) +
+            odmRow('Labellum Description', src.labellum_lip_description) +
+            odmRow('Fragrance', src.fragrance) +
+            odmRow('Blooming Stage', src.blooming_stage)
+          ) +
+          odmSection('Fruit &amp; Seeds',
+            odmRow('Fruit Present', src.fruit_present == null ? '' : (src.fruit_present ? 'Yes' : 'No')) +
+            odmRow('Fruit Type', src.fruit_type) +
+            odmRow('Seed Capsule Condition', src.seed_capsule_condition)
+          ) +
+          odmSection('Population &amp; Conservation',
+            odmRow('Population Count', src.population_count !== '' && src.population_count != null
+              ? (src.population_count + ' individual' + (Number(src.population_count) === 1 ? '' : 's')) : '', 'pop-count') +
+            odmRow('Life Stage', src.life_stage, 'life-stage') +
+            odmRow('Phenology', src.phenology, 'phenology') +
+            odmRow('Population Status', src.population_status, 'pop-status') +
+            odmRow('Threat Level', src.threat_level, 'threat-level')
+          ) +
+          // Species Value & Importance — catalog-wide, DENR-curated narrative
+          // fields (not per-sighting), matching orchid_overview. "Cultivation"
+          // has no data source in this schema, so it always shows "-".
+          odmSection('Species Value &amp; Importance',
+            odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
+            odmRow('Aesthetic Appeal', orchid.horticulture_value, 'horticulture-value') +
+            odmRow('Cultivation', '', 'cultivation') +
+            odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance')
+          ) +
+          '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
+            '<div class="odm-study-note" style="margin:0;' + (src.researcher_notes ? '' : 'color:#9AA6A0;') + '">' +
+            escapeHtml(src.researcher_notes || '-') + '</div></div>' +
+          // Unusual Observations has no data source in this schema (the column
+          // was removed from submissions) — always shows "-", same as mobile.
+          '<div class="odm-section"><div class="odm-section-title">Unusual Observations</div>' +
+            '<div class="odm-study-note" style="margin:0;color:#9AA6A0;">-</div></div>';
+
         document.getElementById('odm-value-extra').innerHTML = extraSections;
-      }
-
-      function odmSightingRow(label, value) {
-        if (value === null || value === undefined || value === '') return '';
-        return '<div class="odm-sighting-item-row"><span class="odm-sighting-item-row-lbl">' + escapeHtml(label) +
-          '</span><span>' + escapeHtml(String(value)) + '</span></div>';
       }
 
       // Contributors = head researcher (tagged "Head Researcher") + every
@@ -886,7 +933,7 @@
               }));
 
         if (!contributors.length) {
-          return '<p class="odm-empty" style="padding:1.25rem 1rem;">No contributor information available.</p>';
+          return '<div class="odm-rows-wrap"><div class="odm-row"><span class="odm-row-value odm-row-value--blank">-</span></div></div>';
         }
 
         var date = s.observation_date
@@ -922,21 +969,27 @@
             : '—';
           var isActive = i === odmActiveSightingIndex;
 
-          var recordedRows = odmSightingRow('Time', s.observation_time) +
-            odmSightingRow('Collection Method', s.collection_method) +
-            odmSightingRow('Observation Type', s.observation_type) +
-            odmSightingRow('Voucher Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'));
+          var recordedRows = '<div class="odm-date-pill">' + escapeHtml(date) + '</div>' +
+            odmRow('Time of Observation', s.observation_time) +
+            odmRow('Collection Method', s.collection_method) +
+            odmRow('Observation Type', s.observation_type) +
+            odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'));
 
-          var locationRows = odmSightingRow('Mountain / Site', s.mountain_name) +
-            odmSightingRow('Province', s.province) +
-            odmSightingRow('Municipality', s.municipality) +
-            odmSightingRow('Altitude Zone', s.specific_site_zone) +
-            odmSightingRow('Specific Site', s.specific_site_other);
+          var locationRows = odmRow('Mountain / Site', s.mountain_name) +
+            odmRow('Province', s.province) +
+            odmRow('Municipality', s.municipality) +
+            odmRow('Altitude Zone', s.specific_site_zone) +
+            odmRow('Specific Site', s.specific_site_other);
 
-          var habitatRows = odmSightingRow('Habitat Type', s.habitat_type) +
-            odmSightingRow('Microhabitat', s.microhabitat) +
-            odmSightingRow('Growth Substrate', s.growth_substrate) +
-            odmSightingRow('Nearby Water Source', s.nearby_water_source);
+          var habitatRows = odmRow('Habitat Type', s.habitat_type) +
+            odmRow('Microhabitat', s.microhabitat) +
+            odmRow('Growth Substrate', s.growth_substrate) +
+            odmRow('Host Tree Species', s.host_tree_species) +
+            odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm')) +
+            odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%')) +
+            odmRow('Light Exposure', s.light_exposure) +
+            odmRow('Soil Type', s.soil_type) +
+            odmRow('Nearby Water Source', s.nearby_water_source);
 
           return '<div class="odm-sighting-item' + (isActive ? ' odm-sighting-item--active' : '') + '" id="odm-sighting-item-' + i + '">' +
             '<div class="odm-sighting-item-hd">' +
@@ -944,11 +997,10 @@
                 (isActive ? '<span class="odm-sighting-item-pin-badge">Selected pin</span>' : '') + '</span>' +
               '<span class="odm-sighting-item-date">' + date + '</span>' +
             '</div>' +
-            (recordedRows ? '<div class="odm-sighting-item-subhd">Recorded Sighting</div><div class="odm-sighting-item-rows">' + recordedRows + '</div>' : '') +
-            (locationRows ? '<div class="odm-sighting-item-subhd">Location</div><div class="odm-sighting-item-rows">' + locationRows + '</div>' : '') +
-            (habitatRows ? '<div class="odm-sighting-item-subhd">Habitat &amp; Environment</div><div class="odm-sighting-item-rows">' + habitatRows + '</div>' : '') +
-            '<div class="odm-sighting-item-subhd">Contributors</div>' +
-            odmContributorsHtml(s) +
+            odmSection('Recorded Sighting', recordedRows) +
+            odmSection('Location', locationRows) +
+            odmSection('Habitat &amp; Environment', habitatRows) +
+            '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>' +
           '</div>';
         }).join('');
       }
@@ -1088,31 +1140,28 @@
       function odmPopulateStudy(allSightings) {
         var el = document.getElementById('odm-study-inner');
         var src = odmActiveSighting(allSightings);
-        var parts = [];
 
+        // Schema only has one free-text `related_study` field (no separate
+        // title/link columns) — split it the same way mobile's two rows
+        // read: a URL goes under Study Link, anything else under Study Title.
         var studyText = (src.related_study || '').trim();
-        if (studyText) {
-          var isLink = /^https?:\/\//i.test(studyText);
-          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Related Study</b>' +
-            (isLink
-              ? '<a href="' + escapeHtml(studyText) + '" target="_blank" rel="noopener noreferrer" style="color:#145A1E;word-break:break-all;">' + escapeHtml(studyText) + '</a>'
-              : escapeHtml(studyText)) +
-            '</div>');
-        }
+        var isLink = studyText && /^https?:\/\//i.test(studyText);
+        var studyTitle = studyText && !isLink ? studyText : '';
+        var studyLink = isLink ? studyText : '';
+        var studyLinkDisplay = studyLink
+          ? '<a href="' + escapeHtml(studyLink) + '" target="_blank" rel="noopener noreferrer" style="color:#145A1E;word-break:break-all;">' + escapeHtml(studyLink) + '</a>'
+          : '-';
 
-        if (src.educational_notes) {
-          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Educational Notes</b>' +
-            escapeHtml(src.educational_notes) + '</div>');
-        }
+        var studyRows = odmRow('Study Title', studyTitle) +
+          '<div class="odm-row"><span class="odm-row-label">Study Link</span><span class="odm-row-value' +
+          (studyLink ? '' : ' odm-row-value--blank') + '">' + studyLinkDisplay + '</span></div>';
 
         var submittedByRows = odmRow('Researcher', src.researcher_name, 'researcher-name') +
           odmRow('Institution', src.institution, 'institution');
-        if (submittedByRows) {
-          parts.push('<div class="odm-section"><div class="odm-section-title">Submitted By</div>' +
-            '<div class="odm-rows-wrap">' + submittedByRows + '</div></div>');
-        }
 
-        el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
+        el.innerHTML =
+          odmSection('Related Study', studyRows) +
+          odmSection('Submitted By', submittedByRows);
       }
 
       function odmPopulateModel3D(orchid) {
