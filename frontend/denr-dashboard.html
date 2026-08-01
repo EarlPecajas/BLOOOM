@@ -10396,10 +10396,10 @@
         reader.readAsDataURL(file);
       }
 
-      function makeThumbnailPhotoCard(img, index) {
+      function makeThumbnailPhotoCard(img, index, isCurrent) {
         return `<div style="position:relative;cursor:pointer;" onclick="selectExistingThumbnail(this, '${img.replace(/'/g, "\\'")}')">
           <img src="${img}" alt="Photo ${index + 1}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2.5px solid #e2e8f0;transition:border-color 150ms;">
-          <span class="thumb-pick-badge" style="display:none;position:absolute;top:4px;right:4px;background:#145A1E;color:#fff;font-size:0.6rem;font-weight:800;padding:0.15rem 0.4rem;border-radius:999px;">SELECTED</span>
+          <span class="thumb-pick-badge" style="display:none;position:absolute;top:4px;right:4px;background:#145A1E;color:#fff;font-size:0.6rem;font-weight:800;padding:0.15rem 0.4rem;border-radius:999px;">${isCurrent ? 'CURRENT' : 'SELECTED'}</span>
         </div>`;
       }
 
@@ -10509,19 +10509,25 @@
         const s = currentSubmission;
 
         // If this species is already published, prefer its existing conservation status
-        // (so re-publishing doesn't clobber it back to Unassigned) and restore which fields
-        // DENR previously chose to hide via the eye toggles.
+        // (so re-publishing doesn't clobber it back to Unassigned), restore which fields
+        // DENR previously chose to hide via the eye toggles, and default the thumbnail
+        // to whatever's already published — so publishing another sighting of an
+        // already-catalogued species doesn't force picking a thumbnail all over again.
         let existingStatusLabel = '';
         let existingHiddenFields = [];
+        let existingThumbnailUrl = '';
         try {
           const { data: existingOverview } = await bloomSupabase
-            .from('orchid_overview').select('conservation_status, hidden_fields')
+            .from('orchid_overview').select('conservation_status, hidden_fields, image_url')
             .eq('name', s.species || s.scientific_name || '').maybeSingle();
           if (existingOverview && existingOverview.conservation_status !== 'Unassigned') {
             existingStatusLabel = existingOverview.conservation_status;
           }
           if (existingOverview && Array.isArray(existingOverview.hidden_fields)) {
             existingHiddenFields = existingOverview.hidden_fields;
+          }
+          if (existingOverview && existingOverview.image_url) {
+            existingThumbnailUrl = existingOverview.image_url;
           }
         } catch (e) { console.warn('Existing conservation status lookup failed:', e); }
 
@@ -10608,12 +10614,36 @@
 
         const thumbnailFromPhotosWrap = document.getElementById('thumbnailFromPhotosWrap');
         const thumbnailPhotoOptions = document.getElementById('thumbnailPhotoOptions');
-        if (allImages.length === 0) {
+        // If the species already has a published thumbnail that isn't one of this
+        // submission's own photos, show it as an extra "CURRENT" card up front —
+        // otherwise DENR has to pick a thumbnail all over again on every single
+        // additional sighting they publish, even though one's already set.
+        const alreadyHasCurrentAsOwnPhoto = existingThumbnailUrl && allImages.includes(existingThumbnailUrl);
+        const thumbnailCandidates = (existingThumbnailUrl && !alreadyHasCurrentAsOwnPhoto)
+          ? [existingThumbnailUrl, ...allImages]
+          : allImages;
+        if (thumbnailCandidates.length === 0) {
           if (thumbnailFromPhotosWrap) thumbnailFromPhotosWrap.style.display = 'none';
           if (thumbnailPhotoOptions) thumbnailPhotoOptions.innerHTML = '';
         } else {
           if (thumbnailFromPhotosWrap) thumbnailFromPhotosWrap.style.display = 'block';
-          if (thumbnailPhotoOptions) thumbnailPhotoOptions.innerHTML = allImages.map((img, i) => makeThumbnailPhotoCard(img, i)).join('');
+          if (thumbnailPhotoOptions) {
+            thumbnailPhotoOptions.innerHTML = thumbnailCandidates.map((img, i) =>
+              makeThumbnailPhotoCard(img, i, !alreadyHasCurrentAsOwnPhoto && img === existingThumbnailUrl)
+            ).join('');
+          }
+        }
+        // Default the selection to the already-published thumbnail so the
+        // "choose a thumbnail" validation passes without DENR having to
+        // re-pick it — they can still click any other card or upload to change it.
+        if (existingThumbnailUrl && thumbnailPhotoOptions) {
+          selectExistingThumbnail(
+            Array.from(thumbnailPhotoOptions.children).find(node => {
+              const img = node.querySelector('img');
+              return img && img.getAttribute('src') === existingThumbnailUrl;
+            }) || null,
+            existingThumbnailUrl
+          );
         }
 
         if (allImages.length === 0) {
