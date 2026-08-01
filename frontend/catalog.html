@@ -1065,30 +1065,12 @@
       }
 
       // Groups images the same way mobile does: Whole Plant / Close-up
-      // Flower / Habitat, aggregated across every recorded sighting, plus a
-      // "Catalog Photos" group for DENR-curated/published images.
-      async function odmPopulateImages(orchid, allSightings) {
+      // Flower / Habitat, aggregated across every recorded sighting. No
+      // separate "Catalog Photos" group — those photos are the same DENR
+      // thumbnail/gallery pictures that already show up elsewhere (map pin,
+      // catalog card), so surfacing them again here was redundant.
+      function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
-        var catalogImgs = [];
-        if (orchid.image_url) catalogImgs.push({ src: orchid.image_url, contributor: '' });
-        var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
-        var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
-        if (seedImg && !catalogImgs.some(function(p){ return p.src === seedImg; })) catalogImgs.push({ src: seedImg, contributor: '' });
-
-        // DENR-curated gallery photos selected when publishing to the catalog
-        if (orchid.id && window.bloomSupabase) {
-          try {
-            var resp = await window.bloomSupabase
-              .from('picture').select('file_path').eq('orchid_id', orchid.id);
-            (resp.data || []).forEach(function(row) {
-              var url = row.file_path;
-              if (url && String(url).indexOf('http') === 0 && !catalogImgs.some(function(p){ return p.src === url; })) {
-                catalogImgs.push({ src: url, contributor: '' });
-              }
-            });
-          } catch (e) { console.warn('Gallery picture lookup failed:', e); }
-        }
-
         var byCategory = { 'Whole Plant': [], 'Close-up Flower': [], 'Habitat': [] };
         allSightings.forEach(function(s) {
           getPublicSightingImages(s).forEach(function(p) {
@@ -1099,9 +1081,6 @@
         });
 
         var sections = '';
-        if (catalogImgs.length) {
-          sections += '<div class="odm-sighting-item-subhd" style="padding-left:1.1rem;">Catalog Photos</div>' + odmImageGridHtml(catalogImgs);
-        }
         ['Whole Plant', 'Close-up Flower', 'Habitat'].forEach(function(cat) {
           if (byCategory[cat].length) {
             sections += '<div class="odm-sighting-item-subhd" style="padding-left:1.1rem;">' + escapeHtml(cat) + '</div>' + odmImageGridHtml(byCategory[cat]);
