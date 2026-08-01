@@ -2818,17 +2818,38 @@
                   <span style="font-size:0.72rem;color:var(--dt-muted);">Shown as the card image in all catalogs</span>
                 </div>
                 <div style="padding:1rem;">
-                  <div id="thumbnailFromPhotosWrap" style="display:none;margin-bottom:0.85rem;">
-                    <p style="margin:0 0 0.5rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Choose from this submission's photos</p>
-                    <div id="thumbnailPhotoOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:0.55rem;"></div>
-                    <p style="margin:0.6rem 0 0;font-size:0.76rem;color:var(--dt-muted);">— or —</p>
+                  <!-- Only shown when this species already has a published thumbnail —
+                       lets DENR explicitly decide to keep it or pick a different one,
+                       instead of always being forced to choose one from scratch. -->
+                  <div id="currentThumbnailChoice" style="display:none;margin-bottom:0.9rem;padding-bottom:0.9rem;border-bottom:1px solid var(--dt-border);">
+                    <p style="margin:0 0 0.6rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">This species already has a catalog thumbnail</p>
+                    <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+                      <img id="currentThumbnailImg" src="" alt="Current thumbnail" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:2px solid var(--dt-border-md);flex-shrink:0;">
+                      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--dt-text);font-weight:600;cursor:pointer;">
+                          <input type="radio" name="ptc-thumb-mode" id="ptcThumbModeKeep" checked onchange="ptcSetThumbnailMode('keep')">
+                          Keep the existing thumbnail
+                        </label>
+                        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--dt-text);font-weight:600;cursor:pointer;">
+                          <input type="radio" name="ptc-thumb-mode" id="ptcThumbModeChange" onchange="ptcSetThumbnailMode('change')">
+                          Choose a different thumbnail
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                  <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed var(--dt-border-md);border-radius:10px;cursor:pointer;background:rgba(77,184,106,0.06);font-size:0.84rem;color:var(--dt-accent-lt);font-weight:600;transition:background 150ms;margin-top:0.6rem;" onmouseover="this.style.background='rgba(77,184,106,0.12)'" onmouseout="this.style.background='rgba(77,184,106,0.06)'">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload custom thumbnail
-                    <input type="file" id="catalogThumbnailUpload" accept="image/*" style="display:none;" onchange="previewCustomThumbnail(this)">
-                  </label>
-                  <div id="customThumbnailPreview" style="display:none;margin-top:0.65rem;"></div>
+                  <div id="thumbnailPickerWrap">
+                    <div id="thumbnailFromPhotosWrap" style="display:none;margin-bottom:0.85rem;">
+                      <p style="margin:0 0 0.5rem;font-size:0.78rem;color:var(--dt-muted);font-weight:600;">Choose from this submission's photos</p>
+                      <div id="thumbnailPhotoOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:0.55rem;"></div>
+                      <p style="margin:0.6rem 0 0;font-size:0.76rem;color:var(--dt-muted);">— or —</p>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0.9rem;border:1.5px dashed var(--dt-border-md);border-radius:10px;cursor:pointer;background:rgba(77,184,106,0.06);font-size:0.84rem;color:var(--dt-accent-lt);font-weight:600;transition:background 150ms;margin-top:0.6rem;" onmouseover="this.style.background='rgba(77,184,106,0.12)'" onmouseout="this.style.background='rgba(77,184,106,0.06)'">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Upload custom thumbnail
+                      <input type="file" id="catalogThumbnailUpload" accept="image/*" style="display:none;" onchange="previewCustomThumbnail(this)">
+                    </label>
+                    <div id="customThumbnailPreview" style="display:none;margin-top:0.65rem;"></div>
+                  </div>
                 </div>
               </div>
 
@@ -10371,6 +10392,9 @@
       let catalogCustomThumbnailFile = null;
       // Mutually exclusive with catalogCustomThumbnailFile — picking one clears the other.
       let catalogSelectedExistingThumbnailUrl = null;
+      // The species' already-published thumbnail (if any), set once per modal open
+      // by openPostToCatalogModal() — read by ptcSetThumbnailMode('keep').
+      let ptcExistingThumbnailUrl = '';
 
       function previewCustomThumbnail(input) {
         const file = input.files[0];
@@ -10396,11 +10420,39 @@
         reader.readAsDataURL(file);
       }
 
-      function makeThumbnailPhotoCard(img, index, isCurrent) {
+      function makeThumbnailPhotoCard(img, index) {
         return `<div style="position:relative;cursor:pointer;" onclick="selectExistingThumbnail(this, '${img.replace(/'/g, "\\'")}')">
           <img src="${img}" alt="Photo ${index + 1}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2.5px solid #e2e8f0;transition:border-color 150ms;">
-          <span class="thumb-pick-badge" style="display:none;position:absolute;top:4px;right:4px;background:#145A1E;color:#fff;font-size:0.6rem;font-weight:800;padding:0.15rem 0.4rem;border-radius:999px;">${isCurrent ? 'CURRENT' : 'SELECTED'}</span>
+          <span class="thumb-pick-badge" style="display:none;position:absolute;top:4px;right:4px;background:#145A1E;color:#fff;font-size:0.6rem;font-weight:800;padding:0.15rem 0.4rem;border-radius:999px;">SELECTED</span>
         </div>`;
+      }
+
+      // Lets DENR explicitly decide, when a species already has a published
+      // thumbnail, whether to keep it (default) or pick a different one —
+      // rather than silently defaulting and hoping they notice.
+      function ptcSetThumbnailMode(mode) {
+        const wrap = document.getElementById('thumbnailPickerWrap');
+        if (mode === 'keep') {
+          if (wrap) wrap.style.display = 'none';
+          catalogSelectedExistingThumbnailUrl = ptcExistingThumbnailUrl;
+          catalogCustomThumbnailFile = null;
+        } else {
+          if (wrap) wrap.style.display = 'block';
+          // Force an explicit pick each time "different" is chosen, instead of
+          // silently keeping the old thumbnail selected underneath the picker.
+          catalogSelectedExistingThumbnailUrl = null;
+          catalogCustomThumbnailFile = null;
+          const uploadInput = document.getElementById('catalogThumbnailUpload');
+          if (uploadInput) uploadInput.value = '';
+          const preview = document.getElementById('customThumbnailPreview');
+          if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+          document.querySelectorAll('#thumbnailPhotoOptions > div').forEach((node) => {
+            const img = node.querySelector('img');
+            const badge = node.querySelector('.thumb-pick-badge');
+            if (img) img.style.borderColor = '#e2e8f0';
+            if (badge) badge.style.display = 'none';
+          });
+        }
       }
 
       function selectExistingThumbnail(el, url) {
@@ -10614,36 +10666,30 @@
 
         const thumbnailFromPhotosWrap = document.getElementById('thumbnailFromPhotosWrap');
         const thumbnailPhotoOptions = document.getElementById('thumbnailPhotoOptions');
-        // If the species already has a published thumbnail that isn't one of this
-        // submission's own photos, show it as an extra "CURRENT" card up front —
-        // otherwise DENR has to pick a thumbnail all over again on every single
-        // additional sighting they publish, even though one's already set.
-        const alreadyHasCurrentAsOwnPhoto = existingThumbnailUrl && allImages.includes(existingThumbnailUrl);
-        const thumbnailCandidates = (existingThumbnailUrl && !alreadyHasCurrentAsOwnPhoto)
-          ? [existingThumbnailUrl, ...allImages]
-          : allImages;
-        if (thumbnailCandidates.length === 0) {
+        if (allImages.length === 0) {
           if (thumbnailFromPhotosWrap) thumbnailFromPhotosWrap.style.display = 'none';
           if (thumbnailPhotoOptions) thumbnailPhotoOptions.innerHTML = '';
         } else {
           if (thumbnailFromPhotosWrap) thumbnailFromPhotosWrap.style.display = 'block';
-          if (thumbnailPhotoOptions) {
-            thumbnailPhotoOptions.innerHTML = thumbnailCandidates.map((img, i) =>
-              makeThumbnailPhotoCard(img, i, !alreadyHasCurrentAsOwnPhoto && img === existingThumbnailUrl)
-            ).join('');
-          }
+          if (thumbnailPhotoOptions) thumbnailPhotoOptions.innerHTML = allImages.map((img, i) => makeThumbnailPhotoCard(img, i)).join('');
         }
-        // Default the selection to the already-published thumbnail so the
-        // "choose a thumbnail" validation passes without DENR having to
-        // re-pick it — they can still click any other card or upload to change it.
-        if (existingThumbnailUrl && thumbnailPhotoOptions) {
-          selectExistingThumbnail(
-            Array.from(thumbnailPhotoOptions.children).find(node => {
-              const img = node.querySelector('img');
-              return img && img.getAttribute('src') === existingThumbnailUrl;
-            }) || null,
-            existingThumbnailUrl
-          );
+
+        // If this species already has a published thumbnail, let DENR explicitly
+        // choose to keep it (default) or switch to picking a different one —
+        // instead of forcing a fresh choice on every additional sighting published.
+        ptcExistingThumbnailUrl = existingThumbnailUrl || '';
+        const currentThumbnailChoice = document.getElementById('currentThumbnailChoice');
+        const currentThumbnailImg = document.getElementById('currentThumbnailImg');
+        const keepRadio = document.getElementById('ptcThumbModeKeep');
+        if (existingThumbnailUrl) {
+          if (currentThumbnailChoice) currentThumbnailChoice.style.display = 'block';
+          if (currentThumbnailImg) currentThumbnailImg.setAttribute('src', existingThumbnailUrl);
+          if (keepRadio) keepRadio.checked = true;
+          ptcSetThumbnailMode('keep');
+        } else {
+          if (currentThumbnailChoice) currentThumbnailChoice.style.display = 'none';
+          const wrap = document.getElementById('thumbnailPickerWrap');
+          if (wrap) wrap.style.display = 'block';
         }
 
         if (allImages.length === 0) {
