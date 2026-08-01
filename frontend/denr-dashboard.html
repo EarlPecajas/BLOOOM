@@ -5323,11 +5323,18 @@
           // Publish / Unpublish buttons — always shown for every submission (not just
           // approved ones); whichever action doesn't apply to the current state is
           // disabled (not hidden), so the action cluster stays visually uniform across rows.
-          // A sighting counts as "in catalog" only if its species has a catalog
-          // entry AND this specific sighting hasn't been individually unpublished.
-          // catalog_published defaults to visible (null/undefined == true) until
-          // DENR explicitly hides it — matches public_approved_sightings' gating.
-          const inCatalog = catalogNames.has(speciesKey) && submission.catalog_published !== false;
+          // A sighting counts as "in catalog" if it was explicitly published
+          // (catalog_published === true is set directly by the publish flow,
+          // so it's trusted on its own — a blank/mismatched scientific_name
+          // on the sighting would otherwise make catalogNames.has(speciesKey)
+          // false even though the row really is published, leaving Publish
+          // permanently enabled and Unpublish permanently disabled for it).
+          // Legacy rows without that flag fall back to the species name-match
+          // heuristic. catalog_published defaults to visible (null/undefined
+          // == true) until DENR explicitly hides it — matches
+          // public_approved_sightings' gating.
+          const inCatalog = submission.catalog_published === true ||
+            (catalogNames.has(speciesKey) && submission.catalog_published !== false);
           const notApproved = !isApproved(submission);
           let publishBtn = '';
           if (isAdminRole) {

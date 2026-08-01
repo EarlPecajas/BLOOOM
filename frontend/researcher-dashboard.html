@@ -2655,12 +2655,18 @@
         });
       }
 
-      function applyRevisionFieldLock(reasonText) {
+      function applyRevisionFieldLock(reasonText, scientificNameMissing) {
         clearRevisionFieldLock();
         const text = String(reasonText || '');
         const matchedPrefix = Object.keys(REVISION_REASON_PAGES).find(function(prefix) { return text.startsWith(prefix); });
         if (!matchedPrefix) return;
         const allowedPages = new Set(REVISION_REASON_PAGES[matchedPrefix]);
+        // A blank Scientific Name must always stay fixable, no matter which
+        // page the DENR-cited reason unlocks — otherwise the identity page
+        // stays locked forever, the researcher can't type in a name, and the
+        // record can be resubmitted (and even approved/published) with an
+        // empty scientific_name.
+        if (scientificNameMissing) allowedPages.add(1);
         document.querySelectorAll('.submission-page').forEach(function(page) {
           const pageNum = Number(page.getAttribute('data-page'));
           if (allowedPages.has(pageNum)) return;
@@ -2764,7 +2770,11 @@
         const draftBtn = document.getElementById('submission-draft-btn');
         if (draftBtn && !draftBtn.dataset.bound) {
           draftBtn.dataset.bound = '1';
+          let isSavingDraft = false;
           draftBtn.addEventListener('click', async function() {
+            if (isSavingDraft) return;
+            isSavingDraft = true;
+            draftBtn.disabled = true;
             const feedback = document.getElementById('researcher-submission-feedback');
             if (feedback) { feedback.style.color = '#4f5f56'; feedback.textContent = 'Saving draft…'; }
             try {
@@ -2797,6 +2807,9 @@
             } catch (err) {
               const feedback = document.getElementById('researcher-submission-feedback');
               if (feedback) { feedback.style.color = '#b42318'; feedback.textContent = err.message || 'Could not save draft.'; }
+            } finally {
+              isSavingDraft = false;
+              draftBtn.disabled = false;
             }
           });
         }
@@ -3625,8 +3638,20 @@
       }
 
       if (researcherSubmissionFormEl) {
+        let isSubmittingSighting = false;
         researcherSubmissionFormEl.addEventListener('submit', async function(e) {
           e.preventDefault();
+          // Photo uploads below can take several seconds; without this guard
+          // an impatient double-click fires two overlapping submissions for
+          // the same record. Whichever finishes first resets the form
+          // (clearing Scientific Name etc.), and the still-in-flight second
+          // request then reads those now-blank fields for its own DB write —
+          // silently overwriting the record with an empty scientific_name.
+          if (isSubmittingSighting) return;
+          isSubmittingSighting = true;
+          const submitBtnEl = document.getElementById('submission-submit-btn');
+          if (submitBtnEl) submitBtnEl.disabled = true;
+
           const feedback = document.getElementById('researcher-submission-feedback');
           if (feedback) {
             feedback.style.color = '#4f5f56';
@@ -3760,6 +3785,9 @@
               feedback.style.color = '#b42318';
               feedback.textContent = error.message || 'Could not submit this record.';
             }
+          } finally {
+            isSubmittingSighting = false;
+            if (submitBtnEl) submitBtnEl.disabled = false;
           }
         });
       }
@@ -4937,7 +4965,7 @@
             revisionBanner.style.display = 'none';
           }
         }
-        applyRevisionFieldLock(needsRevision ? draft.review_notes : '');
+        applyRevisionFieldLock(needsRevision ? draft.review_notes : '', !String(draft.scientific_name || '').trim());
 
         // Show whatever photos are already on file for this sighting so a
         // researcher revising it isn't forced to re-upload just to satisfy
