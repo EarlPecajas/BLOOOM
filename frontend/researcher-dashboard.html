@@ -3364,6 +3364,16 @@
           return v ? Number(v) : null;
         }
         function strOrNull(id) { return document.getElementById(id)?.value || null; }
+        // endemic_to_philippines is a boolean DB column, but its select also
+        // offers "Unknown" (set by hand or by Auto-Detect when the species
+        // isn't in DAO 2026-20) — a boolean has no third state, so that must
+        // become null, not the literal string "unknown" Postgres can't parse.
+        function yesNoUnknownToBool(id) {
+          const v = document.getElementById(id)?.value;
+          if (v === 'yes') return true;
+          if (v === 'no') return false;
+          return null;
+        }
 
         const habitatPayload = {
           habitat_type: (function() {
@@ -3489,7 +3499,7 @@
           latitude:                 Number(document.getElementById('submission-latitude')?.value || 0),
           longitude:                Number(document.getElementById('submission-longitude')?.value || 0),
           elevation_meters:         numOrNull('submission-elevation'),
-          endemic_to_philippines:   strOrNull('submission-endemic-philippines'),
+          endemic_to_philippines:   yesNoUnknownToBool('submission-endemic-philippines'),
           sighting_habitat_id:      habitatId,
           sighting_morphology_id:   morphologyId,
           sighting_conservation_id: conservationId,
