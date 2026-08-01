@@ -5442,20 +5442,40 @@
         // Ensure storage photos are loaded
         if (storageImagesByGenus.size === 0) loadStorageImages();
 
+        // Ensure the orchid catalog (with its DENR-picked thumbnails) is loaded
+        // so map pins can show the same thumbnail as the catalog card instead
+        // of a generic stock photo.
+        if (!orchidCatalogLoaded) { try { await loadOrchidCatalog(); } catch (e) {} }
+        const catalogThumbnailByName = new Map();
+        orchidRows.forEach((o) => {
+          if (o.image_url) catalogThumbnailByName.set((o.name || '').toLowerCase().trim(), o.image_url);
+        });
+
         // Fetch catalog orchid sighting coordinates and place circular photo markers
         try {
           const client = window.bloomSupabase;
           if (!client) return;
           const { data, error } = await client
             .from('public_approved_sightings')
-            .select('scientific_name, latitude, longitude, local_names')
+            .select('scientific_name, latitude, longitude, local_names, closeup_flower_photo_path, whole_plant_photo_path')
             .not('latitude', 'is', null)
             .not('longitude', 'is', null);
           if (error || !data) return;
           data.forEach(function(row) {
             const sciName = (row.scientific_name || '').toLowerCase().trim();
             const genus = sciName.split(' ')[0];
-            const photoUrl = storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
+            // The catalog thumbnail (the photo DENR actually picked for this
+            // species) wins over the sighting's own photo and the old generic
+            // hardcoded seed placeholder — otherwise map pins looked inconsistent
+            // with what the catalog shows for the same species.
+            // public_approved_sightings aggregates photos as {src, contributor}
+            // objects (see parsePhotoArray in catalog.html/orchid-detail.html).
+            const closeupPhotos = parseJsonArrayValue(row.closeup_flower_photo_path);
+            const wholePlantPhotos = parseJsonArrayValue(row.whole_plant_photo_path);
+            const sightingPhoto = (closeupPhotos[0] && closeupPhotos[0].src)
+              || (wholePlantPhotos[0] && wholePlantPhotos[0].src)
+              || null;
+            const photoUrl = catalogThumbnailByName.get(sciName) || sightingPhoto || storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
             const displayName = row.scientific_name || 'Unknown';
             let localName = '';
             try {
