@@ -5269,7 +5269,10 @@
 
         const isApproved = (s) => String(s.review_status || '').toLowerCase() === 'approved';
         const isPending  = (s) => ['pending', ''].includes(String(s.review_status || 'pending').toLowerCase());
-        // Build a Set of catalog species names for fast publish-check
+        // Build a Set of catalog species names — only tells us whether the
+        // species has a catalog entry at all (i.e. has ever been published).
+        // Per-sighting visibility within an already-published species is
+        // tracked separately via catalog_published (see `inCatalog` below).
         const catalogNames = new Set((orchidRows || []).map(o => (o.name || '').trim().toLowerCase()));
         const btnBase = 'display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;cursor:pointer;transition:background 150ms,transform 100ms;flex-shrink:0;border:none;';
         submissionsTableBody.innerHTML = items.map((submission) => {
@@ -5285,7 +5288,11 @@
           // Publish / Unpublish buttons — always shown for every submission (not just
           // approved ones); whichever action doesn't apply to the current state is
           // disabled (not hidden), so the action cluster stays visually uniform across rows.
-          const inCatalog = catalogNames.has(speciesKey);
+          // A sighting counts as "in catalog" only if its species has a catalog
+          // entry AND this specific sighting hasn't been individually unpublished.
+          // catalog_published defaults to visible (null/undefined == true) until
+          // DENR explicitly hides it — matches public_approved_sightings' gating.
+          const inCatalog = catalogNames.has(speciesKey) && submission.catalog_published !== false;
           const notApproved = !isApproved(submission);
           let publishBtn = '';
           if (isAdminRole) {
@@ -7502,19 +7509,36 @@
 
         // Live orchid sighting markers from database
         if (storageImagesByGenus.size === 0) loadStorageImages();
+
+        // Ensure the orchid catalog (with its DENR-picked thumbnails) is loaded
+        // so map pins can show the same thumbnail as the catalog card instead
+        // of a generic stock photo.
+        if (!orchidCatalogLoaded) { try { await loadOrchidCatalog(); } catch (e) {} }
+        const catalogThumbnailByName = new Map();
+        orchidRows.forEach((o) => {
+          if (o.image_url) catalogThumbnailByName.set((o.name || '').toLowerCase().trim(), o.image_url);
+        });
+
         try {
           const client = window.bloomSupabase;
           if (!client) return;
           const { data, error } = await client
             .from('public_approved_sightings')
-            .select('scientific_name, latitude, longitude, local_names')
+            .select('scientific_name, latitude, longitude, local_names, closeup_flower_photos, whole_plant_photos')
             .not('latitude', 'is', null)
             .not('longitude', 'is', null);
           if (error || !data) return;
           data.forEach(function(row) {
             const sciName = (row.scientific_name || '').toLowerCase().trim();
             const genus = sciName.split(' ')[0];
-            const photoUrl = storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
+            // The catalog thumbnail (the photo DENR actually picked for this
+            // species) wins over the sighting's own photo and the old generic
+            // hardcoded seed placeholder — otherwise map pins looked inconsistent
+            // with what the catalog shows for the same species.
+            const sightingPhoto = (Array.isArray(row.closeup_flower_photos) && row.closeup_flower_photos[0])
+              || (Array.isArray(row.whole_plant_photos) && row.whole_plant_photos[0])
+              || null;
+            const photoUrl = catalogThumbnailByName.get(sciName) || sightingPhoto || storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
             const displayName = row.scientific_name || 'Unknown';
             let localName = '';
             try {
@@ -10809,28 +10833,31 @@
         }
 
         showConfirm({
-          title: 'Unpublish from Catalog',
-          message: `Remove "${sciName}" from the orchid catalog? It will no longer appear in the public or researcher catalog.`,
+          title: 'Unpublish Sighting',
+          message: `Remove this sighting of "${sciName}" from the public catalog? Its other sightings (and the species entry itself) stay published.`,
           confirmLabel: 'Unpublish',
           danger: true,
           onConfirm: () => doUnpublish(submission, sciName)
         });
       }
 
+      // Unpublishes only the one sighting that was clicked, by flipping its own
+      // catalog_published flag — it must NOT touch the shared `orchids` row for
+      // the species (that used to happen via the unpublish_orchid RPC, which
+      // deleted the entire species catalog entry — and with it every other
+      // sighting's visibility and the species' hidden_fields — even though only
+      // one sighting's "Unpublish" button was clicked).
       async function doUnpublish(submission, sciName) {
+        if (!submission.id) {
+          showToast('Sighting id is missing for this submission.', true);
+          return;
+        }
         try {
-          // Direct client-side deletes are silently blocked by RLS (no DELETE policy).
-          // Use a SECURITY DEFINER function instead so the delete actually runs.
-          const { data: rpcData, error: rpcError } = await bloomSupabase
-            .rpc('unpublish_orchid', { p_sci_name: sciName });
-          if (rpcError) throw rpcError;
-
-          if (submission.id) {
-            await bloomSupabase
-              .from('species_sightings')
-              .update({ catalog_published: false, updated_at: new Date().toISOString() })
-              .eq('sighting_id', submission.id);
-          }
+          const { error } = await bloomSupabase
+            .from('species_sightings')
+            .update({ catalog_published: false, updated_at: new Date().toISOString() })
+            .eq('sighting_id', submission.id);
+          if (error) throw error;
 
           const row = submissionRows.find((item) => String(item.id) === String(submission.id));
           if (row) row.catalog_published = false;
@@ -10838,12 +10865,10 @@
             currentSubmission.catalog_published = false;
           }
 
-          orchidCatalogLoaded = false;          // force fresh fetch
-          await loadOrchidCatalog();            // updates orchidRows
-          renderSubmissions(submissionRows);    // re-renders with updated catalogNames
-          showToast(`"${sciName}" has been unpublished from the catalog.`);
+          renderSubmissions(submissionRows);
+          showToast(`This sighting of "${sciName}" has been unpublished from the catalog.`);
         } catch (error) {
-          console.error('Failed to unpublish catalog entry:', error);
+          console.error('Failed to unpublish sighting:', error);
           showToast('Failed to unpublish: ' + (error.message || 'Unknown error'), true);
         }
       }
