@@ -1227,13 +1227,13 @@
 
         var extraSections =
           odmSection('Plant Structure',
-            odmRow('Plant Height', num(src.plant_height_cm, ' cm')) +
+            odmRow('Plant Height', num(src.plant_height_cm, ' cm'), 'height') +
             odmRow('Pseudobulb Present', src.pseudobulb_present == null ? '' : (src.pseudobulb_present ? 'Yes' : 'No')) +
             odmRow('Stem Length', num(src.stem_length_cm, ' cm')) +
             odmRow('Root Length', num(src.root_length_cm, ' cm'))
           ) +
           odmSection('Leaf Characteristics',
-            odmRow('Leaf Shape / Type', src.leaf_shape) +
+            odmRow('Leaf Shape / Type', src.leaf_shape, 'leaf-shape') +
             odmRow('Leaf Length', num(src.leaf_length_cm, ' cm')) +
             odmRow('Leaf Width', num(src.leaf_width_cm, ' cm')) +
             odmRow('Leaf Texture', leafTextures) +
@@ -1241,16 +1241,16 @@
             odmRow('Number of Leaves', src.leaf_count)
           ) +
           odmSection('Flower Characteristics',
-            odmRow('Flower Color', src.flower_color) +
-            odmRow('Flowering Season', src.flowering_season) +
-            odmRow('Number of Flowers', src.flower_count) +
+            odmRow('Flower Color', src.flower_color, 'flower-color') +
+            odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
+            odmRow('Number of Flowers', src.flower_count, 'flower-count') +
             odmRow('Flower Diameter', num(src.flower_diameter_cm, ' cm')) +
-            odmRow('Inflorescence Type', src.inflorescence_type) +
+            odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
             odmRow('Petal Characteristics', src.petal_characteristics) +
             odmRow('Sepal Characteristics', src.sepal_characteristics) +
             odmRow('Labellum Description', src.labellum_lip_description) +
-            odmRow('Fragrance', src.fragrance) +
-            odmRow('Blooming Stage', src.blooming_stage)
+            odmRow('Fragrance', src.fragrance, 'fragrance') +
+            odmRow('Blooming Stage', src.blooming_stage, 'blooming')
           ) +
           odmSection('Fruit &amp; Seeds',
             odmRow('Fruit Present', src.fruit_present == null ? '' : (src.fruit_present ? 'Yes' : 'No')) +
@@ -1263,7 +1263,7 @@
             odmRow('Life Stage', src.life_stage, 'life-stage') +
             odmRow('Phenology', src.phenology, 'phenology') +
             odmRow('Population Status', src.population_status, 'pop-status') +
-            odmRow('Threat Level', src.threat_level, 'threat-level')
+            odmRow('Threat Level', src.threat_level, 'threat')
           ) +
           // Species Value & Importance — catalog-wide, DENR-curated narrative
           // fields (not per-sighting), matching orchid_overview. "Cultivation"
@@ -1337,27 +1337,30 @@
           ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
           : '—';
 
-        var recordedRows = '<div class="odm-date-pill">' + escapeHtml(date) + '</div>' +
-          odmRow('Time of Observation', s.observation_time) +
-          odmRow('Collection Method', s.collection_method) +
+        var recordedRows = (odmHiddenFields.has('obs-date') ? '' : '<div class="odm-date-pill">' + escapeHtml(date) + '</div>') +
+          odmRow('Time of Observation', s.observation_time, 'obs-time') +
+          odmRow('Collection Method', s.collection_method, 'collection-method') +
           odmRow('Observation Type', s.observation_type) +
-          odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'));
+          odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'), 'voucher');
 
-        var locationRows = odmRow('Mountain / Site', s.mountain_name) +
+        var locationRows = odmRow('Mountain / Site', s.mountain_name, 'mountain') +
           odmRow('Province', s.province) +
           odmRow('Municipality', s.municipality) +
-          odmRow('Altitude Zone', s.specific_site_zone) +
-          odmRow('Specific Site', s.specific_site_other);
+          odmRow('Altitude Zone', s.specific_site_zone, 'site') +
+          odmRow('Specific Site', s.specific_site_other, 'site');
 
-        var habitatRows = odmRow('Habitat Type', s.habitat_type) +
-          odmRow('Microhabitat', s.microhabitat) +
-          odmRow('Growth Substrate', s.growth_substrate) +
-          odmRow('Host Tree Species', s.host_tree_species) +
-          odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm')) +
+        var habitatRows = odmRow('Habitat Type', s.habitat_type, 'habitat-type') +
+          odmRow('Microhabitat', s.microhabitat, 'microhabitat') +
+          odmRow('Growth Substrate', s.growth_substrate, 'substrate') +
+          odmRow('Host Tree Species', s.host_tree_species, 'host-tree') +
+          odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm'), 'host-tree') +
           odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%')) +
-          odmRow('Light Exposure', s.light_exposure) +
+          odmRow('Light Exposure', s.light_exposure, 'light') +
           odmRow('Soil Type', s.soil_type) +
-          odmRow('Nearby Water Source', s.nearby_water_source);
+          odmRow('Nearby Water Source', s.nearby_water_source, 'water');
+
+        var contributorsSection = odmHiddenFields.has('team') ? '' :
+          '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>';
 
         el.innerHTML =
           '<div class="odm-sighting-item" id="odm-sighting-item-' + i + '">' +
@@ -1368,7 +1371,7 @@
             odmSection('Recorded Sighting', recordedRows) +
             odmSection('Location', locationRows) +
             odmSection('Habitat &amp; Environment', habitatRows) +
-            '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>' +
+            contributorsSection +
           '</div>';
       }
 
