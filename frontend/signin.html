@@ -259,7 +259,10 @@
               <input type="email" placeholder="you@example.com" class="form-input form-control" id="email" required />
             </div>
             <div class="signin-field">
-              <label for="password">Password</label>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;">
+                <label for="password" style="margin:0;">Password</label>
+                <button type="button" id="forgot-password-link" style="background:none;border:none;padding:0;margin:0;font-size:.78rem;font-weight:600;color:#145A1E;cursor:pointer;text-decoration:underline;">Forgot password?</button>
+              </div>
               <div class="password-field-wrap">
                 <input type="password" class="form-input form-control" id="password" required />
                 <button type="button" class="password-toggle-btn" id="password-toggle" aria-label="Show password" aria-pressed="false">
@@ -291,6 +294,22 @@
       </aside>
     </main>
 
+    <div id="forgot-password-modal" style="display:none;position:fixed;inset:0;background:rgba(20,40,20,0.55);z-index:2000;align-items:center;justify-content:center;padding:1.25rem;">
+      <div style="background:#fff;border-radius:14px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.28);padding:1.75rem;font-family:Inter,Roboto,sans-serif;">
+        <h3 style="margin:0 0 .4rem;font-size:1.05rem;font-weight:700;color:#145A1E;">Reset your password</h3>
+        <p style="margin:0 0 1rem;font-size:.85rem;color:#4a5a4c;line-height:1.5;">Enter the email address on your account and we'll send you a link to reset your password.</p>
+        <div class="signin-field" style="margin-bottom:0;">
+          <label for="forgot-password-email">Email address</label>
+          <input type="email" id="forgot-password-email" class="form-input form-control" placeholder="you@example.com" />
+        </div>
+        <div id="forgot-password-message" style="display:none;font-size:.82rem;margin:.75rem 0 0;line-height:1.5;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.25rem;">
+          <button type="button" id="forgot-password-cancel" style="padding:.5rem 1.1rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+          <button type="button" id="forgot-password-submit" style="padding:.5rem 1.1rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Send Reset Link</button>
+        </div>
+      </div>
+    </div>
+
     <script>
       const bloomSupabase = window.bloomSupabase;
 
@@ -317,6 +336,76 @@
           passwordToggleIcon.innerHTML = isVisible ? eyeIconPath : eyeOffIconPath;
           passwordToggleBtn.setAttribute('aria-pressed', String(!isVisible));
           passwordToggleBtn.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+        });
+      }
+
+      // ── Forgot password ──────────────────────────────────────────────
+      const forgotPasswordLink = document.getElementById('forgot-password-link');
+      const forgotPasswordModal = document.getElementById('forgot-password-modal');
+      const forgotPasswordEmailInput = document.getElementById('forgot-password-email');
+      const forgotPasswordMessage = document.getElementById('forgot-password-message');
+      const forgotPasswordSubmitBtn = document.getElementById('forgot-password-submit');
+      const forgotPasswordCancelBtn = document.getElementById('forgot-password-cancel');
+
+      function openForgotPasswordModal() {
+        if (!forgotPasswordModal) return;
+        forgotPasswordEmailInput.value = (document.getElementById('email')?.value || '').trim();
+        forgotPasswordMessage.style.display = 'none';
+        forgotPasswordSubmitBtn.disabled = false;
+        forgotPasswordSubmitBtn.textContent = 'Send Reset Link';
+        forgotPasswordModal.style.display = 'flex';
+        forgotPasswordEmailInput.focus();
+      }
+
+      function closeForgotPasswordModal() {
+        if (forgotPasswordModal) forgotPasswordModal.style.display = 'none';
+      }
+
+      if (forgotPasswordLink) forgotPasswordLink.addEventListener('click', openForgotPasswordModal);
+      if (forgotPasswordCancelBtn) forgotPasswordCancelBtn.addEventListener('click', closeForgotPasswordModal);
+      if (forgotPasswordModal) {
+        forgotPasswordModal.addEventListener('click', function(e) {
+          if (e.target === forgotPasswordModal) closeForgotPasswordModal();
+        });
+      }
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && forgotPasswordModal && forgotPasswordModal.style.display === 'flex') {
+          closeForgotPasswordModal();
+        }
+      });
+
+      if (forgotPasswordSubmitBtn) {
+        forgotPasswordSubmitBtn.addEventListener('click', async function() {
+          const email = (forgotPasswordEmailInput.value || '').trim();
+          forgotPasswordMessage.style.display = 'block';
+
+          if (!email) {
+            forgotPasswordMessage.style.color = '#991b1b';
+            forgotPasswordMessage.textContent = 'Please enter your email address.';
+            return;
+          }
+          if (!bloomSupabase) {
+            forgotPasswordMessage.style.color = '#991b1b';
+            forgotPasswordMessage.textContent = 'Unable to connect. Please refresh and try again.';
+            return;
+          }
+
+          forgotPasswordSubmitBtn.disabled = true;
+          forgotPasswordSubmitBtn.textContent = 'Sending…';
+
+          try {
+            const redirectTo = new URL('reset-password.html', window.location.href).toString();
+            const { error } = await bloomSupabase.auth.resetPasswordForEmail(email, { redirectTo });
+            if (error) throw error;
+            forgotPasswordMessage.style.color = '#145A1E';
+            forgotPasswordMessage.textContent = 'If an account exists for that email, a reset link has been sent. Check your inbox (and spam folder).';
+            forgotPasswordSubmitBtn.textContent = 'Sent';
+          } catch (err) {
+            forgotPasswordMessage.style.color = '#991b1b';
+            forgotPasswordMessage.textContent = err.message || 'Could not send the reset email. Please try again.';
+            forgotPasswordSubmitBtn.disabled = false;
+            forgotPasswordSubmitBtn.textContent = 'Send Reset Link';
+          }
         });
       }
 

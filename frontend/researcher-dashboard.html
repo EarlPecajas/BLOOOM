@@ -1368,8 +1368,7 @@
         <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
           <thead>
             <tr class="submissions-table-head">
-              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Researcher Name</th>
-              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Species</th>
+              <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Scientific Name</th>
               <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Submission Date</th>
               <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Review Status</th>
               <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Actions</th>
@@ -1377,7 +1376,7 @@
           </thead>
           <tbody id="submissions-table-body">
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions from database...</td>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Loading submissions from database...</td>
             </tr>
           </tbody>
         </table>
@@ -1511,7 +1510,7 @@
             <div class="submission-field submission-field--full">
               <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
               <div style="display:flex;gap:0.5rem;">
-                <input id="submission-scientific-name" type="text" list="known-species-datalist" placeholder="Scientific Name (auto-filled from Genus + Species, or pick/type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;" />
+                <input id="submission-scientific-name" type="text" list="known-species-datalist" placeholder="Scientific Name (auto-filled from Genus + Species, or pick/type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;font-style:italic;" />
                 <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
               <span id="submission-scientific-name-hint" style="display:none;font-size:0.78rem;color:#b42318;margin-top:0.3rem;">Scientific name must start with a capital letter (e.g., Phalaenopsis amabilis).</span>
@@ -1535,9 +1534,13 @@
               <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
               <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Taxonomic Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
             </div>
-            <div class="submission-field">
+            <div class="submission-field" style="position:relative;">
               <label for="submission-endemic-philippines" style="font-size:0.88rem;font-weight:600;color:#334155;">Endemic to the Philippines <span class="field-help" data-tooltip="Optional. Is this orchid species endemic (found only) in the Philippines?">?</span></label>
-              <select id="submission-endemic-philippines" class="submission-select"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
+              <div style="display:flex;gap:0.4rem;align-items:center;">
+                <select id="submission-endemic-philippines" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
+                <button type="button" onclick="autoDetectEndemicStatus()" title="Look up the Scientific Name against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+              </div>
+              <div id="submission-endemic-status" style="position:absolute;top:100%;left:0;right:0;margin-top:0.3rem;padding:0.2rem 0;background:#fff;font-size:0.76rem;line-height:1.35;display:none;z-index:2;"></div>
             </div>
           </div>
 
@@ -1808,9 +1811,13 @@
               <label for="submission-population-status" style="font-size:0.88rem;font-weight:600;color:#334155;">Population Status</label>
               <select id="submission-population-status" class="submission-select"><option value="" disabled selected hidden>Population Status</option><option value="Abundant">Abundant</option><option value="common">Common</option><option value="rare">Rare</option></select>
             </div>
-            <div class="submission-field">
-              <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <button type="button" onclick="openIucnGuideModal()" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">(Check IUCN Red List)</button></label>
-              <select id="submission-threat-level" class="submission-select"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Least Concern">Least Concern</option></select>
+            <div class="submission-field" style="position:relative;">
+              <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <button type="button" onclick="openIucnGuideModal()" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">(Check DAO 2026-20)</button></label>
+              <div style="display:flex;gap:0.4rem;align-items:center;">
+                <select id="submission-threat-level" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Other Threatened Species">Other Threatened Species</option><option value="Not Listed">Not Listed</option></select>
+                <button type="button" onclick="autoDetectThreatLevel()" title="Look up the Scientific Name (Page 1, Basic Taxonomic Information) against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+              </div>
+              <div id="submission-threat-level-status" style="position:absolute;top:100%;left:0;right:0;margin-top:0.3rem;padding:0.2rem 0;background:#fff;font-size:0.76rem;line-height:1.35;display:none;z-index:2;"></div>
             </div>
             <div class="submission-field submission-field--full">
               <label style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Type <span style="font-weight:500;color:#64748b;font-size:0.78rem;">(Choose one or more)</span></label>
@@ -2155,14 +2162,14 @@
       <div style="background:white;border-radius:12px;max-width:840px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">
         <div style="background:linear-gradient(135deg,#145A1E,#3d6c36);padding:1.25rem 1.5rem;color:white;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
           <div>
-            <h2 style="margin:0;font-size:1.2rem;font-family:Inter,Roboto,sans-serif;">IUCN Red List Reference Guide</h2>
-            <p style="margin:0.2rem 0 0 0;font-size:0.78rem;color:#d1f2d8;">Curated offline reference for choosing a Threat Level -- no need to leave BLOOM.</p>
+            <h2 style="margin:0;font-size:1.2rem;font-family:Inter,Roboto,sans-serif;">DAO 2026-20 Reference Guide</h2>
+            <p style="margin:0.2rem 0 0 0;font-size:0.78rem;color:#d1f2d8;">Official DENR AO No. 2026-20 threat categories -- no need to leave BLOOM.</p>
           </div>
           <button onclick="closeModal('iucnGuideModal')" aria-label="Close" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:1.4rem;cursor:pointer;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 200ms ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
         </div>
 
         <div style="display:flex;gap:0.4rem;padding:0.75rem 1.5rem 0 1.5rem;border-bottom:1px solid #e2e8f0;flex-shrink:0;">
-          <button type="button" class="iucn-tab-btn" data-tab="guide" onclick="switchIucnTab('guide')" style="padding:0.5rem 0.9rem;border:none;background:none;border-bottom:2.5px solid #145A1E;color:#145A1E;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;">Category Guide</button>
+          <button type="button" class="iucn-tab-btn" data-tab="guide" onclick="switchIucnTab('guide')" style="padding:0.5rem 0.9rem;border:none;background:none;border-bottom:2.5px solid #145A1E;color:#145A1E;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;">DAO 2026-20 Threat Category Guide</button>
           <button type="button" class="iucn-tab-btn" data-tab="search" onclick="switchIucnTab('search')" style="padding:0.5rem 0.9rem;border:none;background:none;border-bottom:2.5px solid transparent;color:#64748b;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;">Search Assessed Orchids</button>
         </div>
 
@@ -2185,7 +2192,7 @@
             </div>
             <div id="iucnSpeciesListCount" style="font-size:0.76rem;color:#64748b;margin-bottom:0.5rem;"></div>
             <div id="iucnSpeciesList" style="display:grid;gap:0.6rem;"></div>
-            <p style="margin:1rem 0 0 0;font-size:0.72rem;color:#94a3b8;line-height:1.5;">This is a curated reference set, not a live mirror of the full IUCN Red List. Most field morphospecies (e.g. "sp. 1", "cf.", "aff.") have never been formally assessed -- use these entries as comparison points, not exact matches, and note "Not Evaluated" is expected for undescribed specimens.</p>
+            <p style="margin:1rem 0 0 0;font-size:0.72rem;color:#94a3b8;line-height:1.5;">This lists every orchid species in DENR Administrative Order No. 2026-20, "Updated National List of Threatened Philippine Plants and Their Categories." A species not appearing here is not formally placed in a threatened category by DENR -- record it as "Not Listed," which is not the same as confirmed safe.</p>
           </div>
         </div>
       </div>
@@ -2196,7 +2203,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="iucn-orchid-reference.js"></script>
+    <script src="dao-2026-20-orchid-reference.js"></script>
     <script>
       // Restore the sidebar collapse preference before the page becomes visible.
       try {
@@ -3069,6 +3076,32 @@
       let knownGenusNames = [];
       let knownEpithets = [];
 
+      // species_sightings.scientific_name is free text a researcher typed
+      // when submitting a sighting, so it occasionally holds a placeholder
+      // ("Unknown", "IDK", "Or chid"...) instead of a real identification.
+      // Only accept it as a suggestion if it actually looks like a binomial:
+      // a capitalized genus word plus one or more lowercase epithet words,
+      // none of them a known placeholder.
+      const TAXON_SUGGESTION_JUNK_WORDS = new Set([
+        'unknown', 'idk', 'tbd', 'tba', 'na', 'n/a', 'test', 'testing',
+        'none', 'null', 'undefined', 'orchid', 'orchidaceae', 'species',
+        'sp', 'spp', 'xxx', 'asdf', 'unidentified', 'pending', 'placeholder',
+        'sample', 'demo'
+      ]);
+
+      function isPlausibleGenusWord(word) {
+        const w = String(word || '').trim();
+        return w.length >= 3 && /^[A-Z][a-z]+$/.test(w) && !TAXON_SUGGESTION_JUNK_WORDS.has(w.toLowerCase());
+      }
+
+      function isPlausibleScientificName(name) {
+        const words = String(name || '').trim().split(/\s+/);
+        if (words.length < 2 || !isPlausibleGenusWord(words[0])) return false;
+        return words.slice(1).every((w) =>
+          w.length >= 2 && /^[a-z][a-z-]*$/.test(w) && !TAXON_SUGGESTION_JUNK_WORDS.has(w.toLowerCase())
+        );
+      }
+
       // Populates the "known species" datalist for the Add Orchid scientific-name
       // field, plus the genus/epithet suggestion lists, from the published
       // catalog and every DENR-approved submission (whether published yet or not).
@@ -3111,17 +3144,20 @@
           }
         }
 
+        const plausibleNames = Array.from(names).filter(isPlausibleScientificName);
+        const plausibleGenusNames = Array.from(genusNames).filter(isPlausibleGenusWord);
+
         // Species epithet = everything after the genus (first word) of each known name.
         const epithets = new Set();
-        names.forEach((n) => {
+        plausibleNames.forEach((n) => {
           const parts = n.split(/\s+/);
-          if (parts.length > 1) epithets.add(parts.slice(1).join(' '));
+          epithets.add(parts.slice(1).join(' '));
         });
 
         if (speciesDatalist) {
-          speciesDatalist.innerHTML = Array.from(names).filter(Boolean).sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
+          speciesDatalist.innerHTML = plausibleNames.sort().map((n) => `<option value="${escapeHtml(n)}"></option>`).join('');
         }
-        knownGenusNames = Array.from(genusNames).filter(Boolean).sort();
+        knownGenusNames = plausibleGenusNames.sort();
         knownEpithets = Array.from(epithets).filter(Boolean).sort();
       }
 
@@ -4091,7 +4127,7 @@
         if (!items.length) {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">No submissions matched your search.</td>
             </tr>
           `;
           return;
@@ -4099,7 +4135,6 @@
 
         submissionsTableBody.innerHTML = items.map((submission) => {
           const badgeClass = getSubmissionStatusBadgeClass(submission.review_status);
-          const safeResearcher = escapeHtml(submission.researcher_name || submission.researcher || '');
           const safeSpecies = escapeHtml(submission.species);
           const safeDate = escapeHtml(submission.submission_date);
           const safeStatus = escapeHtml(getStatusLabel(submission.review_status));
@@ -4108,7 +4143,6 @@
           const needsRevision = statusLower === 'revision';
           return `
             <tr class="submission-row">
-              <td class="submission-researcher-cell">${safeResearcher}</td>
               <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
               <td class="submission-date-cell">${safeDate}</td>
               <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${safeStatus}</span></td>
@@ -4191,7 +4225,7 @@
         } catch {
           submissionsTableBody.innerHTML = `
             <tr>
-              <td colspan="5" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Could not load submissions from database.</td>
             </tr>
           `;
         }
@@ -6198,7 +6232,7 @@ function refreshConservationHeatMap(summary) {
         }
       }
 
-      // ── IUCN Red List Reference Modal ──────────────────────────────────
+      // ── DAO 2026-20 Reference Modal ─────────────────────────────────────
       function openIucnGuideModal() {
         const modal = document.getElementById('iucnGuideModal');
         if (!modal) return;
@@ -6221,7 +6255,7 @@ function refreshConservationHeatMap(summary) {
 
       function renderIucnCategoryCards() {
         const container = document.getElementById('iucnCategoryCards');
-        const categories = window.IUCN_RED_LIST_CATEGORIES || [];
+        const categories = window.DAO_2026_20_CATEGORIES || [];
         if (!container || container.dataset.rendered === '1') return;
         container.innerHTML = categories.map((cat) => `
           <div style="border:1px solid #e2e8f0;border-left:4px solid ${cat.color};border-radius:8px;padding:0.75rem 0.9rem;background:${cat.bg};">
@@ -6241,14 +6275,14 @@ function refreshConservationHeatMap(summary) {
         const genusSelect = document.getElementById('iucnGenusFilter');
         if (!categorySelect || !genusSelect || categorySelect.dataset.populated === '1') return;
 
-        (window.IUCN_RED_LIST_CATEGORIES || []).forEach((cat) => {
+        (window.DAO_2026_20_CATEGORIES || []).forEach((cat) => {
           const opt = document.createElement('option');
           opt.value = cat.code;
           opt.textContent = `${cat.label} (${cat.code})`;
           categorySelect.appendChild(opt);
         });
 
-        const genera = Array.from(new Set((window.IUCN_ORCHID_REFERENCE || []).map((s) => s.genus))).sort();
+        const genera = Array.from(new Set((window.DAO_2026_20_ORCHID_REFERENCE || []).map((s) => s.genus))).sort();
         genera.forEach((genus) => {
           const opt = document.createElement('option');
           opt.value = genus;
@@ -6267,19 +6301,19 @@ function refreshConservationHeatMap(summary) {
         const query = (document.getElementById('iucnSearchInput')?.value || '').trim().toLowerCase();
         const categoryFilter = document.getElementById('iucnCategoryFilter')?.value || '';
         const genusFilter = document.getElementById('iucnGenusFilter')?.value || '';
-        const categoryByCode = Object.fromEntries((window.IUCN_RED_LIST_CATEGORIES || []).map((c) => [c.code, c]));
+        const categoryByCode = Object.fromEntries((window.DAO_2026_20_CATEGORIES || []).map((c) => [c.code, c]));
 
-        const results = (window.IUCN_ORCHID_REFERENCE || []).filter((s) => {
+        const results = (window.DAO_2026_20_ORCHID_REFERENCE || []).filter((s) => {
           if (categoryFilter && s.category !== categoryFilter) return false;
           if (genusFilter && s.genus !== genusFilter) return false;
           if (query) {
-            const haystack = `${s.sci} ${s.common} ${s.genus}`.toLowerCase();
+            const haystack = `${s.sci} ${s.fullName} ${s.common} ${s.genus}`.toLowerCase();
             if (!haystack.includes(query)) return false;
           }
           return true;
         });
 
-        if (countEl) countEl.textContent = `${results.length} of ${(window.IUCN_ORCHID_REFERENCE || []).length} reference species`;
+        if (countEl) countEl.textContent = `${results.length} of ${(window.DAO_2026_20_ORCHID_REFERENCE || []).length} DAO 2026-20 orchid species`;
 
         if (!results.length) {
           listEl.innerHTML = '<p style="font-size:0.82rem;color:#94a3b8;">No matches. Try a different search term or clear the filters.</p>';
@@ -6288,13 +6322,15 @@ function refreshConservationHeatMap(summary) {
 
         listEl.innerHTML = results.map((s) => {
           const cat = categoryByCode[s.category] || { label: s.category, color: '#475569', bg: '#f8fafc' };
+          const endemicBadge = s.endemic
+            ? ' <span title="Endemic to the Philippines" style="font-style:normal;font-size:0.66rem;font-weight:800;color:#0f766e;background:#f0fdfa;border:1px solid #99f6e4;border-radius:999px;padding:0.05rem 0.4rem;vertical-align:middle;">Endemic</span>'
+            : '';
           return `
             <div style="border:1px solid #e2e8f0;border-radius:8px;padding:0.7rem 0.9rem;display:flex;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
               <div style="min-width:0;">
-                <div style="font-weight:700;font-size:0.85rem;color:#1e293b;font-style:italic;">${s.sci}</div>
-                <div style="font-size:0.78rem;color:#475569;">${s.common} &middot; <span style="color:#64748b;">${s.genus}</span></div>
-                <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.25rem;">${s.region}</div>
-                <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.15rem;"><strong>Threats:</strong> ${s.threats}</div>
+                <div style="font-weight:700;font-size:0.85rem;color:#1e293b;"><span style="font-style:italic;">${s.sci}</span>${endemicBadge}</div>
+                <div style="font-size:0.78rem;color:#475569;">${s.common || 'No recorded common/local name'} &middot; <span style="color:#64748b;">${s.genus}</span></div>
+                <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.25rem;font-style:italic;">${s.fullName}</div>
               </div>
               <div style="flex-shrink:0;align-self:flex-start;">
                 <span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:999px;background:${cat.bg};color:${cat.color};font-size:0.72rem;font-weight:800;border:1px solid ${cat.color}33;">${cat.label}</span>
@@ -6302,6 +6338,85 @@ function refreshConservationHeatMap(summary) {
             </div>
           `;
         }).join('');
+      }
+
+      // Looks the Scientific Name (Page 1, Basic Taxonomic Information) up
+      // against the DAO 2026-20 orchid list and fills in Threat Level. The
+      // dropdown stays enabled afterward so a researcher can still correct
+      // it by hand (e.g. the list is updated later, or the match is wrong).
+      const DAO_2026_20_CATEGORY_TO_OPTION = {
+        CR: 'Critically Endangered',
+        EN: 'Endangered',
+        VU: 'Vulnerable',
+        OTS: 'Other Threatened Species'
+      };
+
+      function normalizeDaoSciName(value) {
+        return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/\.$/, '');
+      }
+
+      function autoDetectThreatLevel() {
+        const statusEl = document.getElementById('submission-threat-level-status');
+        const selectEl = document.getElementById('submission-threat-level');
+        if (!statusEl || !selectEl) return;
+
+        const sciName = (document.getElementById('submission-scientific-name')?.value || '').trim();
+        statusEl.style.display = 'block';
+
+        if (!sciName) {
+          statusEl.style.color = '#b42318';
+          statusEl.textContent = 'Enter the Scientific Name on Page 1 (Basic Taxonomic Information) first.';
+          return;
+        }
+
+        const target = normalizeDaoSciName(sciName);
+        const match = (window.DAO_2026_20_ORCHID_REFERENCE || [])
+          .find((s) => normalizeDaoSciName(s.sci) === target);
+
+        if (match) {
+          const label = DAO_2026_20_CATEGORY_TO_OPTION[match.category] || match.category;
+          selectEl.value = label;
+          statusEl.style.color = '#145A1E';
+          statusEl.textContent = `Matched "${match.fullName}" in DAO 2026-20 — set to ${label}.`;
+        } else {
+          selectEl.value = 'Not Listed';
+          statusEl.style.color = '#64748b';
+          statusEl.textContent = `"${sciName}" was not found in the DAO 2026-20 threatened list — set to Not Listed.`;
+        }
+      }
+
+      // Same DAO 2026-20 lookup as Threat Level, using the endemism flag
+      // (the source document's "*" marker before a scientific name) each
+      // entry already carries. DAO 2026-20 only covers threatened species,
+      // so a species it doesn't list gives no endemism evidence either way
+      // — that's recorded as "Unknown", not "No".
+      function autoDetectEndemicStatus() {
+        const statusEl = document.getElementById('submission-endemic-status');
+        const selectEl = document.getElementById('submission-endemic-philippines');
+        if (!statusEl || !selectEl) return;
+
+        const sciName = (document.getElementById('submission-scientific-name')?.value || '').trim();
+        statusEl.style.display = 'block';
+
+        if (!sciName) {
+          statusEl.style.color = '#b42318';
+          statusEl.textContent = 'Enter the Scientific Name first.';
+          return;
+        }
+
+        const target = normalizeDaoSciName(sciName);
+        const match = (window.DAO_2026_20_ORCHID_REFERENCE || [])
+          .find((s) => normalizeDaoSciName(s.sci) === target);
+
+        if (match) {
+          selectEl.value = match.endemic ? 'yes' : 'no';
+          statusEl.style.color = '#145A1E';
+          statusEl.textContent = `Matched "${match.fullName}" in DAO 2026-20 — set to ${match.endemic ? 'Yes' : 'No'}.`;
+        } else {
+          selectEl.value = 'unknown';
+          statusEl.style.color = '#64748b';
+          statusEl.textContent = `"${sciName}" was not found in DAO 2026-20 — endemicity set to Unknown.`;
+        }
       }
 
       function openLightbox(imageSrc) {

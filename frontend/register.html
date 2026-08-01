@@ -348,6 +348,10 @@
             email,
             password,
             options: {
+              // Without this, Supabase falls back to the project's default
+              // Site URL — which may not point at where this app is actually
+              // deployed — and the confirmation link lands somewhere broken.
+              emailRedirectTo: new URL('confirm-email.html', window.location.href).toString(),
               data: {
                 first_name: firstName,
                 last_name: lastName,
@@ -413,14 +417,17 @@
             return;
           }
 
-          // Otherwise (email confirmation required) show the pending approval notice.
+          // Otherwise (email confirmation required) tell them to confirm their
+          // email first — that has to happen before the admin-approval step
+          // even applies, and the old copy here never mentioned it at all.
+          const safeEmail = email.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           this.innerHTML = `
             <div style="text-align:center;padding:1rem 0;">
-              <div style="font-size:2rem;margin-bottom:.75rem;">✅</div>
-              <div style="font-size:1rem;font-weight:700;color:#145A1E;margin-bottom:.5rem;">Registration submitted!</div>
+              <div style="font-size:2rem;margin-bottom:.75rem;">📧</div>
+              <div style="font-size:1rem;font-weight:700;color:#145A1E;margin-bottom:.5rem;">Confirm your email</div>
               <div style="font-size:.875rem;color:#5a7a5c;line-height:1.6;margin-bottom:1.25rem;">
-                Your account is <strong>pending approval</strong> by the administrator.<br>
-                You will be able to sign in once your account is approved.
+                We've sent a confirmation link to <strong>${safeEmail}</strong>. Please check your inbox (and spam folder) and click it to verify your email address.<br><br>
+                After that, your account will be <strong>pending approval</strong> by the administrator before you can sign in.
               </div>
               <a href="signin.html" style="display:inline-block;padding:.6rem 1.5rem;background:#145A1E;color:#FFFFFF;border-radius:8px;text-decoration:none;font-weight:700;font-size:.875rem;">Back to Sign In</a>
             </div>
