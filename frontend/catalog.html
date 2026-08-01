@@ -84,6 +84,16 @@
       .odm-sighting-item-rows{padding:.25rem 0 .35rem;}
       .odm-sighting-item-row{display:flex;gap:.5rem;font-size:.81rem;color:#3e3e3e;padding:.25rem 1rem;}
       .odm-sighting-item-row-lbl{color:#5a8a54;font-weight:700;min-width:70px;flex-shrink:0;}
+      .odm-sighting-item-subhd{font-size:.68rem;font-weight:800;color:#145A1E;text-transform:uppercase;letter-spacing:.05em;padding:.6rem 1rem .1rem;}
+      .odm-sighting-item--active{border-color:#145A1E;box-shadow:0 0 0 2px rgba(20,90,30,.28);}
+      .odm-sighting-item-pin-badge{display:inline-block;margin-left:.4rem;font-size:.62rem;font-weight:800;color:#fff;background:#145A1E;border-radius:20px;padding:.1rem .5rem;text-transform:uppercase;letter-spacing:.03em;vertical-align:middle;}
+      .odm-contributor-card{background:#E8F5E3;border-radius:14px;overflow:hidden;margin:.4rem 1rem .8rem;}
+      .odm-contributor-card-hd{background:#0D530E;color:#fff;font-weight:700;font-size:.74rem;padding:.55rem .9rem;}
+      .odm-contributor-row{display:flex;align-items:center;gap:.6rem;padding:.5rem .9rem;border-top:1px solid rgba(20,90,30,.12);}
+      .odm-contributor-row:first-of-type{border-top:none;}
+      .odm-contributor-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0D530E,#2A8C2B);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;}
+      .odm-contributor-name{font-weight:700;font-size:.83rem;color:#162b14;}
+      .odm-contributor-role{font-size:.7rem;color:#5a8a54;}
 
       /* Images */
       .odm-images-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;padding:1.1rem;}
@@ -400,6 +410,7 @@
               <div class="odm-section-title">Location &amp; Habitat</div>
               <div class="odm-rows-wrap" id="odm-rows-location"></div>
             </div>
+            <div id="odm-value-extra"></div>
           </div>
 
           <!-- Sightings -->
@@ -502,6 +513,19 @@
         return [];
       }
 
+      // Normalizes a sighting_media photo-path entry into { src, contributor }.
+      // The public_approved_sightings view aggregates photos as
+      // {src, contributor} objects, but older/legacy rows can still carry a
+      // flat array of plain URL strings — accept both shapes.
+      function parsePhotoArray(value) {
+        return parseJsonArrayValue(value).map(function(item) {
+          if (item && typeof item === 'object') {
+            return { src: item.src || item.url || '', contributor: item.contributor || item.photographer_name || '' };
+          }
+          return { src: String(item || ''), contributor: '' };
+        }).filter(function(p) { return p.src; });
+      }
+
       function escapeHtml(value) {
         return String(value ?? '')
           .replace(/&/g, '&amp;')
@@ -550,7 +574,10 @@
           latitude: row.latitude != null ? Number(row.latitude) : null,
           longitude: row.longitude != null ? Number(row.longitude) : null,
           mountain_name: row.mountain_name || '',
+          province: row.province || '',
+          municipality: row.municipality || '',
           specific_site_zone: row.specific_site_zone || '',
+          specific_site_other: row.specific_site_other || '',
           elevation_meters: row.elevation_meters ?? '',
           habitat_type: row.habitat_type || '',
           microhabitat: row.microhabitat || '',
@@ -584,30 +611,44 @@
           observation_type: row.observation_type || '',
           collection_method: row.collection_method || '',
           voucher_collected: row.voucher_collected,
+          life_stage: row.life_stage || '',
+          phenology: row.phenology || '',
+          population_count: row.population_count ?? '',
           researcher_notes: row.researcher_notes || '',
+          related_study: row.related_study || '',
           growth_substrate: row.growth_substrate || '',
           nearby_water_source: row.nearby_water_source || '',
           educational_notes: row.educational_notes || '',
           location_visibility_note: row.location_visibility_note || 'Location hidden for conservation',
-          whole_plant_photo_path: parseJsonArrayValue(row.whole_plant_photo_path),
-          closeup_flower_photo_path: parseJsonArrayValue(row.closeup_flower_photo_path),
-          habitat_photo_path: parseJsonArrayValue(row.habitat_photo_path),
+          whole_plant_photo_path: parsePhotoArray(row.whole_plant_photo_path),
+          closeup_flower_photo_path: parsePhotoArray(row.closeup_flower_photo_path),
+          habitat_photo_path: parsePhotoArray(row.habitat_photo_path),
           researcher_name: row.researcher_name || '',
           team_members: parseJsonArrayValue(row.team_members),
+          contributors: Array.isArray(row.contributors) ? row.contributors.filter(Boolean) : [],
           institution: row.institution || ''
         };
       }
 
+      // Returns [{ src, contributor, category }] across all three photo
+      // categories for a sighting — category drives the labeled grouping in
+      // the Images tab.
       function getPublicSightingImages(publicSighting) {
         if (!publicSighting) {
           return [];
         }
 
+        function tag(list, category) {
+          return (Array.isArray(list) ? list : []).map(function(p) {
+            return { src: p.src, contributor: p.contributor, category: category };
+          });
+        }
+
         return [
-          ...(Array.isArray(publicSighting.whole_plant_photo_path) ? publicSighting.whole_plant_photo_path : []),
-          ...(Array.isArray(publicSighting.closeup_flower_photo_path) ? publicSighting.closeup_flower_photo_path : []),
-          ...(Array.isArray(publicSighting.habitat_photo_path) ? publicSighting.habitat_photo_path : [])
-        ].filter(Boolean);
+          ...tag(publicSighting.whole_plant_photo_path, 'Whole Plant'),
+          ...tag(publicSighting.closeup_flower_photo_path, 'Close-up Flower'),
+          ...tag(publicSighting.habitat_photo_path, 'Habitat')
+        ].filter(function(p) { return p.src; });
       }
 
       function getObservationSummaryText(publicSighting) {
@@ -742,10 +783,19 @@
         return (!t || t.toLowerCase() === 'unassigned') ? 'Not Listed' : t;
       }
 
+      // Which sighting's pin is currently "active" (tapped on the mini-map),
+      // mirroring mobile's _tappedPinIndex — drives the Species Value summary
+      // and Related Study tab. Defaults to the most recent sighting.
+      var odmActiveSightingIndex = 0;
+
+      function odmActiveSighting(allSightings) {
+        return allSightings[odmActiveSightingIndex] || allSightings[0] || {};
+      }
+
       function odmPopulateValue(orchid, allSightings) {
         odmHiddenFields = new Set(Array.isArray(orchid.hidden_fields) ? orchid.hidden_fields : []);
 
-        var src = allSightings[0] || {};
+        var src = odmActiveSighting(allSightings);
         var count = allSightings.length;
         // The catalog's own conservation_status is DENR's vetted IUCN classification
         // and should win — a per-sighting threat_level is one researcher's field
@@ -777,8 +827,7 @@
           odmRow('Common Name(s)', commonNames, 'common-names') +
           odmRow('Endemic to Philippines', endemic, 'endemicity') +
           odmRow('Genus', genus) +
-          odmRow('Confidence', src.identification_confidence, 'id-confidence') +
-          odmRow('Population Status', src.population_status, 'pop-status');
+          odmRow('Confidence', src.identification_confidence, 'id-confidence');
         document.getElementById('odm-rows-taxonomy').innerHTML = taxHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No taxonomy data</span></div>';
 
@@ -787,6 +836,78 @@
           odmRow('Microhabitat', src.microhabitat, 'microhabitat');
         document.getElementById('odm-rows-location').innerHTML = locHtml ||
           '<div class="odm-row"><span class="odm-row-value" style="color:#888;font-style:italic;">No location data</span></div>';
+
+        // Population & Conservation — per the active (tapped-pin) sighting.
+        var popHtml = odmRow('Population Count', src.population_count !== '' && src.population_count != null
+            ? (src.population_count + ' individual' + (Number(src.population_count) === 1 ? '' : 's')) : '', 'pop-count') +
+          odmRow('Life Stage', src.life_stage, 'life-stage') +
+          odmRow('Phenology', src.phenology, 'phenology') +
+          odmRow('Population Status', src.population_status, 'pop-status') +
+          odmRow('Threat Level', src.threat_level, 'threat-level');
+
+        // Species Value & Importance — catalog-wide, DENR-curated narrative
+        // fields (not per-sighting), matching orchid_overview.
+        var valueHtml = odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
+          odmRow('Aesthetic / Horticultural Value', orchid.horticulture_value, 'horticulture-value') +
+          odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance');
+
+        var extraSections = '';
+        if (popHtml) {
+          extraSections += '<div class="odm-section"><div class="odm-section-title">Population &amp; Conservation</div>' +
+            '<div class="odm-rows-wrap">' + popHtml + '</div></div>';
+        }
+        if (valueHtml) {
+          extraSections += '<div class="odm-section"><div class="odm-section-title">Species Value &amp; Importance</div>' +
+            '<div class="odm-rows-wrap">' + valueHtml + '</div></div>';
+        }
+        if (src.researcher_notes) {
+          extraSections += '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
+            '<div class="odm-study-note" style="margin:0;">' + escapeHtml(src.researcher_notes) + '</div></div>';
+        }
+        document.getElementById('odm-value-extra').innerHTML = extraSections;
+      }
+
+      function odmSightingRow(label, value) {
+        if (value === null || value === undefined || value === '') return '';
+        return '<div class="odm-sighting-item-row"><span class="odm-sighting-item-row-lbl">' + escapeHtml(label) +
+          '</span><span>' + escapeHtml(String(value)) + '</span></div>';
+      }
+
+      // Contributors = head researcher (tagged "Head Researcher") + every
+      // named team member with their role — matches mobile's _buildTeamCard.
+      // Falls back to the flat researcher_name/team_members fields when the
+      // view hasn't been upgraded to expose the richer `contributors` array yet.
+      function odmContributorsHtml(s) {
+        var contributors = Array.isArray(s.contributors) && s.contributors.length
+          ? s.contributors
+          : (s.researcher_name ? [{ name: s.researcher_name, role: 'Head Researcher' }] : [])
+              .concat((Array.isArray(s.team_members) ? s.team_members : []).map(function(n) {
+                return { name: n, role: 'Team Member' };
+              }));
+
+        if (!contributors.length) {
+          return '<p class="odm-empty" style="padding:1.25rem 1rem;">No contributor information available.</p>';
+        }
+
+        var date = s.observation_date
+          ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+          : 'Sighting';
+
+        var rows = contributors.map(function(c) {
+          var name = (c && c.name ? String(c.name) : '').trim() || 'Unnamed';
+          var role = (c && c.role ? String(c.role) : '').trim() || 'Team Member';
+          var initial = name.charAt(0).toUpperCase() || '?';
+          return '<div class="odm-contributor-row">' +
+            '<div class="odm-contributor-avatar">' + escapeHtml(initial) + '</div>' +
+            '<div><div class="odm-contributor-name">' + escapeHtml(name) + '</div>' +
+            '<div class="odm-contributor-role">' + escapeHtml(role) + '</div></div>' +
+          '</div>';
+        }).join('');
+
+        return '<div class="odm-contributor-card">' +
+          '<div class="odm-contributor-card-hd">' + escapeHtml(date) + ' Sighting Team</div>' +
+          rows +
+        '</div>';
       }
 
       function odmPopulateSightings(allSightings) {
@@ -799,12 +920,58 @@
           var date = s.observation_date
             ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
             : '—';
-          return '<div class="odm-sighting-item">' +
+          var isActive = i === odmActiveSightingIndex;
+
+          var recordedRows = odmSightingRow('Time', s.observation_time) +
+            odmSightingRow('Collection Method', s.collection_method) +
+            odmSightingRow('Observation Type', s.observation_type) +
+            odmSightingRow('Voucher Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'));
+
+          var locationRows = odmSightingRow('Mountain / Site', s.mountain_name) +
+            odmSightingRow('Province', s.province) +
+            odmSightingRow('Municipality', s.municipality) +
+            odmSightingRow('Altitude Zone', s.specific_site_zone) +
+            odmSightingRow('Specific Site', s.specific_site_other);
+
+          var habitatRows = odmSightingRow('Habitat Type', s.habitat_type) +
+            odmSightingRow('Microhabitat', s.microhabitat) +
+            odmSightingRow('Growth Substrate', s.growth_substrate) +
+            odmSightingRow('Nearby Water Source', s.nearby_water_source);
+
+          return '<div class="odm-sighting-item' + (isActive ? ' odm-sighting-item--active' : '') + '" id="odm-sighting-item-' + i + '">' +
             '<div class="odm-sighting-item-hd">' +
-              '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
+              '<span class="odm-sighting-item-num">Sighting #' + (i+1) +
+                (isActive ? '<span class="odm-sighting-item-pin-badge">Selected pin</span>' : '') + '</span>' +
               '<span class="odm-sighting-item-date">' + date + '</span>' +
-            '</div></div>';
+            '</div>' +
+            (recordedRows ? '<div class="odm-sighting-item-subhd">Recorded Sighting</div><div class="odm-sighting-item-rows">' + recordedRows + '</div>' : '') +
+            (locationRows ? '<div class="odm-sighting-item-subhd">Location</div><div class="odm-sighting-item-rows">' + locationRows + '</div>' : '') +
+            (habitatRows ? '<div class="odm-sighting-item-subhd">Habitat &amp; Environment</div><div class="odm-sighting-item-rows">' + habitatRows + '</div>' : '') +
+            '<div class="odm-sighting-item-subhd">Contributors</div>' +
+            odmContributorsHtml(s) +
+          '</div>';
         }).join('');
+      }
+
+      // Called when a pin on the mini-map is clicked — makes that sighting
+      // "active" and refreshes the tabs whose content depends on it, without
+      // forcing a tab switch (mirrors mobile's tap-to-select-pin behavior).
+      function odmSelectSighting(index, orchid, allSightings) {
+        odmActiveSightingIndex = index;
+        var s = allSightings[index] || {};
+        var sightingBar = document.getElementById('odm-sighting-bar');
+        if (sightingBar) {
+          sightingBar.style.display = '';
+          document.getElementById('odm-sighting-num').textContent = 'Sighting #' + (index + 1);
+          document.getElementById('odm-sighting-date').textContent = s.observation_date
+            ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+            : '—';
+        }
+        odmPopulateValue(orchid, allSightings);
+        odmPopulateSightings(allSightings);
+        odmPopulateStudy(allSightings);
+        var item = document.getElementById('odm-sighting-item-' + index);
+        if (item) item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
       function getOrchidThumbnailUrl(orchid, allSightings) {
@@ -815,8 +982,8 @@
         var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
         if (seedImg) return seedImg;
         for (var i = 0; i < allSightings.length; i++) {
-          var photos = getPublicSightingImages(allSightings[i]).filter(function(u){ return u && String(u).indexOf('http') === 0; });
-          if (photos.length) return photos[0];
+          var photos = getPublicSightingImages(allSightings[i]).filter(function(p){ return p.src && p.src.indexOf('http') === 0; });
+          if (photos.length) return photos[0].src;
         }
         return null;
       }
@@ -834,20 +1001,28 @@
         });
       }
 
+      function odmImageGridHtml(items) {
+        return '<div class="odm-images-grid">' + items.map(function(it) {
+          var caption = it.contributor
+            ? '<div style="font-size:.68rem;color:#5a8a54;padding:.3rem .1rem 0;text-align:center;">by ' + escapeHtml(it.contributor) + '</div>'
+            : '';
+          return '<div><div class="odm-img-wrap"><img src="' + escapeHtml(it.src) +
+            '" alt="Orchid photo" loading="lazy" style="cursor:zoom-in;" onclick="odmOpenLightbox(\'' + escapeHtml(it.src) + '\')" onerror="this.parentElement.parentElement.style.display=\'none\'"></div>' +
+            caption + '</div>';
+        }).join('') + '</div>';
+      }
+
+      // Groups images the same way mobile does: Whole Plant / Close-up
+      // Flower / Habitat, aggregated across every recorded sighting, plus a
+      // "Catalog Photos" group for DENR-curated/published images.
       async function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
-        var imgs = [];
-        // Real published thumbnail leads the gallery; hardcoded seed
-        // placeholder (if any) comes after it rather than in front of it.
-        if (orchid.image_url) imgs.push(orchid.image_url);
+        var catalogImgs = [];
+        if (orchid.image_url) catalogImgs.push({ src: orchid.image_url, contributor: '' });
         var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
         var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
-        if (seedImg && imgs.indexOf(seedImg) < 0) imgs.push(seedImg);
-        allSightings.forEach(function(s) {
-          getPublicSightingImages(s).forEach(function(url) {
-            if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
-          });
-        });
+        if (seedImg && !catalogImgs.some(function(p){ return p.src === seedImg; })) catalogImgs.push({ src: seedImg, contributor: '' });
+
         // DENR-curated gallery photos selected when publishing to the catalog
         if (orchid.id && window.bloomSupabase) {
           try {
@@ -855,18 +1030,33 @@
               .from('picture').select('file_path').eq('orchid_id', orchid.id);
             (resp.data || []).forEach(function(row) {
               var url = row.file_path;
-              if (url && String(url).indexOf('http') === 0 && imgs.indexOf(url) < 0) imgs.push(url);
+              if (url && String(url).indexOf('http') === 0 && !catalogImgs.some(function(p){ return p.src === url; })) {
+                catalogImgs.push({ src: url, contributor: '' });
+              }
             });
           } catch (e) { console.warn('Gallery picture lookup failed:', e); }
         }
-        if (!imgs.length) {
-          el.innerHTML = '<p class="odm-empty">No images available for this species.</p>';
-          return;
+
+        var byCategory = { 'Whole Plant': [], 'Close-up Flower': [], 'Habitat': [] };
+        allSightings.forEach(function(s) {
+          getPublicSightingImages(s).forEach(function(p) {
+            if (p.src.indexOf('http') !== 0) return;
+            var bucket = byCategory[p.category];
+            if (bucket && !bucket.some(function(x){ return x.src === p.src; })) bucket.push(p);
+          });
+        });
+
+        var sections = '';
+        if (catalogImgs.length) {
+          sections += '<div class="odm-sighting-item-subhd" style="padding-left:1.1rem;">Catalog Photos</div>' + odmImageGridHtml(catalogImgs);
         }
-        el.innerHTML = '<div class="odm-images-grid">' + imgs.map(function(url){
-          return '<div class="odm-img-wrap"><img src="' + escapeHtml(url) +
-            '" alt="Orchid photo" loading="lazy" style="cursor:zoom-in;" onclick="odmOpenLightbox(\'' + escapeHtml(url) + '\')" onerror="this.parentElement.style.display=\'none\'"></div>';
-        }).join('') + '</div>';
+        ['Whole Plant', 'Close-up Flower', 'Habitat'].forEach(function(cat) {
+          if (byCategory[cat].length) {
+            sections += '<div class="odm-sighting-item-subhd" style="padding-left:1.1rem;">' + escapeHtml(cat) + '</div>' + odmImageGridHtml(byCategory[cat]);
+          }
+        });
+
+        el.innerHTML = sections || '<p class="odm-empty">No images available for this species.</p>';
       }
 
       function odmOpenLightbox(url) {
@@ -892,28 +1082,36 @@
         else if (mv.webkitRequestFullscreen) mv.webkitRequestFullscreen();
       }
 
+      // Related Study tab always reflects the currently active (pin-tapped)
+      // sighting, matching mobile's behavior instead of always showing the
+      // first sighting on record.
       function odmPopulateStudy(allSightings) {
         var el = document.getElementById('odm-study-inner');
-        var src = allSightings[0] || {};
+        var src = odmActiveSighting(allSightings);
         var parts = [];
-        if (src.researcher_notes) {
-          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Researcher Notes</b>' +
-            escapeHtml(src.researcher_notes) + '</div>');
+
+        var studyText = (src.related_study || '').trim();
+        if (studyText) {
+          var isLink = /^https?:\/\//i.test(studyText);
+          parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Related Study</b>' +
+            (isLink
+              ? '<a href="' + escapeHtml(studyText) + '" target="_blank" rel="noopener noreferrer" style="color:#145A1E;word-break:break-all;">' + escapeHtml(studyText) + '</a>'
+              : escapeHtml(studyText)) +
+            '</div>');
         }
+
         if (src.educational_notes) {
           parts.push('<div class="odm-study-note"><b style="color:#145A1E;display:block;margin-bottom:.4rem;">Educational Notes</b>' +
             escapeHtml(src.educational_notes) + '</div>');
         }
-        var team = Array.isArray(src.team_members) ? src.team_members.filter(Boolean).join(', ') : (src.team_members || '');
-        var detailRows = odmRow('Institution', src.institution, 'institution') +
-          odmRow('Team Members', team, 'team') +
-          odmRow('Collection Method', src.collection_method, 'collection-method') +
-          odmRow('Observation Type', src.observation_type, 'obs-type') +
-          (src.voucher_collected != null ? odmRow('Voucher Collected', src.voucher_collected ? 'Yes' : 'No', 'voucher') : '');
-        if (detailRows) {
-          parts.push('<div class="odm-section"><div class="odm-section-title">Research Details</div>' +
-            '<div class="odm-rows-wrap">' + detailRows + '</div></div>');
+
+        var submittedByRows = odmRow('Researcher', src.researcher_name, 'researcher-name') +
+          odmRow('Institution', src.institution, 'institution');
+        if (submittedByRows) {
+          parts.push('<div class="odm-section"><div class="odm-section-title">Submitted By</div>' +
+            '<div class="odm-rows-wrap">' + submittedByRows + '</div></div>');
         }
+
         el.innerHTML = parts.join('') || '<p class="odm-empty">No study information available.</p>';
       }
 
@@ -933,7 +1131,7 @@
           '</button></div>';
       }
 
-      function orchidInitMap(sightingPoints, thumbnailUrl) {
+      function orchidInitMap(sightingPoints, thumbnailUrl, onPinClick) {
         if (orchidLeafletMap) { orchidLeafletMap.remove(); orchidLeafletMap = null; }
         var mapEl = document.getElementById('orchid-leaflet-map');
         if (!mapEl) return;
@@ -953,7 +1151,11 @@
         }).addTo(orchidLeafletMap);
         var icon = buildOrchidMarkerIcon(thumbnailUrl);
         sightingPoints.forEach(function(pt) {
-          L.marker([pt.lat, pt.lng], { icon: icon, interactive: false }).addTo(orchidLeafletMap);
+          var clickable = pt.idx != null && typeof onPinClick === 'function';
+          var marker = L.marker([pt.lat, pt.lng], { icon: icon, interactive: clickable }).addTo(orchidLeafletMap);
+          if (clickable) {
+            marker.on('click', function() { onPinClick(pt.idx); });
+          }
         });
         orchidLeafletMap.fitBounds(
           L.latLngBounds(allPoints.map(function(pt){ return [pt.lat, pt.lng]; })),
@@ -985,13 +1187,14 @@
 
         var scientificKey = normalizeScientificKey(orchid.name);
         var allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
+        odmActiveSightingIndex = 0;
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
         var genus = orchid.genus || orchidName.split(' ')[0] || '';
         document.getElementById('odm-breadcrumb').textContent =
           'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
         var count = allSightings.length;
         document.getElementById('odm-map-hint-text').textContent =
-          count + ' recorded sighting' + (count !== 1 ? 's' : '') + ' · recorded locations';
+          count + ' recorded sighting' + (count !== 1 ? 's' : '') + (count > 0 ? ' · tap a pin to explore' : ' · recorded locations');
         var firstSighting = allSightings[0];
         var sightingBar = document.getElementById('odm-sighting-bar');
         if (firstSighting) {
@@ -1013,8 +1216,8 @@
         orchidDetailModal.hidden = false;
         document.body.style.overflow = 'hidden';
         var sightingPoints = allSightings
-          .filter(function(s){ return s.latitude != null && s.longitude != null; })
-          .map(function(s){ return { lat: Number(s.latitude), lng: Number(s.longitude), date: s.observation_date }; });
+          .map(function(s, idx){ return { lat: s.latitude != null ? Number(s.latitude) : null, lng: s.longitude != null ? Number(s.longitude) : null, date: s.observation_date, idx: idx }; })
+          .filter(function(p){ return p.lat != null && p.lng != null && !Number.isNaN(p.lat) && !Number.isNaN(p.lng); });
         if (sightingPoints.length === 0 && window.bloomSupabase) {
           try {
             var resp = await window.bloomSupabase
@@ -1033,7 +1236,9 @@
         if (sightingPoints.length === 0) {
           sightingPoints.push({ lat: 6.109410, lng: 124.663094, date: null });
         }
-        orchidInitMap(sightingPoints, getOrchidThumbnailUrl(orchid, allSightings));
+        orchidInitMap(sightingPoints, getOrchidThumbnailUrl(orchid, allSightings), function(idx) {
+          odmSelectSighting(idx, orchid, allSightings);
+        });
         var closeBtn = document.getElementById('orchid-detail-close-btn');
         if (closeBtn && !closeBtn._odmBound) {
           closeBtn._odmBound = true;
@@ -1118,8 +1323,8 @@
               ...(approvedSighting.whole_plant_photo_path || []),
               ...(approvedSighting.closeup_flower_photo_path || []),
               ...(approvedSighting.habitat_photo_path || [])
-            ].filter(p => p && String(p).startsWith('http'));
-            if (sightingPhotos.length > 0) thumbnailImage = sightingPhotos[0];
+            ].filter(p => p && p.src && p.src.startsWith('http'));
+            if (sightingPhotos.length > 0) thumbnailImage = sightingPhotos[0].src;
           }
 
           thumbnailImage = thumbnailImage || catalogImage;
@@ -1236,7 +1441,7 @@
           try {
             const { data, error } = await client
               .from('orchid_overview')
-              .select('id, name, genus, common_name, endemicity, image_url, model_3d_url, conservation_status, hidden_fields')
+              .select('id, name, genus, common_name, endemicity, image_url, model_3d_url, conservation_status, hidden_fields, ethnobotanical, horticulture_value, cultural_importance')
               .order('name', { ascending: true });
             if (!error && data && data.length > 0) {
               orchids = data.map(normalizeOrchidRow);
