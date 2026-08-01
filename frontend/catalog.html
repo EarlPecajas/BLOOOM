@@ -90,8 +90,6 @@
       .odm-sighting-item-num{font-weight:800;color:#145A1E;font-size:.88rem;}
       .odm-sighting-item-date{font-size:.76rem;color:#5a8a54;font-weight:600;}
       .odm-sighting-item-subhd{font-size:.8rem;font-weight:800;color:#12321a;margin:.85rem 1rem .5rem;padding-left:.65rem;border-left:3px solid #145A1E;}
-      .odm-sighting-item--active .odm-sighting-item-num{color:#0D530E;}
-      .odm-sighting-item-pin-badge{display:inline-block;margin-left:.4rem;font-size:.62rem;font-weight:800;color:#fff;background:#145A1E;border-radius:20px;padding:.1rem .5rem;text-transform:uppercase;letter-spacing:.03em;vertical-align:middle;}
       .odm-contributor-card{background:#E8F5E3;border-radius:14px;overflow:hidden;margin:.4rem 1rem .8rem;}
       .odm-contributor-card-hd{background:#0D530E;color:#fff;font-weight:700;font-size:.74rem;padding:.55rem .9rem;}
       .odm-contributor-row{display:flex;align-items:center;gap:.6rem;padding:.5rem .9rem;border-top:1px solid rgba(20,90,30,.12);}
@@ -957,44 +955,47 @@
         '</div>';
       }
 
+      // Shows only the currently active (pin-clicked) sighting — matches
+      // mobile, which only ever displays the tapped pin's sighting, not a
+      // list of every sighting on file.
       function odmPopulateSightings(allSightings) {
         var el = document.getElementById('odm-sightings-list');
         if (!allSightings.length) {
           el.innerHTML = '<p class="odm-empty">No recorded sightings yet.</p>';
           return;
         }
-        el.innerHTML = allSightings.map(function(s, i) {
-          var date = s.observation_date
-            ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
-            : '—';
-          var isActive = i === odmActiveSightingIndex;
+        var s = odmActiveSighting(allSightings);
+        var i = odmActiveSightingIndex;
+        var date = s.observation_date
+          ? new Date(s.observation_date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+          : '—';
 
-          var recordedRows = '<div class="odm-date-pill">' + escapeHtml(date) + '</div>' +
-            odmRow('Time of Observation', s.observation_time) +
-            odmRow('Collection Method', s.collection_method) +
-            odmRow('Observation Type', s.observation_type) +
-            odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'));
+        var recordedRows = '<div class="odm-date-pill">' + escapeHtml(date) + '</div>' +
+          odmRow('Time of Observation', s.observation_time) +
+          odmRow('Collection Method', s.collection_method) +
+          odmRow('Observation Type', s.observation_type) +
+          odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'));
 
-          var locationRows = odmRow('Mountain / Site', s.mountain_name) +
-            odmRow('Province', s.province) +
-            odmRow('Municipality', s.municipality) +
-            odmRow('Altitude Zone', s.specific_site_zone) +
-            odmRow('Specific Site', s.specific_site_other);
+        var locationRows = odmRow('Mountain / Site', s.mountain_name) +
+          odmRow('Province', s.province) +
+          odmRow('Municipality', s.municipality) +
+          odmRow('Altitude Zone', s.specific_site_zone) +
+          odmRow('Specific Site', s.specific_site_other);
 
-          var habitatRows = odmRow('Habitat Type', s.habitat_type) +
-            odmRow('Microhabitat', s.microhabitat) +
-            odmRow('Growth Substrate', s.growth_substrate) +
-            odmRow('Host Tree Species', s.host_tree_species) +
-            odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm')) +
-            odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%')) +
-            odmRow('Light Exposure', s.light_exposure) +
-            odmRow('Soil Type', s.soil_type) +
-            odmRow('Nearby Water Source', s.nearby_water_source);
+        var habitatRows = odmRow('Habitat Type', s.habitat_type) +
+          odmRow('Microhabitat', s.microhabitat) +
+          odmRow('Growth Substrate', s.growth_substrate) +
+          odmRow('Host Tree Species', s.host_tree_species) +
+          odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm')) +
+          odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%')) +
+          odmRow('Light Exposure', s.light_exposure) +
+          odmRow('Soil Type', s.soil_type) +
+          odmRow('Nearby Water Source', s.nearby_water_source);
 
-          return '<div class="odm-sighting-item' + (isActive ? ' odm-sighting-item--active' : '') + '" id="odm-sighting-item-' + i + '">' +
+        el.innerHTML =
+          '<div class="odm-sighting-item" id="odm-sighting-item-' + i + '">' +
             '<div class="odm-sighting-item-hd">' +
-              '<span class="odm-sighting-item-num">Sighting #' + (i+1) +
-                (isActive ? '<span class="odm-sighting-item-pin-badge">Selected pin</span>' : '') + '</span>' +
+              '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
               '<span class="odm-sighting-item-date">' + date + '</span>' +
             '</div>' +
             odmSection('Recorded Sighting', recordedRows) +
@@ -1002,7 +1003,6 @@
             odmSection('Habitat &amp; Environment', habitatRows) +
             '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>' +
           '</div>';
-        }).join('');
       }
 
       // Called when a pin on the mini-map is clicked — makes that sighting
@@ -1022,8 +1022,6 @@
         odmPopulateValue(orchid, allSightings);
         odmPopulateSightings(allSightings);
         odmPopulateStudy(allSightings);
-        var item = document.getElementById('odm-sighting-item-' + index);
-        if (item) item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
       function getOrchidThumbnailUrl(orchid, allSightings) {
@@ -1065,12 +1063,32 @@
       }
 
       // Groups images the same way mobile does: Whole Plant / Close-up
-      // Flower / Habitat, aggregated across every recorded sighting. No
-      // separate "Catalog Photos" group — those photos are the same DENR
-      // thumbnail/gallery pictures that already show up elsewhere (map pin,
-      // catalog card), so surfacing them again here was redundant.
-      function odmPopulateImages(orchid, allSightings) {
+      // Flower / Habitat, aggregated across every recorded sighting, plus a
+      // "Catalog Photos" group for the DENR-published thumbnail/gallery —
+      // many species only have that photo and no per-sighting photos yet,
+      // so dropping this group left their Images tab empty.
+      async function odmPopulateImages(orchid, allSightings) {
         var el = document.getElementById('odm-images-inner');
+        var catalogImgs = [];
+        if (orchid.image_url) catalogImgs.push({ src: orchid.image_url, contributor: '' });
+        var genusKey = (orchid.genus || (orchid.name||'').split(' ')[0] || '').toLowerCase();
+        var seedImg = storageImagesByGenus.get((orchid.name||'').toLowerCase()) || storageImagesByGenus.get(genusKey);
+        if (seedImg && !catalogImgs.some(function(p){ return p.src === seedImg; })) catalogImgs.push({ src: seedImg, contributor: '' });
+
+        // DENR-curated gallery photos selected when publishing to the catalog
+        if (orchid.id && window.bloomSupabase) {
+          try {
+            var resp = await window.bloomSupabase
+              .from('picture').select('file_path').eq('orchid_id', orchid.id);
+            (resp.data || []).forEach(function(row) {
+              var url = row.file_path;
+              if (url && String(url).indexOf('http') === 0 && !catalogImgs.some(function(p){ return p.src === url; })) {
+                catalogImgs.push({ src: url, contributor: '' });
+              }
+            });
+          } catch (e) { console.warn('Gallery picture lookup failed:', e); }
+        }
+
         var byCategory = { 'Whole Plant': [], 'Close-up Flower': [], 'Habitat': [] };
         allSightings.forEach(function(s) {
           getPublicSightingImages(s).forEach(function(p) {
@@ -1081,6 +1099,9 @@
         });
 
         var sections = '';
+        if (catalogImgs.length) {
+          sections += '<div class="odm-sighting-item-subhd" style="padding-left:1.1rem;">Catalog Photos</div>' + odmImageGridHtml(catalogImgs);
+        }
         ['Whole Plant', 'Close-up Flower', 'Habitat'].forEach(function(cat) {
           if (byCategory[cat].length) {
             sections += '<div class="odm-sighting-item-subhd" style="padding-left:1.1rem;">' + escapeHtml(cat) + '</div>' + odmImageGridHtml(byCategory[cat]);
