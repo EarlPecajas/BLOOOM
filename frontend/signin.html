@@ -255,8 +255,8 @@
 
           <form id="signin-form" class="needs-validation" novalidate>
             <div class="signin-field">
-              <label for="email">Email address</label>
-              <input type="email" placeholder="you@example.com" class="form-input form-control" id="email" required />
+              <label for="email">Email or Username</label>
+              <input type="text" placeholder="you@example.com or username" class="form-input form-control" id="email" required />
             </div>
             <div class="signin-field">
               <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;">
@@ -413,7 +413,7 @@
         e.preventDefault();
         hideSigninError();
 
-        const email = document.getElementById('email').value.trim();
+        let email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
 
         if (!bloomSupabase) {
@@ -426,6 +426,18 @@
         btn.textContent = 'Signing in…';
 
         try {
+          // Supabase Auth only accepts an email, so a plain "username" (no @)
+          // is first resolved to the matching account's real email address.
+          if (email && !email.includes('@')) {
+            const { data: match } = await bloomSupabase
+              .from('user_profiles')
+              .select('email')
+              .ilike('email', email + '@%')
+              .limit(1)
+              .maybeSingle();
+            if (match && match.email) email = match.email;
+          }
+
           const { data, error } = await bloomSupabase.auth.signInWithPassword({ email, password });
 
           if (error || !data.user) {
