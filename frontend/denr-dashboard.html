@@ -298,6 +298,16 @@
         --dt-text: #145A1E;
         --dt-muted: #577A5C;
         --dt-accent-lt: #1e7a30;
+        /* This is a grid container (see switchView()'s style.display = 'grid').
+           Grid items default to min-width:auto, which locks the track to the
+           widest size it's ever needed (e.g. while the sidebar is collapsed and
+           there's extra room) and then refuses to shrink back once the sidebar
+           re-expands, pushing content past the right edge. min-width:0 lets it
+           shrink to fit again. */
+        min-width: 0;
+      }
+      #dashboard-admin-overview > * {
+        min-width: 0;
       }
       #dashboard-admin-overview .rounded-xl {
         box-shadow: 0 2px 12px rgba(20,90,30,0.08) !important;
