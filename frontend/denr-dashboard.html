@@ -767,10 +767,75 @@
 
         <!-- Hero -->
         <div class="p-6 mb-6" style="background:#FFFFFF;border:1px solid var(--dt-border-md);border-radius:20px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 12px 28px rgba(20,90,30,.06);">
-          <p class="text-xs font-bold uppercase" style="color:#16a34a;letter-spacing:0.14em;margin:0 0 0.5rem;">DENR Control Center</p>
-          <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#12321a;margin:0 0 0.5rem;">Conservation command center</h1>
-          <p class="text-sm" style="color:var(--dt-muted);max-width:560px;margin:0;">Monitor orchid records, conservation status, and researcher submissions from Mt. Busa, Sarangani Province.</p>
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-4">
+            <div style="min-width:240px;">
+              <p class="text-xs font-bold uppercase" style="color:#16a34a;letter-spacing:0.14em;margin:0 0 0.5rem;">DENR Control Center</p>
+              <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#12321a;margin:0 0 0.5rem;">Conservation command center</h1>
+              <p class="text-sm" style="color:var(--dt-muted);max-width:560px;margin:0;">Monitor orchid records, conservation status, and researcher submissions from Mt. Busa, Sarangani Province.</p>
+            </div>
+
+            <!-- Live Date/Time + Weather widget -->
+            <div id="hero-datetime-weather" class="d-flex align-items-stretch gap-3" style="flex-shrink:0;">
+              <div style="text-align:right;padding:0.6rem 1rem;background:#f7faf7;border:1px solid #E7ECE7;border-radius:14px;min-width:150px;">
+                <p id="hero-live-time" style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.2rem;color:#12321a;margin:0;line-height:1.1;white-space:nowrap;">--:--:-- --</p>
+                <p id="hero-live-date" class="text-xs" style="color:var(--dt-muted);margin:2px 0 0;white-space:nowrap;">Loading date…</p>
+              </div>
+              <div style="text-align:right;padding:0.6rem 1rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;min-width:150px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;">
+                <div class="d-flex align-items-center gap-2" style="justify-content:flex-end;">
+                  <span id="hero-weather-icon" style="font-size:1.4rem;line-height:1;">🌡️</span>
+                  <span id="hero-weather-temp" style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.2rem;color:#12321a;white-space:nowrap;">--°C</span>
+                </div>
+                <p id="hero-weather-desc" class="text-xs" style="color:var(--dt-muted);margin:2px 0 0;white-space:nowrap;">Loading weather…</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <script>
+          (function(){
+            function updateHeroClock(){
+              var timeEl = document.getElementById('hero-live-time');
+              var dateEl = document.getElementById('hero-live-date');
+              if(!timeEl || !dateEl) return;
+              var now = new Date();
+              timeEl.textContent = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+              dateEl.textContent = now.toLocaleDateString('en-PH', {weekday:'short', year:'numeric', month:'short', day:'numeric'});
+            }
+            updateHeroClock();
+            setInterval(updateHeroClock, 1000);
+
+            var WEATHER_CODES = {
+              0:['☀️','Clear sky'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],
+              45:['🌫️','Fog'],48:['🌫️','Fog'],
+              51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Dense drizzle'],
+              61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],
+              80:['🌧️','Rain showers'],81:['🌧️','Rain showers'],82:['⛈️','Violent showers'],
+              95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Severe thunderstorm']
+            };
+
+            function updateHeroWeather(){
+              var iconEl = document.getElementById('hero-weather-icon');
+              var tempEl = document.getElementById('hero-weather-temp');
+              var descEl = document.getElementById('hero-weather-desc');
+              if(!iconEl || !tempEl || !descEl) return;
+              fetch('https://api.open-meteo.com/v1/forecast?latitude=5.99&longitude=124.78&current_weather=true&timezone=Asia%2FManila')
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                  var cw = data && data.current_weather;
+                  if(!cw) throw new Error('no weather data');
+                  var meta = WEATHER_CODES[cw.weathercode] || ['🌡️','—'];
+                  iconEl.textContent = meta[0];
+                  tempEl.textContent = Math.round(cw.temperature) + '°C';
+                  descEl.textContent = meta[1] + ' · Mt. Busa';
+                })
+                .catch(function(){
+                  descEl.textContent = 'Weather unavailable';
+                });
+            }
+            updateHeroWeather();
+            setInterval(updateHeroWeather, 15 * 60 * 1000);
+          })();
+        </script>
 
         <!-- Stat Strip -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -858,9 +923,9 @@
               <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Live Database
             </span>
           </div>
-          <p class="text-xs mb-4" style="color:var(--dt-muted);margin-left:0.9rem;">IUCN-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
+          <p class="text-xs mb-4" style="color:var(--dt-muted);margin-left:0.9rem;">DAO 2026-20-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
 
-          <!-- IUCN Category Cards -->
+          <!-- DAO 2026-20 Category Cards -->
           <div class="grid gap-4 mb-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
 
             <div onclick="showConservationList('critically_endangered','Critically Endangered')"
