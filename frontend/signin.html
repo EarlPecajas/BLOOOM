@@ -472,7 +472,9 @@
 
           localStorage.setItem('bloomUser', JSON.stringify(userRecord));
           sessionStorage.setItem('bloomUser', JSON.stringify(userRecord));
-          const targetDashboard = (profileRole === 'admin' || profileRole === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
+          const targetDashboard = profileRole === 'superadmin'
+            ? 'superadmin-dashboard.html'
+            : (profileRole === 'admin' || profileRole === 'denr') ? 'denr-dashboard.html' : 'researcher-dashboard.html';
           window.location.href = targetDashboard;
         } catch (err) {
           showSigninError(err.message || 'Could not connect. Please try again.');

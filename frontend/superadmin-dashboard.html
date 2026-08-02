@@ -46,8 +46,8 @@
       min-height: 100vh;
     }
 
-    /* ── LOGIN SCREEN ─────────────────────────────────────────── */
-    #login-screen {
+    /* ── ACCESS CHECK SCREEN ─────────────────────────────────────── */
+    #access-screen {
       position: relative;
       min-height: 100vh;
       display: flex;
@@ -56,7 +56,7 @@
       overflow: hidden;
       background: linear-gradient(165deg, #FFFFFF 0%, #F4F7F5 100%);
     }
-    #login-screen::before {
+    #access-screen::before {
       content: '';
       position: absolute;
       top: -140px;
@@ -67,7 +67,7 @@
       background: radial-gradient(circle, rgba(22,163,74,.11), transparent 70%);
       pointer-events: none;
     }
-    #login-screen::after {
+    #access-screen::after {
       content: '';
       position: absolute;
       bottom: -160px;
@@ -646,8 +646,11 @@
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ──────────────────────────────────────────────── -->
-<div id="login-screen">
+<!-- ── ACCESS CHECK SCREEN ───────────────────────────────────────── -->
+<!-- Sign-in now happens on the shared signin.html page using a real Supabase
+     account with role='superadmin'; this screen just gates entry to this page
+     while that session/role is verified, or explains why access was denied. -->
+<div id="access-screen">
   <div class="login-deco" aria-hidden="true">
     <svg class="login-deco-icon login-deco-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
     <svg class="login-deco-icon login-deco-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 6 5 10c0 3 1.5 5.5 4 7l3 2 3-2c2.5-1.5 4-4 4-7 0-4-3-8-7-8z"/><path d="M12 12v8"/></svg>
@@ -660,19 +663,9 @@
       <span class="login-brand-name">BLOOM</span>
       <span class="login-brand-sub">Super Admin Panel</span>
     </div>
-    <h2>Administrator Sign In</h2>
-    <form id="login-form" autocomplete="off">
-      <div class="login-field">
-        <label for="sa-user">Username</label>
-        <input type="text" id="sa-user" placeholder="admin" autocomplete="username" required />
-      </div>
-      <div class="login-field">
-        <label for="sa-pass">Password</label>
-        <input type="password" id="sa-pass" placeholder="••••••••" autocomplete="current-password" required />
-      </div>
-      <div class="login-error" id="login-error"></div>
-      <button type="submit" class="login-btn" id="login-btn">Sign In</button>
-    </form>
+    <h2 id="access-screen-title">Verifying access…</h2>
+    <p id="access-screen-message" style="font-size:.86rem;color:var(--muted);text-align:center;line-height:1.6;">Checking your session, one moment.</p>
+    <a href="signin.html" id="access-screen-signin-link" style="display:none;margin-top:1.2rem;text-align:center;padding:.65rem;border-radius:8px;background:var(--green);color:var(--cream);font-weight:700;font-size:.9rem;text-decoration:none;">Go to Sign In</a>
   </div>
 </div>
 
@@ -709,6 +702,10 @@
       <button class="sa-nav-item" onclick="showView('users')" id="nav-users">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         All Users
+      </button>
+      <button class="sa-nav-item" onclick="showView('submissions')" id="nav-submissions">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Submissions
       </button>
     </div>
     <div class="sa-sidebar-bottom">
@@ -858,6 +855,38 @@
       </div>
     </div>
 
+    <!-- ── SUBMISSIONS ── -->
+    <div class="sa-view" id="view-submissions">
+      <div class="sa-page-title">Submissions</div>
+      <div class="sa-page-sub">Permanently remove a sighting submission. This bypasses the normal review flow — use it for spam, duplicates, or test data, not routine moderation.</div>
+
+      <div class="sa-section">
+        <div class="sa-section-head">
+          <div class="sa-section-title">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            All Submissions
+          </div>
+          <input type="text" class="sa-search" id="submissions-search" placeholder="Search species or researcher email…" oninput="filterSubmissions()" />
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Entry ID</th>
+              <th>Scientific Name</th>
+              <th>Researcher Email</th>
+              <th>Status</th>
+              <th>Observed</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="submissions-tbody">
+            <tr class="sa-loading-row"><td colspan="7">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -877,53 +906,58 @@
 <div id="sa-toast"></div>
 
 <script>
-  // ── Constants ────────────────────────────────────────────────────
-  const ADMIN_USER = 'admin';
-  const ADMIN_PASS = 'admin';
-  const SESSION_KEY = 'bloomSuperAdmin';
-
   // ── Supabase client ───────────────────────────────────────────────
   const db = window.bloomSupabase;
+  let currentSuperAdminToken = '';
 
   // ── Auth ──────────────────────────────────────────────────────────
-  function isLoggedIn() {
-    return sessionStorage.getItem(SESSION_KEY) === '1';
-  }
-
-  function doSignOut() {
-    sessionStorage.removeItem(SESSION_KEY);
+  // Access is now gated by a real Supabase session whose user_profiles.role
+  // is 'superadmin' (signed in via the normal signin.html page), instead of
+  // the old hardcoded admin/admin form that never touched Supabase Auth at all.
+  function showAccessScreen(title, message, showSigninLink) {
+    document.getElementById('access-screen-title').textContent = title;
+    document.getElementById('access-screen-message').textContent = message;
+    document.getElementById('access-screen-signin-link').style.display = showSigninLink ? 'block' : 'none';
+    document.getElementById('access-screen').style.display = 'flex';
     document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('sa-user').value = '';
-    document.getElementById('sa-pass').value = '';
   }
 
-  document.getElementById('login-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const user = document.getElementById('sa-user').value.trim();
-    const pass = document.getElementById('sa-pass').value;
-    const errEl = document.getElementById('login-error');
+  async function doSignOut() {
+    try { await bloomSupabase.auth.signOut(); } catch (_) {}
+    window.location.href = 'signin.html';
+  }
 
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      errEl.style.display = 'none';
-      sessionStorage.setItem(SESSION_KEY, '1');
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadAll();
-    } else {
-      errEl.textContent = 'Incorrect username or password.';
-      errEl.style.display = 'block';
+  async function verifySuperAdminAccess() {
+    if (!bloomSupabase) {
+      showAccessScreen('Not configured', 'Supabase is not configured for this page.', false);
+      return;
     }
-  });
+    const { data: sessionData } = await bloomSupabase.auth.getSession();
+    const session = sessionData && sessionData.session;
+    if (!session) {
+      showAccessScreen('Sign-in required', 'You must sign in with a super-admin account to view this page.', true);
+      return;
+    }
+    const { data: profile, error } = await db
+      .from('user_profiles').select('role, status').eq('id', session.user.id).single();
+    const role = String(profile && profile.role || '').trim().toLowerCase();
+    if (error || !profile || role !== 'superadmin') {
+      await bloomSupabase.auth.signOut();
+      showAccessScreen('Access denied', 'This account does not have super-admin access.', true);
+      return;
+    }
+    if (profile.status === 'disabled') {
+      await bloomSupabase.auth.signOut();
+      showAccessScreen('Access denied', 'This account has been disabled.', true);
+      return;
+    }
+    currentSuperAdminToken = session.access_token;
+    document.getElementById('access-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadAll();
+  }
 
-  // Check session on load
-  window.addEventListener('DOMContentLoaded', () => {
-    if (isLoggedIn()) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadAll();
-    }
-  });
+  window.addEventListener('DOMContentLoaded', verifySuperAdminAccess);
 
   // ── Navigation ────────────────────────────────────────────────────
   function showView(name) {
@@ -972,6 +1006,7 @@
       return;
     }
     await loadProfiles();
+    await loadSubmissions();
   }
 
   async function loadProfiles() {
@@ -1033,6 +1068,7 @@
       researcher: '<span class="sa-badge-role researcher">Researcher</span>',
       admin:      '<span class="sa-badge-role admin">Admin</span>',
       denr:       '<span class="sa-badge-role denr">DENR</span>',
+      superadmin: '<span class="sa-badge-role admin">Super Admin</span>',
     };
     return map[role] || `<span class="sa-badge-role researcher">${role}</span>`;
   }
@@ -1136,6 +1172,7 @@
             <select class="sa-role-select" onchange="changeRole('${esc(u.id)}','${esc(u.full_name || u.email)}',this.value,this)">
               <option value="researcher" ${u.role === 'researcher' ? 'selected' : ''}>Researcher</option>
               <option value="admin" ${(u.role === 'admin' || u.role === 'denr') ? 'selected' : ''}>Admin (DENR)</option>
+              <option value="superadmin" ${u.role === 'superadmin' ? 'selected' : ''}>Super Admin</option>
             </select>
           </td>
           <td>${statusBadge(u.status)}</td>
@@ -1248,7 +1285,7 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-Superadmin-Password': ADMIN_PASS
+              Authorization: 'Bearer ' + currentSuperAdminToken
             },
             body: JSON.stringify({ userId: id })
           });
@@ -1265,6 +1302,101 @@
           );
         } catch (err) {
           showToast('Failed: ' + err.message, true);
+        }
+      },
+      true
+    );
+  }
+
+  // ── Submissions ───────────────────────────────────────────────────
+  let allSubmissions = [];
+
+  async function loadSubmissions() {
+    const { data, error } = await db
+      .from('species_sightings')
+      .select('sighting_id, entry_id, scientific_name, researcher_email, review_status, observation_date, created_at, sighting_habitat_id, sighting_morphology_id, sighting_conservation_id, sighting_media(picture_id)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showToast('Failed to load submissions: ' + error.message, true);
+      return;
+    }
+    allSubmissions = data || [];
+    renderSubmissions();
+  }
+
+  function filterSubmissions() {
+    renderSubmissions(document.getElementById('submissions-search').value.trim().toLowerCase());
+  }
+
+  function submissionStatusBadge(status) {
+    const map = {
+      pending:  '<span class="sa-badge-status pending">● Pending</span>',
+      approved: '<span class="sa-badge-status approved">● Approved</span>',
+      rejected: '<span class="sa-badge-status disabled">● Rejected</span>',
+      revision: '<span class="sa-badge-status pending">● Revision</span>',
+      draft:    '<span class="sa-badge-status disabled">● Draft</span>',
+    };
+    return map[String(status || '').toLowerCase()] || esc(status || '—');
+  }
+
+  function renderSubmissions(search = '') {
+    const tbody = document.getElementById('submissions-tbody');
+    let items = allSubmissions;
+    if (search) items = items.filter(s =>
+      (s.scientific_name || '').toLowerCase().includes(search) ||
+      (s.researcher_email || '').toLowerCase().includes(search) ||
+      (s.entry_id || '').toLowerCase().includes(search)
+    );
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="sa-empty">${search ? 'No submissions match the filter.' : 'No submissions found.'}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = items.map(s => `
+      <tr>
+        <td style="font-size:.76rem;color:var(--muted);">${esc(s.entry_id)}</td>
+        <td style="font-weight:600;font-style:italic;">${esc(s.scientific_name)}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${esc(s.researcher_email || '—')}</td>
+        <td>${submissionStatusBadge(s.review_status)}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${fmtDate(s.observation_date)}</td>
+        <td style="color:var(--muted);font-size:.82rem;">${fmtDate(s.created_at)}</td>
+        <td>
+          <button class="sa-btn sa-btn-delete" onclick="deleteSubmission(${s.sighting_id},'${esc(s.scientific_name)}')">🗑 Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function deleteSubmission(sightingId, sciName) {
+    openModal(
+      'Delete Submission',
+      `Permanently delete the submission for "${sciName}"? This removes the sighting and its photos/media records and cannot be undone.`,
+      async () => {
+        closeModal();
+        const submission = allSubmissions.find(s => s.sighting_id === sightingId);
+        try {
+          const { error: delError } = await db.from('species_sightings').delete().eq('sighting_id', sightingId);
+          if (delError) throw delError;
+
+          // species_sightings→sighting_habitat/morphology/conservation is
+          // ON DELETE SET NULL in the wrong direction (it doesn't cascade),
+          // so those detail rows and any orphaned pictures are cleaned up
+          // separately, best-effort, after the main row is gone.
+          const cleanupTasks = [];
+          if (submission) {
+            if (submission.sighting_habitat_id) cleanupTasks.push(db.from('sighting_habitat').delete().eq('sighting_habitat_id', submission.sighting_habitat_id));
+            if (submission.sighting_morphology_id) cleanupTasks.push(db.from('sighting_morphology').delete().eq('sighting_morphology_id', submission.sighting_morphology_id));
+            if (submission.sighting_conservation_id) cleanupTasks.push(db.from('sighting_conservation').delete().eq('sighting_conservation_id', submission.sighting_conservation_id));
+            const pictureIds = (submission.sighting_media || []).map(m => m.picture_id).filter(Boolean);
+            if (pictureIds.length) cleanupTasks.push(db.from('picture').delete().in('picture_id', pictureIds));
+          }
+          await Promise.allSettled(cleanupTasks);
+
+          allSubmissions = allSubmissions.filter(s => s.sighting_id !== sightingId);
+          showToast(`Submission for "${sciName}" deleted.`);
+          renderSubmissions(document.getElementById('submissions-search').value.trim().toLowerCase());
+        } catch (err) {
+          showToast('Failed to delete submission: ' + err.message, true);
         }
       },
       true
