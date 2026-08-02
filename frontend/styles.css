@@ -1163,12 +1163,36 @@ form {
   margin-right: 1.15rem;
   margin-left: 0.5rem;
   flex-shrink: 0;
+  order: 5;
   transition: transform 200ms ease, border-color 200ms ease;
 }
 
 .catalog-grid.list-view .orchid-card:hover::after {
   border-color: #145A1E;
   transform: rotate(45deg) translate(2px, -2px);
+}
+
+/* The status pill and edit button are absolutely positioned (top:0.55rem;
+   left:0.55rem;right:2.2rem) so they sit on top of the square thumbnail in
+   grid view. In list view the card is a flex row instead, so that same
+   absolute positioning stretches the pill across the whole row and covers
+   the name/photo. Drop them back into flex flow, ordered after the image
+   and info so they sit in their own column before the chevron. */
+.catalog-grid.list-view .orchid-card-image { order: 1; }
+.catalog-grid.list-view .orchid-card-info { order: 2; }
+.catalog-grid.list-view .orchid-status-pill {
+  position: static !important;
+  inset: auto !important;
+  order: 3;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin: 0 0.35rem;
+}
+.catalog-grid.list-view .orchid-status-edit-btn {
+  position: static !important;
+  inset: auto !important;
+  order: 4;
+  margin-right: 0.4rem;
 }
 
 .orchid-card {
