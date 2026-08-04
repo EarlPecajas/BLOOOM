@@ -1153,6 +1153,11 @@
       // Publish to Catalog modal. Set from orchid.hidden_fields wherever this orchid loads.
       var odmHiddenFields = new Set();
 
+      // This page is shared by both the researcher and DENR dashboards
+      // (distinguished by ?from=), so some sections are trimmed only on the
+      // researcher path rather than being removed outright.
+      var isOpenedFromResearcherDashboard = new URLSearchParams(location.search).get('from') === 'researcher-dashboard';
+
       // Always renders the row — matches the mobile app, which shows every
       // field with a "-" placeholder when blank rather than hiding it. The
       // only reason a row disappears entirely is DENR hiding that field key
@@ -1265,22 +1270,28 @@
             odmRow('Population Status', src.population_status, 'pop-status') +
             odmRow('Threat Level', src.threat_level, 'threat')
           ) +
-          // Species Value & Importance — catalog-wide, DENR-curated narrative
-          // fields (not per-sighting), matching orchid_overview. "Cultivation"
-          // has no data source in this schema, so it always shows "-".
-          odmSection('Species Value &amp; Importance',
-            odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
-            odmRow('Aesthetic Appeal', orchid.horticulture_value, 'horticulture-value') +
-            odmRow('Cultivation', '', 'cultivation') +
-            odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance')
-          ) +
+          // Species Value & Importance and Unusual Observations are removed
+          // only on the researcher-dashboard path (this page is shared with
+          // DENR and gated by the ?from= param) — DENR still needs to see
+          // both here, so this must stay conditional rather than deleted.
+          (isOpenedFromResearcherDashboard ? '' :
+            // Species Value & Importance — catalog-wide, DENR-curated narrative
+            // fields (not per-sighting), matching orchid_overview. "Cultivation"
+            // has no data source in this schema, so it always shows "-".
+            odmSection('Species Value &amp; Importance',
+              odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
+              odmRow('Aesthetic Appeal', orchid.horticulture_value, 'horticulture-value') +
+              odmRow('Cultivation', '', 'cultivation') +
+              odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance')
+            )) +
           '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
             '<div class="odm-study-note" style="margin:0;' + (src.researcher_notes ? '' : 'color:#9AA6A0;') + '">' +
             escapeHtml(src.researcher_notes || '-') + '</div></div>' +
-          // Unusual Observations has no data source in this schema (the column
-          // was removed from submissions) — always shows "-", same as mobile.
-          '<div class="odm-section"><div class="odm-section-title">Unusual Observations</div>' +
-            '<div class="odm-study-note" style="margin:0;color:#9AA6A0;">-</div></div>';
+          (isOpenedFromResearcherDashboard ? '' :
+            // Unusual Observations has no data source in this schema (the column
+            // was removed from submissions) — always shows "-", same as mobile.
+            '<div class="odm-section"><div class="odm-section-title">Unusual Observations</div>' +
+              '<div class="odm-study-note" style="margin:0;color:#9AA6A0;">-</div></div>');
 
         document.getElementById('odm-value-extra').innerHTML = extraSections;
       }
