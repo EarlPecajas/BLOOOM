@@ -435,6 +435,7 @@
     .sa-search:focus { border-color: var(--green); }
 
     /* Table */
+    .sa-table-scroll { overflow-x: auto; }
     .sa-table { width: 100%; border-collapse: collapse; }
 
     .sa-table th {
@@ -494,7 +495,7 @@
       align-items: center;
       justify-content: center;
       gap: .3rem;
-      min-width: 92px;
+      min-width: 76px;
       padding: .32rem .75rem;
       border-radius: 7px;
       font-size: .75rem;
@@ -859,7 +860,7 @@
           </div>
           <button class="sa-btn sa-btn-primary" onclick="showView('pending')" style="font-size:.78rem;padding:.3rem .85rem;">View All</button>
         </div>
-        <table class="sa-table">
+        <div class="sa-table-scroll"><table class="sa-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -871,7 +872,7 @@
           <tbody id="recent-pending-tbody">
             <tr class="sa-loading-row"><td colspan="4">Loading…</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
 
@@ -888,7 +889,7 @@
           </div>
           <input type="text" class="sa-search" id="pending-search" placeholder="Search…" oninput="filterPending()" />
         </div>
-        <table class="sa-table">
+        <div class="sa-table-scroll"><table class="sa-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -902,7 +903,7 @@
           <tbody id="pending-tbody">
             <tr class="sa-loading-row"><td colspan="6">Loading…</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
 
@@ -919,7 +920,7 @@
           </div>
           <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
             <select id="status-filter" onchange="filterUsers()" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;background:#fff;color:var(--text);cursor:pointer;outline:none;">
-              <option value="">All Statuses</option>
+              <option value="">All Status</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="disabled">Disabled</option>
@@ -927,7 +928,7 @@
             <input type="text" class="sa-search" id="users-search" placeholder="Search name or email…" oninput="filterUsers()" />
           </div>
         </div>
-        <table class="sa-table">
+        <div class="sa-table-scroll"><table class="sa-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -942,7 +943,7 @@
           <tbody id="users-tbody">
             <tr class="sa-loading-row"><td colspan="7">Loading…</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
 
@@ -959,7 +960,7 @@
           </div>
           <input type="text" class="sa-search" id="submissions-search" placeholder="Search species or researcher email…" oninput="filterSubmissions()" />
         </div>
-        <table class="sa-table">
+        <div class="sa-table-scroll"><table class="sa-table">
           <thead>
             <tr>
               <th>Entry ID</th>
@@ -974,7 +975,7 @@
           <tbody id="submissions-tbody">
             <tr class="sa-loading-row"><td colspan="7">Loading…</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
 
