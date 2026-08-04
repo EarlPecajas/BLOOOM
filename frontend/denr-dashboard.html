@@ -1585,7 +1585,12 @@
                   <div id="ieImportResultsErrors" style="display:none;max-height:180px;overflow-y:auto;margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid rgba(0,0,0,.12);font-size:0.74rem;"></div>
                 </div>
 
-                <button type="button" id="ieTemplateBtn" onclick="downloadImportTemplate()" style="align-self:flex-start;background:none;border:none;padding:0;color:var(--dt-accent-lt);font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:underline;">Download template</button>
+                <div style="align-self:flex-start;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                  <span style="font-size:0.78rem;font-weight:700;color:var(--dt-text);">Download template:</span>
+                  <button type="button" id="ieTemplateCsvBtn" onclick="downloadImportTemplate('csv')" style="background:none;border:none;padding:0;color:var(--dt-accent-lt);font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:underline;">CSV</button>
+                  <span style="color:var(--dt-muted);font-size:0.78rem;">·</span>
+                  <button type="button" id="ieTemplateExcelBtn" onclick="downloadImportTemplate('excel')" style="background:none;border:none;padding:0;color:var(--dt-accent-lt);font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:underline;">Excel</button>
+                </div>
               </div>
             </div>
 
@@ -10635,48 +10640,12 @@
         showReportToast(`Exported ${rows.length} ${noun} to ${ieExportFormat === 'excel' ? 'Excel' : 'CSV'}.`, 'success');
       }
 
-      function downloadImportTemplate() {
-        if (ieImportDataset === 'orchids') {
-          const rows = [{
-            name: 'Bulbophyllum lobbii', genus: 'Bulbophyllum', common_name: 'Lobb’s Bulbophyllum', endemicity: 'Native',
-            ethnobotanical: '', horticulture_value: '', cultural_importance: ''
-          }];
-          if (ieExportFormat === 'excel') downloadRowsAsExcel('Orchid_Catalog_Import_Template', rows, ORCHID_IMPORT_TEMPLATE_COLUMNS);
-          else downloadRowsAsCsv('Orchid_Catalog_Import_Template', rows, ORCHID_IMPORT_TEMPLATE_COLUMNS);
-          return;
-        }
-        if (ieImportDataset === 'trails') {
-          const rows = [{
-            name: 'Mt. Busa Research Trail', description: 'Primary orchid survey trail.', color: '#2563eb',
-            coordinates: '6.0705,124.7412; 6.0758,124.7350; 6.0821,124.7284', archived: 'No'
-          }];
-          const cols = IMPORT_EXPORT_COLUMNS.trails.filter(([key]) => !TRAILS_IMPORT_EXCLUDED_COLUMNS.includes(key));
-          if (ieExportFormat === 'excel') downloadRowsAsExcel('Map_Trails_Import_Template', rows, cols);
-          else downloadRowsAsCsv('Map_Trails_Import_Template', rows, cols);
-          return;
-        }
-        const rows = [{
-          entry_id: '', species: 'Bulbophyllum lobbii', common_names: 'Lobb’s Bulbophyllum', local_names: '',
-          identification_confidence: 'Certain', endemic_to_philippines: 'Native', observation_date: '2026-01-15',
-          observation_time: '08:30', collection_method: 'Field Survey', observation_type: 'Direct Sighting',
-          voucher_collected: 'No', species_count: 1, mountain_name: 'Mt. Busa', specific_site_zone: '', specific_site_other: '',
-          latitude: 6.1164, longitude: 125.0864, elevation_meters: 1200, habitat_type: 'Forest', microhabitat: '',
-          growth_substrate: 'Epiphytic', host_tree_species: '', host_tree_dbh_cm: '', canopy_cover_percent: '',
-          light_exposure: '', soil_type: '', nearby_water_source: '', plant_height_cm: '', pseudobulb_present: 'No',
-          stem_length_cm: '', root_length_cm: '', leaf_count: '', leaf_shape: '', leaf_shape_other: '', leaf_length_cm: '',
-          leaf_width_cm: '', leaf_textures: '', leaf_arrangement: '', flower_color: '', flower_count: '', flower_diameter_cm: '',
-          inflorescence_type: '', petal_characteristics: '', sepal_characteristics: '', labellum_lip_description: '',
-          fragrance: '', blooming_stage: '', flowering_season: '', fruit_present: 'No', fruit_type: '', seed_capsule_condition: '',
-          life_stage: '', phenology: '', population_count: '', population_status: 'Rare', threat_level: 'Vulnerable',
-          threat_types: 'Habitat Loss; Illegal Collection', whole_plant_photos: '', whole_plant_photographer: '',
-          closeup_flower_photos: '', closeup_flower_photographer: '', habitat_photos: '', habitat_photographer: '',
-          video_files: '', head_observer_name: 'Juan Dela Cruz', researcher_notes: '', team_members_display: 'Juan Dela Cruz (Field Botanist)',
-          related_study_title: '', related_study_link: '', related_study_file: '',
-          researcher: '', researcher_email: '', institution: '', location: '', review_status: 'pending'
-        }];
+      function downloadImportTemplate(format) {
+        // Header-only — no sample row, so nothing needs to be deleted before
+        // filling it in for a real bulk import.
         const cols = IMPORT_EXPORT_COLUMNS.submissions.filter(([key]) => !SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS.includes(key));
-        if (ieExportFormat === 'excel') downloadRowsAsExcel('Submissions_Import_Template', rows, cols);
-        else downloadRowsAsCsv('Submissions_Import_Template', rows, cols);
+        if (format === 'excel') downloadRowsAsExcel('Submissions_Import_Template', [], cols);
+        else downloadRowsAsCsv('Submissions_Import_Template', [], cols);
       }
 
       // Minimal quoted-field-aware CSV parser (handles commas/newlines inside "quotes").
