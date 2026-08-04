@@ -517,6 +517,8 @@
     .sa-btn-primary:hover  { background: var(--green-dark); }
     .sa-btn-delete   { background: #dc2626; color: #fff; border: 1px solid #dc2626; }
     .sa-btn-delete:hover   { background: #b91c1c; }
+    .sa-btn-view     { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .sa-btn-view:hover     { background: #bae6fd; }
 
     /* Role select */
     .sa-role-select {
@@ -619,6 +621,93 @@
     }
 
     .sa-modal-confirm.danger { background: #dc2626; }
+
+    /* Detail modals (view user / view submission) — same overlay, wider card */
+    .sa-detail-modal {
+      background: var(--white);
+      border-radius: 14px;
+      max-width: 720px;
+      width: 92%;
+      max-height: 86vh;
+      box-shadow: 0 12px 40px rgba(0,0,0,.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sa-detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sa-detail-head h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 0; }
+    .sa-detail-head p { font-size: .8rem; color: var(--muted); margin: .2rem 0 0; }
+    .sa-detail-close {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: .2rem .4rem;
+      flex-shrink: 0;
+    }
+    .sa-detail-body { padding: 1.2rem 1.4rem 1.5rem; overflow-y: auto; }
+    .sa-detail-section { margin-bottom: 1.2rem; }
+    .sa-detail-section:last-child { margin-bottom: 0; }
+    .sa-detail-section-title {
+      font-size: .72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--green);
+      margin-bottom: .5rem;
+    }
+    .sa-detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .5rem 0;
+      border-bottom: 1px solid #f1f5f4;
+      font-size: .84rem;
+    }
+    .sa-detail-row:last-child { border-bottom: none; }
+    .sa-detail-row .k { color: var(--muted); font-weight: 600; flex-shrink: 0; }
+    .sa-detail-row .v { color: var(--text); text-align: right; word-break: break-word; }
+    .sa-detail-photos { display: grid; grid-template-columns: repeat(auto-fill,minmax(100px,1fr)); gap: .6rem; }
+    .sa-detail-photos img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .sa-detail-sub-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    .sa-detail-sub-table th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: .4rem .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sa-detail-sub-table td { padding: .5rem; border-bottom: 1px solid #f1f5f4; }
+    .sa-detail-sub-table tr:last-child td { border-bottom: none; }
+    .sa-detail-view-link {
+      border: none;
+      background: none;
+      color: var(--green);
+      font-weight: 700;
+      font-size: .8rem;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
 
     /* Loading spinner */
     .sa-spin {
@@ -907,6 +996,34 @@
   </div>
 </div>
 
+<!-- USER DETAIL MODAL -->
+<div class="sa-modal-overlay" id="user-detail-modal">
+  <div class="sa-detail-modal">
+    <div class="sa-detail-head">
+      <div>
+        <h3 id="user-detail-name">-</h3>
+        <p id="user-detail-email">-</p>
+      </div>
+      <button type="button" class="sa-detail-close" onclick="closeUserDetailModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="sa-detail-body" id="user-detail-body"></div>
+  </div>
+</div>
+
+<!-- SUBMISSION DETAIL MODAL -->
+<div class="sa-modal-overlay" id="submission-detail-modal">
+  <div class="sa-detail-modal">
+    <div class="sa-detail-head">
+      <div>
+        <h3 id="submission-detail-name" style="font-style:italic;">-</h3>
+        <p id="submission-detail-sub">-</p>
+      </div>
+      <button type="button" class="sa-detail-close" onclick="closeSubmissionDetailModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="sa-detail-body" id="submission-detail-body"></div>
+  </div>
+</div>
+
 <!-- ── TOAST ─────────────────────────────────────────────────────── -->
 <div id="sa-toast"></div>
 
@@ -1145,6 +1262,7 @@
         <td style="color:var(--muted);font-size:.82rem;">${fmtDate(u.created_at)}</td>
         <td>
           <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="sa-btn sa-btn-view" onclick="viewUser('${esc(u.id)}')">👁 View</button>
             <button class="sa-btn sa-btn-approve" onclick="approveUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✓ Approve</button>
             <button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✕ Reject</button>
           </div>
@@ -1178,6 +1296,7 @@
         <td style="color:var(--muted);font-size:.82rem;">${fmtDate(u.created_at)}</td>
         <td>
           <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="sa-btn sa-btn-view" onclick="viewUser('${esc(u.id)}')">👁 View</button>
             <button class="sa-btn sa-btn-approve" onclick="approveUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✓ Approve</button>
             <button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✕ Reject</button>
           </div>
@@ -1206,7 +1325,7 @@
       return;
     }
     tbody.innerHTML = items.map(u => {
-      const actions = [];
+      const actions = [`<button class="sa-btn sa-btn-view" onclick="viewUser('${esc(u.id)}')">👁 View</button>`];
       if (u.status === 'pending') {
         actions.push(`<button class="sa-btn sa-btn-approve" onclick="approveUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✓ Approve</button>`);
         actions.push(`<button class="sa-btn sa-btn-disable" onclick="disableUser('${esc(u.id)}','${esc(u.full_name || u.email)}')">✕ Reject</button>`);
@@ -1369,7 +1488,7 @@
   async function loadSubmissions() {
     const { data, error } = await db
       .from('species_sightings')
-      .select('sighting_id, entry_id, scientific_name, researcher_email, review_status, observation_date, created_at, sighting_habitat_id, sighting_morphology_id, sighting_conservation_id, sighting_media(picture_id)')
+      .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), sighting_media(*, picture(*)), sighting_team_member(*), mountain(mountain_name)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -1416,7 +1535,10 @@
         <td style="color:var(--muted);font-size:.82rem;">${fmtDate(s.observation_date)}</td>
         <td style="color:var(--muted);font-size:.82rem;">${fmtDate(s.created_at)}</td>
         <td>
-          <button class="sa-btn sa-btn-delete" onclick="deleteSubmission(${s.sighting_id},'${esc(s.scientific_name)}')">🗑 Delete</button>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="sa-btn sa-btn-view" onclick="viewSubmission(${s.sighting_id})">👁 View</button>
+            <button class="sa-btn sa-btn-delete" onclick="deleteSubmission(${s.sighting_id},'${esc(s.scientific_name)}')">🗑 Delete</button>
+          </div>
         </td>
       </tr>
     `).join('');
@@ -1458,6 +1580,190 @@
       true
     );
   }
+
+  // ── User detail / submission detail (read-only "View") ─────────────
+  function parseArrayValue(value) {
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (value === null || value === undefined || value === '') return [];
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      } catch { return [value]; }
+    }
+    return [];
+  }
+
+  function fmtArr(value) {
+    const arr = parseArrayValue(value);
+    return arr.length ? esc(arr.join(', ')) : '—';
+  }
+
+  function detailRow(label, value) {
+    const v = (value === null || value === undefined || value === '') ? '—' : value;
+    return `<div class="sa-detail-row"><span class="k">${esc(label)}</span><span class="v">${v}</span></div>`;
+  }
+
+  function detailSection(title, rowsHtml) {
+    return `<div class="sa-detail-section"><div class="sa-detail-section-title">${esc(title)}</div>${rowsHtml}</div>`;
+  }
+
+  function closeUserDetailModal() {
+    document.getElementById('user-detail-modal').classList.remove('open');
+  }
+
+  function closeSubmissionDetailModal() {
+    document.getElementById('submission-detail-modal').classList.remove('open');
+  }
+
+  function viewUser(id) {
+    const u = allProfiles.find(p => p.id === id);
+    if (!u) { showToast('User not found.', true); return; }
+
+    document.getElementById('user-detail-name').textContent = u.full_name || '—';
+    document.getElementById('user-detail-email').textContent = u.email || '—';
+
+    const registration = detailSection('Registration Details',
+      detailRow('Full Name', esc(u.full_name || '—')) +
+      detailRow('Email', esc(u.email || '—')) +
+      detailRow('Phone', esc(u.phone || '—')) +
+      detailRow('Birth Date', fmtDate(u.birth_date)) +
+      detailRow('Affiliation', esc(u.affiliation || '—')) +
+      detailRow('Role', roleBadge(u.role)) +
+      detailRow('Status', statusBadge(u.status)) +
+      detailRow('Registered', fmtDate(u.created_at))
+    );
+
+    // A submission's researcher_email is a free-text field the submitter's
+    // own client sends, not an FK to user_profiles — match case-insensitively
+    // since that's the only link available between the two tables.
+    const email = (u.email || '').toLowerCase();
+    const userSubmissions = allSubmissions.filter(s => (s.researcher_email || '').toLowerCase() === email);
+    const submissionsHtml = userSubmissions.length
+      ? `<table class="sa-detail-sub-table"><thead><tr><th>Species</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody>` +
+        userSubmissions.map(s => `
+          <tr>
+            <td style="font-style:italic;">${esc(s.scientific_name)}</td>
+            <td>${submissionStatusBadge(s.review_status)}</td>
+            <td style="color:var(--muted);">${fmtDate(s.created_at)}</td>
+            <td><button type="button" class="sa-detail-view-link" onclick="viewSubmission(${s.sighting_id})">View</button></td>
+          </tr>
+        `).join('') +
+        `</tbody></table>`
+      : `<p style="color:var(--muted);font-size:.84rem;margin:0;">No submissions from this user yet.</p>`;
+
+    document.getElementById('user-detail-body').innerHTML = registration +
+      detailSection(`Submissions (${userSubmissions.length})`, submissionsHtml);
+
+    document.getElementById('user-detail-modal').classList.add('open');
+  }
+
+  function viewSubmission(sightingId) {
+    const s = allSubmissions.find(x => x.sighting_id === sightingId);
+    if (!s) { showToast('Submission not found.', true); return; }
+
+    const hab = s.sighting_habitat || {};
+    const mor = s.sighting_morphology || {};
+    const con = s.sighting_conservation || {};
+    const teamMembers = Array.isArray(s.sighting_team_member) ? s.sighting_team_member : [];
+
+    let relatedStudy = { title: '', link: '', file_url: '' };
+    if (s.related_study) {
+      try {
+        const parsed = typeof s.related_study === 'string' ? JSON.parse(s.related_study) : s.related_study;
+        if (parsed && typeof parsed === 'object') relatedStudy = { title: parsed.title || '', link: parsed.link || '', file_url: parsed.file_url || '' };
+      } catch { relatedStudy = { title: String(s.related_study), link: '', file_url: '' }; }
+    }
+
+    const mediaEntries = Array.isArray(s.sighting_media) ? s.sighting_media : [];
+    const photos = mediaEntries
+      .slice()
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+      .map(m => m.picture && m.picture.file_path)
+      .filter(Boolean);
+
+    document.getElementById('submission-detail-name').textContent = s.scientific_name || '—';
+    document.getElementById('submission-detail-sub').textContent =
+      `Entry ${s.entry_id || '—'} · Submitted ${fmtDate(s.created_at)}`;
+
+    const html =
+      detailSection('Taxonomy & Identification',
+        detailRow('Scientific Name', `<i>${esc(s.scientific_name || '—')}</i>`) +
+        detailRow('Common Names', fmtArr(s.common_names)) +
+        detailRow('Local Names', fmtArr(s.local_names)) +
+        detailRow('Identification Confidence', esc(s.identification_confidence || '—')) +
+        detailRow('Endemic to Philippines', esc(s.endemic_to_philippines || '—'))
+      ) +
+      detailSection('Observation & Location',
+        detailRow('Observation Date', fmtDate(s.observation_date)) +
+        detailRow('Observation Time', esc(s.observation_time || '—')) +
+        detailRow('Collection Method', esc(s.collection_method || '—')) +
+        detailRow('Observation Type', esc(s.observation_type || '—')) +
+        detailRow('Voucher Collected', s.voucher_collected ? 'Yes' : 'No') +
+        detailRow('Mountain', esc((s.mountain && s.mountain.mountain_name) || '—')) +
+        detailRow('Specific Site / Zone', esc(s.specific_site_zone || s.specific_site_other || '—')) +
+        detailRow('Latitude', s.latitude ?? '—') +
+        detailRow('Longitude', s.longitude ?? '—') +
+        detailRow('Elevation (m)', s.elevation_meters ?? '—')
+      ) +
+      detailSection('Habitat',
+        detailRow('Type', esc(hab.habitat_type || '—')) +
+        detailRow('Microhabitat', esc(hab.microhabitat || '—')) +
+        detailRow('Growth Substrate', esc(hab.growth_substrate || '—')) +
+        detailRow('Host Tree Species', esc(hab.host_tree_species || '—')) +
+        detailRow('Canopy Cover (%)', hab.canopy_cover_percent ?? '—') +
+        detailRow('Light Exposure', esc(hab.light_exposure || '—')) +
+        detailRow('Soil Type', esc(hab.soil_type || '—')) +
+        detailRow('Nearby Water Source', esc(hab.nearby_water_source || '—'))
+      ) +
+      detailSection('Morphology',
+        detailRow('Plant Height (cm)', mor.plant_height_cm ?? '—') +
+        detailRow('Pseudobulb Present', mor.pseudobulb_present ? 'Yes' : 'No') +
+        detailRow('Leaf Count', mor.leaf_count ?? '—') +
+        detailRow('Leaf Shape', esc(mor.leaf_shape || '—')) +
+        detailRow('Flower Color', esc(mor.flower_color || '—')) +
+        detailRow('Flower Count', mor.flower_count ?? '—') +
+        detailRow('Inflorescence Type', esc(mor.inflorescence_type || '—')) +
+        detailRow('Fragrance', esc(mor.fragrance || '—')) +
+        detailRow('Blooming Stage', esc(mor.blooming_stage || '—')) +
+        detailRow('Flowering Season', esc(mor.flowering_season || '—')) +
+        detailRow('Fruit Present', mor.fruit_present ? 'Yes' : 'No')
+      ) +
+      detailSection('Conservation & Threats',
+        detailRow('Threat Level', esc(con.threat_level || '—')) +
+        detailRow('Threat Types', fmtArr(con.threat_types)) +
+        detailRow('Life Stage', esc(mor.life_stage || '—')) +
+        detailRow('Phenology', esc(mor.phenology || '—')) +
+        detailRow('Population Count', mor.population_count ?? '—') +
+        detailRow('Population Status', esc(con.population_status || '—'))
+      ) +
+      detailSection('Researcher & Team',
+        detailRow('Head Observer', esc(s.head_observer_name || '—')) +
+        detailRow('Researcher Email', esc(s.researcher_email || '—')) +
+        detailRow('Institution', esc(s.institution_name || '—')) +
+        detailRow('Team Members', teamMembers.length
+          ? esc(teamMembers.map(tm => tm.member_role ? `${tm.member_name} (${tm.member_role})` : tm.member_name).join(', '))
+          : '—')
+      ) +
+      detailSection('Notes & Related Study',
+        detailRow('Researcher Notes', esc(s.researcher_notes || '—')) +
+        detailRow('Related Study', esc(relatedStudy.title || '—')) +
+        detailRow('Study Link', relatedStudy.link ? `<a href="${esc(relatedStudy.link)}" target="_blank" rel="noopener noreferrer">${esc(relatedStudy.link)}</a>` : '—')
+      ) +
+      (photos.length
+        ? detailSection('Photos', `<div class="sa-detail-photos">${photos.map(src => `<img src="${esc(src)}" alt="Submission photo" onerror="this.style.display='none';" />`).join('')}</div>`)
+        : '');
+
+    document.getElementById('submission-detail-body').innerHTML = html;
+    document.getElementById('submission-detail-modal').classList.add('open');
+  }
+
+  document.getElementById('user-detail-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeUserDetailModal();
+  });
+  document.getElementById('submission-detail-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSubmissionDetailModal();
+  });
 </script>
 </body>
 </html>
