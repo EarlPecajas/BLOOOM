@@ -3141,6 +3141,12 @@
           if (o.name) names.add(String(o.name).trim());
           if (o.genus) genusNames.add(String(o.genus).trim());
         });
+        // Every genus from the DAO 2026-20 reference list, so a researcher can
+        // pick/see a genus that's officially recognized even if it has no
+        // catalog rows or approved sightings yet.
+        (window.DAO_2026_20_ORCHID_REFERENCE || []).forEach((sp) => {
+          if (sp.genus) genusNames.add(String(sp.genus).trim());
+        });
         if (bloomSupabase) {
           // Query the catalog directly too — orchidRows may still be empty if the
           // researcher hasn't visited the Orchids view yet this session.

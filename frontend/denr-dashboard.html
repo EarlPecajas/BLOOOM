@@ -19,6 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js?v=3"></script>
     <script src="dashboard-shared.js?v=4"></script>
+    <script src="dao-2026-20-orchid-reference.js"></script>
     <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
     <style>
       /* Belt-and-suspenders: ID selectors win regardless of theme/body-class state */
@@ -11558,18 +11559,23 @@
         ptcSet('ptc-related-study',    s.related_study);
         ptcSet('ptc-researcher-notes', s.researcher_notes);
 
-        // Genus select
+        // Genus select — merges the live `genus` table with every genus in
+        // the DAO 2026-20 reference list, so DENR can pick a genus that has
+        // no catalog rows yet (e.g. publishing that species for the first
+        // time) instead of being limited to whatever's already published.
         const genusSelect = document.getElementById('catalogGenus');
         document.getElementById('catalogScientificName').value = s.species || s.scientific_name || '';
+        let dbGenusNames = [];
         try {
           const { data: genusData, error } = await bloomSupabase.from('genus').select('genus_name').order('genus_name');
-          if (!error && genusData) {
-            genusSelect.innerHTML = '<option value="">Select Genus</option>' +
-              genusData.map(g => `<option value="${g.genus_name}">${g.genus_name}</option>`).join('');
-            const currentGenus = (s.species || s.scientific_name || '').split(' ')[0];
-            if (currentGenus && genusData.some(g => g.genus_name === currentGenus)) genusSelect.value = currentGenus;
-          }
+          if (!error && genusData) dbGenusNames = genusData.map(g => g.genus_name).filter(Boolean);
         } catch(e) { console.error('Genus load error:', e); }
+        const daoGenusNames = Array.from(new Set((window.DAO_2026_20_ORCHID_REFERENCE || []).map((sp) => sp.genus).filter(Boolean)));
+        const allGenusNames = Array.from(new Set([...dbGenusNames, ...daoGenusNames])).sort((a, b) => a.localeCompare(b));
+        genusSelect.innerHTML = '<option value="">Select Genus</option>' +
+          allGenusNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+        const currentGenus = (s.species || s.scientific_name || '').split(' ')[0];
+        if (currentGenus && allGenusNames.includes(currentGenus)) genusSelect.value = currentGenus;
 
         // Photos — the catalog thumbnail can be picked from the submission's own
         // photos, or a fresh custom upload; the gallery picker separately offers
