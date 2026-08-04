@@ -1622,6 +1622,17 @@
         loadStorageImages(); // synchronous — populates storageImagesByGenus before any render
         catalogGrid.innerHTML = '<div class="catalog-loading-state"><div class="catalog-loading-spinner"></div><p class="catalog-loading-text">Loading orchids…</p></div>';
         await Promise.all([fetchOrchidData(), loadApprovedSightings()]);
+        // orchid_overview lists every species ever published and has no
+        // per-sighting publish state of its own — a species whose only
+        // sighting(s) were all later unpublished would otherwise still show
+        // a card here with nothing behind it. Drop anything with zero
+        // sightings left in the (already catalog_published-filtered)
+        // approved-sightings data instead of touching the shared DB view,
+        // which DENR's own internal catalog management also reads from.
+        orchids = orchids.filter((orchid) => {
+          const key = normalizeScientificKey(orchid.name);
+          return (approvedSightingsByScientificName.get(key) || []).length > 0;
+        });
         if (orchids.length > 0) {
           renderCatalog(orchids); // single render, all data ready
         } else {
