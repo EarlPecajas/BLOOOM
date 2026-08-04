@@ -895,9 +895,14 @@
   <div class="sa-modal">
     <h3 id="modal-title">Confirm Action</h3>
     <p id="modal-body">Are you sure?</p>
+    <div id="modal-password-wrap" style="display:none;margin-top:.9rem;text-align:left;">
+      <label for="modal-password-input" style="display:block;font-size:.8rem;font-weight:600;color:#4a5a4c;margin-bottom:.35rem;">Enter your password to confirm</label>
+      <input type="password" id="modal-password-input" autocomplete="current-password" style="width:100%;padding:.55rem .7rem;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;font-family:inherit;box-sizing:border-box;outline:none;" />
+      <p id="modal-password-error" style="display:none;color:#dc2626;font-size:.78rem;margin-top:.4rem;"></p>
+    </div>
     <div class="sa-modal-actions">
       <button class="sa-modal-cancel" onclick="closeModal()">Cancel</button>
-      <button class="sa-modal-confirm" id="modal-confirm-btn" onclick="modalConfirmFn()">Confirm</button>
+      <button class="sa-modal-confirm" id="modal-confirm-btn" onclick="handleModalConfirmClick()">Confirm</button>
     </div>
   </div>
 </div>
@@ -979,18 +984,66 @@
 
   // ── Confirm modal ─────────────────────────────────────────────────
   let modalConfirmFn = () => {};
+  let modalRequiresPassword = false;
 
-  function openModal(title, body, onConfirm, isDanger = false) {
+  function openModal(title, body, onConfirm, isDanger = false, requirePassword = false) {
     document.getElementById('modal-title').textContent = title;
     document.getElementById('modal-body').textContent = body;
     document.getElementById('modal-confirm-btn').className = 'sa-modal-confirm' + (isDanger ? ' danger' : '');
     modalConfirmFn = onConfirm;
+    modalRequiresPassword = requirePassword;
+    const pwWrap = document.getElementById('modal-password-wrap');
+    const pwInput = document.getElementById('modal-password-input');
+    const pwError = document.getElementById('modal-password-error');
+    if (pwWrap) pwWrap.style.display = requirePassword ? 'block' : 'none';
+    if (pwInput) pwInput.value = '';
+    if (pwError) pwError.style.display = 'none';
     document.getElementById('confirm-modal').classList.add('open');
+    if (requirePassword && pwInput) setTimeout(() => pwInput.focus(), 50);
   }
 
   function closeModal() {
     document.getElementById('confirm-modal').classList.remove('open');
     modalConfirmFn = () => {};
+    modalRequiresPassword = false;
+  }
+
+  // For disable/delete account: re-authenticates the signed-in super-admin
+  // with the typed password before running the actual action, instead of
+  // just a click-through confirmation — a wrong password blocks it and the
+  // action's onConfirm never runs.
+  async function handleModalConfirmClick() {
+    const confirmBtn = document.getElementById('modal-confirm-btn');
+    const pwError = document.getElementById('modal-password-error');
+    if (modalRequiresPassword) {
+      const pwInput = document.getElementById('modal-password-input');
+      const password = pwInput ? pwInput.value : '';
+      if (!password) {
+        if (pwError) { pwError.textContent = 'Enter your password to continue.'; pwError.style.display = 'block'; }
+        return;
+      }
+      const { data: userData } = await bloomSupabase.auth.getUser();
+      const email = userData && userData.user && userData.user.email;
+      if (!email) {
+        if (pwError) { pwError.textContent = 'Could not verify your session. Please sign in again.'; pwError.style.display = 'block'; }
+        return;
+      }
+      confirmBtn.disabled = true;
+      const originalText = confirmBtn.textContent;
+      confirmBtn.textContent = 'Verifying…';
+      const { data: reauthData, error } = await bloomSupabase.auth.signInWithPassword({ email, password });
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = originalText;
+      if (error) {
+        if (pwError) { pwError.textContent = 'Incorrect password.'; pwError.style.display = 'block'; }
+        return;
+      }
+      if (pwError) pwError.style.display = 'none';
+      // Re-authenticating issues a fresh token — keep it in sync so a
+      // subsequent /api/delete-user call doesn't send a stale one.
+      if (reauthData && reauthData.session) currentSuperAdminToken = reauthData.session.access_token;
+    }
+    modalConfirmFn();
   }
 
   document.getElementById('confirm-modal').addEventListener('click', function(e) {
@@ -1225,6 +1278,7 @@
         showToast(`"${name}" has been disabled.`);
         updateStats(); renderRecentPending(); renderPending(); renderUsers();
       },
+      true,
       true
     );
   }
@@ -1304,6 +1358,7 @@
           showToast('Failed: ' + err.message, true);
         }
       },
+      true,
       true
     );
   }
