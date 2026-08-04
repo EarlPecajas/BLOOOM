@@ -1620,9 +1620,9 @@
                 <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
                 <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
               </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;">
+              <div style="position:relative;">
                 <button type="button" id="submission-use-gps" title="Use my current GPS location" style="padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Auto-Detect</button>
-                <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
+                <span id="submission-gps-status" style="position:absolute;top:100%;right:0;margin-top:0.3rem;font-size:0.85rem;color:#64748b;white-space:nowrap;"></span>
               </div>
             </div>
             <div class="submission-field">
@@ -3019,7 +3019,7 @@
               if (gpsStatus) gpsStatus.textContent = 'Geolocation is not supported by this browser.';
               return;
             }
-            if (gpsStatus) gpsStatus.textContent = 'Getting location…';
+            if (gpsStatus) gpsStatus.textContent = 'Locating…';
             navigator.geolocation.getCurrentPosition(
               function(pos) {
                 const lat = document.getElementById('submission-latitude');
@@ -3031,10 +3031,9 @@
                 if (elev) {
                   if (pos.coords.altitude !== null) {
                     elev.value = pos.coords.altitude.toFixed(1);
-                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                    if (gpsStatus) gpsStatus.textContent = '';
                   } else {
                     // Fallback: fetch elevation from external service when device doesn't provide altitude
-                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy), looking up elevation...`;
                     const latVal = pos.coords.latitude.toFixed(6);
                     const lngVal = pos.coords.longitude.toFixed(6);
                     // Use Open-Elevation public API (no API key). It's best-effort and may fail or be rate-limited.
@@ -3043,16 +3042,16 @@
                       .then((data) => {
                         if (data && data.results && data.results[0] && typeof data.results[0].elevation === 'number') {
                           elev.value = data.results[0].elevation.toFixed(1);
-                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
-                        } else {
-                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation unknown`;
                         }
+                        if (gpsStatus) gpsStatus.textContent = '';
                       })
                       .catch((err) => {
                         console.warn('Elevation lookup failed', err);
-                        if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation lookup failed`;
+                        if (gpsStatus) gpsStatus.textContent = '';
                       });
                   }
+                } else {
+                  if (gpsStatus) gpsStatus.textContent = '';
                 }
               },
               function(err) {
