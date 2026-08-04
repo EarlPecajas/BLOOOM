@@ -2747,11 +2747,10 @@
               </div>
               <div>
                 <label for="catalogGenus" style="display:block;margin-bottom:0.35rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--dt-muted);">Genus <span style="color:#f87171;">*</span></label>
-                <select id="catalogGenus" required
-                  style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;"
+                <input type="text" id="catalogGenus" required list="catalogGenusOptions" placeholder="e.g. Dendrobium" autocomplete="off"
+                  style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--dt-border-md);border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:var(--dt-bg-input);color:var(--dt-text);outline:none;box-sizing:border-box;"
                   onfocus="this.style.borderColor='#4db86a'" onblur="this.style.borderColor='var(--dt-border-md)'">
-                  <option value="">Select Genus</option>
-                </select>
+                <datalist id="catalogGenusOptions"></datalist>
               </div>
             </div>
 
@@ -11559,11 +11558,13 @@
         ptcSet('ptc-related-study',    s.related_study);
         ptcSet('ptc-researcher-notes', s.researcher_notes);
 
-        // Genus select — merges the live `genus` table with every genus in
-        // the DAO 2026-20 reference list, so DENR can pick a genus that has
-        // no catalog rows yet (e.g. publishing that species for the first
-        // time) instead of being limited to whatever's already published.
-        const genusSelect = document.getElementById('catalogGenus');
+        // Genus field — a free-text input with a <datalist> of suggestions
+        // merging the live `genus` table with every genus in the DAO 2026-20
+        // reference list, so DENR can pick a suggested genus OR just type
+        // one that's in neither list yet (e.g. a first-time publish of a
+        // genus this catalog has never seen).
+        const genusInput = document.getElementById('catalogGenus');
+        const genusOptionsList = document.getElementById('catalogGenusOptions');
         document.getElementById('catalogScientificName').value = s.species || s.scientific_name || '';
         let dbGenusNames = [];
         try {
@@ -11572,10 +11573,9 @@
         } catch(e) { console.error('Genus load error:', e); }
         const daoGenusNames = Array.from(new Set((window.DAO_2026_20_ORCHID_REFERENCE || []).map((sp) => sp.genus).filter(Boolean)));
         const allGenusNames = Array.from(new Set([...dbGenusNames, ...daoGenusNames])).sort((a, b) => a.localeCompare(b));
-        genusSelect.innerHTML = '<option value="">Select Genus</option>' +
-          allGenusNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+        genusOptionsList.innerHTML = allGenusNames.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
         const currentGenus = (s.species || s.scientific_name || '').split(' ')[0];
-        if (currentGenus && allGenusNames.includes(currentGenus)) genusSelect.value = currentGenus;
+        genusInput.value = currentGenus || '';
 
         // Photos — the catalog thumbnail can be picked from the submission's own
         // photos, or a fresh custom upload; the gallery picker separately offers
@@ -11636,7 +11636,7 @@
         event.preventDefault();
 
         const scientificName = document.getElementById('catalogScientificName').value.trim();
-        const genusName = document.getElementById('catalogGenus').value;
+        const genusName = document.getElementById('catalogGenus').value.trim();
         const galleryImages = Array.from(document.querySelectorAll('input[name="gallery"]:checked')).map(cb => cb.value);
         const hiddenFields = ptcGetHiddenFields();
         const submitBtn = event.target.querySelector('[type="submit"]');
