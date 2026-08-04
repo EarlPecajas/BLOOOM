@@ -226,7 +226,7 @@
           <h3 id="oid-sci-name" class="oid-sci-name">-</h3>
           <p id="oid-common-name" class="oid-common-name"></p>
           <div class="oid-field-list">
-            <div class="oid-field-row"><span class="oid-field-label">Family</span><span class="oid-field-value" id="oid-family">Orchidaceae</span></div>
+            <div class="oid-field-row"><span class="oid-field-label">Family</span><span class="oid-field-value" id="oid-family" style="font-style:italic;">Orchidaceae</span></div>
             <div class="oid-field-row"><span class="oid-field-label">Genus</span><span class="oid-field-value" id="oid-genus">&mdash;</span></div>
             <div class="oid-field-row"><span class="oid-field-label">Local Names</span><span class="oid-field-value" id="oid-local-names">&mdash;</span></div>
             <div class="oid-field-row oid-field-sep"><span class="oid-field-label">Conservation Status</span><span class="oid-field-value" id="oid-conservation-status">&mdash;</span></div>
@@ -276,7 +276,7 @@
 
         <!-- Breadcrumb + close -->
         <div class="odm-topbar">
-          <span class="odm-breadcrumb" id="odm-breadcrumb">Orchidaceae</span>
+          <span class="odm-breadcrumb" id="odm-breadcrumb"><i>Orchidaceae</i></span>
           <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
         </div>
 
@@ -1520,8 +1520,8 @@
         var allSightings = currentAllSightings || [];
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
         var genus = orchid.genus || orchidName.split(' ')[0] || '';
-        document.getElementById('odm-breadcrumb').textContent =
-          'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
+        document.getElementById('odm-breadcrumb').innerHTML =
+          '<i>Orchidaceae</i>' + (genus ? ' / ' + escapeHtml(genus) : '') + ' / ' + escapeHtml(orchidName);
 
         // Highlight whichever sighting's marker was actually clicked, falling back to the first.
         var activeIndex = 0;

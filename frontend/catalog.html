@@ -373,7 +373,7 @@
 
         <!-- Breadcrumb + close -->
         <div class="odm-topbar">
-          <span class="odm-breadcrumb" id="odm-breadcrumb">Orchidaceae / â / â</span>
+          <span class="odm-breadcrumb" id="odm-breadcrumb"><i>Orchidaceae</i> / â / â</span>
           <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
         </div>
 
@@ -1197,8 +1197,8 @@
         odmActiveSightingIndex = 0;
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
         var genus = orchid.genus || orchidName.split(' ')[0] || '';
-        document.getElementById('odm-breadcrumb').textContent =
-          'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
+        document.getElementById('odm-breadcrumb').innerHTML =
+          '<i>Orchidaceae</i>' + (genus ? ' / ' + escapeHtml(genus) : '') + ' / ' + escapeHtml(orchidName);
         var count = allSightings.length;
         document.getElementById('odm-map-hint-text').textContent =
           count + ' recorded sighting' + (count !== 1 ? 's' : '') + (count > 0 ? ' · tap a pin to explore' : ' · recorded locations');
