@@ -898,25 +898,10 @@
             odmRow('Population Status', src.population_status, 'pop-status') +
             odmRow('Threat Level', src.threat_level, 'threat')
           ) +
-          // Species Value & Importance — catalog-wide, DENR-curated narrative
-          // fields (not per-sighting), matching orchid_overview. "Cultivation"
-          // has no data source in this schema, so it always shows "-". DENR can
-          // no longer set these from the Publish to Catalog modal, but older
-          // catalog entries may still carry values from before that was removed.
-          odmSection('Species Value &amp; Importance',
-            odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
-            odmRow('Aesthetic Appeal', orchid.horticulture_value, 'horticulture-value') +
-            odmRow('Cultivation', '', 'cultivation') +
-            odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance')
-          ) +
           (odmHiddenFields.has('researcher-notes') ? '' :
             '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
             '<div class="odm-study-note" style="margin:0;' + (src.researcher_notes ? '' : 'color:#9AA6A0;') + '">' +
-            escapeHtml(src.researcher_notes || '-') + '</div></div>') +
-          // Unusual Observations has no data source in this schema (the column
-          // was removed from submissions) — always shows "-", same as mobile.
-          '<div class="odm-section"><div class="odm-section-title">Unusual Observations</div>' +
-            '<div class="odm-study-note" style="margin:0;color:#9AA6A0;">-</div></div>';
+            escapeHtml(src.researcher_notes || '-') + '</div></div>');
 
         document.getElementById('odm-value-extra').innerHTML = extraSections;
       }
@@ -976,24 +961,11 @@
         var recordedRows = (odmHiddenFields.has('obs-date') ? '' : '<div class="odm-date-pill">' + escapeHtml(date) + '</div>') +
           odmRow('Time of Observation', s.observation_time, 'obs-time') +
           odmRow('Collection Method', s.collection_method, 'collection-method') +
-          odmRow('Observation Type', s.observation_type, 'obs-type') +
-          odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'), 'voucher');
+          odmRow('Observation Type', s.observation_type, 'obs-type');
 
         var locationRows = odmRow('Mountain / Site', s.mountain_name, 'mountain') +
           odmRow('Province', s.province, 'mountain') +
-          odmRow('Municipality', s.municipality, 'mountain') +
-          odmRow('Altitude Zone', s.specific_site_zone, 'site') +
-          odmRow('Specific Site', s.specific_site_other, 'site');
-
-        var habitatRows = odmRow('Habitat Type', s.habitat_type, 'habitat-type') +
-          odmRow('Microhabitat', s.microhabitat, 'microhabitat') +
-          odmRow('Growth Substrate', s.growth_substrate, 'substrate') +
-          odmRow('Host Tree Species', s.host_tree_species, 'host-tree') +
-          odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm'), 'host-tree') +
-          odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%'), 'canopy-cover') +
-          odmRow('Light Exposure', s.light_exposure, 'light') +
-          odmRow('Soil Type', s.soil_type, 'soil-type') +
-          odmRow('Nearby Water Source', s.nearby_water_source, 'water');
+          odmRow('Municipality', s.municipality, 'mountain');
 
         var contributorsSection = odmHiddenFields.has('team') ? '' :
           '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>';
@@ -1006,7 +978,6 @@
             '</div>' +
             odmSection('Recorded Sighting', recordedRows) +
             odmSection('Location', locationRows) +
-            odmSection('Habitat &amp; Environment', habitatRows) +
             contributorsSection +
           '</div>';
       }
