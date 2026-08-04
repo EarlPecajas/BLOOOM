@@ -1611,17 +1611,19 @@
               <label for="submission-specific-site-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site (if Others) <span class="field-help" data-tooltip="Optional. Use this when the zone is set to Others.">?</span></label>
               <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" class="submission-text-input" />
             </div>
-            <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-              <button type="button" id="submission-use-gps" style="padding:0.55rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
-              <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
-            </div>
-            <div class="submission-field">
-              <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
-              <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" class="submission-text-input" />
-            </div>
-            <div class="submission-field">
-              <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
-              <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
+            <div style="grid-column:1/-1;display:flex;align-items:flex-end;gap:0.85rem;flex-wrap:wrap;">
+              <div class="submission-field" style="flex:1;min-width:160px;">
+                <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+                <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" class="submission-text-input" />
+              </div>
+              <div class="submission-field" style="flex:1;min-width:160px;">
+                <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+                <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;">
+                <button type="button" id="submission-use-gps" style="padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
+                <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
+              </div>
             </div>
             <div class="submission-field">
               <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation / Altitude (meters) <span class="field-help" data-tooltip="Auto-filled from GPS if available, or enter manually.">?</span></label>
@@ -3650,10 +3652,20 @@
           const startSel = document.getElementById('submission-flowering-season-start');
           const endSel = document.getElementById('submission-flowering-season-end');
           const hidden = document.getElementById('submission-flowering-season');
-          if (startSel) startSel.value = '';
-          if (endSel) endSel.value = '';
-          if (hidden) hidden.value = 'Unknown';
-          floweringSeasonUnknownBtn.classList.add('is-active');
+          const isActive = floweringSeasonUnknownBtn.classList.contains('is-active');
+          if (isActive) {
+            // Toggle off — unlock the month pickers again.
+            floweringSeasonUnknownBtn.classList.remove('is-active');
+            if (startSel) startSel.disabled = false;
+            if (endSel) endSel.disabled = false;
+            if (hidden) hidden.value = '';
+          } else {
+            // Toggle on — clear any chosen months and lock them out while active.
+            if (startSel) { startSel.value = ''; startSel.disabled = true; }
+            if (endSel) { endSel.value = ''; endSel.disabled = true; }
+            if (hidden) hidden.value = 'Unknown';
+            floweringSeasonUnknownBtn.classList.add('is-active');
+          }
         });
       }
 
@@ -3791,6 +3803,15 @@
             delete researcherSubmissionFormEl.dataset.editDraftId;
             delete researcherSubmissionFormEl.dataset.editDraftEntryId;
             researcherSubmissionFormEl.reset();
+            // .reset() doesn't touch the `disabled` property or CSS classes,
+            // so the Flowering Season Unknown toggle needs clearing by hand
+            // or the month pickers would stay locked on the next submission.
+            const floweringUnknownBtnReset = document.getElementById('submission-flowering-season-unknown');
+            if (floweringUnknownBtnReset) floweringUnknownBtnReset.classList.remove('is-active');
+            const floweringStartSelReset = document.getElementById('submission-flowering-season-start');
+            const floweringEndSelReset = document.getElementById('submission-flowering-season-end');
+            if (floweringStartSelReset) floweringStartSelReset.disabled = false;
+            if (floweringEndSelReset) floweringEndSelReset.disabled = false;
             initializeResearcherSightingForm();
             const feedback = document.getElementById('researcher-submission-feedback');
             if (feedback) {
@@ -5134,6 +5155,10 @@
           if (hidden) hidden.value = 'Unknown';
           const unknownBtn = document.getElementById('submission-flowering-season-unknown');
           if (unknownBtn) unknownBtn.classList.add('is-active');
+          const startSel = document.getElementById('submission-flowering-season-start');
+          const endSel = document.getElementById('submission-flowering-season-end');
+          if (startSel) startSel.disabled = true;
+          if (endSel) endSel.disabled = true;
         } else if (seasonStr) {
           const parts = seasonStr.split(/\s*[–\-]\s*/);
           if (parts.length >= 2) {

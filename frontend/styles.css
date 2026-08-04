@@ -3762,6 +3762,13 @@ body.researcher-theme #detailModalCard > div:first-child {
   transform:translateX(-50%);
   background:#1e293b;
   color:#fff;
+  /* .field-help is usually nested inside a <label>, and some labels
+     (e.g. #researcher-submission-panel label) set
+     -webkit-text-fill-color !important — which is inherited by this
+     pseudo-element and paints over `color` in WebKit/Blink, making the
+     tooltip text unreadable dark-on-dark. Set it explicitly here so it
+     can't inherit a conflicting value. */
+  -webkit-text-fill-color:#fff;
   padding:0.45rem 0.7rem;
   border-radius:7px;
   font-size:0.73rem;
@@ -3977,6 +3984,13 @@ body.researcher-theme #detailModalCard > div:first-child {
   background: #145A1E !important;
   border-color: #145A1E !important;
   color: #ffffff !important;
+}
+#submission-flowering-season-start:disabled,
+#submission-flowering-season-end:disabled {
+  background: #f1f5f4 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 [id^="submission-remove-common-"],
 [id^="submission-remove-local-"] {
