@@ -11682,11 +11682,22 @@
             thumbnailUrl = urlData.publicUrl;
           }
 
-          // Get genus_id
-          const { data: genusData, error: genusError } = await bloomSupabase
-            .from('genus').select('genus_id').eq('genus_name', genusName).single();
-          if (genusError) throw genusError;
-          const genusId = genusData.genus_id;
+          // Get genus_id — the Genus dropdown now also lists DAO 2026-20
+          // genera that have no `genus` row yet (see catalogGenus population
+          // above), so this can't assume the row already exists; create it
+          // on the fly the same way the CSV-import path already does.
+          let genusId;
+          const { data: existingGenus, error: genusLookupError } = await bloomSupabase
+            .from('genus').select('genus_id').ilike('genus_name', genusName).maybeSingle();
+          if (genusLookupError) throw genusLookupError;
+          if (existingGenus) {
+            genusId = existingGenus.genus_id;
+          } else {
+            const { data: newGenus, error: genusInsertError } = await bloomSupabase
+              .from('genus').insert({ genus_name: genusName }).select('genus_id').single();
+            if (genusInsertError) throw genusInsertError;
+            genusId = newGenus.genus_id;
+          }
 
           // Endemicity comes from the submission (same source the read-only
           // display row above pulls from) — it was never actually saved before.
