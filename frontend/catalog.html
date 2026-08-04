@@ -214,6 +214,15 @@
         color: #1a3a1c !important;
         -webkit-text-fill-color: #1a3a1c !important;
       }
+      /* styles.css has a global `select option { background: var(--dt-bg-card) }`
+         dark-theme rule for the OPEN dropdown list, separate from the closed
+         select's own background above — this page uses body.catalog-light,
+         not body.researcher-theme (which already has its own override), so
+         it needs its own fix here. */
+      #search-filter option, #conservation-filter option {
+        background-color: #FFFFFF !important;
+        color: #1a3a1c !important;
+      }
       /* Genus group headers — shown across the full grid width when the
          Genus filter is active, one per genus, right before its cards. */
       .catalog-genus-header {
