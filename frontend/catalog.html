@@ -851,53 +851,7 @@
           odmRow('Endemic to Philippines', endemic, 'endemicity') +
           odmRow('Confidence', src.identification_confidence, 'id-confidence');
 
-        function num(value, unit) {
-          return (value === '' || value === null || value === undefined) ? '' : (value + (unit || ''));
-        }
-
-        var leafTextures = Array.isArray(src.leaf_textures) && src.leaf_textures.length
-          ? src.leaf_textures.join(', ') : '';
-
         var extraSections =
-          odmSection('Plant Structure',
-            odmRow('Plant Height', num(src.plant_height_cm, ' cm'), 'height') +
-            odmRow('Pseudobulb Present', src.pseudobulb_present == null ? '' : (src.pseudobulb_present ? 'Yes' : 'No'), 'pseudobulb') +
-            odmRow('Stem Length', num(src.stem_length_cm, ' cm'), 'stem-length') +
-            odmRow('Root Length', num(src.root_length_cm, ' cm'), 'root-length')
-          ) +
-          odmSection('Leaf Characteristics',
-            odmRow('Leaf Shape / Type', src.leaf_shape, 'leaf-shape') +
-            odmRow('Leaf Length', num(src.leaf_length_cm, ' cm'), 'leaf-length') +
-            odmRow('Leaf Width', num(src.leaf_width_cm, ' cm'), 'leaf-width') +
-            odmRow('Leaf Texture', leafTextures, 'leaf-texture') +
-            odmRow('Leaf Arrangement', src.leaf_arrangement, 'leaf-arrangement') +
-            odmRow('Number of Leaves', src.leaf_count, 'leaf-count')
-          ) +
-          odmSection('Flower Characteristics',
-            odmRow('Flower Color', src.flower_color, 'flower-color') +
-            odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
-            odmRow('Number of Flowers', src.flower_count, 'flower-count') +
-            odmRow('Flower Diameter', num(src.flower_diameter_cm, ' cm'), 'flower-diameter') +
-            odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
-            odmRow('Petal Characteristics', src.petal_characteristics, 'petal-characteristics') +
-            odmRow('Sepal Characteristics', src.sepal_characteristics, 'sepal-characteristics') +
-            odmRow('Labellum Description', src.labellum_lip_description, 'labellum') +
-            odmRow('Fragrance', src.fragrance, 'fragrance') +
-            odmRow('Blooming Stage', src.blooming_stage, 'blooming')
-          ) +
-          odmSection('Fruit &amp; Seeds',
-            odmRow('Fruit Present', src.fruit_present == null ? '' : (src.fruit_present ? 'Yes' : 'No'), 'fruit-present') +
-            odmRow('Fruit Type', src.fruit_type, 'fruit-type') +
-            odmRow('Seed Capsule Condition', src.seed_capsule_condition, 'seed-capsule')
-          ) +
-          odmSection('Population &amp; Conservation',
-            odmRow('Population Count', src.population_count !== '' && src.population_count != null
-              ? (src.population_count + ' individual' + (Number(src.population_count) === 1 ? '' : 's')) : '', 'pop-count') +
-            odmRow('Life Stage', src.life_stage, 'life-stage') +
-            odmRow('Phenology', src.phenology, 'phenology') +
-            odmRow('Population Status', src.population_status, 'pop-status') +
-            odmRow('Threat Level', src.threat_level, 'threat')
-          ) +
           (odmHiddenFields.has('researcher-notes') ? '' :
             '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
             '<div class="odm-study-note" style="margin:0;' + (src.researcher_notes ? '' : 'color:#9AA6A0;') + '">' +
