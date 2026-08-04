@@ -10479,7 +10479,12 @@
       // Columns that are DB-generated or derived rather than something an import
       // file should supply — exported for completeness but excluded from the
       // required/optional reference card and from import templates.
-      const SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS = ['sighting_id', 'mountain_id', 'created_at', 'updated_at', 'genus'];
+      // entry_id and review_status are also excluded: entry_id is auto-generated
+      // per row when it's missing from the file, and review_status defaults to
+      // "pending" the same way — importSubmissionsRows() already handles both
+      // being entirely absent, so there's nothing to change there, just what's
+      // offered in the template/reference card.
+      const SUBMISSIONS_IMPORT_EXCLUDED_COLUMNS = ['sighting_id', 'mountain_id', 'created_at', 'updated_at', 'genus', 'entry_id', 'review_status'];
       const TRAILS_IMPORT_EXCLUDED_COLUMNS = ['trail_id', 'created_at', 'updated_at'];
       const IMPORT_EXCLUDED_COLUMNS = {
         orchids: [],
