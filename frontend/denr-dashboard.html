@@ -11695,8 +11695,21 @@
           } else {
             const { data: newGenus, error: genusInsertError } = await bloomSupabase
               .from('genus').insert({ genus_name: genusName }).select('genus_id').single();
-            if (genusInsertError) throw genusInsertError;
-            genusId = newGenus.genus_id;
+            if (genusInsertError) {
+              // 23505 = unique_violation — another near-simultaneous publish
+              // (e.g. of a different sighting of the same brand-new genus)
+              // won the race and inserted it first; re-select instead of failing.
+              if (genusInsertError.code === '23505') {
+                const { data: raceWinnerGenus, error: raceLookupError } = await bloomSupabase
+                  .from('genus').select('genus_id').ilike('genus_name', genusName).single();
+                if (raceLookupError) throw raceLookupError;
+                genusId = raceWinnerGenus.genus_id;
+              } else {
+                throw genusInsertError;
+              }
+            } else {
+              genusId = newGenus.genus_id;
+            }
           }
 
           // Endemicity comes from the submission (same source the read-only
@@ -11960,9 +11973,11 @@
         loadOrchidCatalog();
         loadConservationSummary();
         loadDenrStats();
-
-        // Add form submit handler for post to catalog
-        document.getElementById('postToCatalogForm').addEventListener('submit', submitPostToCatalog);
+        // postToCatalogForm's submit is already handled by its own
+        // onsubmit="submitPostToCatalog(event)" attribute — a second
+        // addEventListener here used to fire the same handler twice per
+        // click, racing two publish attempts against each other (e.g. both
+        // trying to create the same new genus row at once).
       });
 
       // Field-help tooltip: show on hover (CSS) and toggle on click
