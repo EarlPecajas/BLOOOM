@@ -1552,7 +1552,7 @@
               <label for="submission-endemic-philippines" style="font-size:0.88rem;font-weight:600;color:#334155;">Endemic to the Philippines <span class="field-help" data-tooltip="Optional. Is this orchid species endemic (found only) in the Philippines?">?</span></label>
               <div style="display:flex;gap:0.4rem;align-items:center;">
                 <select id="submission-endemic-philippines" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
-                <button type="button" onclick="autoDetectEndemicStatus()" title="Look up the Scientific Name against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+                <button type="button" onclick="autoDetectEndemicStatus()" title="Look up the Scientific Name against DAO 2026-20" style="flex-shrink:0;padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
               </div>
               <div id="submission-endemic-status" style="margin-top:0.3rem;padding:0.2rem 0;font-size:0.76rem;line-height:1.35;display:none;"></div>
             </div>
@@ -1621,7 +1621,7 @@
                 <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;">
-                <button type="button" id="submission-use-gps" style="padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
+                <button type="button" id="submission-use-gps" title="Use my current GPS location" style="padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Auto-Detect</button>
                 <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
               </div>
             </div>
@@ -1831,7 +1831,7 @@
               <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <button type="button" onclick="openIucnGuideModal()" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">(Check DAO 2026-20)</button></label>
               <div style="display:flex;gap:0.4rem;align-items:center;">
                 <select id="submission-threat-level" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Other Threatened Species">Other Threatened Species</option><option value="Not Listed">Not Listed</option></select>
-                <button type="button" onclick="autoDetectThreatLevel()" title="Look up the Scientific Name (Page 1, Basic Taxonomic Information) against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+                <button type="button" onclick="autoDetectThreatLevel()" title="Look up the Scientific Name (Page 1, Basic Taxonomic Information) against DAO 2026-20" style="flex-shrink:0;padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
               </div>
               <div id="submission-threat-level-status" style="position:absolute;top:100%;left:0;right:0;margin-top:0.3rem;padding:0.2rem 0;background:#fff;font-size:0.76rem;line-height:1.35;display:none;z-index:2;"></div>
             </div>
