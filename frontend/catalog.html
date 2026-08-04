@@ -208,6 +208,12 @@
         border-color: #145A1E !important;
         box-shadow: 0 0 0 3px rgba(20,90,30,.1) !important;
       }
+      /* Belt-and-suspenders: ID selectors win regardless of theme/body-class state */
+      #search-input, #search-filter, #conservation-filter {
+        background-color: #FFFFFF !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
       /* View toggle button */
       body.catalog-light .catalog-view-toggle {
         background: #FFFFFF !important;
@@ -324,7 +330,6 @@
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(700px,100%);">
           <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
             <option value="all">All</option>
-            <option value="species">Species</option>
             <option value="genus">Genus</option>
           </select>
           <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;" aria-label="Conservation status filter">
@@ -1364,9 +1369,17 @@
           if (!searchTerm) return true;
 
           if (filterValue === 'genus') return genus.includes(searchTerm);
-          if (filterValue === 'species') return name.includes(searchTerm);
           return name.includes(searchTerm) || genus.includes(searchTerm);
         });
+
+        // "Genus" groups the grid by genus (all Aerides together, all Vanda
+        // together, etc.) instead of the default alphabetical-by-species order.
+        if (filterValue === 'genus') {
+          filtered.sort((a, b) => {
+            const genusCmp = (a.genus || '').toLowerCase().localeCompare((b.genus || '').toLowerCase());
+            return genusCmp !== 0 ? genusCmp : (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
+          });
+        }
 
         renderCatalog(filtered);
       }
