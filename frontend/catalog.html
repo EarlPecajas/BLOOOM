@@ -861,34 +861,34 @@
         var extraSections =
           odmSection('Plant Structure',
             odmRow('Plant Height', num(src.plant_height_cm, ' cm'), 'height') +
-            odmRow('Pseudobulb Present', src.pseudobulb_present == null ? '' : (src.pseudobulb_present ? 'Yes' : 'No')) +
-            odmRow('Stem Length', num(src.stem_length_cm, ' cm')) +
-            odmRow('Root Length', num(src.root_length_cm, ' cm'))
+            odmRow('Pseudobulb Present', src.pseudobulb_present == null ? '' : (src.pseudobulb_present ? 'Yes' : 'No'), 'pseudobulb') +
+            odmRow('Stem Length', num(src.stem_length_cm, ' cm'), 'stem-length') +
+            odmRow('Root Length', num(src.root_length_cm, ' cm'), 'root-length')
           ) +
           odmSection('Leaf Characteristics',
             odmRow('Leaf Shape / Type', src.leaf_shape, 'leaf-shape') +
-            odmRow('Leaf Length', num(src.leaf_length_cm, ' cm')) +
-            odmRow('Leaf Width', num(src.leaf_width_cm, ' cm')) +
-            odmRow('Leaf Texture', leafTextures) +
-            odmRow('Leaf Arrangement', src.leaf_arrangement) +
-            odmRow('Number of Leaves', src.leaf_count)
+            odmRow('Leaf Length', num(src.leaf_length_cm, ' cm'), 'leaf-length') +
+            odmRow('Leaf Width', num(src.leaf_width_cm, ' cm'), 'leaf-width') +
+            odmRow('Leaf Texture', leafTextures, 'leaf-texture') +
+            odmRow('Leaf Arrangement', src.leaf_arrangement, 'leaf-arrangement') +
+            odmRow('Number of Leaves', src.leaf_count, 'leaf-count')
           ) +
           odmSection('Flower Characteristics',
             odmRow('Flower Color', src.flower_color, 'flower-color') +
             odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
             odmRow('Number of Flowers', src.flower_count, 'flower-count') +
-            odmRow('Flower Diameter', num(src.flower_diameter_cm, ' cm')) +
+            odmRow('Flower Diameter', num(src.flower_diameter_cm, ' cm'), 'flower-diameter') +
             odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
-            odmRow('Petal Characteristics', src.petal_characteristics) +
-            odmRow('Sepal Characteristics', src.sepal_characteristics) +
-            odmRow('Labellum Description', src.labellum_lip_description) +
+            odmRow('Petal Characteristics', src.petal_characteristics, 'petal-characteristics') +
+            odmRow('Sepal Characteristics', src.sepal_characteristics, 'sepal-characteristics') +
+            odmRow('Labellum Description', src.labellum_lip_description, 'labellum') +
             odmRow('Fragrance', src.fragrance, 'fragrance') +
             odmRow('Blooming Stage', src.blooming_stage, 'blooming')
           ) +
           odmSection('Fruit &amp; Seeds',
-            odmRow('Fruit Present', src.fruit_present == null ? '' : (src.fruit_present ? 'Yes' : 'No')) +
-            odmRow('Fruit Type', src.fruit_type) +
-            odmRow('Seed Capsule Condition', src.seed_capsule_condition)
+            odmRow('Fruit Present', src.fruit_present == null ? '' : (src.fruit_present ? 'Yes' : 'No'), 'fruit-present') +
+            odmRow('Fruit Type', src.fruit_type, 'fruit-type') +
+            odmRow('Seed Capsule Condition', src.seed_capsule_condition, 'seed-capsule')
           ) +
           odmSection('Population &amp; Conservation',
             odmRow('Population Count', src.population_count !== '' && src.population_count != null
@@ -900,16 +900,19 @@
           ) +
           // Species Value & Importance — catalog-wide, DENR-curated narrative
           // fields (not per-sighting), matching orchid_overview. "Cultivation"
-          // has no data source in this schema, so it always shows "-".
+          // has no data source in this schema, so it always shows "-". DENR can
+          // no longer set these from the Publish to Catalog modal, but older
+          // catalog entries may still carry values from before that was removed.
           odmSection('Species Value &amp; Importance',
             odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
             odmRow('Aesthetic Appeal', orchid.horticulture_value, 'horticulture-value') +
             odmRow('Cultivation', '', 'cultivation') +
             odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance')
           ) +
-          '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
+          (odmHiddenFields.has('researcher-notes') ? '' :
+            '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
             '<div class="odm-study-note" style="margin:0;' + (src.researcher_notes ? '' : 'color:#9AA6A0;') + '">' +
-            escapeHtml(src.researcher_notes || '-') + '</div></div>' +
+            escapeHtml(src.researcher_notes || '-') + '</div></div>') +
           // Unusual Observations has no data source in this schema (the column
           // was removed from submissions) — always shows "-", same as mobile.
           '<div class="odm-section"><div class="odm-section-title">Unusual Observations</div>' +
@@ -973,12 +976,12 @@
         var recordedRows = (odmHiddenFields.has('obs-date') ? '' : '<div class="odm-date-pill">' + escapeHtml(date) + '</div>') +
           odmRow('Time of Observation', s.observation_time, 'obs-time') +
           odmRow('Collection Method', s.collection_method, 'collection-method') +
-          odmRow('Observation Type', s.observation_type) +
+          odmRow('Observation Type', s.observation_type, 'obs-type') +
           odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'), 'voucher');
 
         var locationRows = odmRow('Mountain / Site', s.mountain_name, 'mountain') +
-          odmRow('Province', s.province) +
-          odmRow('Municipality', s.municipality) +
+          odmRow('Province', s.province, 'mountain') +
+          odmRow('Municipality', s.municipality, 'mountain') +
           odmRow('Altitude Zone', s.specific_site_zone, 'site') +
           odmRow('Specific Site', s.specific_site_other, 'site');
 
@@ -987,9 +990,9 @@
           odmRow('Growth Substrate', s.growth_substrate, 'substrate') +
           odmRow('Host Tree Species', s.host_tree_species, 'host-tree') +
           odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm'), 'host-tree') +
-          odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%')) +
+          odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%'), 'canopy-cover') +
           odmRow('Light Exposure', s.light_exposure, 'light') +
-          odmRow('Soil Type', s.soil_type) +
+          odmRow('Soil Type', s.soil_type, 'soil-type') +
           odmRow('Nearby Water Source', s.nearby_water_source, 'water');
 
         var contributorsSection = odmHiddenFields.has('team') ? '' :
@@ -1155,9 +1158,10 @@
           ? '<a href="' + escapeHtml(studyLink) + '" target="_blank" rel="noopener noreferrer" style="color:#145A1E;word-break:break-all;">' + escapeHtml(studyLink) + '</a>'
           : '-';
 
-        var studyRows = odmRow('Study Title', studyTitle) +
-          '<div class="odm-row"><span class="odm-row-label">Study Link</span><span class="odm-row-value' +
-          (studyLink ? '' : ' odm-row-value--blank') + '">' + studyLinkDisplay + '</span></div>';
+        var studyRows = odmRow('Study Title', studyTitle, 'related-study') +
+          (odmHiddenFields.has('related-study') ? '' :
+            '<div class="odm-row"><span class="odm-row-label">Study Link</span><span class="odm-row-value' +
+            (studyLink ? '' : ' odm-row-value--blank') + '">' + studyLinkDisplay + '</span></div>');
 
         var submittedByRows = odmRow('Researcher', src.researcher_name, 'researcher-name') +
           odmRow('Institution', src.institution, 'institution');
