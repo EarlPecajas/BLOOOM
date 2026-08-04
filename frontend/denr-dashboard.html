@@ -1553,28 +1553,10 @@
                 <span style="width:30px;height:30px;border-radius:9px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 </span>
-                <p class="m-0 text-sm font-bold" id="ieImportCardTitle" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">Import Orchid Catalog</p>
+                <p class="m-0 text-sm font-bold" id="ieImportCardTitle" style="color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">Import Submissions</p>
               </div>
               <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;">
-                <div>
-                  <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Dataset</label>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
-                    <label id="ie-import-ds-orchids" class="report-format-option ie-import-dataset-option is-active" onclick="selectImportDataset('orchids')">
-                      <input type="radio" name="ie-import-dataset" value="orchids" checked style="display:none;" />
-                      <span class="text-xs font-bold fmt-label">Orchid Catalog</span>
-                    </label>
-                    <label id="ie-import-ds-submissions" class="report-format-option ie-import-dataset-option" onclick="selectImportDataset('submissions')">
-                      <input type="radio" name="ie-import-dataset" value="submissions" style="display:none;" />
-                      <span class="text-xs font-bold fmt-label">Submissions</span>
-                    </label>
-                    <label id="ie-import-ds-trails" class="report-format-option ie-import-dataset-option" onclick="selectImportDataset('trails')">
-                      <input type="radio" name="ie-import-dataset" value="trails" style="display:none;" />
-                      <span class="text-xs font-bold fmt-label">Map Trails</span>
-                    </label>
-                  </div>
-                </div>
-
-                <p class="m-0 text-xs" id="ieImportDescription" style="color:var(--dt-muted);line-height:1.5;">Bulk add or update species. Rows are matched to existing species by <strong style="color:var(--dt-text);">Scientific Name</strong> — matches are updated, everything else is added as new.</p>
+                <p class="m-0 text-xs" id="ieImportDescription" style="color:var(--dt-muted);line-height:1.5;">Bulk add new sighting records. Rows are validated first — duplicates (matched by <strong style="color:var(--dt-text);">Entry ID</strong>) and invalid rows are skipped and reported; everything else is inserted.</p>
 
                 <input type="file" id="ieCsvFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleImportExportFileSelected(event)" />
                 <div id="ieDropzone" onclick="document.getElementById('ieCsvFileInput').click()"
@@ -1584,7 +1566,7 @@
                      style="border:2px dashed var(--dt-border-md);border-radius:12px;padding:1.6rem 1rem;text-align:center;cursor:pointer;transition:border-color 150ms,background 150ms;">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 0.5rem auto;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   <p class="m-0 text-xs font-semibold" style="color:var(--dt-text);">Click to upload or drag a CSV or Excel file here</p>
-                  <p class="m-0 text-xs mt-1" id="ieDropzoneHint" style="color:#94a3b8;">Scientific Name and Genus columns required</p>
+                  <p class="m-0 text-xs mt-1" id="ieDropzoneHint" style="color:#94a3b8;">Scientific Name, Latitude, and Longitude columns required</p>
                 </div>
 
                 <div id="ieFilePreview" hidden style="border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.85rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
@@ -10506,7 +10488,10 @@
       };
       let ieParsedRows = null;
       let ieExportFormat = 'csv';
-      let ieImportDataset = 'orchids';
+      // Orchid Catalog / Map Trails import options were removed — this panel
+      // now only ever imports Submissions, so it's a fixed value rather than
+      // something a selector toggles.
+      const ieImportDataset = 'submissions';
       let trailRows = [];
       let trailRowsLoaded = false;
 
@@ -10552,35 +10537,6 @@
         });
         const labelEl = document.getElementById('ieExportBtnLabel');
         if (labelEl) labelEl.textContent = fmt === 'excel' ? 'Download Excel' : 'Download CSV';
-      }
-
-      function selectImportDataset(ds) {
-        ieImportDataset = ds;
-        ['orchids', 'submissions', 'trails'].forEach((candidate) => {
-          const lbl = document.getElementById('ie-import-ds-' + candidate);
-          if (!lbl) return;
-          lbl.classList.toggle('is-active', candidate === ds);
-          const radio = lbl.querySelector('input[type=radio]');
-          if (radio) radio.checked = candidate === ds;
-        });
-        const titleEl = document.getElementById('ieImportCardTitle');
-        const descEl = document.getElementById('ieImportDescription');
-        const hintEl = document.getElementById('ieDropzoneHint');
-        if (ds === 'orchids') {
-          if (titleEl) titleEl.textContent = 'Import Orchid Catalog';
-          if (descEl) descEl.innerHTML = 'Bulk add or update species. Rows are matched to existing species by <strong style="color:var(--dt-text);">Scientific Name</strong> — matches are updated, everything else is added as new.';
-          if (hintEl) hintEl.textContent = 'Scientific Name and Genus columns required';
-        } else if (ds === 'submissions') {
-          if (titleEl) titleEl.textContent = 'Import Submissions';
-          if (descEl) descEl.innerHTML = 'Bulk add new sighting records. Rows are validated first — duplicates (matched by <strong style="color:var(--dt-text);">Entry ID</strong>) and invalid rows are skipped and reported; everything else is inserted.';
-          if (hintEl) hintEl.textContent = 'Scientific Name, Latitude, and Longitude columns required';
-        } else {
-          if (titleEl) titleEl.textContent = 'Import Map Trails';
-          if (descEl) descEl.innerHTML = 'Bulk add new trail routes for the Map view. Rows are validated first — duplicates (matched by <strong style="color:var(--dt-text);">Name</strong>) and invalid rows are skipped and reported; everything else is inserted.';
-          if (hintEl) hintEl.textContent = 'Name and Coordinates columns required';
-        }
-        renderImportColumnReference(ds);
-        cancelImportExportImport();
       }
 
       function renderImportColumnReference(dataset) {
