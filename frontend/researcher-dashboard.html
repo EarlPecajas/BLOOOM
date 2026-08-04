@@ -4820,6 +4820,19 @@
 
           await loadApprovedSightings();
 
+          // orchid_overview lists every species ever published with no
+          // per-sighting publish state of its own — a species whose only
+          // sighting(s) were later unpublished by DENR would otherwise still
+          // show a card here with nothing behind it. Researchers should see
+          // the same catalog the public does, so drop anything with zero
+          // sightings left in the (already catalog_published-filtered)
+          // approved-sightings data. DENR's own catalog view intentionally
+          // stays unfiltered — this filter must not be copied there.
+          orchidRows = orchidRows.filter((orchid) => {
+            const key = String(orchid.name || '').trim().toLowerCase();
+            return (approvedSightingsByScientificName.get(key) || []).length > 0;
+          });
+
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
         } catch (error) {
