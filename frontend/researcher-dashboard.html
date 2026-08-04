@@ -39,6 +39,18 @@
         color: #1a3a1c !important;
         -webkit-text-fill-color: #1a3a1c !important;
       }
+      /* Genus group headers — shown across the full grid width when the
+         Genus filter is active, one per genus, right before its cards. */
+      .catalog-genus-header {
+        grid-column: 1 / -1;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #145A1E;
+        padding: 1.1rem 0 .4rem;
+        margin-top: .25rem;
+        border-bottom: 2px solid #E7ECE7;
+      }
+      .catalog-genus-header:first-child { margin-top: 0; }
       .detail-step-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8d9b2;transition:all .2s;}
 
       /* ── Map trail/route toggle ── */
@@ -898,11 +910,11 @@
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(700px,100%);">
-          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Search filter">
             <option value="all">All</option>
             <option value="genus">Genus</option>
           </select>
-          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;" aria-label="Conservation status filter">
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Conservation status filter">
             <option value="all">Conservation Status</option>
             <option value="critically endangered">Critically Endangered</option>
             <option value="endangered">Endangered</option>
@@ -910,7 +922,7 @@
             <option value="least concern">Least Concern</option>
             <option value="unassigned">Not Listed</option>
           </select>
-          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
+          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;background-color:#FFFFFF !important;color:#1a3a1c !important;" />
         </div>
       </div>
 
@@ -4749,7 +4761,7 @@
         });
       }
 
-      function renderOrchidCatalog(items) {
+      function renderOrchidCatalog(items, groupByGenus) {
         if (!catalogGrid) return;
 
         if (items.length === 0) {
@@ -4757,6 +4769,7 @@
           return;
         }
 
+        let lastGenusHeader = null;
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
@@ -4769,7 +4782,17 @@
           // species) silently showed that generic seed photo instead of the
           // thumbnail actually picked during publish.
           const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
-          return `
+
+          let genusHeaderHtml = '';
+          if (groupByGenus) {
+            const genusLabel = orchid.genus || (orchid.name || '').split(' ')[0] || 'Unknown';
+            if (genusLabel !== lastGenusHeader) {
+              lastGenusHeader = genusLabel;
+              genusHeaderHtml = `<div class="catalog-genus-header">${escapeHtml(genusLabel)}</div>`;
+            }
+          }
+
+          return genusHeaderHtml + `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
@@ -5250,7 +5273,7 @@
           });
         }
 
-        renderOrchidCatalog(filtered);
+        renderOrchidCatalog(filtered, filterValue === 'genus');
       }
 
       // Trail routes are DENR-managed and stored in Supabase (map_trails table),
@@ -5893,11 +5916,6 @@ function refreshConservationHeatMap(summary) {
           if (viewName === 'collection3d') {
             loadCollection3D();
           }
-        searchInput.addEventListener('input', function(e) {
-          const searchTerm = e.target.value.toLowerCase();
-          const filtered = orchidRows.filter((orchid) => orchid.name.toLowerCase().includes(searchTerm));
-          renderOrchidCatalog(filtered);
-        });
       }
 
       const requestedView = new URLSearchParams(window.location.search).get('view');

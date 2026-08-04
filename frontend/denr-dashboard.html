@@ -27,6 +27,18 @@
         color: #1a3a1c !important;
         -webkit-text-fill-color: #1a3a1c !important;
       }
+      /* Genus group headers — shown across the full grid width when the
+         Genus filter is active, one per genus, right before its cards. */
+      .catalog-genus-header {
+        grid-column: 1 / -1;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #145A1E;
+        padding: 1.1rem 0 .4rem;
+        margin-top: .25rem;
+        border-bottom: 2px solid #E7ECE7;
+      }
+      .catalog-genus-header:first-child { margin-top: 0; }
       @keyframes spin{to{transform:rotate(360deg);}}
       @media(max-width:860px){#report-view .report-grid,#importexport-view .report-grid{grid-template-columns:1fr!important;}}
       .detail-step-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8d9b2;transition:all .2s;}
@@ -1113,18 +1125,18 @@
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(700px,100%);">
-          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Search filter">
             <option value="all">All</option>
             <option value="genus">Genus</option>
           </select>
-          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;" aria-label="Conservation status filter">
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Conservation status filter">
             <option value="all">Conservation Status</option>
             <option value="critically endangered">Critically Endangered</option>
             <option value="endangered">Endangered</option>
             <option value="vulnerable">Vulnerable</option>
             <option value="least concern">Least Concern</option>
           </select>
-          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
+          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;background-color:#FFFFFF !important;color:#1a3a1c !important;" />
         </div>
       </div>
 
@@ -7317,7 +7329,7 @@
         unassigned:             { bg: '#F3F4F6', color: '#4B5563', border: '#E5E7EB' }
       };
 
-      function renderOrchidCatalog(items) {
+      function renderOrchidCatalog(items, groupByGenus) {
         if (!catalogGrid) return;
 
         if (items.length === 0) {
@@ -7325,6 +7337,7 @@
           return;
         }
 
+        let lastGenusHeader = null;
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
@@ -7340,7 +7353,17 @@
           const statusKey = normalizeConservationKey(orchid.conservation_status);
           const statusLabel = orchid.conservation_status && statusKey !== 'unassigned' ? orchid.conservation_status : 'Not Listed';
           const pill = CON_STATUS_PILL_STYLE[statusKey] || CON_STATUS_PILL_STYLE.unassigned;
-          return `
+
+          let genusHeaderHtml = '';
+          if (groupByGenus) {
+            const genusLabel = orchid.genus || (orchid.name || '').split(' ')[0] || 'Unknown';
+            if (genusLabel !== lastGenusHeader) {
+              lastGenusHeader = genusLabel;
+              genusHeaderHtml = `<div class="catalog-genus-header">${escapeHtml(genusLabel)}</div>`;
+            }
+          }
+
+          return genusHeaderHtml + `
           <div class="orchid-card" data-dashboard-orchid-id="${orchid.id}" style="width:100%;">
             <span class="orchid-status-pill" style="position:absolute;top:0.55rem;left:0.55rem;right:2.2rem;z-index:2;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;line-height:1.3;padding:0.22rem 0.55rem;border-radius:10px;background:${pill.bg};color:${pill.color};border:1px solid ${pill.border};">${statusLabel}</span>
             <button type="button" class="orchid-status-edit-btn" title="Edit conservation status" data-edit-orchid-id="${orchid.id}"
@@ -7713,7 +7736,7 @@
           });
         }
 
-        renderOrchidCatalog(filtered);
+        renderOrchidCatalog(filtered, filterValue === 'genus');
       }
 
       async function initializeLeafletMap() {
