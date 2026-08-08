@@ -3088,6 +3088,29 @@
         }
         loadSpeciesNameSuggestions();
         researcherSubmissionModal.style.display = 'block';
+        // Ensure any stray '*' text nodes used as required markers are wrapped
+        // with a styled span so they always render red.
+        (function ensureModalAsterisks(modalEl) {
+          if (!modalEl) return;
+          const walker = document.createTreeWalker(modalEl, NodeFilter.SHOW_TEXT, null);
+          const toReplace = [];
+          while (walker.nextNode()) {
+            const tn = walker.currentNode;
+            if (!tn || !tn.nodeValue) continue;
+            const v = tn.nodeValue.trim();
+            if (v === '*' || v === ' *' || v === '* ' ) {
+              toReplace.push(tn);
+            }
+          }
+          toReplace.forEach(tn => {
+            const span = document.createElement('span');
+            span.className = 'required-asterisk';
+            span.style.color = '#b42318';
+            span.style.marginLeft = '6px';
+            span.textContent = '*';
+            tn.parentNode.replaceChild(span, tn);
+          });
+        })(researcherSubmissionModal);
       }
 
       const addSightingParams = new URLSearchParams(window.location.search);
