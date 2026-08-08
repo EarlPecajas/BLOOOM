@@ -586,6 +586,9 @@
       .collection3d-model-wrap model-viewer:fullscreen { width: 100vw; height: 100vh; }
       .collection3d-fs-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; background: rgba(0,0,0,0.55); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; backdrop-filter: blur(3px); transition: background .15s; }
       .collection3d-fs-btn:hover { background: rgba(0,0,0,0.75); }
+
+      /* Ensure required asterisks render red even if external CSS is cached */
+      .required-asterisk { color: #b42318 !important; margin-left: 6px; }
     </style>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
