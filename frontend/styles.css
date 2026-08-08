@@ -515,6 +515,11 @@ body::before {
   box-shadow: 0 8px 20px rgba(20, 90, 30, 0.3);
 }
 
+/* Force required asterisk color globally (highest specificity) */
+body .required-asterisk, .dashboard-page .required-asterisk {
+  color: #b42318 !important;
+}
+
 .catalog-search:hover {
   box-shadow: 0 8px 20px rgba(20, 90, 30, 0.3);
 }
