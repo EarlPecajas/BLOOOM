@@ -1890,7 +1890,7 @@
               <strong>Notes, Remarks, and Researchers</strong>
             </div>
             <div class="submission-field">
-              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name</label>
+              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name <span class="required-asterisk">*</span></label>
               <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" class="submission-text-input" />
             </div>
             <div class="submission-field">
@@ -1905,7 +1905,7 @@
               <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
-              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes</label>
+              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes <span class="required-asterisk">*</span></label>
               <textarea id="submission-researcher-notes" placeholder="Researcher Notes" class="submission-textarea" style="min-height:90px;"></textarea>
             </div>
 
@@ -3689,7 +3689,8 @@
           const feedback = document.getElementById('researcher-submission-feedback');
           if (feedback) {
             feedback.style.color = '#4f5f56';
-            feedback.textContent = 'Submitting...';
+            // Provide instant feedback (optimistic) and run heavy work in background
+            feedback.textContent = 'Submission is being processed.';
           }
 
           try {
@@ -3784,24 +3785,37 @@
               return uploadedUrls;
             }
 
-            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, relatedStudyFileUrls] = await Promise.all([
-              uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
-            ]);
+            // Launch the heavy work in background so the UI feels instant.
+            (async () => {
+              try {
+                const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, relatedStudyFileUrls] = await Promise.all([
+                  uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
+                  uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
+                  uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
+                  uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
+                ]);
 
-            const institution = (document.getElementById('submission-institution')?.value || '').trim() || null;
-            const data = await submitNormalizedSighting({
-              entryId, currentEmail, currentName, headObserver: observerName, institution,
-              commonNames, localNames, leafTextures, threatTypes, teamMembers,
-              wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
-              relatedStudyFileUrls,
-              removedPictureIds: Array.from(removedMediaPictureIds),
-              reviewStatus: 'pending',
-              editDraftId: editDraftId ? Number(editDraftId) : null
-            });
+                const institution = (document.getElementById('submission-institution')?.value || '').trim() || null;
+                const data = await submitNormalizedSighting({
+                  entryId, currentEmail, currentName, headObserver: observerName, institution,
+                  commonNames, localNames, leafTextures, threatTypes, teamMembers,
+                  wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
+                  relatedStudyFileUrls,
+                  removedPictureIds: Array.from(removedMediaPictureIds),
+                  reviewStatus: 'pending',
+                  editDraftId: editDraftId ? Number(editDraftId) : null
+                });
 
+                // Optionally show a toast on final success
+                try { showToast(`Submission queued (Entry ID: ${data?.entry_id || entryId})`, 'success'); } catch(_) {}
+              } catch (bgErr) {
+                // Background failure: surface a non-blocking toast and log
+                console.error('Background submission failed', bgErr);
+                try { showToast('Background submission failed — please retry.', 'error'); } catch(_) {}
+              }
+            })();
+
+            // Immediately clear draft metadata and reset the form for a fast UX
             delete researcherSubmissionFormEl.dataset.editDraftId;
             delete researcherSubmissionFormEl.dataset.editDraftEntryId;
             researcherSubmissionFormEl.reset();
@@ -3818,9 +3832,10 @@
             const feedback = document.getElementById('researcher-submission-feedback');
             if (feedback) {
               feedback.style.color = '#145A1E';
-              feedback.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}.`;
+              feedback.textContent = `Submission queued. Entry ID: ${entryId}.`;
             }
-            await loadSubmissions('');
+            // Try to refresh lightweight submission list but don't block UX
+            try { loadSubmissions(''); } catch (_) {}
             closeResearcherSubmissionModal();
           } catch (error) {
             const feedback = document.getElementById('researcher-submission-feedback');
