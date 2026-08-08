@@ -2899,11 +2899,11 @@
               span = document.createElement('span');
               span.className = 'required-asterisk';
               span.textContent = '*';
-              span.style.color = '#b42318';
-              span.style.marginLeft = '6px';
+              span.style.setProperty('color', '#b42318', 'important');
+              span.style.setProperty('margin-left', '6px', 'important');
               label.appendChild(span);
             } else {
-              span.style.color = '#b42318';
+              span.style.setProperty('color', '#b42318', 'important');
             }
           });
         }
@@ -3142,8 +3142,8 @@
                 if (i > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, i)));
                 const span = document.createElement('span');
                 span.className = 'required-asterisk';
-                span.style.color = '#b42318';
-                span.style.marginLeft = '6px';
+                span.style.setProperty('color', '#b42318', 'important');
+                span.style.setProperty('margin-left', '6px', 'important');
                 span.textContent = '*';
                 frag.appendChild(span);
                 lastIndex = i + 1;
