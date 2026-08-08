@@ -383,20 +383,6 @@ body::before {
   text-transform: uppercase;
   color: #145A1E;
   background: rgba(20, 90, 30, 0.08);
-/* Required asterisk styling (make them red across all forms) */
-.required-asterisk {
-  color: #b42318 !important;
-  margin-left: 6px;
-}
-
-/* Simple fade-out animation used for transient submission feedback */
-.fade-out {
-  animation: fadeOut 600ms ease forwards;
-}
-@keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-6px); }
-}
   border: 1px solid rgba(20, 90, 30, 0.18);
   border-radius: 50px;
 }
@@ -728,6 +714,20 @@ body::before {
   color: #999;
   font-weight: 500;
   text-transform: uppercase;
+/* Required asterisk styling (make them red across all forms) */
+.required-asterisk {
+  color: #b42318 !important;
+  margin-left: 6px;
+}
+
+/* Simple fade-out animation used for transient submission feedback */
+.fade-out {
+  animation: fadeOut 600ms ease forwards;
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
   letter-spacing: 0.5px;
 }
 
