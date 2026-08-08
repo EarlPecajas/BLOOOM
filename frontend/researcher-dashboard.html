@@ -3088,27 +3088,42 @@
         }
         loadSpeciesNameSuggestions();
         researcherSubmissionModal.style.display = 'block';
-        // Ensure any stray '*' text nodes used as required markers are wrapped
-        // with a styled span so they always render red.
-        (function ensureModalAsterisks(modalEl) {
+        // Normalize any '*' characters inside the modal into styled spans so
+        // they always render as red asterisks. This handles cases where the
+        // '*' is part of a larger text node (e.g. "Label *").
+        (function normalizeModalAsterisks(modalEl) {
           if (!modalEl) return;
           const walker = document.createTreeWalker(modalEl, NodeFilter.SHOW_TEXT, null);
-          const toReplace = [];
-          while (walker.nextNode()) {
-            const tn = walker.currentNode;
-            if (!tn || !tn.nodeValue) continue;
-            const v = tn.nodeValue.trim();
-            if (v === '*' || v === ' *' || v === '* ' ) {
-              toReplace.push(tn);
+          const nodes = [];
+          while (walker.nextNode()) nodes.push(walker.currentNode);
+          nodes.forEach(tn => {
+            if (!tn || !tn.nodeValue) return;
+            if (!tn.nodeValue.includes('*')) return;
+            // Skip if already inside a required-asterisk span
+            let ancestor = tn.parentNode;
+            while (ancestor && ancestor !== modalEl) {
+              if (ancestor.classList && ancestor.classList.contains('required-asterisk')) return;
+              ancestor = ancestor.parentNode;
             }
-          }
-          toReplace.forEach(tn => {
-            const span = document.createElement('span');
-            span.className = 'required-asterisk';
-            span.style.color = '#b42318';
-            span.style.marginLeft = '6px';
-            span.textContent = '*';
-            tn.parentNode.replaceChild(span, tn);
+            const text = tn.nodeValue;
+            const frag = document.createDocumentFragment();
+            let lastIndex = 0;
+            for (let i = 0; i < text.length; i++) {
+              const ch = text[i];
+              if (ch === '*') {
+                // append preceding text if any
+                if (i > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, i)));
+                const span = document.createElement('span');
+                span.className = 'required-asterisk';
+                span.style.color = '#b42318';
+                span.style.marginLeft = '6px';
+                span.textContent = '*';
+                frag.appendChild(span);
+                lastIndex = i + 1;
+              }
+            }
+            if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+            tn.parentNode.replaceChild(frag, tn);
           });
         })(researcherSubmissionModal);
       }
