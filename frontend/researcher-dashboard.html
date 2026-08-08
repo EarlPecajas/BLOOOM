@@ -2795,8 +2795,6 @@
 
         // Ensure labels are marked when initializing the form
         try { markRequiredLabels(document.getElementById('researcher-submission-form')); } catch (e) { /* ignore */ }
-        // Place floating asterisks (outside modal subtree) so they aren't affected by modal opacity
-        try { placeFloatingAsterisks(document.getElementById('researcher-submission-form')); } catch (e) { /* ignore */ }
 
         // Save as Draft button
         const draftBtn = document.getElementById('submission-draft-btn');
@@ -3155,62 +3153,7 @@
             tn.parentNode.replaceChild(frag, tn);
           });
         })(researcherSubmissionModal);
-        // also place floating asterisks after normalization
-        try { placeFloatingAsterisks(document.getElementById('researcher-submission-form')); } catch (e) { /* ignore */ }
       }
-
-      // Floating asterisks: create body-level absolutely positioned markers
-      // so they are rendered outside the modal subtree and not dimmed by
-      // modal/parent opacity. Markers are re-created on each call.
-      function placeFloatingAsterisks(formEl) {
-        // remove existing markers
-        document.querySelectorAll('.floating-required-asterisk').forEach(el => el.remove());
-        if (!formEl) return;
-        const labels = Array.from(formEl.querySelectorAll('label'));
-        labels.forEach(label => {
-          // find required span or determine by for->control required
-          const forId = label.getAttribute('for');
-          let isRequired = false;
-          if (forId) {
-            const ctrl = document.getElementById(forId);
-            if (ctrl && (ctrl.required || ctrl.dataset.required === 'true')) isRequired = true;
-          }
-          // also detect inline .required-asterisk presence
-          if (!isRequired && label.querySelector('.required-asterisk')) isRequired = true;
-          if (!isRequired) return;
-          // compute label rect
-          const rect = label.getBoundingClientRect();
-          const span = document.createElement('span');
-          span.className = 'floating-required-asterisk';
-          span.textContent = '*';
-          span.style.position = 'absolute';
-          span.style.left = (window.scrollX + rect.right - 12) + 'px';
-          span.style.top = (window.scrollY + rect.top + Math.max(2, rect.height/2 - 8)) + 'px';
-          span.style.color = '#b42318';
-          span.style.setProperty('color', '#b42318', 'important');
-          span.style.fontWeight = '700';
-          span.style.pointerEvents = 'none';
-          span.style.zIndex = '999999';
-          document.body.appendChild(span);
-        });
-      }
-
-      // Reposition floating asterisks on resize/scroll
-      let _floatingAsteriskResizeTimer = null;
-      window.addEventListener('resize', () => {
-        clearTimeout(_floatingAsteriskResizeTimer);
-        _floatingAsteriskResizeTimer = setTimeout(() => {
-          const formEl = document.getElementById('researcher-submission-form');
-          try { placeFloatingAsterisks(formEl); } catch (e) { /* ignore */ }
-        }, 120);
-      });
-      window.addEventListener('scroll', () => {
-        clearTimeout(_floatingAsteriskResizeTimer);
-        _floatingAsteriskResizeTimer = setTimeout(() => {
-          const formEl = document.getElementById('researcher-submission-form');
-          try { placeFloatingAsterisks(formEl); } catch (e) { /* ignore */ }
-        }, 120);
-      });
 
       const addSightingParams = new URLSearchParams(window.location.search);
       if (addSightingParams.get('addSighting')) {
