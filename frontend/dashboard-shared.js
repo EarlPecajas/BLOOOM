@@ -184,10 +184,67 @@ async function initializeAuth(redirectCallback) {
 
   syncRoleState(resolved);
   authResolved = true;
+  // Set up realtime notifications for this user (keeps the notif badge live)
+  try {
+    setupRealtimeNotifications(resolved);
+  } catch (e) { /* ignore */ }
 
   // Call the role-specific callback
   if (redirectCallback) {
     redirectCallback(resolved);
+  }
+}
+
+/**
+ * Subscribe to realtime changes and update notification UI when relevant.
+ * Works for both researcher (per-email) and admin/DENR (global) views.
+ */
+function setupRealtimeNotifications(user) {
+  if (!window.bloomSupabase) return;
+  const email = String(user?.email || '').trim().toLowerCase();
+
+  // Helper to safely call the page-level loader if available
+  function triggerLoad() {
+    try { if (typeof loadNotifItems === 'function') loadNotifItems(); } catch (_) {}
+  }
+
+  try {
+    // Newer Supabase client API: channel().on('postgres_changes', ...).subscribe()
+    if (typeof bloomSupabase.channel === 'function') {
+      const chan = bloomSupabase.channel('public-species-sightings');
+      chan.on('postgres_changes', { event: '*', schema: 'public', table: 'species_sightings' }, (payload) => {
+        const rec = payload?.record || payload?.new || payload?.old || {};
+        // If researcher, only trigger when their email is involved
+        if (email) {
+          if (String(rec.researcher_email || '').trim().toLowerCase() === email) triggerLoad();
+        } else {
+          // Admins and anonymous viewers: trigger for any change
+          triggerLoad();
+        }
+      });
+      // subscribe (ignore returned promise/result)
+      try { chan.subscribe(); } catch (_) {}
+      return;
+    }
+
+    // Fallback older API: .from(...).on(...).subscribe()
+    if (email && typeof bloomSupabase.from === 'function') {
+      try {
+        bloomSupabase.from(`species_sightings:researcher_email=eq.${email}`)
+          .on('*', () => triggerLoad())
+          .subscribe();
+        return;
+      } catch (_) {}
+    }
+
+    // Global fallback
+    if (typeof bloomSupabase.from === 'function') {
+      try {
+        bloomSupabase.from('species_sightings').on('*', () => triggerLoad()).subscribe();
+      } catch (_) {}
+    }
+  } catch (err) {
+    console.error('setupRealtimeNotifications failed', err && err.message ? err.message : err);
   }
 }
 
