@@ -2275,6 +2275,9 @@
         isAdminRole = activeRole === 'admin' || activeRole === 'denr';
         isResearcherRole = !isAdminRole;
 
+        // Ensure realtime notifications are wired for this researcher
+        try { if (typeof setupRealtimeNotifications === 'function') setupRealtimeNotifications(resolved); } catch (e) { console.error('setupRealtimeNotifications error', e); }
+
         if (isAdminRole && !isResearcherRole) {
           window.location.href = 'denr-dashboard.html';
           return;
