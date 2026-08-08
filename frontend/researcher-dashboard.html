@@ -1525,7 +1525,7 @@
               </div>
             </div>
             <div class="submission-field submission-field--full">
-              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature) <span class="required-asterisk">*</span></label>
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature) <span class="required-asterisk" style="color:#b42318 !important;">*</span></label>
               <div style="display:flex;gap:0.5rem;">
                 <input id="submission-scientific-name" type="text" list="known-species-datalist" placeholder="Scientific Name (auto-filled from Genus + Species, or pick/type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;font-style:italic;" />
                 <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
@@ -1548,7 +1548,7 @@
               <div id="submission-local-names-wrap" style="display:grid;gap:0.45rem;"></div>
             </div>
             <div class="submission-field">
-              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span class="required-asterisk">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
+              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span class="required-asterisk" style="color:#b42318 !important;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
               <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Taxonomic Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
             </div>
             <div class="submission-field" style="position:relative;">
@@ -1567,7 +1567,7 @@
               <strong>Observation / Collection Details</strong>
             </div>
             <div class="submission-field">
-              <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span class="required-asterisk">*</span><span class="field-help" data-tooltip="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
+              <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span class="required-asterisk" style="color:#b42318 !important;">*</span><span class="field-help" data-tooltip="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
               <input id="submission-observation-date" type="date" class="submission-text-input submission-date-input" />
             </div>
             <div class="submission-field">
@@ -1856,7 +1856,7 @@
               <div style="font-size:0.82rem;color:#64748b;margin-top:0.25rem;">Up to 3 photos per category. Whole plant photo is required.</div>
             </div>
             <div style="grid-column:1/-1;">
-              <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span class="required-asterisk">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
+                <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span class="required-asterisk" style="color:#b42318 !important;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
               <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
               <div id="submission-whole-plant-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
               <div id="submission-whole-plant-photo-existing" class="submission-existing-photos" style="display:none;margin-top:0.5rem;gap:0.5rem;flex-wrap:wrap;"></div>
@@ -1893,7 +1893,7 @@
               <strong>Notes, Remarks, and Researchers</strong>
             </div>
             <div class="submission-field">
-              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name <span class="required-asterisk">*</span></label>
+              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name <span class="required-asterisk" style="color:#b42318 !important;">*</span></label>
               <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" class="submission-text-input" />
             </div>
             <div class="submission-field">
@@ -1902,13 +1902,13 @@
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.55rem;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
-                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members <span class="required-asterisk">*</span></span>
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members <span class="required-asterisk" style="color:#b42318 !important;">*</span></span>
                 <button type="button" id="submission-add-team-member" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add Member</button>
               </div>
               <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
-              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes <span class="required-asterisk">*</span></label>
+              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes <span class="required-asterisk" style="color:#b42318 !important;">*</span></label>
               <textarea id="submission-researcher-notes" placeholder="Researcher Notes" class="submission-textarea" style="min-height:90px;"></textarea>
             </div>
 
