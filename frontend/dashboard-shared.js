@@ -295,3 +295,40 @@ async function fetchWithAuth(endpoint, options = {}) {
     }
   });
 }
+
+// Ensure there is at most one visible required asterisk per label.
+function dedupeRequiredAsterisks(root = document) {
+  try {
+    const labels = (root || document).querySelectorAll ? (root || document).querySelectorAll('label') : [];
+    labels.forEach(label => {
+      const stars = label.querySelectorAll('.required-asterisk');
+      if (stars && stars.length > 1) {
+        // Keep the first occurrence and remove subsequent ones to avoid visual doubling
+        Array.from(stars).forEach((s, i) => { if (i > 0) s.remove(); });
+      }
+    });
+  } catch (e) { /* ignore */ }
+}
+
+// Run dedupe on initial load and whenever DOM mutations occur that might add asterisks.
+try {
+  // Run once after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => dedupeRequiredAsterisks(document));
+  } else {
+    dedupeRequiredAsterisks(document);
+  }
+
+  // Observe for dynamic changes and dedupe on the fly
+  const _asteriskObserver = new MutationObserver(mutations => {
+    let dirty = false;
+    for (const m of mutations) {
+      if (m.addedNodes && m.addedNodes.length) { dirty = true; break; }
+      if (m.type === 'attributes' && String(m.attributeName).toLowerCase().includes('class')) { dirty = true; break; }
+    }
+    if (dirty) {
+      dedupeRequiredAsterisks(document);
+    }
+  });
+  _asteriskObserver.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true });
+} catch (e) { /* ignore */ }
