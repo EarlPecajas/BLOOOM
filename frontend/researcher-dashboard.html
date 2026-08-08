@@ -2499,6 +2499,9 @@
             if (hintEl) hintEl.style.display = 'block';
             return showErr('Scientific Name must start with a capital letter (e.g., Phalaenopsis amabilis).');
           }
+          // Require Taxonomic Identification Confidence on page 1
+          const idConf = (document.getElementById('submission-identification-confidence')?.value || '').trim();
+          if (!idConf) return showErr('Taxonomic Identification Confidence is required.');
         }
         if (p === 2) {
           const date = document.getElementById('submission-observation-date')?.value;
