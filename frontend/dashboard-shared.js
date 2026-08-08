@@ -204,8 +204,39 @@ function setupRealtimeNotifications(user) {
   const email = String(user?.email || '').trim().toLowerCase();
 
   // Helper to safely call the page-level loader if available
-  function triggerLoad() {
-    try { if (typeof loadNotifItems === 'function') loadNotifItems(); } catch (_) {}
+  async function triggerLoad(rec) {
+    try {
+      // Prefer direct badge update for immediate feedback
+      const emailFromRec = String(rec?.researcher_email || '').trim().toLowerCase();
+      const targetEmail = emailFromRec || String(user?.email || '').trim().toLowerCase();
+      await updateNotificationBadge(targetEmail);
+      // Also call full loader if present
+      if (typeof loadNotifItems === 'function') loadNotifItems();
+    } catch (_) {
+      try { if (typeof loadNotifItems === 'function') loadNotifItems(); } catch (_) {}
+    }
+  }
+
+  // Query DB for counts and immediately update the badge and card
+  async function updateNotificationBadge(email) {
+    try {
+      if (!window.bloomSupabase) return;
+      let query = bloomSupabase.from('species_sightings').select('review_status');
+      if (email) query = query.eq('researcher_email', email);
+      query = query.neq('review_status', 'draft');
+      const { data } = await query;
+      const rows = Array.isArray(data) ? data : [];
+      const pending  = rows.filter(s => s.review_status === 'pending').length;
+      const approved = rows.filter(s => s.review_status === 'approved').length;
+      const rejected = rows.filter(s => s.review_status === 'rejected').length;
+      const revision = rows.filter(s => s.review_status === 'revision').length;
+      const urgentCount = revision + rejected;
+      const badge = document.getElementById('notif-badge');
+      if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
+      try { updateNotifCard(pending, approved, rejected, revision); } catch (_) {}
+    } catch (err) {
+      // ignore errors
+    }
   }
 
   try {
@@ -216,10 +247,10 @@ function setupRealtimeNotifications(user) {
         const rec = payload?.record || payload?.new || payload?.old || {};
         // If researcher, only trigger when their email is involved
         if (email) {
-          if (String(rec.researcher_email || '').trim().toLowerCase() === email) triggerLoad();
+          if (String(rec.researcher_email || '').trim().toLowerCase() === email) triggerLoad(rec);
         } else {
           // Admins and anonymous viewers: trigger for any change
-          triggerLoad();
+          triggerLoad(rec);
         }
       });
       // subscribe (ignore returned promise/result)
