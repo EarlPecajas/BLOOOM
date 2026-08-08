@@ -383,6 +383,11 @@ body::before {
   text-transform: uppercase;
   color: #145A1E;
   background: rgba(20, 90, 30, 0.08);
+/* Required asterisk styling (make them red across all forms) */
+.required-asterisk {
+  color: #b42318 !important;
+  margin-left: 6px;
+}
   border: 1px solid rgba(20, 90, 30, 0.18);
   border-radius: 50px;
 }

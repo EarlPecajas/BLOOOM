@@ -3832,7 +3832,8 @@
             const feedback = document.getElementById('researcher-submission-feedback');
             if (feedback) {
               feedback.style.color = '#145A1E';
-              feedback.textContent = `Submission queued. Entry ID: ${entryId}.`;
+              feedback.textContent = 'Submission Sent';
+              try { setTimeout(() => { feedback.textContent = ''; }, 5000); } catch (_) {}
             }
             // Try to refresh lightweight submission list but don't block UX
             try { loadSubmissions(''); } catch (_) {}
