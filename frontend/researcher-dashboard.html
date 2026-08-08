@@ -2907,6 +2907,64 @@
             }
           });
         }
+        // Enforce inline styles (with !important) on .required-asterisk elements
+        // to prevent parent opacity or CSS overrides from dimming them.
+        function enforceRequiredAsteriskStyles(rootEl) {
+          const root = rootEl || document;
+          const nodes = Array.from(root.querySelectorAll('.required-asterisk'));
+          nodes.forEach(span => {
+            try {
+              span.style.setProperty('color', '#b42318', 'important');
+              span.style.setProperty('opacity', '1', 'important');
+              span.style.setProperty('filter', 'none', 'important');
+              span.style.setProperty('mix-blend-mode', 'normal', 'important');
+              span.style.setProperty('text-shadow', '0 0 0.6px #b42318', 'important');
+              span.style.setProperty('pointer-events', 'none', 'important');
+              span.style.setProperty('z-index', '1000000', 'important');
+              span.style.setProperty('font-weight', '700', 'important');
+            } catch (e) { /* ignore */ }
+          });
+        }
+
+        // MutationObserver that watches for new .required-asterisk nodes or
+        // attribute/class changes and applies enforced inline styles.
+        (function setupRequiredAsteriskObserver() {
+          try {
+            // apply once immediately
+            enforceRequiredAsteriskStyles(document);
+            const mo = new MutationObserver(mutations => {
+              let needsEnforce = false;
+              for (const m of mutations) {
+                if (m.type === 'childList' && m.addedNodes && m.addedNodes.length) {
+                  for (const n of m.addedNodes) {
+                    if (n.nodeType === 1 && (n.classList && n.classList.contains('required-asterisk'))) {
+                      enforceRequiredAsteriskStyles(n.parentNode || document);
+                      needsEnforce = false;
+                    } else if (n.nodeType === 1) {
+                      // check descendants
+                      if (n.querySelector && n.querySelector('.required-asterisk')) {
+                        enforceRequiredAsteriskStyles(n);
+                        needsEnforce = false;
+                      } else {
+                        needsEnforce = true;
+                      }
+                    }
+                  }
+                }
+                if (m.type === 'attributes' && m.target && (m.attributeName === 'class' || m.attributeName === 'style')) {
+                  if (m.target.classList && m.target.classList.contains('required-asterisk')) {
+                    enforceRequiredAsteriskStyles(m.target);
+                    needsEnforce = false;
+                  } else {
+                    needsEnforce = true;
+                  }
+                }
+              }
+              if (needsEnforce) enforceRequiredAsteriskStyles(document);
+            });
+            mo.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+          } catch (e) { /* ignore */ }
+        })();
         function syncScientificName() {
           const g = (genusEl?.value || '').trim();
           const s = (speciesEl?.value || '').trim();
