@@ -148,9 +148,9 @@
       .odm-model3d-wrap{position:relative;width:100%;height:280px;border-radius:12px;overflow:hidden;background:#eef4ec;}
       .odm-model3d-wrap model-viewer{width:100%;height:100%;--poster-color:transparent;}
       .odm-model3d-wrap model-viewer:fullscreen{width:100vw;height:100vh;}
+      .odm-model3d-badge{position:absolute;top:8px;left:8px;z-index:2;padding:0.3rem 0.6rem;border-radius:999px;background:rgba(20,90,30,0.88);color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,0.22);backdrop-filter:blur(4px);}
       .odm-model3d-fs-btn{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.55);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;backdrop-filter:blur(3px);transition:background .15s;}
       .odm-model3d-fs-btn:hover{background:rgba(0,0,0,0.75);}
-      .odm-model3d-ai-badge{position:absolute;top:8px;left:8px;background:rgba(20,90,30,.85);color:#fff;font-size:.66rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:.3rem .55rem;border-radius:20px;z-index:2;backdrop-filter:blur(3px);pointer-events:none;}
       .odm-conservation-card{margin:1.1rem 1rem .8rem;border-radius:16px;background:linear-gradient(135deg,#1b6e28 0%,#0d3f16 100%);color:#fff;padding:1.15rem 1.25rem 1.1rem;box-shadow:0 8px 24px rgba(13,63,22,.28);}
       .odm-con-head{display:flex;align-items:center;gap:.45rem;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.85;margin-bottom:.6rem;}
       .odm-con-head svg{width:15px;height:15px;flex-shrink:0;}
@@ -1546,6 +1546,12 @@
       // Related Study tab always reflects the currently active (pin-clicked)
       // sighting, matching mobile's behavior instead of always showing the
       // first sighting on record.
+      function odmIsAiGeneratedModel(url) {
+        if (!url) return false;
+        var normalized = String(url).toLowerCase();
+        return /(tripo|ai-generated|ai generated|generated-model|generated-3d|generated 3d)/.test(normalized);
+      }
+
       function odmPopulateStudy(allSightings) {
         var el = document.getElementById('odm-study-inner');
         var src = odmActiveSighting(allSightings);
@@ -1579,10 +1585,12 @@
           el.innerHTML = '<p class="odm-empty">No 3D model available for this species yet.</p>';
           return;
         }
+        var isAiGenerated = !!(orchid && (orchid.is_ai_generated || odmIsAiGeneratedModel(orchid.model_3d_url)));
+        var badgeHtml = isAiGenerated ? '<div class="odm-model3d-badge">AI Generated</div>' : '';
         el.innerHTML = '<div class="odm-model3d-wrap">' +
-          '<span class="odm-model3d-ai-badge">AI Generated</span>' +
           '<model-viewer src="' + escapeHtml(orchid.model_3d_url) + '" camera-controls auto-rotate ' +
           'shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>' +
+          badgeHtml +
           '<button type="button" class="odm-model3d-fs-btn" onclick="odmModel3DFullscreen(this)" ' +
           'title="View fullscreen" aria-label="View 3D model fullscreen">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">' +

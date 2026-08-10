@@ -1732,6 +1732,7 @@
         .d3v-bdg.approved{color:#065F46;background:#ECFDF5;border-color:#A7F3D0;}
         .d3v-bdg.rejected{color:#991B1B;background:#FEF2F2;border-color:#FECACA;}
         .d3v-bdg.revision{color:#92400E;background:#FEF3C7;border-color:#FDE68A;}
+      .m3d-preview-badge{position:absolute;top:12px;left:12px;z-index:2;padding:0.35rem 0.7rem;border-radius:999px;background:rgba(20,90,30,0.9);color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,0.22);backdrop-filter:blur(4px);} 
       </style>
     </div>
 
@@ -1803,7 +1804,8 @@
           <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
         </div>
 
-        <div style="background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;height:calc(100vh - 230px);min-height:480px;display:flex;align-items:center;justify-content:center;">
+        <div style="position:relative;background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;height:calc(100vh - 230px);min-height:480px;display:flex;align-items:center;justify-content:center;">
+          <div id="m3d-preview-badge" hidden class="m3d-preview-badge">AI Generated</div>
           <model-viewer id="m3d-preview" style="width:100%;height:100%;--poster-color:transparent;" camera-controls auto-rotate shadow-intensity="1" exposure="1" hidden></model-viewer>
           <div id="m3d-preview-empty" style="color:var(--dt-muted);font-family:Inter,Roboto,sans-serif;font-size:0.88rem;text-align:center;padding:2rem;">
             Select a file or an orchid with an existing model to preview it here.
@@ -5543,18 +5545,31 @@
         });
       }
 
+      function m3dIsAiGeneratedModel(url) {
+        if (!url) return false;
+        const normalized = String(url).toLowerCase();
+        return /(tripo|ai-generated|ai generated|generated-model|generated-3d|generated 3d)/.test(normalized);
+      }
+
       function m3dSetPreview(url) {
         const viewer = document.getElementById('m3d-preview');
         const empty  = document.getElementById('m3d-preview-empty');
+        const badge  = document.getElementById('m3d-preview-badge');
         if (!viewer || !empty) return;
         if (url) {
           viewer.setAttribute('src', url);
           viewer.hidden = false;
           empty.style.display = 'none';
+          if (badge) {
+            const isAiGenerated = m3dIsAiGeneratedModel(url);
+            badge.hidden = !isAiGenerated;
+            badge.textContent = 'AI Generated';
+          }
         } else {
           viewer.removeAttribute('src');
           viewer.hidden = true;
           empty.style.display = '';
+          if (badge) badge.hidden = true;
         }
       }
 

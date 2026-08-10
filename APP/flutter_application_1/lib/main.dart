@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:ui' as ui;
-
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:exif/exif.dart';
 import 'package:file_picker/file_picker.dart';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -16,11 +16,140 @@ import 'package:latlong2/latlong.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'config/env.dart';
 
-bool _kIsDark = false;
+/// Applied to network calls that previously had no timeout at all, which let
+/// a flaky (not fully-offline) connection hang for a long OS-level timeout
+/// before failing — making screens feel stuck rather than falling back to
+/// cache quickly.
+const Duration _kNetworkTimeout = Duration(seconds: 8);
 
+/// Tracks device network reachability so screens can show an immediate
+/// "Offline" banner instead of leaving the user watching a loading spinner
+/// guess whether it's stuck or just slow. A single instance is shared
+/// app-wide (see [connectivityController]) so every screen agrees on status.
+class ConnectivityController extends ChangeNotifier {
+  ConnectivityController() {
+    _init();
+  }
+
+  bool _isOffline = false;
+  bool get isOffline => _isOffline;
+
+  StreamSubscription<List<ConnectivityResult>>? _subscription;
+
+  Future<void> _init() async {
+    try {
+      _apply(await Connectivity().checkConnectivity());
+    } catch (_) {
+      // Platform channel unavailable (e.g. unsupported host) — assume online
+      // rather than showing a false "Offline" banner.
+    }
+    _subscription = Connectivity().onConnectivityChanged.listen(_apply);
+  }
+
+  void _apply(List<ConnectivityResult> results) {
+    final bool offline =
+        results.isEmpty ||
+        results.every((ConnectivityResult r) => r == ConnectivityResult.none);
+    if (offline != _isOffline) {
+      _isOffline = offline;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+}
+
+/// App-wide singleton — created once and shared by every screen's
+/// [OfflineBanner] so they all reflect the same connectivity state.
+final ConnectivityController connectivityController = ConnectivityController();
+
+/// Slim banner pinned to the top of a screen, visible only while
+/// [connectivityController] reports no network. Drop this at the top of any
+/// screen that fetches live data so users get an instant explanation instead
+/// of an unexplained loading state.
+class OfflineBanner extends StatelessWidget {
+  const OfflineBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: connectivityController,
+      builder: (BuildContext context, Widget? _) {
+        if (!connectivityController.isOffline) {
+          return const SizedBox.shrink();
+        }
+        return Container(
+          width: double.infinity,
+          color: const Color(0xFFB3261E),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.cloud_off_rounded, color: Colors.white, size: 14),
+                  SizedBox(width: 6),
+                  Text(
+                    'Offline — showing saved data',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Persists the last successful fetch of a given key to disk (via
+/// SharedPreferences) so screens can fall back to real data — instead of an
+/// error state — when opened without network. Callers write after a
+/// successful network fetch and read only when that fetch fails.
+class OfflineCache {
+  static const String _prefix = 'offline_cache_';
+  static Future<void> save(String key, Object? data) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('$_prefix$key', jsonEncode(data));
+  }
+
+  static Future<dynamic> load(String key) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? raw = prefs.getString('$_prefix$key');
+    if (raw == null) return null;
+    try {
+      return jsonDecode(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+/// Shared by both catalog screens' loaders to read back a species list
+/// previously saved via [OfflineCache.save].
+Future<List<CatalogSpecies>?> _loadCachedSpecies(String key) async {
+  final dynamic raw = await OfflineCache.load(key);
+  if (raw is! List) return null;
+  final List<CatalogSpecies> species = raw
+      .whereType<Map>()
+      .map((Map m) => CatalogSpecies.fromJson(Map<String, dynamic>.from(m)))
+      .toList(growable: false);
+  return species.isEmpty ? null : species;
+}
+
+bool _kIsDark = false;
 Color get _appBackgroundColor =>
     _kIsDark ? _primaryDarkColor : _surfaceSoftColor;
 Color get _surfaceColor => _kIsDark ? const Color(0xFF0F2210) : Colors.white;
@@ -29,7 +158,6 @@ Color get _mutedTextColor =>
     _kIsDark ? const Color(0xFF75B86C) : _mutedTextLightColor;
 Color get _lineColor =>
     _kIsDark ? const Color(0xFF1B3C1C) : _surfaceOutlineColor;
-
 // Palette aligned to web's `.researcher-theme` (frontend/styles.css ~4415,
 // explicitly commented "matches mobile app") so both apps read as one system.
 const Color _surfaceTintColor = Color(0xFFF0F8ED);
@@ -48,7 +176,6 @@ const Color _primaryOverlayColor = Color(0xFF041003);
 const Color _accentColor = Color(0xFF3D8A50);
 const Color _accentSoftColor = Color(0xFFD9F3D5);
 const Color _textOnPrimaryColor = Color(0xFFE7E1B1);
-
 // Status colors — mirror web's submission/draft status badges exactly
 // (frontend/styles.css `.submission-status-badge.status-*`).
 const Color _statusApprovedBg = Color(0xFFECFDF3);
@@ -129,7 +256,6 @@ Color get _uploadSubCardBg =>
     _kIsDark ? const Color(0xFF0F2B10) : _surfaceSoftStrongColor;
 Color get _uploadBorderColor =>
     _kIsDark ? const Color(0x550D530E) : const Color(0x2E0D530E);
-
 const bool kOfflineMode = false;
 
 /// Converts a picture.file_path value to a Supabase Storage public URL.
@@ -151,19 +277,16 @@ String _readNestedString(Map<String, dynamic> json, List<String> keys) {
     if (value == null) {
       continue;
     }
-
     final String text = value.toString().trim();
     if (text.isEmpty || text == 'null' || text == '[object Object]') {
       continue;
     }
-
     return text;
   }
-
   return '';
 }
 
-/// Looks up terrain elevation for a coordinate via api.open-elevation.com —
+/// Looks up terrain elevation for a coordinate via api.open-elevation.com
 /// the same DEM-based lookup web uses (researcher-dashboard.html), which is
 /// more consistent than raw device-GPS altitude. Returns null on any
 /// failure so callers can fall back to GPS altitude.
@@ -195,14 +318,23 @@ Future<double?> fetchOpenElevationMeters(double lat, double lng) async {
 
 /// Extracts file_path from a biogeography→picture join result and returns a URL.
 String _orchidImageUrlFromJson(Map<String, dynamic> json) {
-  final dynamic bioList = json['biogeography'];
-  if (bioList is! List || bioList.isEmpty) return '';
-
+  final dynamic bioRaw = json['biogeography'];
+  // orchids.biogeography is embedded via a UNIQUE FK (biogeography.orchid_id),
+  // so PostgREST returns it as a single object, not a one-element array
+  // only treat it as a list when Supabase actually sends one (defensive).
+  final List<dynamic> bioList;
+  if (bioRaw is Map) {
+    bioList = <dynamic>[bioRaw];
+  } else if (bioRaw is List) {
+    bioList = bioRaw;
+  } else {
+    return '';
+  }
+  if (bioList.isEmpty) return '';
   for (final dynamic bio in bioList) {
     if (bio is! Map) continue;
     final Map<String, dynamic> bioMap = Map<String, dynamic>.from(bio);
     final dynamic pictureRaw = bioMap['picture'];
-
     final List<Map<String, dynamic>> pictures = <Map<String, dynamic>>[];
     if (pictureRaw is Map) {
       pictures.add(Map<String, dynamic>.from(pictureRaw));
@@ -213,7 +345,6 @@ String _orchidImageUrlFromJson(Map<String, dynamic> json) {
         }
       }
     }
-
     for (final Map<String, dynamic> picture in pictures) {
       final String source = _readNestedString(picture, <String>[
         'file_path',
@@ -224,7 +355,6 @@ String _orchidImageUrlFromJson(Map<String, dynamic> json) {
       }
     }
   }
-
   return '';
 }
 
@@ -233,13 +363,13 @@ Future<Map<String, String>> _loadLatestSightingThumbs() async {
     final List<dynamic> rows = await Supabase.instance.client
         .from('species_sightings')
         .select(
-          'scientific_name, whole_plant_photo_path, created_at, review_status, '
+          'scientific_name, created_at, review_status, '
           'sighting_media(media_category, picture(file_path))',
         )
         .eq('review_status', 'approved')
         .order('created_at', ascending: false)
-        .limit(500);
-
+        .limit(500)
+        .timeout(_kNetworkTimeout);
     final Map<String, String> map = <String, String>{};
     for (final dynamic row in rows) {
       if (row is! Map) continue;
@@ -247,9 +377,10 @@ Future<Map<String, String>> _loadLatestSightingThumbs() async {
           .toString()
           .trim()
           .toLowerCase();
-      String url = (row['whole_plant_photo_path'] ?? '').toString().trim();
-      if (url.isEmpty) {
-        final List<dynamic> media = (row['sighting_media'] as List?) ?? const <dynamic>[];
+      String url = '';
+      {
+        final List<dynamic> media =
+            (row['sighting_media'] as List?) ?? const <dynamic>[];
         for (final dynamic m in media) {
           if (m is Map && m['media_category'] == 'whole_plant') {
             final dynamic pic = m['picture'];
@@ -263,7 +394,6 @@ Future<Map<String, String>> _loadLatestSightingThumbs() async {
       if (sci.isEmpty || url.isEmpty) continue;
       map.putIfAbsent(sci, () => url);
     }
-
     return map;
   } catch (_) {
     return <String, String>{};
@@ -322,12 +452,10 @@ Future<({double lat, double lng})?> _extractGpsFromExif(Uint8List bytes) async {
   try {
     final Map<String, IfdTag> data = await readExifFromBytes(bytes);
     if (data.isEmpty) return null;
-
     final String? latRef = data['GPS GPSLatitudeRef']?.toString();
     final String? lonRef = data['GPS GPSLongitudeRef']?.toString();
     final IfdValues? latValues = data['GPS GPSLatitude']?.values;
     final IfdValues? lonValues = data['GPS GPSLongitude']?.values;
-
     if (latRef == null ||
         lonRef == null ||
         latValues == null ||
@@ -337,7 +465,6 @@ Future<({double lat, double lng})?> _extractGpsFromExif(Uint8List bytes) async {
     if (latValues is! IfdRatios || lonValues is! IfdRatios) {
       return null;
     }
-
     double gpsToDecimal(IfdRatios v, String ref) {
       double sum = 0;
       double unit = 1.0;
@@ -368,18 +495,15 @@ Future<void> main() async {
 
 class OrchidApp extends StatefulWidget {
   const OrchidApp({super.key});
-
   @override
   State<OrchidApp> createState() => _OrchidAppState();
 }
 
 class _OrchidAppState extends State<OrchidApp> {
   final AppAuthController _authController = AppAuthController();
-
   // Cached so ThemeData is not rebuilt on every auth notification.
   ThemeData? _cachedTheme;
   bool _cachedIsDark = false;
-
   @override
   void initState() {
     super.initState();
@@ -390,7 +514,6 @@ class _OrchidAppState extends State<OrchidApp> {
   void _onControllerUpdate() => setState(() {
     _kIsDark = _authController.isDarkMode;
   });
-
   @override
   void dispose() {
     _authController.removeListener(_onControllerUpdate);
@@ -558,10 +681,9 @@ class _OrchidAppState extends State<OrchidApp> {
   @override
   Widget build(BuildContext context) {
     _kIsDark = _authController.isDarkMode;
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'BLOOM',
+      title: 'BLOOM3D',
       theme: _buildTheme(_kIsDark),
       builder: (BuildContext context, Widget? child) {
         final MediaQueryData mediaQuery = MediaQuery.of(context);
@@ -576,14 +698,12 @@ class _OrchidAppState extends State<OrchidApp> {
           if (_authController.isInitializing) {
             return const SplashScreen();
           }
-
           if (_authController.user != null) {
             return AuthenticatedShell(
               authController: _authController,
               initialTabIndex: 0,
             );
           }
-
           return WelcomeScreen(authController: _authController);
         },
       ),
@@ -593,7 +713,6 @@ class _OrchidAppState extends State<OrchidApp> {
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -602,7 +721,6 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
-
   @override
   void initState() {
     super.initState();
@@ -665,9 +783,7 @@ class _SplashScreenState extends State<SplashScreen>
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({required this.authController, super.key});
-
   final AppAuthController authController;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -920,13 +1036,10 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
-// ─── Guest Catalog ────────────────────────────────────────────────────────────
-
+// ─── Guest Catalog
 class GuestCatalogScreen extends StatefulWidget {
   const GuestCatalogScreen({required this.authController, super.key});
-
   final AppAuthController authController;
-
   @override
   State<GuestCatalogScreen> createState() => _GuestCatalogScreenState();
 }
@@ -939,7 +1052,6 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
   List<CatalogGroup> _filteredGroups = <CatalogGroup>[];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-
   @override
   void initState() {
     super.initState();
@@ -1013,44 +1125,61 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
         .toList(growable: false);
   }
 
+  static const String _catalogCacheKey = 'catalog_species';
   Future<List<CatalogSpecies>> _loadSpecies() async {
-    final Map<String, String> sightingThumbs =
-        await _loadLatestSightingThumbs();
-    final List<dynamic> data = await Supabase.instance.client
-        .from('orchids')
-        .select(
-          'orchid_id, sci_name, common_name, model_3d_url, genus(genus_name), biogeography(picture(*))',
-        )
-        .order('sci_name');
-    return data
-        .whereType<Map>()
-        .map((Map item) {
-          final Map<String, dynamic> json = Map<String, dynamic>.from(item);
-          final String sci = (json['sci_name'] ?? '').toString().trim();
-          if (sci.isEmpty) return null;
-          final dynamic genusData = json['genus'];
-          final String genus = genusData is Map
-              ? (genusData['genus_name'] ?? '').toString()
-              : '';
-          final String imgUrl = _orchidImageUrlFromJson(json);
-          final String fallbackUrl = sightingThumbs[sci.toLowerCase()] ?? '';
-          final String resolvedUrl = imgUrl.isNotEmpty ? imgUrl : fallbackUrl;
-          final String model3dUrl = (json['model_3d_url'] ?? '')
-              .toString()
-              .trim();
-          return CatalogSpecies(
-            id: int.tryParse((json['orchid_id'] ?? '').toString()),
-            scientificName: sci,
-            commonName: (json['common_name'] ?? 'Common Name')
+    try {
+      final Map<String, String> sightingThumbs =
+          await _loadLatestSightingThumbs();
+      final List<dynamic> data = await Supabase.instance.client
+          .from('orchids')
+          .select(
+            'orchid_id, sci_name, common_name, model_3d_url, genus(genus_name), biogeography(picture(*))',
+          )
+          .order('sci_name', ascending: true)
+          .timeout(_kNetworkTimeout);
+      final List<CatalogSpecies> species = data
+          .whereType<Map>()
+          .map((Map item) {
+            final Map<String, dynamic> json = Map<String, dynamic>.from(item);
+            final String sci = (json['sci_name'] ?? '').toString().trim();
+            if (sci.isEmpty) return null;
+            final dynamic genusData = json['genus'];
+            final String genus = genusData is Map
+                ? (genusData['genus_name'] ?? '').toString()
+                : '';
+            final String imgUrl = _orchidImageUrlFromJson(json);
+            final String fallbackUrl = sightingThumbs[sci.toLowerCase()] ?? '';
+            final String resolvedUrl = imgUrl.isNotEmpty ? imgUrl : fallbackUrl;
+            final String model3dUrl = (json['model_3d_url'] ?? '')
                 .toString()
-                .trim(),
-            genus: genus,
-            imageUrl: resolvedUrl.isNotEmpty ? resolvedUrl : null,
-            model3dUrl: model3dUrl.isNotEmpty ? model3dUrl : null,
-          );
-        })
-        .whereType<CatalogSpecies>()
-        .toList(growable: false);
+                .trim();
+            return CatalogSpecies(
+              id: int.tryParse((json['orchid_id'] ?? '').toString()),
+              scientificName: sci,
+              commonName: (json['common_name'] ?? 'Common Name')
+                  .toString()
+                  .trim(),
+              genus: genus,
+              imageUrl: resolvedUrl.isNotEmpty ? resolvedUrl : null,
+              model3dUrl: model3dUrl.isNotEmpty ? model3dUrl : null,
+            );
+          })
+          .whereType<CatalogSpecies>()
+          .toList(growable: false);
+      unawaited(
+        OfflineCache.save(
+          _catalogCacheKey,
+          species.map((CatalogSpecies s) => s.toJson()).toList(),
+        ),
+      );
+      return species;
+    } catch (e) {
+      final List<CatalogSpecies>? cached = await _loadCachedSpecies(
+        _catalogCacheKey,
+      );
+      if (cached != null) return cached;
+      rethrow;
+    }
   }
 
   void _openDetails(CatalogSpecies species) {
@@ -1119,7 +1248,7 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // ── Top row ───────────────────────────────────────────────────
+              // ── Top row
               Row(
                 children: <Widget>[
                   GestureDetector(
@@ -1161,7 +1290,7 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
                 ],
               ),
               const SizedBox(height: 18),
-              // ── Title + mode toggle ───────────────────────────────────────
+              // ── Title + mode toggle
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
@@ -1201,7 +1330,7 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              // ── Search bar ────────────────────────────────────────────────
+              // ── Search bar
               TextField(
                 controller: _searchController,
                 style: const TextStyle(fontSize: 14, color: _primarySoftColor),
@@ -1254,7 +1383,7 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              // ── Total orchid count ────────────────────────────────────────
+              // ── Total orchid count
               if (_allSpecies.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -1293,7 +1422,7 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
                     ],
                   ),
                 ),
-              // ── List / Grid ───────────────────────────────────────────────
+              // ── List / Grid
               Expanded(
                 child: FutureBuilder<List<CatalogSpecies>>(
                   future: _speciesFuture,
@@ -1658,13 +1787,10 @@ class _GuestCatalogScreenState extends State<GuestCatalogScreen> {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
+//
 class LoginScreen extends StatefulWidget {
   const LoginScreen({required this.authController, super.key});
-
   final AppAuthController authController;
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -1674,7 +1800,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isSubmitting = false;
   bool _showPassword = false;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -1682,25 +1807,32 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Mirrors the web sign-in page's "Forgot password?" modal: collects an
+  // email and calls Supabase's resetPasswordForEmail, which sends the
+  // account holder a reset link (handled by the web reset-password page).
+  void _showForgotPasswordDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (_) =>
+          _ForgotPasswordDialog(initialEmail: _emailController.text.trim()),
+    );
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting) {
       return;
     }
-
     setState(() {
       _isSubmitting = true;
     });
-
     try {
       await widget.authController.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-
       if (!mounted) {
         return;
       }
-
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => AuthenticatedShell(
@@ -1714,7 +1846,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) {
         return;
       }
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
@@ -1722,7 +1853,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) {
         return;
       }
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to login right now.')),
       );
@@ -1909,14 +2039,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'PASSWORD',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: _mutedTextLightColor,
-                      letterSpacing: 0.5,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'PASSWORD',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: _mutedTextLightColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _showForgotPasswordDialog,
+                        child: const Text(
+                          'Forgot password?',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _primaryColor,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   TextField(
@@ -2049,11 +2196,178 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
+// Matches the web sign-in page's "Reset your password" modal — collects an
+// email and calls Supabase Auth directly, no server round-trip through
+// AppAuthController needed for a stateless password-reset request.
+class _ForgotPasswordDialog extends StatefulWidget {
+  const _ForgotPasswordDialog({required this.initialEmail});
+  final String initialEmail;
+  @override
+  State<_ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
+  late final TextEditingController _emailController = TextEditingController(
+    text: widget.initialEmail,
+  );
+  bool _isSending = false;
+  bool _sent = false;
+  String? _message;
+  Color _messageColor = _primaryColor;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final String email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _message = 'Please enter your email address.';
+        _messageColor = const Color(0xFFB42318);
+      });
+      return;
+    }
+    setState(() {
+      _isSending = true;
+      _message = null;
+    });
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(email);
+      if (!mounted) return;
+      setState(() {
+        _sent = true;
+        _message =
+            'If an account exists for that email, a reset link has been '
+            'sent. Check your inbox (and spam folder).';
+        _messageColor = _primaryColor;
+      });
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _message = e.message;
+        _messageColor = const Color(0xFFB42318);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _message = 'Could not send the reset email. Please try again.';
+        _messageColor = const Color(0xFFB42318);
+      });
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: _surfaceColor,
+      insetPadding: const EdgeInsets.all(20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Reset your password',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: _primaryColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Enter the email address on your account and we'll send you "
+              'a link to reset your password.',
+              style: TextStyle(
+                fontSize: 13,
+                color: _mutedTextLightColor,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _emailController,
+              enabled: !_isSending && !_sent,
+              keyboardType: TextInputType.emailAddress,
+              style: const TextStyle(fontSize: 15, color: _primarySoftColor),
+              decoration: InputDecoration(
+                hintText: 'you@example.com',
+                filled: true,
+                fillColor: _surfaceColor,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: _surfaceOutlineColor,
+                    width: 1.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: _primaryColor,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+            if (_message != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _message!,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: _messageColor,
+                  height: 1.4,
+                ),
+              ),
+            ],
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: (_isSending || _sent) ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _sent
+                        ? 'Sent'
+                        : (_isSending ? 'Sending…' : 'Send Reset Link'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({required this.authController, super.key});
-
   final AppAuthController authController;
-
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
@@ -2072,7 +2386,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   DateTime? _selectedBirthday;
-
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -2122,7 +2435,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> _submit() async {
     if (_isSubmitting) return;
-
     final String firstName = _firstNameController.text.trim();
     final String lastName = _lastNameController.text.trim();
     final String email = _emailController.text.trim();
@@ -2130,7 +2442,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String affiliation = _affiliationController.text.trim();
     final String password = _passwordController.text;
     final String confirmPassword = _confirmPasswordController.text;
-
     if (firstName.isEmpty || lastName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter your first and last name.')),
@@ -2181,11 +2492,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ).showSnackBar(const SnackBar(content: Text('Passwords do not match.')));
       return;
     }
-
     setState(() {
       _isSubmitting = true;
     });
-
     try {
       await widget.authController.login(
         email: email,
@@ -2197,9 +2506,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         phoneNumber: phone,
         affiliation: affiliation,
       );
-
       if (!mounted) return;
-
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => AuthenticatedShell(
@@ -2237,7 +2544,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       letterSpacing: 0.5,
     ),
   );
-
   InputDecoration _fieldDecoration({
     required String hint,
     required IconData icon,
@@ -2604,12 +2910,10 @@ class AppTextField extends StatelessWidget {
     this.obscureText = false,
     super.key,
   });
-
   final TextEditingController controller;
   final String hintText;
   final TextInputType? keyboardType;
   final bool obscureText;
-
   @override
   Widget build(BuildContext context) {
     return TextField(
@@ -2627,10 +2931,8 @@ class AuthenticatedShell extends StatefulWidget {
     required this.initialTabIndex,
     super.key,
   });
-
   final AppAuthController authController;
   final int initialTabIndex;
-
   @override
   State<AuthenticatedShell> createState() => _AuthenticatedShellState();
 }
@@ -2641,7 +2943,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
       NotificationController();
   final Set<int> _activatedTabs = {};
   final List<Widget?> _cachedPages = List.filled(5, null);
-
   @override
   void initState() {
     super.initState();
@@ -2662,7 +2963,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
     // Mirrors web's user_profiles.status gating (researcher-dashboard.html
     // ~2185-2206): a researcher awaiting DENR/admin approval only gets Home.
     final bool isPendingApproval = user?.isPendingApproval ?? false;
-
     if (isPendingApproval && index != 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -2738,7 +3038,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
     final String profileHandle = normalizedHandle.isNotEmpty
         ? '@$normalizedHandle'
         : '@researcher1';
-
     Widget pageForIndex(int i) {
       switch (i) {
         case 0:
@@ -2747,9 +3046,15 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
             notificationController: _notificationController,
           );
         case 1:
-          return CatalogScreen(authController: widget.authController);
+          return CatalogScreen(
+            authController: widget.authController,
+            notificationController: _notificationController,
+          );
         case 2:
-          return UploadScreen(authController: widget.authController);
+          return UploadScreen(
+            authController: widget.authController,
+            notificationController: _notificationController,
+          );
         case 3:
           return MapScreen(authController: widget.authController);
         case 4:
@@ -2757,6 +3062,7 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
             authController: widget.authController,
             fallbackName: profileName,
             fallbackHandle: profileHandle,
+            notificationController: _notificationController,
           );
         default:
           return const SizedBox.shrink();
@@ -2770,7 +3076,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
       Icons.map_rounded,
       Icons.person_rounded,
     ];
-
     const List<IconData> unselectedIcons = [
       Icons.home_outlined,
       Icons.library_books_outlined,
@@ -2778,7 +3083,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
       Icons.map_outlined,
       Icons.person_outline_rounded,
     ];
-
     const List<String> tabLabels = [
       'Home',
       'Catalog',
@@ -2786,96 +3090,106 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
       'Map',
       'Profile',
     ];
-
     return Scaffold(
-      body: Stack(
+      body: Column(
         children: [
-          IndexedStack(
-            index: _selectedIndex,
-            children: List.generate(5, (i) {
-              if (!_activatedTabs.contains(i)) return const SizedBox.shrink();
-              _cachedPages[i] ??= pageForIndex(i);
-              return _cachedPages[i]!;
-            }),
-          ),
-          // Show notification bell on all tabs except Map (3) and Home (0),
-          // since Home has its own notification bell in the header.
-          if (_selectedIndex != 3 && _selectedIndex != 0)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 20, 0),
-                  child: ListenableBuilder(
-                    listenable: _notificationController,
-                    builder: (BuildContext context, _) {
-                      final int count = _notificationController.unreadCount;
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkResponse(
-                          onTap: () => Navigator.push<void>(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => NotificationsScreen(
-                                controller: _notificationController,
-                              ),
-                            ),
-                          ),
-                          radius: 24,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: <Widget>[
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: _surfaceColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: _lineColor),
-                                ),
-                                child: Icon(
-                                  count > 0
-                                      ? Icons.notifications_rounded
-                                      : Icons.notifications_none_rounded,
-                                  color: _primaryColor,
-                                  size: 22,
-                                ),
-                              ),
-                              if (count > 0)
-                                Positioned(
-                                  right: -4,
-                                  top: -4,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: _accentColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    child: Text(
-                                      count > 99 ? '99+' : count.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                        height: 1,
-                                      ),
-                                      textAlign: TextAlign.center,
+          const OfflineBanner(),
+          Expanded(
+            child: Stack(
+              children: [
+                IndexedStack(
+                  index: _selectedIndex,
+                  children: List.generate(5, (i) {
+                    if (!_activatedTabs.contains(i))
+                      return const SizedBox.shrink();
+                    _cachedPages[i] ??= pageForIndex(i);
+                    return _cachedPages[i]!;
+                  }),
+                ),
+                // Show notification bell on all tabs except Map (3) and Home (0),
+                // since Home has its own notification bell in the header.
+                if (_selectedIndex != 3 && _selectedIndex != 0)
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 10, 20, 0),
+                        child: ListenableBuilder(
+                          listenable: _notificationController,
+                          builder: (BuildContext context, _) {
+                            final int count =
+                                _notificationController.unreadCount;
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkResponse(
+                                onTap: () => Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => NotificationsScreen(
+                                      controller: _notificationController,
                                     ),
                                   ),
                                 ),
-                            ],
-                          ),
+                                radius: 24,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: <Widget>[
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: _surfaceColor,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: _lineColor),
+                                      ),
+                                      child: Icon(
+                                        count > 0
+                                            ? Icons.notifications_rounded
+                                            : Icons.notifications_none_rounded,
+                                        color: _primaryColor,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    if (count > 0)
+                                      Positioned(
+                                        right: -4,
+                                        top: -4,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: _accentColor,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 18,
+                                            minHeight: 18,
+                                          ),
+                                          child: Text(
+                                            count > 99
+                                                ? '99+'
+                                                : count.toString(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                              height: 1,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
-                ),
-              ),
+              ],
             ),
+          ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -2900,7 +3214,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
               children: List<Widget>.generate(5, (index) {
                 final bool isSelected = index == _selectedIndex;
                 final bool isUpload = index == 2;
-
                 if (isUpload) {
                   return GestureDetector(
                     onTap: () => _onTabTap(index),
@@ -2982,7 +3295,6 @@ class _AuthenticatedShellState extends State<AuthenticatedShell> {
                     ),
                   );
                 }
-
                 return GestureDetector(
                   onTap: () => _onTabTap(index),
                   child: AnimatedContainer(
@@ -3064,18 +3376,16 @@ class HomeScreen extends StatefulWidget {
     required this.notificationController,
     super.key,
   });
-
   final AppAuthController authController;
   final NotificationController notificationController;
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const String _dashboardCacheKey = 'home_dashboard';
   late Future<_HomeDashboardData> _dashboardFuture;
   Timer? _greetingTimer;
-
   @override
   void initState() {
     super.initState();
@@ -3114,52 +3424,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<_HomeDashboardData> _loadDashboardData() async {
     final SupabaseClient supabase = Supabase.instance.client;
-
     // Each query fails independently so one bad table never zeros everything.
     int totalSpecies = 0;
     int totalSightings = 0;
     int pendingSubmissions = 0;
     SpeciesHighlight? highlight;
-
     // Total species from the orchids catalog
     try {
       final List<dynamic> orchids = await supabase
           .from('orchids')
-          .select('orchid_id');
+          .select('orchid_id')
+          .timeout(_kNetworkTimeout);
       totalSpecies = orchids.length;
     } catch (_) {}
-
     // Recorded sightings count (prefer GIS table, fall back to submissions).
     bool sightingsFromDb = false;
     try {
       final List<dynamic> sightings = await supabase
           .from('orchid_location')
-          .select('orchid_location_id');
+          .select('orchid_location_id')
+          .timeout(_kNetworkTimeout);
       totalSightings = sightings.length;
       sightingsFromDb = true;
     } catch (_) {}
-
     if (!sightingsFromDb || totalSightings == 0) {
       try {
         final List<dynamic> sightings = await supabase
             .from('species_sightings')
             .select('sighting_id')
-            .eq('review_status', 'approved');
+            .eq('review_status', 'approved')
+            .timeout(_kNetworkTimeout);
         if (sightings.isNotEmpty || !sightingsFromDb) {
           totalSightings = sightings.length;
         }
       } catch (_) {}
     }
-
     // Pending submissions count (global — shown in the hero stat).
     try {
       final List<dynamic> pending = await supabase
           .from('species_sightings')
           .select('sighting_id')
-          .eq('review_status', 'pending');
+          .eq('review_status', 'pending')
+          .timeout(_kNetworkTimeout);
       pendingSubmissions = pending.length;
     } catch (_) {}
-
     // This researcher's own pending/approved counts — mirrors web's
     // researcher-dashboard.html stat chips, which are scoped to the signed-in
     // researcher rather than catalog-wide totals.
@@ -3171,7 +3479,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final List<dynamic> mine = await supabase
             .from('species_sightings')
             .select('review_status')
-            .eq('researcher_email', email);
+            .eq('researcher_email', email)
+            .timeout(_kNetworkTimeout);
         for (final dynamic row in mine) {
           if (row is! Map) continue;
           final String status = (row['review_status'] ?? '')
@@ -3182,13 +3491,13 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (_) {}
-
     // Species of the Day — rotates daily through the full orchid catalog
     try {
       final List<dynamic> allOrchids = await supabase
           .from('orchids')
           .select('orchid_id, sci_name, common_name, biogeography(picture(*))')
-          .order('orchid_id');
+          .order('orchid_id', ascending: true)
+          .timeout(_kNetworkTimeout);
       if (allOrchids.isNotEmpty) {
         final DateTime now = DateTime.now();
         final int doy = now.difference(DateTime(now.year)).inDays;
@@ -3202,15 +3511,32 @@ class _HomeScreenState extends State<HomeScreen> {
           try {
             final List<dynamic> thumbs = await supabase
                 .from('species_sightings')
-                .select('whole_plant_photo_path')
+                .select(
+                  'created_at, sighting_media(media_category, picture(file_path))',
+                )
                 .eq('scientific_name', sciName)
-                .not('whole_plant_photo_path', 'is', null)
                 .order('created_at', ascending: false)
-                .limit(1);
-            if (thumbs.isNotEmpty) {
-              imageUrl = (thumbs.first['whole_plant_photo_path'] ?? '')
-                  .toString()
-                  .trim();
+                .limit(20)
+                .timeout(_kNetworkTimeout);
+            outer:
+            for (final dynamic row in thumbs) {
+              if (row is! Map) continue;
+              final List<dynamic> media =
+                  (row['sighting_media'] as List?) ?? const <dynamic>[];
+              for (final dynamic m in media) {
+                if (m is Map && m['media_category'] == 'whole_plant') {
+                  final dynamic pic = m['picture'];
+                  if (pic is Map) {
+                    final String path = (pic['file_path'] ?? '')
+                        .toString()
+                        .trim();
+                    if (path.isNotEmpty) {
+                      imageUrl = path;
+                      break outer;
+                    }
+                  }
+                }
+              }
             }
           } catch (_) {}
           if (imageUrl.isEmpty) imageUrl = _orchidImageUrlFromJson(row);
@@ -3222,12 +3548,19 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (_) {}
-
     if (totalSpecies == 0 && totalSightings == 0 && pendingSubmissions == 0) {
+      // Every query above failed independently (e.g. offline) rather than
+      // genuinely returning empty tables — prefer the last good snapshot
+      // over a blank dashboard.
+      final dynamic cached = await OfflineCache.load(_dashboardCacheKey);
+      if (cached is Map) {
+        try {
+          return _HomeDashboardData.fromJson(Map<String, dynamic>.from(cached));
+        } catch (_) {}
+      }
       return const _HomeDashboardData.fallback();
     }
-
-    return _HomeDashboardData(
+    final _HomeDashboardData result = _HomeDashboardData(
       stats: AppStats(
         totalSpecies: totalSpecies,
         pendingSubmissions: pendingSubmissions,
@@ -3238,6 +3571,8 @@ class _HomeScreenState extends State<HomeScreen> {
       speciesOfTheDay: highlight,
       isFallback: false,
     );
+    unawaited(OfflineCache.save(_dashboardCacheKey, result.toJson()));
+    return result;
   }
 
   Future<void> _openProfilePanel(BuildContext context) async {
@@ -3256,7 +3591,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final String profileHandle = normalizedHandle.isNotEmpty
         ? '@$normalizedHandle'
         : '@researcher1';
-
     await showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -3266,6 +3600,7 @@ class _HomeScreenState extends State<HomeScreen> {
         authController: widget.authController,
         fallbackName: profileName,
         fallbackHandle: profileHandle,
+        notificationController: widget.notificationController,
       ),
       transitionBuilder: (ctx, animation, _, child) {
         return SlideTransition(
@@ -3285,7 +3620,6 @@ class _HomeScreenState extends State<HomeScreen> {
         widget.authController.user?.name.trim().isNotEmpty == true
         ? widget.authController.user!.name.split(' ').first
         : 'Researcher';
-
     return Scaffold(
       backgroundColor: _appBackgroundColor,
       body: SafeArea(
@@ -3303,7 +3637,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     dashboard.speciesOfTheDay;
                 final bool isLoading =
                     snapshot.connectionState == ConnectionState.waiting;
-
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -3907,7 +4240,6 @@ class _HomeDashboardData {
     required this.speciesOfTheDay,
     required this.isFallback,
   });
-
   const _HomeDashboardData.fallback()
     : stats = const AppStats(
         totalSpecies: 0,
@@ -3916,10 +4248,27 @@ class _HomeDashboardData {
       ),
       speciesOfTheDay = null,
       isFallback = true;
-
   final AppStats stats;
   final SpeciesHighlight? speciesOfTheDay;
   final bool isFallback;
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'stats': stats.toJson(),
+    'speciesOfTheDay': speciesOfTheDay?.toJson(),
+  };
+  static _HomeDashboardData fromJson(Map<String, dynamic> json) =>
+      _HomeDashboardData(
+        stats: AppStats.fromJson(
+          Map<String, dynamic>.from(
+            json['stats'] as Map? ?? const <String, dynamic>{},
+          ),
+        ),
+        speciesOfTheDay: json['speciesOfTheDay'] is Map
+            ? SpeciesHighlight.fromJson(
+                Map<String, dynamic>.from(json['speciesOfTheDay'] as Map),
+              )
+            : null,
+        isFallback: false,
+      );
 }
 
 class _ResearcherProfileScreen extends StatelessWidget {
@@ -3927,12 +4276,12 @@ class _ResearcherProfileScreen extends StatelessWidget {
     required this.authController,
     required this.fallbackName,
     required this.fallbackHandle,
+    required this.notificationController,
   });
-
   final AppAuthController authController;
   final String fallbackName;
   final String fallbackHandle;
-
+  final NotificationController notificationController;
   String _resolvedName() {
     final String fromUser = authController.user?.name.trim() ?? '';
     if (fromUser.isNotEmpty) return fromUser;
@@ -4073,7 +4422,6 @@ class _ResearcherProfileScreen extends StatelessWidget {
               authController.user?.profilePhotoBase64.trim() ?? '';
           final String affiliation =
               authController.user?.affiliation.trim() ?? '';
-
           final String initials = name.trim().isNotEmpty
               ? name
                     .trim()
@@ -4083,7 +4431,6 @@ class _ResearcherProfileScreen extends StatelessWidget {
                     .join()
                     .toUpperCase()
               : 'R';
-
           return Column(
             children: [
               // Gradient header
@@ -4285,12 +4632,16 @@ class _ResearcherProfileScreen extends StatelessWidget {
                       onTap: () => _openProfile(context),
                     ),
                     const SizedBox(height: 8),
-                    _ProfileMenuItem(
-                      icon: Icons.upload_file_outlined,
-                      label: 'My Submissions',
-                      iconColor: const Color(0xFF059669),
-                      iconBg: const Color(0xFFD1FAE5),
-                      onTap: () => _openSubmissions(context),
+                    ListenableBuilder(
+                      listenable: notificationController,
+                      builder: (BuildContext context, _) => _ProfileMenuItem(
+                        icon: Icons.upload_file_outlined,
+                        label: 'My Submissions',
+                        iconColor: const Color(0xFF059669),
+                        iconBg: const Color(0xFFD1FAE5),
+                        badgeCount: notificationController.unreadCount,
+                        onTap: () => _openSubmissions(context),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     _ProfileMenuItem(
@@ -4371,12 +4722,12 @@ class _ProfileOverlayPanel extends StatelessWidget {
     required this.authController,
     required this.fallbackName,
     required this.fallbackHandle,
+    required this.notificationController,
   });
-
   final AppAuthController authController;
   final String fallbackName;
   final String fallbackHandle;
-
+  final NotificationController notificationController;
   String _resolvedName() {
     final String fromUser = authController.user?.name.trim() ?? '';
     if (fromUser.isNotEmpty) return fromUser;
@@ -4531,7 +4882,6 @@ class _ProfileOverlayPanel extends StatelessWidget {
                           .join()
                           .toUpperCase()
                     : 'R';
-
                 return Column(
                   children: [
                     // Gradient header
@@ -4733,12 +5083,18 @@ class _ProfileOverlayPanel extends StatelessWidget {
                             onTap: () => _openProfile(context),
                           ),
                           const SizedBox(height: 8),
-                          _ProfileMenuItem(
-                            icon: Icons.upload_file_outlined,
-                            label: 'My Submissions',
-                            iconColor: const Color(0xFF059669),
-                            iconBg: const Color(0xFFD1FAE5),
-                            onTap: () => _openSubmissions(context),
+                          ListenableBuilder(
+                            listenable: notificationController,
+                            builder: (BuildContext context, _) =>
+                                _ProfileMenuItem(
+                                  icon: Icons.upload_file_outlined,
+                                  label: 'My Submissions',
+                                  iconColor: const Color(0xFF059669),
+                                  iconBg: const Color(0xFFD1FAE5),
+                                  badgeCount:
+                                      notificationController.unreadCount,
+                                  onTap: () => _openSubmissions(context),
+                                ),
                           ),
                           const SizedBox(height: 8),
                           _ProfileMenuItem(
@@ -4831,31 +5187,25 @@ class _EditProfileScreen extends StatefulWidget {
     required this.initialHandle,
     required this.initialLocation,
   });
-
   final AppAuthController authController;
   final String initialName;
   final String initialHandle;
   final String initialLocation;
-
   @override
   State<_EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<_EditProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
-
   late final TextEditingController _nameController;
   late final TextEditingController _usernameController;
   late final TextEditingController _locationController;
   late final TextEditingController _affiliationController;
-
   // Newly picked photo (not yet uploaded)
   Uint8List? _pendingPhotoBytes;
   bool _isPickingImage = false;
   bool _isSaving = false;
-
   AppUser? get _user => widget.authController.user;
-
   String _initials(String name) {
     final String n = name.trim();
     if (n.isEmpty) return 'R';
@@ -4866,7 +5216,6 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
   void initState() {
     super.initState();
     final AppUser? user = _user;
-
     final String name = user?.name.trim().isNotEmpty == true
         ? user!.name
         : widget.initialName.trim();
@@ -4876,7 +5225,6 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
     final String location = user?.location.trim().isNotEmpty == true
         ? user!.location
         : widget.initialLocation.trim();
-
     _nameController = TextEditingController(
       text: name.isNotEmpty ? name : 'Researcher 1',
     );
@@ -4944,30 +5292,25 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     if (_isSaving) return;
-
     final String name = _nameController.text.trim();
     final String username = _usernameController.text.trim().replaceFirst(
       RegExp(r'^@+'),
       '',
     );
     final String location = _locationController.text.trim();
-
     if (name.isEmpty || username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Name and username are required.')),
       );
       return;
     }
-
     FocusScope.of(context).unfocus();
     setState(() => _isSaving = true);
-
     try {
       String? photoUrl;
       if (_pendingPhotoBytes != null) {
         photoUrl = await _uploadPhoto(_pendingPhotoBytes!);
       }
-
       await widget.authController.updateProfile(
         name: name,
         username: username,
@@ -4975,7 +5318,6 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
         affiliation: _affiliationController.text.trim(),
         profilePhotoUrl: photoUrl,
       );
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -4998,7 +5340,6 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
     final String photoUrl = _user?.profilePhotoUrl.trim() ?? '';
     final String photoB64 = _user?.profilePhotoBase64.trim() ?? '';
     final String ini = _initials(_nameController.text);
-
     return GestureDetector(
       onTap: _isPickingImage || _isSaving ? null : _pickProfilePhoto,
       child: Stack(
@@ -5099,12 +5440,11 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final String email = _user?.email ?? '';
-
     return Scaffold(
       backgroundColor: _appBackgroundColor,
       body: Column(
         children: [
-          // ── Green gradient header ───────────────────────────────────────
+          // ── Green gradient header
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -5167,8 +5507,7 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
               ),
             ),
           ),
-
-          // ── Form ────────────────────────────────────────────────────────
+          // ── Form
           Expanded(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -5283,9 +5622,7 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 28),
-
                   // Save button
                   SizedBox(
                     height: 52,
@@ -5336,14 +5673,14 @@ class _ProfileMenuItem extends StatelessWidget {
     required this.onTap,
     this.iconColor = _primaryColor,
     this.iconBg = _surfaceSoftStrongColor,
+    this.badgeCount = 0,
   });
-
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final Color iconColor;
   final Color iconBg;
-
+  final int badgeCount;
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -5360,14 +5697,45 @@ class _ProfileMenuItem extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 18, color: iconColor),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, size: 18, color: iconColor),
+                  ),
+                  if (badgeCount > 0)
+                    Positioned(
+                      right: -6,
+                      top: -6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: _accentColor,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          badgeCount > 99 ? '99+' : badgeCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            height: 1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -5396,10 +5764,13 @@ class _ProfileMenuItem extends StatelessWidget {
 }
 
 class CatalogScreen extends StatefulWidget {
-  const CatalogScreen({required this.authController, super.key});
-
+  const CatalogScreen({
+    required this.authController,
+    required this.notificationController,
+    super.key,
+  });
   final AppAuthController authController;
-
+  final NotificationController notificationController;
   @override
   State<CatalogScreen> createState() => _CatalogScreenState();
 }
@@ -5411,12 +5782,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   Object? _loadError;
-
   // Cached results — recomputed only when data or query changes, not every build.
   List<CatalogSpecies> _allSpecies = <CatalogSpecies>[];
   List<CatalogSpecies> _filteredSpecies = <CatalogSpecies>[];
   List<CatalogGroup> _filteredGroups = <CatalogGroup>[];
-
   @override
   void initState() {
     super.initState();
@@ -5479,18 +5848,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
   List<CatalogGroup> _groupSpecies(List<CatalogSpecies> allSpecies) {
     final Map<String, List<CatalogSpecies>> grouped =
         <String, List<CatalogSpecies>>{};
-
     for (final CatalogSpecies species in allSpecies) {
       final String key = species.genus.trim().isNotEmpty
           ? species.genus.trim()
           : species.scientificName.trim().split(RegExp(r'\s+')).first;
       grouped.putIfAbsent(key, () => <CatalogSpecies>[]).add(species);
     }
-
     final List<String> sortedKeys = grouped.keys.toList(
       growable: false,
     )..sort((String a, String b) => a.toLowerCase().compareTo(b.toLowerCase()));
-
     return sortedKeys
         .map(
           (String key) => CatalogGroup(
@@ -5506,53 +5872,66 @@ class _CatalogScreenState extends State<CatalogScreen> {
         .toList(growable: false);
   }
 
+  static const String _catalogCacheKey = 'catalog_species';
   Future<List<CatalogSpecies>> _loadCatalogSpecies() async {
-    final Map<String, String> sightingThumbs =
-        await _loadLatestSightingThumbs();
-    final List<dynamic> data = await Supabase.instance.client
-        .from('orchids')
-        .select(
-          'orchid_id, sci_name, common_name, model_3d_url, genus(genus_name), biogeography(picture(*))',
-        )
-        .order('sci_name');
-
-    return data
-        .whereType<Map>()
-        .map((Map item) {
-          final Map<String, dynamic> json = Map<String, dynamic>.from(item);
-          final String scientificName = (json['sci_name'] ?? '')
-              .toString()
-              .trim();
-          if (scientificName.isEmpty) return null;
-
-          final dynamic genusData = json['genus'];
-          final String genus = genusData is Map
-              ? (genusData['genus_name'] ?? '').toString()
-              : '';
-
-          final String imageUrl = _orchidImageUrlFromJson(json);
-          final String fallbackUrl =
-              sightingThumbs[scientificName.toLowerCase()] ?? '';
-          final String resolvedUrl = imageUrl.isNotEmpty
-              ? imageUrl
-              : fallbackUrl;
-          final String model3dUrl = (json['model_3d_url'] ?? '')
-              .toString()
-              .trim();
-
-          return CatalogSpecies(
-            id: int.tryParse((json['orchid_id'] ?? '').toString()),
-            scientificName: scientificName,
-            commonName: (json['common_name'] ?? 'Common Name')
+    try {
+      final Map<String, String> sightingThumbs =
+          await _loadLatestSightingThumbs();
+      final List<dynamic> data = await Supabase.instance.client
+          .from('orchids')
+          .select(
+            'orchid_id, sci_name, common_name, model_3d_url, genus(genus_name), biogeography(picture(*))',
+          )
+          .order('sci_name', ascending: true)
+          .timeout(_kNetworkTimeout);
+      final List<CatalogSpecies> species = data
+          .whereType<Map>()
+          .map((Map item) {
+            final Map<String, dynamic> json = Map<String, dynamic>.from(item);
+            final String scientificName = (json['sci_name'] ?? '')
                 .toString()
-                .trim(),
-            genus: genus,
-            imageUrl: resolvedUrl.isNotEmpty ? resolvedUrl : null,
-            model3dUrl: model3dUrl.isNotEmpty ? model3dUrl : null,
-          );
-        })
-        .whereType<CatalogSpecies>()
-        .toList(growable: false);
+                .trim();
+            if (scientificName.isEmpty) return null;
+            final dynamic genusData = json['genus'];
+            final String genus = genusData is Map
+                ? (genusData['genus_name'] ?? '').toString()
+                : '';
+            final String imageUrl = _orchidImageUrlFromJson(json);
+            final String fallbackUrl =
+                sightingThumbs[scientificName.toLowerCase()] ?? '';
+            final String resolvedUrl = imageUrl.isNotEmpty
+                ? imageUrl
+                : fallbackUrl;
+            final String model3dUrl = (json['model_3d_url'] ?? '')
+                .toString()
+                .trim();
+            return CatalogSpecies(
+              id: int.tryParse((json['orchid_id'] ?? '').toString()),
+              scientificName: scientificName,
+              commonName: (json['common_name'] ?? 'Common Name')
+                  .toString()
+                  .trim(),
+              genus: genus,
+              imageUrl: resolvedUrl.isNotEmpty ? resolvedUrl : null,
+              model3dUrl: model3dUrl.isNotEmpty ? model3dUrl : null,
+            );
+          })
+          .whereType<CatalogSpecies>()
+          .toList(growable: false);
+      unawaited(
+        OfflineCache.save(
+          _catalogCacheKey,
+          species.map((CatalogSpecies s) => s.toJson()).toList(),
+        ),
+      );
+      return species;
+    } catch (e) {
+      final List<CatalogSpecies>? cached = await _loadCachedSpecies(
+        _catalogCacheKey,
+      );
+      if (cached != null) return cached;
+      rethrow;
+    }
   }
 
   Future<void> _openProfilePanel() async {
@@ -5571,7 +5950,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final String profileHandle = normalizedHandle.isNotEmpty
         ? '@$normalizedHandle'
         : '@researcher1';
-
     if (!mounted) return;
     await showGeneralDialog<void>(
       context: context,
@@ -5582,6 +5960,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         authController: widget.authController,
         fallbackName: profileName,
         fallbackHandle: profileHandle,
+        notificationController: widget.notificationController,
       ),
       transitionBuilder: (ctx, animation, _, child) {
         return SlideTransition(
@@ -5887,7 +6266,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
       itemBuilder: (BuildContext context, int index) {
         final CatalogSpecies item = allSpecies[index];
         final bool isFav = item.id != null && _favorites.contains(item.id);
-
         return GestureDetector(
           onTap: () => _openSpeciesDetails(item),
           child: Container(
@@ -6265,7 +6643,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             ),
                           );
                         }
-
                         final List<CatalogSpecies> filtered =
                             _filteredSpecies.isNotEmpty ||
                                 _allSpecies.isNotEmpty
@@ -6275,7 +6652,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             _filteredGroups.isNotEmpty
                             ? _filteredGroups
                             : _groupSpecies(filtered);
-
                         if (filtered.isEmpty && _searchQuery.isNotEmpty) {
                           return Center(
                             child: Column(
@@ -6300,7 +6676,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             ),
                           );
                         }
-
                         return AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           switchInCurve: Curves.easeOutCubic,
@@ -6344,6 +6719,21 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
     );
   }
+}
+
+// Normalizes a raw endemic_to_philippines DB/JSON value (a bool, or a
+// string like "true"/"yes"/"unknown") into the tri-state 'Yes' / 'No' /
+// 'Unknown' / '' (unset) used throughout the app's UI, matching the web
+// dashboard's Endemic to the Philippines field.
+String normalizeEndemicFlag(dynamic raw) {
+  if (raw == true) return 'Yes';
+  if (raw == false) return 'No';
+  final String s = (raw ?? '').toString().trim().toLowerCase();
+  if (s.isEmpty) return '';
+  if (s == 'true' || s == 'yes' || s == '1') return 'Yes';
+  if (s == 'false' || s == 'no' || s == '0') return 'No';
+  if (s == 'unknown') return 'Unknown';
+  return '';
 }
 
 class _SightingTeamMember {
@@ -6443,7 +6833,6 @@ class _SpeciesSighting {
     this.studyTitle = '',
     this.studyLink = '',
   });
-
   final String date;
   final String location;
   final double? latitude;
@@ -6526,7 +6915,6 @@ class _SpeciesSighting {
   final String habitatPhotoUrl;
   final String studyTitle;
   final String studyLink;
-
   LatLng? get latLng {
     if (latitude == null || longitude == null) return null;
     if (!latitude!.isFinite || !longitude!.isFinite) return null;
@@ -6541,10 +6929,8 @@ class CatalogSpeciesDetailsScreen extends StatefulWidget {
     this.isGuest = false,
     super.key,
   });
-
   final CatalogSpecies species;
   final bool isGuest;
-
   @override
   State<CatalogSpeciesDetailsScreen> createState() =>
       _CatalogSpeciesDetailsScreenState();
@@ -6559,7 +6945,6 @@ class _CatalogSpeciesDetailsScreenState
   List<_SpeciesSighting> _sightings = const <_SpeciesSighting>[];
   bool _loadingSightings = true;
   List<MapTrail> _trails = const <MapTrail>[];
-
   List<String> get _scientificParts {
     return widget.species.scientificName
         .trim()
@@ -6572,7 +6957,6 @@ class _CatalogSpeciesDetailsScreenState
     if (_scientificParts.isEmpty) {
       return 'Unknown';
     }
-
     return _scientificParts.first;
   }
 
@@ -6580,36 +6964,57 @@ class _CatalogSpeciesDetailsScreenState
     if (_scientificParts.length <= 1) {
       return widget.species.scientificName;
     }
-
     return _scientificParts.sublist(1).join(' ');
   }
 
-  String get _normalizedCommonName {
-    final String commonName = widget.species.commonName.trim();
-    if (commonName.toLowerCase() == 'common name' || commonName.isEmpty) {
-      return 'No recorded common name';
+  // The submitted, DENR-approved sighting record backing the top-level
+  // Species Information card — prefers the tapped pin, else the first
+  // loaded sighting, so this card always agrees with the Taxonomy &
+  // Identification tab instead of relying on the stale catalog-list
+  // aggregate fields.
+  _SpeciesSighting? get _primarySighting {
+    if (_tappedPinIndex >= 0 && _tappedPinIndex < _sightings.length) {
+      return _sightings[_tappedPinIndex];
     }
+    if (_sightings.isNotEmpty) {
+      return _sightings.first;
+    }
+    return null;
+  }
 
+  String get _normalizedCommonName {
+    final String fromSighting = _primarySighting?.commonNames.trim() ?? '';
+    final String commonName = fromSighting.isNotEmpty
+        ? fromSighting
+        : widget.species.commonName.trim();
+    if (commonName.toLowerCase() == 'common name' || commonName.isEmpty) {
+      return '';
+    }
     return commonName;
   }
 
   String get _detailedCommonName {
+    if (_normalizedCommonName.isEmpty) {
+      return '-';
+    }
     if (_normalizedCommonName.toLowerCase() == 'waling-waling') {
       return 'Waling-waling\nSander\'s Vanda';
     }
-
     return _normalizedCommonName;
   }
 
   String get _endemicity {
-    final String normalized = widget.species.scientificName.toLowerCase();
-    if (normalized == 'vanda sanderiana' ||
-        normalized == 'paphiopedilum urbanianum' ||
-        normalized.contains('philippinensis')) {
-      return 'Native to the Philippines';
+    final String raw = _primarySighting?.endemicToPhilippines.trim() ?? '';
+    switch (raw.toLowerCase()) {
+      case 'yes':
+        return 'Endemic to the Philippines';
+      case 'no':
+        return 'Not endemic to the Philippines';
+      case 'unknown':
+        return 'Endemicity unknown';
+      default:
+        return '-';
     }
-
-    return 'Not endemic to the Philippines';
   }
 
   String get _seedSlug {
@@ -6617,31 +7022,30 @@ class _CatalogSpeciesDetailsScreenState
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
         .replaceAll(RegExp(r'^-+|-+$'), '');
-
     if (slug.isEmpty) {
       return 'orchid';
     }
-
     return slug;
   }
 
   String get _heroTag => 'catalog-species-$_seedSlug';
-
   String get _localName {
+    final String fromSighting = _primarySighting?.localNames.trim() ?? '';
+    if (fromSighting.isNotEmpty) {
+      return fromSighting;
+    }
     if (widget.species.localName != null &&
         widget.species.localName!.isNotEmpty) {
       return widget.species.localName!;
     }
-    return 'Not recorded';
+    return '-';
   }
 
   List<LatLng> get _sightingPins => _sightings
       .map((s) => s.latLng)
       .whereType<LatLng>()
       .toList(growable: false);
-
-  // ── New detail screen helpers ──────────────────────────────────────────
-
+  // ── New detail screen helpers
   Widget _detailInfoRow({required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 9),
@@ -6765,9 +7169,9 @@ class _CatalogSpeciesDetailsScreenState
       return const SizedBox.shrink();
     }
     final _SpeciesSighting s = _sightings[_tappedPinIndex];
-
     Widget infoRow(IconData icon, String label, String value) {
-      if (value.isEmpty) return const SizedBox.shrink();
+      final bool isBlank = value.trim().isEmpty;
+      final String display = isBlank ? '-' : value;
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
@@ -6787,11 +7191,15 @@ class _CatalogSpeciesDetailsScreenState
                     ),
                   ),
                   Text(
-                    value,
-                    style: const TextStyle(
+                    display,
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF082809),
-                      fontWeight: FontWeight.w600,
+                      color: isBlank
+                          ? const Color(0xFF9AA6A0)
+                          : const Color(0xFF082809),
+                      fontWeight: isBlank
+                          ? FontWeight.w400
+                          : FontWeight.w600,
                     ),
                   ),
                 ],
@@ -6803,27 +7211,22 @@ class _CatalogSpeciesDetailsScreenState
     }
 
     Widget divider() => const Divider(height: 1, color: Color(0xFFD0E8CC));
-
     List<Widget> rows(List<(IconData, String, String)> items) {
-      final visible = items.where((e) => e.$3.isNotEmpty).toList();
-      if (visible.isEmpty) return [];
+      if (items.isEmpty) return [];
       final out = <Widget>[];
-      for (int i = 0; i < visible.length; i++) {
+      for (int i = 0; i < items.length; i++) {
         if (i > 0) out.add(divider());
-        out.add(infoRow(visible[i].$1, visible[i].$2, visible[i].$3));
+        out.add(infoRow(items[i].$1, items[i].$2, items[i].$3));
       }
       return out;
     }
 
-    bool any(List<String> vals) => vals.any((v) => v.isNotEmpty);
-
-    final String conservationStatus = _endemicity == 'Native to the Philippines'
-        ? 'Endangered'
-        : 'Vulnerable';
+    final String conservationStatus = s.threatLevel.trim().isEmpty
+        ? '-'
+        : s.threatLevel.trim();
     final String sightingCount = _sightings.length == 1
         ? 'Recorded 1 time in the wild'
         : 'Recorded ${_sightings.length} times in the wild';
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -6881,235 +7284,167 @@ class _CatalogSpeciesDetailsScreenState
         ),
         const SizedBox(height: 14),
         // Taxonomy / identification
-        if (any([
-          s.localNames,
-          s.commonNames,
-          s.endemicToPhilippines,
-          s.identificationConfidence,
-        ]))
-          _detailSectionCard(
-            title: 'Taxonomy & Identification',
-            children: rows([
-              (Icons.label_rounded, 'Local Name(s)', s.localNames),
-              (Icons.translate_rounded, 'Common Name(s)', s.commonNames),
-              (
-                Icons.flag_rounded,
-                'Endemic to Philippines',
-                s.endemicToPhilippines,
-              ),
-              (
-                Icons.verified_rounded,
-                'Identification Confidence',
-                s.identificationConfidence,
-              ),
-            ]),
-          ),
+        _detailSectionCard(
+          title: 'Taxonomy & Identification',
+          children: rows([
+            (Icons.label_rounded, 'Local Name(s)', s.localNames),
+            (Icons.translate_rounded, 'Common Name(s)', s.commonNames),
+            (
+              Icons.flag_rounded,
+              'Endemic to Philippines',
+              s.endemicToPhilippines,
+            ),
+            (
+              Icons.verified_rounded,
+              'Identification Confidence',
+              s.identificationConfidence,
+            ),
+          ]),
+        ),
         // Plant structure
-        if (any([
-          s.plantHeight,
-          s.pseudobulbPresent,
-          s.stemLength,
-          s.rootLength,
-        ])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Plant Structure',
-            children: rows([
-              (Icons.height_rounded, 'Plant Height', s.plantHeight),
-              (
-                Icons.circle_outlined,
-                'Pseudobulb Present',
-                s.pseudobulbPresent,
-              ),
-              (Icons.straighten_rounded, 'Stem Length', s.stemLength),
-              (Icons.linear_scale_rounded, 'Root Length', s.rootLength),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Plant Structure',
+          children: rows([
+            (Icons.height_rounded, 'Plant Height', s.plantHeight),
+            (Icons.circle_outlined, 'Pseudobulb Present', s.pseudobulbPresent),
+            (Icons.straighten_rounded, 'Stem Length', s.stemLength),
+            (Icons.linear_scale_rounded, 'Root Length', s.rootLength),
+          ]),
+        ),
         // Leaves
-        if (any([
-          s.leafShape,
-          s.leafLength,
-          s.leafWidth,
-          s.leafTexture,
-          s.leafArrangement,
-          s.numberOfLeaves,
-        ])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Leaf Characteristics',
-            children: rows([
-              (Icons.grass_rounded, 'Leaf Shape / Type', s.leafShape),
-              (Icons.straighten_rounded, 'Leaf Length', s.leafLength),
-              (Icons.swap_horiz_rounded, 'Leaf Width', s.leafWidth),
-              (Icons.texture_rounded, 'Leaf Texture', s.leafTexture),
-              (
-                Icons.format_list_bulleted_rounded,
-                'Leaf Arrangement',
-                s.leafArrangement,
-              ),
-              (Icons.tag_rounded, 'Number of Leaves', s.numberOfLeaves),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Leaf Characteristics',
+          children: rows([
+            (Icons.grass_rounded, 'Leaf Shape / Type', s.leafShape),
+            (Icons.straighten_rounded, 'Leaf Length', s.leafLength),
+            (Icons.swap_horiz_rounded, 'Leaf Width', s.leafWidth),
+            (Icons.texture_rounded, 'Leaf Texture', s.leafTexture),
+            (
+              Icons.format_list_bulleted_rounded,
+              'Leaf Arrangement',
+              s.leafArrangement,
+            ),
+            (Icons.tag_rounded, 'Number of Leaves', s.numberOfLeaves),
+          ]),
+        ),
         // Flowers
-        if (any([
-          s.flowerColor,
-          s.floweringSeason,
-          s.numberOfFlowers,
-          s.flowerDiameter,
-          s.inflorescenceType,
-          s.petalCharacteristics,
-          s.sepalCharacteristics,
-          s.labellumDescription,
-          s.fragrance,
-          s.bloomingStage,
-        ])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Flower Characteristics',
-            children: rows([
-              (Icons.local_florist_rounded, 'Flower Color', s.flowerColor),
-              (
-                Icons.calendar_month_rounded,
-                'Flowering Season',
-                s.floweringSeason,
-              ),
-              (Icons.tag_rounded, 'Number of Flowers', s.numberOfFlowers),
-              (Icons.circle_rounded, 'Flower Diameter', s.flowerDiameter),
-              (
-                Icons.account_tree_rounded,
-                'Inflorescence Type',
-                s.inflorescenceType,
-              ),
-              (
-                Icons.spa_rounded,
-                'Petal Characteristics',
-                s.petalCharacteristics,
-              ),
-              (
-                Icons.spa_outlined,
-                'Sepal Characteristics',
-                s.sepalCharacteristics,
-              ),
-              (
-                Icons.star_rounded,
-                'Labellum Description',
-                s.labellumDescription,
-              ),
-              (Icons.air_rounded, 'Fragrance', s.fragrance),
-              (Icons.eco_rounded, 'Blooming Stage', s.bloomingStage),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Flower Characteristics',
+          children: rows([
+            (Icons.local_florist_rounded, 'Flower Color', s.flowerColor),
+            (
+              Icons.calendar_month_rounded,
+              'Flowering Season',
+              s.floweringSeason,
+            ),
+            (Icons.tag_rounded, 'Number of Flowers', s.numberOfFlowers),
+            (Icons.circle_rounded, 'Flower Diameter', s.flowerDiameter),
+            (
+              Icons.account_tree_rounded,
+              'Inflorescence Type',
+              s.inflorescenceType,
+            ),
+            (
+              Icons.spa_rounded,
+              'Petal Characteristics',
+              s.petalCharacteristics,
+            ),
+            (
+              Icons.spa_outlined,
+              'Sepal Characteristics',
+              s.sepalCharacteristics,
+            ),
+            (Icons.star_rounded, 'Labellum Description', s.labellumDescription),
+            (Icons.air_rounded, 'Fragrance', s.fragrance),
+            (Icons.eco_rounded, 'Blooming Stage', s.bloomingStage),
+          ]),
+        ),
         // Fruit / seeds
-        if (any([s.fruitPresent, s.fruitType, s.seedCapsuleCondition])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Fruit & Seeds',
-            children: rows([
-              (Icons.circle_rounded, 'Fruit Present', s.fruitPresent),
-              (Icons.category_rounded, 'Fruit Type', s.fruitType),
-              (
-                Icons.grain_rounded,
-                'Seed Capsule Condition',
-                s.seedCapsuleCondition,
-              ),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Fruit & Seeds',
+          children: rows([
+            (Icons.circle_rounded, 'Fruit Present', s.fruitPresent),
+            (Icons.category_rounded, 'Fruit Type', s.fruitType),
+            (
+              Icons.grain_rounded,
+              'Seed Capsule Condition',
+              s.seedCapsuleCondition,
+            ),
+          ]),
+        ),
         // Population & Threat
-        if (s.populationCount != null ||
-            any([
-              s.lifeStage,
-              s.phenology,
-              s.populationStatus,
-              s.threatLevel,
-            ])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Population & Conservation',
-            children: rows([
-              (
-                Icons.groups_rounded,
-                'Population Count',
-                s.populationCount != null
-                    ? '${s.populationCount} individual${s.populationCount == 1 ? '' : 's'}'
-                    : '',
-              ),
-              (Icons.eco_rounded, 'Life Stage', s.lifeStage),
-              (Icons.calendar_month_rounded, 'Phenology', s.phenology),
-              (
-                Icons.bar_chart_rounded,
-                'Population Status',
-                s.populationStatus,
-              ),
-              (Icons.warning_amber_rounded, 'Threat Level', s.threatLevel),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Population & Conservation',
+          children: rows([
+            (
+              Icons.groups_rounded,
+              'Population Count',
+              s.populationCount != null
+                  ? '${s.populationCount} individual${s.populationCount == 1 ? '' : 's'}'
+                  : '',
+            ),
+            (Icons.eco_rounded, 'Life Stage', s.lifeStage),
+            (Icons.calendar_month_rounded, 'Phenology', s.phenology),
+            (Icons.bar_chart_rounded, 'Population Status', s.populationStatus),
+            (Icons.warning_amber_rounded, 'Threat Level', s.threatLevel),
+          ]),
+        ),
         // Species value
-        if (any([
-          s.ethnobotanicalImportance,
-          s.aestheticAppeal,
-          s.cultivation,
-          s.rarity,
-          s.culturalImportance,
-        ])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Species Value & Importance',
-            children: rows([
-              (
-                Icons.local_pharmacy_rounded,
-                'Ethnobotanical Importance',
-                s.ethnobotanicalImportance,
-              ),
-              (Icons.palette_rounded, 'Aesthetic Appeal', s.aestheticAppeal),
-              (Icons.yard_rounded, 'Cultivation', s.cultivation),
-              (Icons.diamond_rounded, 'Rarity', s.rarity),
-              (
-                Icons.people_rounded,
-                'Cultural Importance',
-                s.culturalImportance,
-              ),
-            ]),
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Species Value & Importance',
+          children: rows([
+            (
+              Icons.local_pharmacy_rounded,
+              'Ethnobotanical Importance',
+              s.ethnobotanicalImportance,
+            ),
+            (Icons.palette_rounded, 'Aesthetic Appeal', s.aestheticAppeal),
+            (Icons.yard_rounded, 'Cultivation', s.cultivation),
+            (Icons.people_rounded, 'Cultural Importance', s.culturalImportance),
+          ]),
+        ),
         // Researcher notes
-        if (s.researcherNotes.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Researcher Notes',
-            children: [
-              Text(
-                s.researcherNotes,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF082809),
-                  height: 1.5,
-                ),
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Researcher Notes',
+          children: [
+            Text(
+              s.researcherNotes.trim().isEmpty ? '-' : s.researcherNotes,
+              style: TextStyle(
+                fontSize: 14,
+                color: s.researcherNotes.trim().isEmpty
+                    ? const Color(0xFF9AA6A0)
+                    : const Color(0xFF082809),
+                height: 1.5,
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
         // Unusual observations
-        if (s.unusualObservations.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Unusual Observations',
-            children: [
-              Text(
-                s.unusualObservations,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF082809),
-                  height: 1.5,
-                ),
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Unusual Observations',
+          children: [
+            Text(
+              s.unusualObservations.trim().isEmpty
+                  ? '-'
+                  : s.unusualObservations,
+              style: TextStyle(
+                fontSize: 14,
+                color: s.unusualObservations.trim().isEmpty
+                    ? const Color(0xFF9AA6A0)
+                    : const Color(0xFF082809),
+                height: 1.5,
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -7167,12 +7502,9 @@ class _CatalogSpeciesDetailsScreenState
       return const SizedBox.shrink();
     }
     final _SpeciesSighting s = _sightings[_tappedPinIndex];
-    final String elevStr = s.elevationMeters != null
-        ? '${s.elevationMeters!.toStringAsFixed(0)} m above sea level'
-        : '';
-
     Widget infoRow(IconData icon, String label, String value) {
-      if (value.isEmpty) return const SizedBox.shrink();
+      final bool isBlank = value.trim().isEmpty;
+      final String display = isBlank ? '-' : value;
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
@@ -7192,11 +7524,15 @@ class _CatalogSpeciesDetailsScreenState
                     ),
                   ),
                   Text(
-                    value,
-                    style: const TextStyle(
+                    display,
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF082809),
-                      fontWeight: FontWeight.w600,
+                      color: isBlank
+                          ? const Color(0xFF9AA6A0)
+                          : const Color(0xFF082809),
+                      fontWeight: isBlank
+                          ? FontWeight.w400
+                          : FontWeight.w600,
                     ),
                   ),
                 ],
@@ -7208,19 +7544,15 @@ class _CatalogSpeciesDetailsScreenState
     }
 
     Widget divider() => const Divider(height: 1, color: Color(0xFFD0E8CC));
-
     List<Widget> rows(List<(IconData, String, String)> items) {
-      final visible = items.where((e) => e.$3.isNotEmpty).toList();
-      if (visible.isEmpty) return [];
+      if (items.isEmpty) return [];
       final out = <Widget>[];
-      for (int i = 0; i < visible.length; i++) {
+      for (int i = 0; i < items.length; i++) {
         if (i > 0) out.add(divider());
-        out.add(infoRow(visible[i].$1, visible[i].$2, visible[i].$3));
+        out.add(infoRow(items[i].$1, items[i].$2, items[i].$3));
       }
       return out;
     }
-
-    bool any(List<String> vals) => vals.any((v) => v.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -7247,7 +7579,8 @@ class _CatalogSpeciesDetailsScreenState
           ],
         ),
         const SizedBox(height: 12),
-        // Location
+        // Location — coordinates and elevation are withheld from the
+        // public catalog for species-protection reasons.
         _detailSectionCard(
           title: 'Location',
           children: rows([
@@ -7256,47 +7589,50 @@ class _CatalogSpeciesDetailsScreenState
             (Icons.location_city_rounded, 'Municipality', s.municipality),
             (Icons.layers_rounded, 'Altitude Zone', s.specificSiteZone),
             (Icons.pin_drop_rounded, 'Specific Site', s.specificSite),
-            (Icons.height_rounded, 'Elevation', elevStr),
           ]),
         ),
-        if (any([
-          s.habitatType,
-          s.microhabitat,
-          s.growthSubstrate,
-          s.hostTreeSpecies,
-          s.hostTreeDiameter,
-          s.canopyCover,
-          s.lightExposure,
-          s.soilType,
-          s.nearbyWaterSource,
-        ])) ...[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Habitat & Environment',
-            children: rows([
-              (Icons.forest_rounded, 'Habitat Type', s.habitatType),
-              (Icons.grass_rounded, 'Microhabitat', s.microhabitat),
-              (Icons.foundation_rounded, 'Growth Substrate', s.growthSubstrate),
-              (Icons.park_rounded, 'Host Tree Species', s.hostTreeSpecies),
-              (
-                Icons.straighten_rounded,
-                'Host Tree Diameter',
-                s.hostTreeDiameter,
-              ),
-              (Icons.wb_cloudy_rounded, 'Canopy Cover', s.canopyCover),
-              (Icons.wb_sunny_rounded, 'Light Exposure', s.lightExposure),
-              (Icons.layers_rounded, 'Soil Type', s.soilType),
-              (Icons.water_rounded, 'Nearby Water Source', s.nearbyWaterSource),
-            ]),
-          ),
-        ],
-        if (s.teamMembers.isNotEmpty) ...<Widget>[
-          const SizedBox(height: 12),
-          _detailSectionCard(
-            title: 'Contributors',
-            children: [_buildTeamCard(_SightingTeam(s.date, s.teamMembers))],
-          ),
-        ],
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Habitat & Environment',
+          children: rows([
+            (Icons.forest_rounded, 'Habitat Type', s.habitatType),
+            (Icons.grass_rounded, 'Microhabitat', s.microhabitat),
+            (Icons.foundation_rounded, 'Growth Substrate', s.growthSubstrate),
+            (Icons.park_rounded, 'Host Tree Species', s.hostTreeSpecies),
+            (
+              Icons.straighten_rounded,
+              'Host Tree Diameter',
+              s.hostTreeDiameter,
+            ),
+            (Icons.wb_cloudy_rounded, 'Canopy Cover', s.canopyCover),
+            (Icons.wb_sunny_rounded, 'Light Exposure', s.lightExposure),
+            (Icons.layers_rounded, 'Soil Type', s.soilType),
+            (Icons.water_rounded, 'Nearby Water Source', s.nearbyWaterSource),
+          ]),
+        ),
+        const SizedBox(height: 12),
+        _detailSectionCard(
+          title: 'Contributors',
+          children: (() {
+            final List<_SightingTeamMember> contributors =
+                <_SightingTeamMember>[
+                  if (s.researcherName.trim().isNotEmpty)
+                    _SightingTeamMember(
+                      s.researcherName.trim(),
+                      'Head Researcher',
+                    ),
+                  ...s.teamMembers,
+                ];
+            return contributors.isNotEmpty
+                ? <Widget>[_buildTeamCard(_SightingTeam(s.date, contributors))]
+                : <Widget>[
+                    const Text(
+                      '-',
+                      style: TextStyle(fontSize: 14, color: Color(0xFF9AA6A0)),
+                    ),
+                  ];
+          })(),
+        ),
       ],
     );
   }
@@ -7391,7 +7727,6 @@ class _CatalogSpeciesDetailsScreenState
       return const SizedBox.shrink();
     }
     final _SpeciesSighting s = _sightings[_tappedPinIndex];
-
     Widget imageCard(String label, String url) {
       final String resolved = url.isNotEmpty
           ? url
@@ -7418,18 +7753,47 @@ class _CatalogSpeciesDetailsScreenState
             ],
           ),
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: resolved.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: resolved,
-                    width: double.infinity,
-                    height: 180,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => _sightingImagePlaceholder(),
-                    errorWidget: (_, _, _) => _sightingImagePlaceholder(),
-                  )
-                : _sightingImagePlaceholder(),
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: resolved.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () => _openImageFullScreen(resolved, label),
+                        child: CachedNetworkImage(
+                          imageUrl: resolved,
+                          width: double.infinity,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => _sightingImagePlaceholder(),
+                          errorWidget: (_, _, _) => _sightingImagePlaceholder(),
+                        ),
+                      )
+                    : _sightingImagePlaceholder(),
+              ),
+              if (resolved.isNotEmpty)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => _openImageFullScreen(resolved, label),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.fullscreen_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       );
@@ -7445,10 +7809,20 @@ class _CatalogSpeciesDetailsScreenState
       imageWidgets.add(const SizedBox(height: 16));
       imageWidgets.add(imageCard('Habitat', s.habitatPhotoUrl));
     }
-
     return _detailSectionCard(
       title: 'Sighting Images  ·  ${s.date}',
       children: imageWidgets,
+    );
+  }
+
+  void _openImageFullScreen(String imageUrl, String label) {
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierColor: Colors.black,
+        pageBuilder: (_, __, ___) =>
+            _FullScreenImageViewer(imageUrl: imageUrl, label: label),
+      ),
     );
   }
 
@@ -7470,9 +7844,6 @@ class _CatalogSpeciesDetailsScreenState
       return const SizedBox.shrink();
     }
     final _SpeciesSighting s = _sightings[_tappedPinIndex];
-
-    final bool hasStudy = s.studyTitle.isNotEmpty || s.studyLink.isNotEmpty;
-
     Widget studyRow(
       IconData icon,
       String label,
@@ -7503,8 +7874,12 @@ class _CatalogSpeciesDetailsScreenState
                       fontSize: 14,
                       color: isLink
                           ? const Color(0xFF1A73E8)
-                          : const Color(0xFF082809),
-                      fontWeight: FontWeight.w600,
+                          : (value == '-'
+                                ? const Color(0xFF9AA6A0)
+                                : const Color(0xFF082809)),
+                      fontWeight: value == '-'
+                          ? FontWeight.w400
+                          : FontWeight.w600,
                       decoration: isLink ? TextDecoration.underline : null,
                     ),
                   ),
@@ -7519,76 +7894,39 @@ class _CatalogSpeciesDetailsScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (hasStudy)
-          _detailSectionCard(
-            title: 'Related Study',
-            children: [
-              if (s.studyTitle.isNotEmpty)
-                studyRow(Icons.menu_book_outlined, 'Study Title', s.studyTitle),
-              if (s.studyTitle.isNotEmpty && s.studyLink.isNotEmpty)
-                const Divider(height: 1, color: Color(0xFFD0E8CC)),
-              if (s.studyLink.isNotEmpty)
-                studyRow(
-                  Icons.link_rounded,
-                  'Study Link',
-                  s.studyLink,
-                  isLink: true,
-                ),
-            ],
-          )
-        else
-          _detailSectionCard(
-            title: 'Related Study',
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E3),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.menu_book_outlined,
-                      color: Color(0xFF0D530E),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'No study document has been linked to this sighting.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF5A8A54),
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        _detailSectionCard(
+          title: 'Related Study',
+          children: [
+            studyRow(
+              Icons.menu_book_outlined,
+              'Study Title',
+              s.studyTitle.trim().isEmpty ? '-' : s.studyTitle,
+            ),
+            const Divider(height: 1, color: Color(0xFFD0E8CC)),
+            studyRow(
+              Icons.link_rounded,
+              'Study Link',
+              s.studyLink.trim().isEmpty ? '-' : s.studyLink,
+              isLink: s.studyLink.trim().isNotEmpty,
+            ),
+          ],
+        ),
         // Researcher info as secondary context
         const SizedBox(height: 12),
         _detailSectionCard(
           title: 'Submitted By',
           children: [
-            if (s.researcherName.isNotEmpty)
-              studyRow(
-                Icons.person_outline_rounded,
-                'Researcher',
-                s.researcherName,
-              ),
-            if (s.researcherName.isNotEmpty && s.institution.isNotEmpty)
-              const Divider(height: 1, color: Color(0xFFD0E8CC)),
-            if (s.institution.isNotEmpty)
-              studyRow(
-                Icons.account_balance_outlined,
-                'Institution',
-                s.institution,
-              ),
+            studyRow(
+              Icons.person_outline_rounded,
+              'Researcher',
+              s.researcherName.trim().isEmpty ? '-' : s.researcherName,
+            ),
+            const Divider(height: 1, color: Color(0xFFD0E8CC)),
+            studyRow(
+              Icons.account_balance_outlined,
+              'Institution',
+              s.institution.trim().isEmpty ? '-' : s.institution,
+            ),
           ],
         ),
       ],
@@ -7702,7 +8040,6 @@ class _CatalogSpeciesDetailsScreenState
   Widget _buildCatalogMapPreview() {
     final List<LatLng> pins = _sightingPins;
     final int count = pins.length;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -7840,36 +8177,41 @@ class _CatalogSpeciesDetailsScreenState
     super.dispose();
   }
 
+  String get _sightingsCacheKey =>
+      'species_sightings_${widget.species.scientificName.trim().toLowerCase()}';
   Future<void> _loadSightingsFromDb() async {
+    List<dynamic> data;
     try {
       final SupabaseClient supabase = Supabase.instance.client;
-      final List<dynamic> data = await supabase
+      data = await supabase
           .from('species_sightings')
           .select(
             'observation_date, observation_time, collection_method, observation_type, voucher_collected, '
-            'mountain_name, mountain(mountain_name), specific_site_zone, latitude, longitude, '
-            'elevation_meters, province, municipality, specific_site, '
-            'habitat_type, microhabitat, growth_substrate, host_tree_species, '
-            'host_tree_diameter, canopy_cover, light_exposure, soil_type, nearby_water_source, '
+            'mountain(mountain_name), specific_site_zone, specific_site_other, latitude, longitude, '
+            'elevation_meters, '
             'local_names, common_names, endemic_to_philippines, identification_confidence, '
-            'plant_height, pseudobulb_present, stem_length, root_length, '
-            'leaf_shape, leaf_length, leaf_width, leaf_texture, leaf_arrangement, number_of_leaves, '
-            'flower_color, flowering_season, number_of_flowers, flower_diameter, '
-            'inflorescence_type, petal_characteristics, sepal_characteristics, '
-            'labellum_description, fragrance, blooming_stage, '
-            'fruit_present, fruit_type, seed_capsule_condition, '
-            'life_stage, phenology, population_count, population_status, threat_level, threat_types, '
-            'ethnobotanical_importance, aesthetic_appeal, cultivation, rarity, cultural_importance, '
-            'institution, researcher_name, team_members, researcher_notes, unusual_observations, '
-            'whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path, '
-            'study_title, study_link, '
+            'researcher_notes, '
             'sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), '
             'sighting_team_member(*), sighting_media(*, picture(*))',
           )
           .eq('scientific_name', widget.species.scientificName)
           .eq('review_status', 'approved')
-          .order('observation_date', ascending: false);
-
+          .order('observation_date', ascending: false)
+          .timeout(_kNetworkTimeout);
+      unawaited(
+        OfflineCache.save(
+          _sightingsCacheKey,
+          data
+              .whereType<Map>()
+              .map((Map r) => Map<String, dynamic>.from(r))
+              .toList(),
+        ),
+      );
+    } catch (_) {
+      final dynamic cached = await OfflineCache.load(_sightingsCacheKey);
+      data = cached is List ? cached : const <dynamic>[];
+    }
+    try {
       const List<String> months = <String>[
         'Jan',
         'Feb',
@@ -7927,8 +8269,11 @@ class _CatalogSpeciesDetailsScreenState
         final Map<String, dynamic>? mountainEmbed = r['mountain'] is Map
             ? (r['mountain'] as Map).cast<String, dynamic>()
             : null;
-
-        String prefStr(String flatKey, Map<String, dynamic> sub, String subKey) {
+        String prefStr(
+          String flatKey,
+          Map<String, dynamic> sub,
+          String subKey,
+        ) {
           final dynamic v = sub[subKey];
           if (v != null) {
             final String s = v.toString().trim();
@@ -7966,7 +8311,8 @@ class _CatalogSpeciesDetailsScreenState
           String subKey,
         ) {
           final dynamic v = sub[subKey];
-          if (v is List && v.isNotEmpty) return v.map((e) => e.toString()).join(', ');
+          if (v is List && v.isNotEmpty)
+            return v.map((e) => e.toString()).join(', ');
           return jsonArr(flatKey);
         }
 
@@ -7988,7 +8334,6 @@ class _CatalogSpeciesDetailsScreenState
           final DateTime d = DateTime.parse(date);
           date = '${months[d.month - 1]}. ${d.day}, ${d.year}';
         } catch (_) {}
-
         List<_SightingTeamMember> members = const <_SightingTeamMember>[];
         if (teamMemberRows.isNotEmpty) {
           members = teamMemberRows
@@ -8021,24 +8366,21 @@ class _CatalogSpeciesDetailsScreenState
                 .toList(growable: false);
           } catch (_) {}
         }
-
         final double? elev = dbl('elevation_meters');
         final dynamic popRaw = r['population_count'];
         final int? populationCount = popRaw == null
             ? null
             : int.tryParse(popRaw.toString());
-        final dynamic endemicRaw = r['endemic_to_philippines'];
-        final String endemicStr = endemicRaw == null
-            ? ''
-            : (endemicRaw == true ? 'Yes' : 'No');
+        final String endemicStr = normalizeEndemicFlag(
+          r['endemic_to_philippines'],
+        );
         final dynamic voucherRaw = r['voucher_collected'];
         final String voucherStr = voucherRaw == null
             ? ''
             : (voucherRaw == true ? 'Yes' : 'No');
-        final String mountainLabel = str('mountain_name').isNotEmpty
-            ? str('mountain_name')
-            : (mountainEmbed?['mountain_name'] ?? '').toString().trim();
-
+        final String mountainLabel = (mountainEmbed?['mountain_name'] ?? '')
+            .toString()
+            .trim();
         loaded.add(
           _SpeciesSighting(
             date: date.isNotEmpty ? date : 'Unknown date',
@@ -8057,7 +8399,7 @@ class _CatalogSpeciesDetailsScreenState
             province: str('province'),
             municipality: str('municipality'),
             specificSiteZone: str('specific_site_zone'),
-            specificSite: str('specific_site'),
+            specificSite: str('specific_site_other'),
             // habitat
             habitatType: prefStr('habitat_type', habitat, 'habitat_type'),
             microhabitat: prefStr('microhabitat', habitat, 'microhabitat'),
@@ -8108,11 +8450,7 @@ class _CatalogSpeciesDetailsScreenState
             rootLength: prefNumStr('root_length', morphology, 'root_length_cm'),
             // leaves
             leafShape: prefStr('leaf_shape', morphology, 'leaf_shape'),
-            leafLength: prefNumStr(
-              'leaf_length',
-              morphology,
-              'leaf_length_cm',
-            ),
+            leafLength: prefNumStr('leaf_length', morphology, 'leaf_length_cm'),
             leafWidth: prefNumStr('leaf_width', morphology, 'leaf_width_cm'),
             leafTexture: prefFirstListStr(
               'leaf_texture',
@@ -8193,11 +8531,7 @@ class _CatalogSpeciesDetailsScreenState
               conservation,
               'population_status',
             ),
-            threatLevel: prefStr(
-              'threat_level',
-              conservation,
-              'threat_level',
-            ),
+            threatLevel: prefStr('threat_level', conservation, 'threat_level'),
             threatTypes: prefFirstListStr(
               'threat_types',
               conservation,
@@ -8227,7 +8561,6 @@ class _CatalogSpeciesDetailsScreenState
           ),
         );
       }
-
       if (mounted) {
         setState(() {
           _sightings = loaded;
@@ -8278,7 +8611,7 @@ class _CatalogSpeciesDetailsScreenState
       body: SafeArea(
         child: Column(
           children: [
-            // ── Top bar ──────────────────────────────────────────────────
+            // ── Top bar
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(12, 10, 16, 10),
@@ -8318,7 +8651,7 @@ class _CatalogSpeciesDetailsScreenState
                 ],
               ),
             ),
-            // ── Scrollable body ──────────────────────────────────────────
+            // ── Scrollable body
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollCtrl,
@@ -8424,8 +8757,7 @@ class _CatalogSpeciesDetailsScreenState
                               height: 1.1,
                             ),
                           ),
-                          if (_normalizedCommonName !=
-                              'No recorded common name') ...[
+                          if (_normalizedCommonName.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
                               _normalizedCommonName,
@@ -8603,8 +8935,83 @@ class _CatalogSpeciesDetailsScreenState
   }
 }
 
-// ── Catalog Map Full Screen ───────────────────────────────────────────────────
+// ── Sighting image full-screen viewer (pinch-to-zoom + X to close)
+class _FullScreenImageViewer extends StatelessWidget {
+  const _FullScreenImageViewer({required this.imageUrl, required this.label});
+  final String imageUrl;
+  final String label;
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: InteractiveViewer(
+                minScale: 1,
+                maxScale: 5,
+                child: Center(
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain,
+                    placeholder: (_, _) =>
+                        const CircularProgressIndicator(color: Colors.white70),
+                    errorWidget: (_, _, _) => const Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.white54,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              left: 12,
+              right: 12,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Catalog Map Full Screen
 class _CatalogMapFullScreen extends StatefulWidget {
   const _CatalogMapFullScreen({
     required this.scientificName,
@@ -8612,19 +9019,16 @@ class _CatalogMapFullScreen extends StatefulWidget {
     this.isGuest = false,
     this.imageUrl,
   });
-
   final String scientificName;
   final List<LatLng> pins;
   final bool isGuest;
   final String? imageUrl;
-
   @override
   State<_CatalogMapFullScreen> createState() => _CatalogMapFullScreenState();
 }
 
 class _CatalogMapFullScreenState extends State<_CatalogMapFullScreen> {
   List<MapTrail> _trails = const <MapTrail>[];
-
   @override
   void initState() {
     super.initState();
@@ -8764,17 +9168,19 @@ class _CatalogMapFullScreenState extends State<_CatalogMapFullScreen> {
 }
 
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({required this.authController, super.key});
-
+  const UploadScreen({
+    required this.authController,
+    required this.notificationController,
+    super.key,
+  });
   final AppAuthController authController;
-
+  final NotificationController notificationController;
   @override
   State<UploadScreen> createState() => _UploadScreenState();
 }
 
 class _UploadScreenState extends State<UploadScreen> {
   int _draftCount = 0;
-
   @override
   void initState() {
     super.initState();
@@ -8810,7 +9216,6 @@ class _UploadScreenState extends State<UploadScreen> {
     final String profileHandle = normalizedHandle.isNotEmpty
         ? '@$normalizedHandle'
         : '@researcher1';
-
     await showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -8820,6 +9225,7 @@ class _UploadScreenState extends State<UploadScreen> {
         authController: widget.authController,
         fallbackName: profileName,
         fallbackHandle: profileHandle,
+        notificationController: widget.notificationController,
       ),
       transitionBuilder: (ctx, animation, _, child) {
         return SlideTransition(
@@ -8839,7 +9245,6 @@ class _UploadScreenState extends State<UploadScreen> {
         builder: (_) => const UploadSpeciesRequirementsScreen(),
       ),
     );
-
     await _refreshDraftCount();
   }
 
@@ -8849,7 +9254,6 @@ class _UploadScreenState extends State<UploadScreen> {
         builder: (_) => const UploadSpeciesDraftsScreen(),
       ),
     );
-
     await _refreshDraftCount();
   }
 
@@ -8918,7 +9322,6 @@ class _UploadScreenState extends State<UploadScreen> {
 
 class UploadSpeciesRequirementsScreen extends StatelessWidget {
   const UploadSpeciesRequirementsScreen({super.key});
-
   void _openSpeciesInformationForm(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -9021,7 +9424,6 @@ class UploadSpeciesRequirementsScreen extends StatelessWidget {
 
 class AddSpeciesSightingsRequirementsScreen extends StatelessWidget {
   const AddSpeciesSightingsRequirementsScreen({super.key});
-
   void _openFindSpeciesScreen(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const AddSpeciesFindScreen()),
@@ -9099,7 +9501,6 @@ class AddSpeciesSightingsRequirementsScreen extends StatelessWidget {
 
 class AddSpeciesFindScreen extends StatefulWidget {
   const AddSpeciesFindScreen({super.key});
-
   @override
   State<AddSpeciesFindScreen> createState() => _AddSpeciesFindScreenState();
 }
@@ -9109,15 +9510,21 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
   final TextEditingController _genusController = TextEditingController();
   final TextEditingController _scientificNameController =
       TextEditingController();
-
-  // ── Species search autocomplete ───────────────────────────────────────────
+  // ── Species search autocomplete
   List<CatalogSpecies> _allSpecies = <CatalogSpecies>[];
   bool _isLoadingSpecies = false;
   String _selectedCommonName = '';
-
   void _autoFillScientificName() {
     final String genus = _genusController.text.trim();
     final String species = _familyController.text.trim();
+    // Both fields set via the "Unknown" quick-fill button should collapse to
+    // a single "Unknown" rather than concatenating into a garbage binomial
+    // like "Unknown Unknown"/"Unknown unknown".
+    if (genus.toLowerCase() == 'unknown' &&
+        species.toLowerCase() == 'unknown') {
+      _scientificNameController.text = 'Unknown';
+      return;
+    }
     final String autoFilled = <String>[
       genus,
       species,
@@ -9132,7 +9539,7 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
       final List<dynamic> data = await Supabase.instance.client
           .from('orchids')
           .select('orchid_id, sci_name, common_name, genus(genus_name)')
-          .order('sci_name');
+          .order('sci_name', ascending: true);
       final List<CatalogSpecies> species = data
           .whereType<Map>()
           .map((Map item) {
@@ -9217,7 +9624,6 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
     final String family = _familyController.text.trim();
     final String genus = _genusController.text.trim();
     final String scientificName = _scientificNameController.text.trim();
-
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => AddSpeciesFindResultsScreen(
@@ -9257,8 +9663,7 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
                 style: TextStyle(fontSize: 12, color: _mutedTextColor),
               ),
               const SizedBox(height: 12),
-
-              // ── Autocomplete search ───────────────────────────────────
+              // ── Autocomplete search
               LayoutBuilder(
                 builder: (BuildContext ctx, BoxConstraints constraints) {
                   return Autocomplete<CatalogSpecies>(
@@ -9461,8 +9866,7 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
                   );
                 },
               ),
-
-              // ── Divider between search and manual fields ──────────────
+              // ── Divider between search and manual fields
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 child: Row(
@@ -9479,8 +9883,7 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
                   ],
                 ),
               ),
-
-              // ── Manual fields (autofilled when species selected) ──────
+              // ── Manual fields (autofilled when species selected)
               _fieldLabel('Genus'),
               const SizedBox(height: 4),
               SizedBox(
@@ -9514,8 +9917,7 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
                   ),
                 ),
               ),
-
-              // ── Selected species confirmation chip ────────────────────
+              // ── Selected species confirmation chip
               if (_selectedCommonName.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -9549,7 +9951,6 @@ class _AddSpeciesFindScreenState extends State<AddSpeciesFindScreen> {
                   ),
                 ),
               ],
-
               const SizedBox(height: 22),
               Center(
                 child: FilledButton(
@@ -9593,12 +9994,10 @@ class AddSpeciesFindResultsScreen extends StatelessWidget {
     required this.commonName,
     super.key,
   });
-
   final String family;
   final String genus;
   final String scientificName;
   final String commonName;
-
   void _openSightingsInformationForm(BuildContext context) {
     final UploadSpeciesFlowData flowData = UploadSpeciesFlowData(
       family: family,
@@ -9608,7 +10007,6 @@ class AddSpeciesFindResultsScreen extends StatelessWidget {
           ? <String>[]
           : <String>[commonName],
     );
-
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => UploadSpeciesSightingsScreen(
@@ -9732,12 +10130,10 @@ class UploadSpeciesImageDraft {
     this.photoCredit = '',
     this.category = 'specimen_photo',
   });
-
   final String path;
   final int sizeBytes;
   String photoCredit;
   String category;
-
   UploadSpeciesImageDraft copy() {
     return UploadSpeciesImageDraft(
       path: path,
@@ -9753,7 +10149,6 @@ class UploadSpeciesImageDraft {
     'photoCredit': photoCredit,
     'category': category,
   };
-
   factory UploadSpeciesImageDraft.fromJson(Map<String, dynamic> json) {
     return UploadSpeciesImageDraft(
       path: (json['path'] ?? '').toString(),
@@ -9766,10 +10161,8 @@ class UploadSpeciesImageDraft {
 
 class UploadContributorDraft {
   UploadContributorDraft({required this.name, required this.position});
-
   final String name;
   final String position;
-
   UploadContributorDraft copy() {
     return UploadContributorDraft(name: name, position: position);
   }
@@ -9778,11 +10171,43 @@ class UploadContributorDraft {
     'name': name,
     'position': position,
   };
-
   factory UploadContributorDraft.fromJson(Map<String, dynamic> json) {
     return UploadContributorDraft(
       name: (json['name'] ?? '').toString(),
       position: (json['position'] ?? '').toString(),
+    );
+  }
+}
+
+class UploadRelatedStudyEntry {
+  UploadRelatedStudyEntry({
+    this.title = '',
+    this.link = '',
+    this.filePath = '',
+  });
+  String title;
+  String link;
+  String filePath;
+  bool get isEmpty =>
+      title.trim().isEmpty && link.trim().isEmpty && filePath.trim().isEmpty;
+  UploadRelatedStudyEntry copy() {
+    return UploadRelatedStudyEntry(
+      title: title,
+      link: link,
+      filePath: filePath,
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'title': title,
+    'link': link,
+    'filePath': filePath,
+  };
+  factory UploadRelatedStudyEntry.fromJson(Map<String, dynamic> json) {
+    return UploadRelatedStudyEntry(
+      title: (json['title'] ?? '').toString(),
+      link: (json['link'] ?? json['url'] ?? '').toString(),
+      filePath: (json['filePath'] ?? json['file_url'] ?? '').toString(),
     );
   }
 }
@@ -9799,7 +10224,7 @@ class UploadSpeciesFlowData {
     List<String>? commonNames,
     List<String>? localNames,
     this.identificationConfidence = 'Confirmed',
-    this.endemicToPhilippines = true,
+    this.endemicToPhilippines = '',
     this.leafType = '',
     this.flowerColor = '',
     this.floweringFromMonth = '',
@@ -9840,7 +10265,7 @@ class UploadSpeciesFlowData {
     this.phenology = '',
     this.populationStatus = '',
     this.threatLevel = '',
-    this.threatType = '',
+    List<String>? threatTypes,
     this.latitude = '',
     this.longitude = '',
     this.province = '',
@@ -9851,6 +10276,7 @@ class UploadSpeciesFlowData {
     this.habitatType = '',
     this.microHabitat = '',
     this.specificSite = '',
+    this.specificSiteZone = '',
     this.growthSubstrate = '',
     this.hostTreeSpecies = '',
     this.hostTreeDiameter = '',
@@ -9859,9 +10285,7 @@ class UploadSpeciesFlowData {
     this.soilType = '',
     this.nearbyWaterSource = '',
     this.videoPath = '',
-    this.studyTitle = '',
-    this.studyLink = '',
-    this.studyFilePath = '',
+    List<UploadRelatedStudyEntry>? relatedStudies,
     this.headResearcher = '',
     this.teamMembers = '',
     this.institution = '',
@@ -9875,10 +10299,11 @@ class UploadSpeciesFlowData {
            : _generateEntryId(),
        commonNames = commonNames ?? <String>[],
        localNames = localNames ?? <String>[],
+       threatTypes = threatTypes ?? <String>[],
+       relatedStudies = relatedStudies ?? <UploadRelatedStudyEntry>[],
        images = images ?? <UploadSpeciesImageDraft>[],
        contributors = contributors ?? <UploadContributorDraft>[],
        updatedAt = updatedAt ?? DateTime.now();
-
   String? draftId;
   // The sighting_id assigned by Supabase when this draft was synced to the
   // species_sightings table. Null until the first successful cloud sync.
@@ -9891,8 +10316,10 @@ class UploadSpeciesFlowData {
   List<String> commonNames;
   List<String> localNames;
   String identificationConfidence;
-  bool endemicToPhilippines;
-
+  // 'Yes' / 'No' / 'Unknown' / '' (unset) — tri-state to match the web
+  // dashboard's Endemic to the Philippines field, including the "Unknown"
+  // option DAO 2026-20 lookups fall back to when a species isn't listed.
+  String endemicToPhilippines;
   String get commonName => commonNames.isNotEmpty ? commonNames.first : '';
   String leafType;
   String flowerColor;
@@ -9925,7 +10352,6 @@ class UploadSpeciesFlowData {
   String observationType;
   bool voucherSpecimenCollected;
   String numberLocated;
-
   String ethnobotanicalImportance;
   String aestheticAppeal;
   String cultivation;
@@ -9935,8 +10361,7 @@ class UploadSpeciesFlowData {
   String phenology;
   String populationStatus;
   String threatLevel;
-  String threatType;
-
+  List<String> threatTypes;
   String latitude;
   String longitude;
   String province;
@@ -9947,6 +10372,7 @@ class UploadSpeciesFlowData {
   String habitatType;
   String microHabitat;
   String specificSite;
+  String specificSiteZone;
   String growthSubstrate;
   String hostTreeSpecies;
   String hostTreeDiameter;
@@ -9954,22 +10380,16 @@ class UploadSpeciesFlowData {
   String lightExposure;
   String soilType;
   String nearbyWaterSource;
-
   String videoPath;
-  String studyTitle;
-  String studyLink;
-  String studyFilePath;
+  List<UploadRelatedStudyEntry> relatedStudies;
   String headResearcher;
   String teamMembers;
   String institution;
   String researcherNotes;
   String unusualObservations;
-
   List<UploadSpeciesImageDraft> images;
   List<UploadContributorDraft> contributors;
-
   DateTime updatedAt;
-
   UploadSpeciesFlowData copy() {
     return UploadSpeciesFlowData(
       draftId: draftId,
@@ -10023,7 +10443,7 @@ class UploadSpeciesFlowData {
       phenology: phenology,
       populationStatus: populationStatus,
       threatLevel: threatLevel,
-      threatType: threatType,
+      threatTypes: List<String>.from(threatTypes),
       latitude: latitude,
       longitude: longitude,
       province: province,
@@ -10034,6 +10454,7 @@ class UploadSpeciesFlowData {
       habitatType: habitatType,
       microHabitat: microHabitat,
       specificSite: specificSite,
+      specificSiteZone: specificSiteZone,
       growthSubstrate: growthSubstrate,
       hostTreeSpecies: hostTreeSpecies,
       hostTreeDiameter: hostTreeDiameter,
@@ -10042,9 +10463,9 @@ class UploadSpeciesFlowData {
       soilType: soilType,
       nearbyWaterSource: nearbyWaterSource,
       videoPath: videoPath,
-      studyTitle: studyTitle,
-      studyLink: studyLink,
-      studyFilePath: studyFilePath,
+      relatedStudies: relatedStudies
+          .map((UploadRelatedStudyEntry e) => e.copy())
+          .toList(),
       headResearcher: headResearcher,
       teamMembers: teamMembers,
       institution: institution,
@@ -10114,7 +10535,7 @@ class UploadSpeciesFlowData {
       'phenology': phenology,
       'populationStatus': populationStatus,
       'threatLevel': threatLevel,
-      'threatType': threatType,
+      'threatTypes': threatTypes,
       'latitude': latitude,
       'longitude': longitude,
       'province': province,
@@ -10125,6 +10546,7 @@ class UploadSpeciesFlowData {
       'habitatType': habitatType,
       'microHabitat': microHabitat,
       'specificSite': specificSite,
+      'specificSiteZone': specificSiteZone,
       'growthSubstrate': growthSubstrate,
       'hostTreeSpecies': hostTreeSpecies,
       'hostTreeDiameter': hostTreeDiameter,
@@ -10133,9 +10555,9 @@ class UploadSpeciesFlowData {
       'soilType': soilType,
       'nearbyWaterSource': nearbyWaterSource,
       'videoPath': videoPath,
-      'studyTitle': studyTitle,
-      'studyLink': studyLink,
-      'studyFilePath': studyFilePath,
+      'relatedStudies': relatedStudies
+          .map((UploadRelatedStudyEntry e) => e.toJson())
+          .toList(growable: false),
       'headResearcher': headResearcher,
       'teamMembers': teamMembers,
       'institution': institution,
@@ -10154,7 +10576,6 @@ class UploadSpeciesFlowData {
   factory UploadSpeciesFlowData.fromJson(Map<String, dynamic> json) {
     final dynamic rawImages = json['images'];
     final dynamic rawContributors = json['contributors'];
-
     final List<UploadSpeciesImageDraft> parsedImages = rawImages is List
         ? rawImages
               .whereType<Map>()
@@ -10166,7 +10587,6 @@ class UploadSpeciesFlowData {
               )
               .toList(growable: false)
         : <UploadSpeciesImageDraft>[];
-
     final List<UploadContributorDraft> parsedContributors =
         rawContributors is List
         ? rawContributors
@@ -10178,7 +10598,6 @@ class UploadSpeciesFlowData {
               )
               .toList(growable: false)
         : <UploadContributorDraft>[];
-
     return UploadSpeciesFlowData(
       draftId: (json['draftId'] ?? '').toString().trim().isEmpty
           ? null
@@ -10214,7 +10633,7 @@ class UploadSpeciesFlowData {
       }(),
       identificationConfidence:
           (json['identificationConfidence'] ?? 'Confirmed').toString(),
-      endemicToPhilippines: json['endemicToPhilippines'] == true,
+      endemicToPhilippines: normalizeEndemicFlag(json['endemicToPhilippines']),
       leafType: (json['leafType'] ?? '').toString(),
       flowerColor: (json['flowerColor'] ?? '').toString(),
       floweringFromMonth: (json['floweringFromMonth'] ?? '').toString(),
@@ -10256,7 +10675,19 @@ class UploadSpeciesFlowData {
       phenology: (json['phenology'] ?? '').toString(),
       populationStatus: (json['populationStatus'] ?? '').toString(),
       threatLevel: (json['threatLevel'] ?? '').toString(),
-      threatType: (json['threatType'] ?? '').toString(),
+      threatTypes: () {
+        final dynamic raw = json['threatTypes'];
+        if (raw is List) {
+          return raw
+              .map((dynamic e) => e.toString())
+              .where((String s) => s.trim().isNotEmpty)
+              .toList();
+        }
+        // Legacy single-value drafts saved before threat type became
+        // multi-select stored one string under 'threatType'.
+        final String single = (json['threatType'] ?? '').toString().trim();
+        return single.isNotEmpty ? <String>[single] : <String>[];
+      }(),
       latitude: (json['latitude'] ?? '').toString(),
       longitude: (json['longitude'] ?? '').toString(),
       province: (json['province'] ?? '').toString(),
@@ -10267,6 +10698,7 @@ class UploadSpeciesFlowData {
       habitatType: (json['habitatType'] ?? '').toString(),
       microHabitat: (json['microHabitat'] ?? '').toString(),
       specificSite: (json['specificSite'] ?? '').toString(),
+      specificSiteZone: (json['specificSiteZone'] ?? '').toString(),
       growthSubstrate: (json['growthSubstrate'] ?? '').toString(),
       hostTreeSpecies: (json['hostTreeSpecies'] ?? '').toString(),
       hostTreeDiameter: (json['hostTreeDiameter'] ?? '').toString(),
@@ -10275,9 +10707,35 @@ class UploadSpeciesFlowData {
       soilType: (json['soilType'] ?? '').toString(),
       nearbyWaterSource: (json['nearbyWaterSource'] ?? '').toString(),
       videoPath: (json['videoPath'] ?? '').toString(),
-      studyTitle: (json['studyTitle'] ?? '').toString(),
-      studyLink: (json['studyLink'] ?? '').toString(),
-      studyFilePath: (json['studyFilePath'] ?? '').toString(),
+      relatedStudies: () {
+        final dynamic raw = json['relatedStudies'];
+        if (raw is List) {
+          return raw
+              .whereType<Map>()
+              .map(
+                (Map e) => UploadRelatedStudyEntry.fromJson(
+                  Map<String, dynamic>.from(e),
+                ),
+              )
+              .toList();
+        }
+        // Legacy single-study drafts saved title/link/file as flat fields.
+        final String legacyTitle = (json['studyTitle'] ?? '').toString();
+        final String legacyLink = (json['studyLink'] ?? '').toString();
+        final String legacyFile = (json['studyFilePath'] ?? '').toString();
+        if (legacyTitle.trim().isEmpty &&
+            legacyLink.trim().isEmpty &&
+            legacyFile.trim().isEmpty) {
+          return <UploadRelatedStudyEntry>[];
+        }
+        return <UploadRelatedStudyEntry>[
+          UploadRelatedStudyEntry(
+            title: legacyTitle,
+            link: legacyLink,
+            filePath: legacyFile,
+          ),
+        ];
+      }(),
       headResearcher: (json['headResearcher'] ?? '').toString(),
       teamMembers: (json['teamMembers'] ?? '').toString(),
       institution: (json['institution'] ?? '').toString(),
@@ -10320,7 +10778,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
   List<String> habitatPhotographers = const <String>[],
 }) async {
   final SupabaseClient supabase = Supabase.instance.client;
-
   double? numOrNull(String v) {
     final String t = v.trim();
     if (t.isEmpty) return null;
@@ -10334,7 +10791,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
   }
 
   String? strOrNull(String v) => v.trim().isEmpty ? null : v.trim();
-
   bool? yesNo(String v) {
     final String t = v.trim().toLowerCase();
     if (t.isEmpty) return null;
@@ -10345,11 +10801,10 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     draft.floweringFromMonth.trim(),
     draft.floweringToMonth.trim(),
   ].where((String s) => s.isNotEmpty).join(' – ');
-
-  final List<String> threatTypes = draft.threatType.trim().isNotEmpty
-      ? <String>[draft.threatType.trim()]
-      : <String>[];
-
+  final List<String> threatTypes = draft.threatTypes
+      .map((String t) => t.trim())
+      .where((String t) => t.isNotEmpty)
+      .toList();
   final Map<String, dynamic> habitatPayload = <String, dynamic>{
     'habitat_type': strOrNull(draft.habitatType),
     'microhabitat': strOrNull(draft.microHabitat),
@@ -10361,7 +10816,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     'soil_type': strOrNull(draft.soilType),
     'nearby_water_source': strOrNull(draft.nearbyWaterSource),
   };
-
   final Map<String, dynamic> morphologyPayload = <String, dynamic>{
     'plant_height_cm': numOrNull(draft.plantHeight),
     'pseudobulb_present': yesNo(draft.pseudobulbPresent),
@@ -10394,13 +10848,11 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     'phenology': strOrNull(draft.phenology),
     'population_count': intOrNull(draft.numberLocated),
   };
-
   final Map<String, dynamic> conservationPayload = <String, dynamic>{
     'population_status': strOrNull(draft.populationStatus),
     'threat_level': strOrNull(draft.threatLevel),
     'threat_types': threatTypes,
   };
-
   // Mountain lookup by name (defaults to Mt. Busa, matching web).
   final String mountainName = draft.mountain.trim().isEmpty
       ? 'Mt. Busa'
@@ -10416,7 +10868,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
   } catch (_) {
     mountainId = null;
   }
-
   Future<int> upsertSub(
     String table,
     String pkCol,
@@ -10450,7 +10901,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     existingMorphologyId = ex?['sighting_morphology_id'] as int?;
     existingConservationId = ex?['sighting_conservation_id'] as int?;
   }
-
   final int habitatId = await upsertSub(
     'sighting_habitat',
     'sighting_habitat_id',
@@ -10469,15 +10919,19 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     existingConservationId,
     conservationPayload,
   );
-
-  final String relatedStudy =
-      (draft.studyTitle.trim().isNotEmpty || draft.studyLink.trim().isNotEmpty)
-      ? jsonEncode(<String, String>{
-          'title': draft.studyTitle.trim(),
-          'link': draft.studyLink.trim(),
-        })
+  final List<Map<String, String>> relatedStudyEntries = draft.relatedStudies
+      .where((UploadRelatedStudyEntry e) => !e.isEmpty)
+      .map(
+        (UploadRelatedStudyEntry e) => <String, String>{
+          'title': e.title.trim(),
+          'link': e.link.trim(),
+          'file_url': e.filePath.trim(),
+        },
+      )
+      .toList();
+  final String relatedStudy = relatedStudyEntries.isNotEmpty
+      ? jsonEncode(relatedStudyEntries)
       : '';
-
   final Map<String, dynamic> mainPayload = <String, dynamic>{
     'entry_id': entryId,
     'researcher_email': researcherEmail,
@@ -10499,20 +10953,20 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     'observation_type': strOrNull(draft.observationType),
     'voucher_collected': draft.voucherSpecimenCollected,
     'mountain_id': mountainId,
-    'specific_site_zone': strOrNull(draft.altitude),
+    'specific_site_zone': strOrNull(draft.specificSiteZone),
     'specific_site_other': strOrNull(draft.specificSite),
     'latitude': double.tryParse(draft.latitude.trim()) ?? 0.0,
     'longitude': double.tryParse(draft.longitude.trim()) ?? 0.0,
     'elevation_meters': numOrNull(draft.elevation),
-    'endemic_to_philippines': draft.endemicToPhilippines,
+    'endemic_to_philippines': strOrNull(draft.endemicToPhilippines),
     'sighting_habitat_id': habitatId,
     'sighting_morphology_id': morphologyId,
     'sighting_conservation_id': conservationId,
     'related_study': relatedStudy.isNotEmpty ? relatedStudy : null,
     'researcher_notes': strOrNull(draft.researcherNotes),
     'review_status': reviewStatus,
+    'updated_at': DateTime.now().toUtc().toIso8601String(),
   };
-
   Map<String, dynamic> resultRow;
   final int sightingId;
   if (existingSightingId != null) {
@@ -10533,12 +10987,11 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     resultRow = Map<String, dynamic>.from(inserted.first as Map);
     sightingId = resultRow['sighting_id'] as int;
   }
-
   // Team members: delete-then-reinsert, matching web.
-  await supabase.from('sighting_team_member').delete().eq(
-    'sighting_id',
-    sightingId,
-  );
+  await supabase
+      .from('sighting_team_member')
+      .delete()
+      .eq('sighting_id', sightingId);
   final List<Map<String, dynamic>> teamRows = draft.contributors
       .where((UploadContributorDraft c) => c.name.trim().isNotEmpty)
       .map(
@@ -10552,7 +11005,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
   if (teamRows.isNotEmpty) {
     await supabase.from('sighting_team_member').insert(teamRows);
   }
-
   // Media: upsert `picture` rows by file_path, then link via sighting_media.
   Future<void> insertMediaGroup(
     List<String> urls,
@@ -10599,7 +11051,6 @@ Future<Map<String, dynamic>> submitNormalizedSighting({
     closeupFlowerPhotographers,
   );
   await insertMediaGroup(habitatPhotoUrls, 'habitat', habitatPhotographers);
-
   return resultRow;
 }
 
@@ -10639,7 +11090,6 @@ class UploadSpeciesFlowValidators {
 
 class UploadSpeciesDraftStore {
   static const String _draftsKey = 'upload_species_drafts_v1';
-
   static String _generatedDraftId(UploadSpeciesFlowData draft, int index) {
     final int updatedAtSeed = draft.updatedAt.microsecondsSinceEpoch;
     return '$updatedAtSeed-$index';
@@ -10651,13 +11101,11 @@ class UploadSpeciesDraftStore {
     if (encoded.trim().isEmpty) {
       return <UploadSpeciesFlowData>[];
     }
-
     try {
       final dynamic decoded = jsonDecode(encoded);
       if (decoded is! List) {
         return <UploadSpeciesFlowData>[];
       }
-
       final List<UploadSpeciesFlowData> drafts = decoded
           .whereType<Map>()
           .map(
@@ -10665,7 +11113,6 @@ class UploadSpeciesDraftStore {
                 UploadSpeciesFlowData.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList(growable: true);
-
       bool updatedMissingIds = false;
       for (int i = 0; i < drafts.length; i++) {
         final UploadSpeciesFlowData draft = drafts[i];
@@ -10675,16 +11122,13 @@ class UploadSpeciesDraftStore {
           updatedMissingIds = true;
         }
       }
-
       drafts.sort(
         (UploadSpeciesFlowData a, UploadSpeciesFlowData b) =>
             b.updatedAt.compareTo(a.updatedAt),
       );
-
       if (updatedMissingIds) {
         await _persist(drafts);
       }
-
       return drafts;
     } catch (_) {
       return <UploadSpeciesFlowData>[];
@@ -10693,29 +11137,25 @@ class UploadSpeciesDraftStore {
 
   static Future<void> saveDraft(UploadSpeciesFlowData source) async {
     final List<UploadSpeciesFlowData> drafts = await loadDrafts();
-
     if (source.draftId == null || source.draftId!.trim().isEmpty) {
       source.draftId = DateTime.now().microsecondsSinceEpoch.toString();
     }
-
     source.updatedAt = DateTime.now();
-
-    // Sync to Supabase so the draft is visible on web and other devices.
-    await _syncDraftToSupabase(source);
-
+    // Local-first: persist immediately so saving a draft is instant and
+    // works with no network at all, then sync to Supabase (visible on web
+    // and other devices) in the background. syncUnsyncedDrafts() picks up
+    // the resulting supabaseSightingId next time the drafts list opens.
     final UploadSpeciesFlowData toSave = source.copy();
-
     final int existingIndex = drafts.indexWhere(
       (UploadSpeciesFlowData draft) => draft.draftId == toSave.draftId,
     );
-
     if (existingIndex == -1) {
       drafts.insert(0, toSave);
     } else {
       drafts[existingIndex] = toSave;
     }
-
     await _persist(drafts);
+    unawaited(_syncDraftToSupabase(source));
   }
 
   // Upsert the draft into species_sightings (+ sub-tables) via the Supabase
@@ -10724,33 +11164,35 @@ class UploadSpeciesDraftStore {
   // shape DENR's review screens actually read.
   static Future<void> _syncDraftToSupabase(UploadSpeciesFlowData draft) async {
     try {
-      final SupabaseClient supabase = Supabase.instance.client;
-      final String? email = supabase.auth.currentUser?.email;
-      if (email == null || email.isEmpty) return;
-
-      final String entryId =
-          'MOBILE-DRAFT-${draft.draftId ?? DateTime.now().microsecondsSinceEpoch}';
-      final String researcherName =
-          (supabase.auth.currentUser?.userMetadata?['name'] ?? '').toString();
-
-      final Map<String, dynamic> result = await submitNormalizedSighting(
-        draft: draft,
-        entryId: entryId,
-        researcherEmail: email,
-        researcherName: researcherName,
-        reviewStatus: 'draft',
-        existingSightingId: draft.supabaseSightingId,
-      );
-
-      final dynamic sightingId = result['sighting_id'];
-      if (sightingId is int) {
-        draft.supabaseSightingId = sightingId;
-        debugPrint('[DraftSync] sighting_id=$sightingId');
-      } else {
-        debugPrint('[DraftSync] no sighting_id returned for $entryId');
-      }
+      await _doSyncDraftToSupabase(draft).timeout(const Duration(seconds: 20));
     } catch (e) {
       debugPrint('[DraftSync] FINAL FAIL for draft: $e');
+    }
+  }
+
+  static Future<void> _doSyncDraftToSupabase(
+    UploadSpeciesFlowData draft,
+  ) async {
+    final SupabaseClient supabase = Supabase.instance.client;
+    final String? email = supabase.auth.currentUser?.email;
+    if (email == null || email.isEmpty) return;
+    final String entryId =
+        'MOBILE-DRAFT-${draft.draftId ?? DateTime.now().microsecondsSinceEpoch}';
+    final String researcherName = await _resolveResearcherName(supabase, email);
+    final Map<String, dynamic> result = await submitNormalizedSighting(
+      draft: draft,
+      entryId: entryId,
+      researcherEmail: email,
+      researcherName: researcherName,
+      reviewStatus: 'draft',
+      existingSightingId: draft.supabaseSightingId,
+    );
+    final dynamic sightingId = result['sighting_id'];
+    if (sightingId is int) {
+      draft.supabaseSightingId = sightingId;
+      debugPrint('[DraftSync] sighting_id=$sightingId');
+    } else {
+      debugPrint('[DraftSync] no sighting_id returned for $entryId');
     }
   }
 
@@ -10780,9 +11222,7 @@ class UploadSpeciesDraftStore {
     if (normalizedId.isEmpty) {
       return;
     }
-
     final List<UploadSpeciesFlowData> drafts = await loadDrafts();
-
     // Find the draft's Supabase sighting_id before removing it locally.
     final UploadSpeciesFlowData? found = drafts
         .cast<UploadSpeciesFlowData?>()
@@ -10793,11 +11233,9 @@ class UploadSpeciesDraftStore {
     if (found != null) {
       await _deleteFromSupabase(found);
     }
-
     drafts.removeWhere(
       (UploadSpeciesFlowData draft) => draft.draftId == normalizedId,
     );
-
     await _persist(drafts);
   }
 
@@ -10806,9 +11244,7 @@ class UploadSpeciesDraftStore {
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       if (supabase.auth.currentUser == null) return;
-
       final String entryId = 'MOBILE-DRAFT-${draft.draftId ?? ''}';
-
       if (draft.supabaseSightingId != null) {
         await supabase
             .from('species_sightings')
@@ -10832,7 +11268,6 @@ class UploadSpeciesDraftStore {
     if (drafts.isEmpty) {
       return;
     }
-
     final String normalizedId = (source.draftId ?? '').trim();
     if (normalizedId.isNotEmpty) {
       drafts.removeWhere(
@@ -10841,25 +11276,21 @@ class UploadSpeciesDraftStore {
       await _persist(drafts);
       return;
     }
-
     final String sourceScientificName = source.scientificName.trim();
     final int sourceUpdatedAt = source.updatedAt.microsecondsSinceEpoch;
     final String sourceFirstImagePath = source.images.isNotEmpty
         ? source.images.first.path.trim()
         : '';
-
     drafts.removeWhere((UploadSpeciesFlowData draft) {
       final String draftScientificName = draft.scientificName.trim();
       final int draftUpdatedAt = draft.updatedAt.microsecondsSinceEpoch;
       final String draftFirstImagePath = draft.images.isNotEmpty
           ? draft.images.first.path.trim()
           : '';
-
       return draftScientificName == sourceScientificName &&
           draftUpdatedAt == sourceUpdatedAt &&
           draftFirstImagePath == sourceFirstImagePath;
     });
-
     await _persist(drafts);
   }
 
@@ -10875,25 +11306,67 @@ class UploadSpeciesDraftStore {
           .map((UploadSpeciesFlowData draft) => draft.toJson())
           .toList(growable: false),
     );
-
     await prefs.setString(_draftsKey, encoded);
   }
 }
 
 class DraftSubmissionException implements Exception {
   DraftSubmissionException(this.message);
-
   final String message;
-
   @override
   String toString() => message;
 }
 
+/// Resolves the researcher's display name for `species_sightings.researcher_name`.
+/// Prefers user_profiles (the cross-platform source of truth, kept in sync
+/// by both this app and the web dashboard's profile editors) over the
+/// app-local 'name' auth metadata key, since accounts created on the web
+/// never populate that key and would otherwise submit with an empty name
+/// — which is what caused the DENR dashboard to show the researcher's
+/// email instead of their name for app-submitted sightings.
+Future<String> _resolveResearcherName(
+  SupabaseClient supabase,
+  String userEmail,
+) async {
+  final String? authUserId = supabase.auth.currentUser?.id;
+  if (authUserId != null) {
+    try {
+      final Map<String, dynamic>? row = await supabase
+          .from('user_profiles')
+          .select('full_name, first_name, last_name')
+          .eq('id', authUserId)
+          .maybeSingle();
+      final String full = (row?['full_name'] as String?)?.trim() ?? '';
+      if (full.isNotEmpty) return full;
+      final String first = (row?['first_name'] as String?)?.trim() ?? '';
+      final String last = (row?['last_name'] as String?)?.trim() ?? '';
+      final String joined = <String>[
+        first,
+        last,
+      ].where((String s) => s.isNotEmpty).join(' ');
+      if (joined.isNotEmpty) return joined;
+    } catch (_) {
+      // Fall through to metadata-based resolution below.
+    }
+  }
+  final Map<String, dynamic> userMeta = Map<String, dynamic>.from(
+    supabase.auth.currentUser?.userMetadata ?? <String, dynamic>{},
+  );
+  final String metaName = (userMeta['name'] ?? '').toString().trim();
+  if (metaName.isNotEmpty) return metaName;
+  final String metaFirst = (userMeta['firstName'] ?? '').toString().trim();
+  final String metaLast = (userMeta['lastName'] ?? '').toString().trim();
+  final String metaJoined = <String>[
+    metaFirst,
+    metaLast,
+  ].where((String s) => s.isNotEmpty).join(' ');
+  if (metaJoined.isNotEmpty) return metaJoined;
+  return userEmail.contains('@') ? userEmail.split('@').first : userEmail;
+}
+
 class UploadSpeciesDraftSubmissionApi {
   UploadSpeciesDraftSubmissionApi();
-
   void dispose() {}
-
   String _extractFileName(String path) {
     final String normalized = path.replaceAll('\\', '/').trim();
     if (normalized.isEmpty) return 'image.jpg';
@@ -10922,7 +11395,6 @@ class UploadSpeciesDraftSubmissionApi {
       return null;
     }
     if (bytes.isEmpty) return null;
-
     final String fileName = _extractFileName(imagePath);
     final String storagePath =
         'sightings/${DateTime.now().millisecondsSinceEpoch}_${index}_$fileName';
@@ -10952,7 +11424,10 @@ class UploadSpeciesDraftSubmissionApi {
       List<String> habitatCredits,
     })
   >
-  _uploadDraftImages(SupabaseClient supabase, UploadSpeciesFlowData draft) async {
+  _uploadDraftImages(
+    SupabaseClient supabase,
+    UploadSpeciesFlowData draft,
+  ) async {
     final List<Future<String?>> uploadFutures = <Future<String?>>[];
     for (int i = 0; i < draft.images.length; i++) {
       final String path = draft.images[i].path.trim();
@@ -10963,14 +11438,12 @@ class UploadSpeciesDraftSubmissionApi {
       );
     }
     final List<String?> uploadedUrls = await Future.wait(uploadFutures);
-
     final List<String> wholePlantUrls = <String>[];
     final List<String> wholePlantCredits = <String>[];
     final List<String> closeupFlowerUrls = <String>[];
     final List<String> closeupFlowerCredits = <String>[];
     final List<String> habitatUrls = <String>[];
     final List<String> habitatCredits = <String>[];
-
     for (int i = 0; i < draft.images.length; i++) {
       final String? url = i < uploadedUrls.length ? uploadedUrls[i] : null;
       if (url == null || url.isEmpty) continue;
@@ -10989,7 +11462,6 @@ class UploadSpeciesDraftSubmissionApi {
           break;
       }
     }
-
     return (
       wholePlantUrls: wholePlantUrls,
       wholePlantCredits: wholePlantCredits,
@@ -11007,17 +11479,11 @@ class UploadSpeciesDraftSubmissionApi {
       final String sightingIdStr = draftId.substring('WEB-SIGHTING-'.length);
       return _updateWebSightingDraft(sightingIdStr, draft);
     }
-
     final SupabaseClient supabase = Supabase.instance.client;
     final String userEmail = supabase.auth.currentUser?.email ?? '';
-    final Map<String, dynamic> userMeta = Map<String, dynamic>.from(
-      supabase.auth.currentUser?.userMetadata ?? <String, dynamic>{},
-    );
-    final String userName = (userMeta['name'] ?? '').toString();
-
+    final String userName = await _resolveResearcherName(supabase, userEmail);
     final media = await _uploadDraftImages(supabase, draft);
     final String entryId = 'BLOOM-${DateTime.now().microsecondsSinceEpoch}';
-
     try {
       return await submitNormalizedSighting(
         draft: draft,
@@ -11044,17 +11510,9 @@ class UploadSpeciesDraftSubmissionApi {
   ) async {
     final SupabaseClient supabase = Supabase.instance.client;
     final String userEmail = supabase.auth.currentUser?.email ?? '';
-    final Map<String, dynamic> userMeta = Map<String, dynamic>.from(
-      supabase.auth.currentUser?.userMetadata ?? <String, dynamic>{},
-    );
-    final String userName =
-        (userMeta['name'] ?? '').toString().trim().isNotEmpty
-        ? userMeta['name'] as String
-        : userEmail.split('@').first;
-
+    final String userName = await _resolveResearcherName(supabase, userEmail);
     final media = await _uploadDraftImages(supabase, draft);
     final int? id = int.tryParse(sightingIdStr);
-
     try {
       if (id == null) {
         // Fall back to entry_id lookup for the sighting_id upsertSub needs.
@@ -11086,7 +11544,6 @@ class UploadSpeciesDraftSubmissionApi {
           habitatPhotographers: media.habitatCredits,
         );
       }
-
       final Map<String, dynamic> result = await submitNormalizedSighting(
         draft: draft,
         entryId: draft.entryId,
@@ -11116,9 +11573,7 @@ class UploadSpeciesDraftSubmissionApi {
 
 class UploadSpeciesInformationScreen extends StatefulWidget {
   const UploadSpeciesInformationScreen({required this.flowData, super.key});
-
   final UploadSpeciesFlowData flowData;
-
   @override
   State<UploadSpeciesInformationScreen> createState() =>
       _UploadSpeciesInformationScreenState();
@@ -11127,7 +11582,6 @@ class UploadSpeciesInformationScreen extends StatefulWidget {
 class _UploadSpeciesInformationScreenState
     extends State<UploadSpeciesInformationScreen> {
   late final UploadSpeciesFlowData _flowData;
-
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _familyFieldKey = GlobalKey();
   final GlobalKey _genusFieldKey = GlobalKey();
@@ -11135,14 +11589,12 @@ class _UploadSpeciesInformationScreenState
   final GlobalKey _confidenceFieldKey = GlobalKey();
   final GlobalKey _dateFieldKey = GlobalKey();
   final GlobalKey _numberLocatedFieldKey = GlobalKey();
-
   String? _familyError;
   String? _genusError;
   String? _scientificNameError;
   String? _confidenceError;
   String? _dateError;
   String? _numberLocatedError;
-
   final TextEditingController _familyController = TextEditingController();
   final TextEditingController _genusController = TextEditingController();
   final TextEditingController _scientificNameController =
@@ -11153,7 +11605,10 @@ class _UploadSpeciesInformationScreenState
       <TextEditingController>[];
   final TextEditingController _numberLocatedController =
       TextEditingController();
-
+  final FocusNode _genusFocusNode = FocusNode();
+  final FocusNode _familyFocusNode = FocusNode();
+  List<String> _genusSuggestions = <String>[];
+  List<String> _speciesEpithetSuggestions = <String>[];
   static const int _maxCommonNames = 5;
   static const int _maxLocalNames = 5;
   static const List<String> _confidenceOptions = <String>[
@@ -11161,16 +11616,13 @@ class _UploadSpeciesInformationScreenState
     'Probable',
     'Unidentified',
   ];
-
   String _identificationConfidence = 'Confirmed';
-
   static const List<String> _collectionMethodOptions = <String>[
     'Transect',
     'Quadrat',
     'Opportunistic',
     'Random Survey',
   ];
-
   static const List<String> _observationTypeOptions = <String>[
     'Live Specimen',
     'Flowering',
@@ -11178,18 +11630,30 @@ class _UploadSpeciesInformationScreenState
     'Dead Specimen',
     'Photographic Only',
   ];
-
-  bool _endemicToPhilippines = true;
+  // 'Yes' / 'No' / 'Unknown' / '' (unset) — tri-state, matching the web
+  // dashboard's Endemic to the Philippines field.
+  String _endemicToPhilippines = '';
+  // DAO 2026-20 Auto-Detect status message shown under the Endemic to the
+  // Philippines field, matching the web dashboard's autoDetectEndemicStatus().
+  String? _endemicStatus;
+  Color _endemicStatusColor = _uploadPrimary;
   DateTime? _observationDate;
   TimeOfDay? _observationTime;
   String? _selectedCollectionMethod;
   String? _selectedObservationType;
   bool _voucherSpecimenCollected = false;
   bool _isSavingDraft = false;
-
   void _autoFillScientificName() {
     final String genus = _genusController.text.trim();
     final String species = _familyController.text.trim();
+    // Both fields set via the "Unknown" quick-fill button should collapse to
+    // a single "Unknown" rather than concatenating into a garbage binomial
+    // like "Unknown Unknown"/"Unknown unknown".
+    if (genus.toLowerCase() == 'unknown' &&
+        species.toLowerCase() == 'unknown') {
+      _scientificNameController.text = 'Unknown';
+      return;
+    }
     final String autoFilled = <String>[
       genus,
       species,
@@ -11197,11 +11661,43 @@ class _UploadSpeciesInformationScreenState
     _scientificNameController.text = autoFilled;
   }
 
+  // Looks the Scientific Name up against the DAO 2026-20 orchid list and
+  // fills in Endemic to the Philippines, using the endemism flag each
+  // reference entry carries — mirrors the web dashboard's
+  // autoDetectEndemicStatus(). DAO 2026-20 only covers threatened species,
+  // so a species it doesn't list gives no endemism evidence either way —
+  // that's recorded as "Unknown", not "No".
+  void _autoDetectEndemicStatus() {
+    final String sciName = _scientificNameController.text.trim();
+    if (sciName.isEmpty) {
+      setState(() {
+        _endemicStatus = 'Enter the Scientific Name first.';
+        _endemicStatusColor = const Color(0xFFB42318);
+      });
+      return;
+    }
+    final DaoOrchidRef? match = findDaoOrchidMatch(sciName);
+    setState(() {
+      if (match != null) {
+        _endemicToPhilippines = match.endemic ? 'Yes' : 'No';
+        _endemicStatus =
+            'Matched "${match.fullName}" in DAO 2026-20 — set to '
+            '${match.endemic ? 'Yes' : 'No'}.';
+        _endemicStatusColor = _uploadPrimary;
+      } else {
+        _endemicToPhilippines = 'Unknown';
+        _endemicStatus =
+            '"$sciName" was not found in DAO 2026-20 — endemicity set to '
+            'Unknown.';
+        _endemicStatusColor = const Color(0xFF64748B);
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _flowData = widget.flowData;
-
     _familyController.text = _flowData.family;
     _genusController.text = _flowData.genus;
     // Restore or auto-generate scientific name
@@ -11227,20 +11723,21 @@ class _UploadSpeciesInformationScreenState
     }
     _identificationConfidence = _flowData.identificationConfidence;
     _numberLocatedController.text = _flowData.numberLocated;
-
     _endemicToPhilippines = _flowData.endemicToPhilippines;
+    // Auto-set to today/now when empty, matching the web dashboard's
+    // submission modal (still freely editable by the researcher).
     _observationDate = _flowData.observationDate.isEmpty
-        ? null
-        : DateTime.tryParse(_flowData.observationDate);
+        ? DateTime.now()
+        : (DateTime.tryParse(_flowData.observationDate) ?? DateTime.now());
     _observationTime = () {
-      if (_flowData.observationTime.isEmpty) return null;
+      if (_flowData.observationTime.isEmpty) return TimeOfDay.now();
       final List<String> parts = _flowData.observationTime.split(':');
       if (parts.length >= 2) {
         final int? h = int.tryParse(parts[0]);
         final int? m = int.tryParse(parts[1]);
         if (h != null && m != null) return TimeOfDay(hour: h, minute: m);
       }
-      return null;
+      return TimeOfDay.now();
     }();
     _selectedCollectionMethod = _flowData.collectionMethod.isEmpty
         ? null
@@ -11249,11 +11746,98 @@ class _UploadSpeciesInformationScreenState
         ? null
         : _flowData.observationType;
     _voucherSpecimenCollected = _flowData.voucherSpecimenCollected;
+    _loadTaxonomySuggestions();
+  }
+
+  // Backs genus/species autocomplete with the same taxonomy tables the web
+  // dashboard's suggestion picker uses (researcher-dashboard.html
+  // loadSpeciesNameSuggestions): `genus` is the authoritative genus list,
+  // and species epithets are derived from `orchids.sci_name` by stripping
+  // the leading genus word — so both platforms suggest the same names.
+  Widget _autocompleteOptionsView(
+    BuildContext context,
+    AutocompleteOnSelected<String> onSelected,
+    Iterable<String> options,
+  ) {
+    final List<String> list = options.take(6).toList();
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Material(
+        elevation: 4,
+        borderRadius: BorderRadius.circular(10),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 220, maxWidth: 320),
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              final String option = list[index];
+              return InkWell(
+                onTap: () => onSelected(option),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  child: Text(option, style: _uploadInputTextStyle),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadTaxonomySuggestions() async {
+    try {
+      final SupabaseClient supabase = Supabase.instance.client;
+      final results = await Future.wait(<Future<List<dynamic>>>[
+        supabase
+            .from('genus')
+            .select('genus_name')
+            .order('genus_name', ascending: true),
+        supabase
+            .from('orchids')
+            .select('sci_name')
+            .order('sci_name', ascending: true),
+      ]);
+      final Set<String> genusNames = <String>{};
+      for (final dynamic row in results[0]) {
+        final String name =
+            (row is Map ? row['genus_name'] : null)?.toString().trim() ?? '';
+        if (name.isNotEmpty) genusNames.add(name);
+      }
+      final Set<String> epithets = <String>{};
+      for (final dynamic row in results[1]) {
+        final String sci =
+            (row is Map ? row['sci_name'] : null)?.toString().trim() ?? '';
+        if (sci.isEmpty) continue;
+        final List<String> parts = sci.split(RegExp(r'\s+'));
+        if (parts.length > 1) {
+          final String epithet = parts.sublist(1).join(' ').trim();
+          if (epithet.isNotEmpty) epithets.add(epithet);
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _genusSuggestions = genusNames.toList()..sort();
+        _speciesEpithetSuggestions = epithets.toList()..sort();
+      });
+    } catch (error, stackTrace) {
+      // Non-fatal: suggestions are a convenience, not a requirement to
+      // submit. Logged (not swallowed silently) so a broken suggestions
+      // list is visible in the debug console instead of just failing quiet.
+      debugPrint('_loadTaxonomySuggestions failed: $error\n$stackTrace');
+    }
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _genusFocusNode.dispose();
+    _familyFocusNode.dispose();
     _familyController.removeListener(_autoFillScientificName);
     _genusController.removeListener(_autoFillScientificName);
     _familyController.dispose();
@@ -11300,7 +11884,6 @@ class _UploadSpeciesInformationScreenState
 
   Future<void> _openSpeciesSightingsForm() async {
     _syncFlowDataFromForm();
-
     setState(() {
       _familyError = null;
       _genusError = null;
@@ -11313,14 +11896,12 @@ class _UploadSpeciesInformationScreenState
           : null;
       _numberLocatedError = null;
     });
-
     GlobalKey? firstErrorKey;
     if (_scientificNameError != null) {
       firstErrorKey = _scientificNameFieldKey;
     } else if (_dateError != null) {
       firstErrorKey = _dateFieldKey;
     }
-
     if (firstErrorKey != null) {
       final BuildContext? ctx = firstErrorKey.currentContext;
       if (ctx != null) {
@@ -11333,7 +11914,6 @@ class _UploadSpeciesInformationScreenState
       }
       return;
     }
-
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -11377,7 +11957,7 @@ class _UploadSpeciesInformationScreenState
     return DropdownButtonFormField<String>(
       isDense: true,
       isExpanded: true,
-      initialValue: value,
+      initialValue: _matchDropdownOption(value, options),
       items: options
           .map(
             (String option) =>
@@ -11489,7 +12069,7 @@ class _UploadSpeciesInformationScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // ── Species Information Card ──────────────────────────
+                    // ── Species Information Card
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -11516,17 +12096,49 @@ class _UploadSpeciesInformationScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Expanded(
-                                child: TextField(
-                                  controller: _genusController,
-                                  style: _uploadInputTextStyle,
-                                  onChanged: (_) {
-                                    if (_genusError != null) {
-                                      setState(() => _genusError = null);
-                                    }
+                                child: RawAutocomplete<String>(
+                                  textEditingController: _genusController,
+                                  focusNode: _genusFocusNode,
+                                  optionsBuilder: (TextEditingValue value) {
+                                    final String query = value.text
+                                        .trim()
+                                        .toLowerCase();
+                                    if (query.isEmpty)
+                                      return const Iterable<String>.empty();
+                                    return _genusSuggestions.where(
+                                      (String s) =>
+                                          s.toLowerCase().contains(query),
+                                    );
                                   },
-                                  decoration: _fieldDecoration().copyWith(
-                                    errorText: _genusError,
-                                  ),
+                                  fieldViewBuilder:
+                                      (
+                                        context,
+                                        controller,
+                                        focusNode,
+                                        onFieldSubmitted,
+                                      ) {
+                                        return TextField(
+                                          controller: controller,
+                                          focusNode: focusNode,
+                                          style: _uploadInputTextStyle,
+                                          onChanged: (_) {
+                                            if (_genusError != null) {
+                                              setState(
+                                                () => _genusError = null,
+                                              );
+                                            }
+                                          },
+                                          decoration: _fieldDecoration()
+                                              .copyWith(errorText: _genusError),
+                                        );
+                                      },
+                                  optionsViewBuilder:
+                                      (context, onSelected, options) =>
+                                          _autocompleteOptionsView(
+                                            context,
+                                            onSelected,
+                                            options,
+                                          ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -11545,25 +12157,59 @@ class _UploadSpeciesInformationScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Expanded(
-                                child: TextField(
-                                  controller: _familyController,
-                                  style: _uploadInputTextStyle,
-                                  onChanged: (_) {
-                                    if (_familyError != null) {
-                                      setState(() => _familyError = null);
-                                    }
+                                child: RawAutocomplete<String>(
+                                  textEditingController: _familyController,
+                                  focusNode: _familyFocusNode,
+                                  optionsBuilder: (TextEditingValue value) {
+                                    final String query = value.text
+                                        .trim()
+                                        .toLowerCase();
+                                    if (query.isEmpty)
+                                      return const Iterable<String>.empty();
+                                    return _speciesEpithetSuggestions.where(
+                                      (String s) =>
+                                          s.toLowerCase().contains(query),
+                                    );
                                   },
-                                  decoration: _fieldDecoration().copyWith(
-                                    hintText: 'e.g. amabilis',
-                                    hintStyle: _uploadHintTextStyle,
-                                    errorText: _familyError,
-                                  ),
+                                  fieldViewBuilder:
+                                      (
+                                        context,
+                                        controller,
+                                        focusNode,
+                                        onFieldSubmitted,
+                                      ) {
+                                        return TextField(
+                                          controller: controller,
+                                          focusNode: focusNode,
+                                          style: _uploadInputTextStyle,
+                                          onChanged: (_) {
+                                            if (_familyError != null) {
+                                              setState(
+                                                () => _familyError = null,
+                                              );
+                                            }
+                                          },
+                                          decoration: _fieldDecoration()
+                                              .copyWith(
+                                                hintText: 'e.g. amabilis',
+                                                hintStyle: _uploadHintTextStyle,
+                                                errorText: _familyError,
+                                              ),
+                                        );
+                                      },
+                                  optionsViewBuilder:
+                                      (context, onSelected, options) =>
+                                          _autocompleteOptionsView(
+                                            context,
+                                            onSelected,
+                                            options,
+                                          ),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               _unknownButton(
                                 () => setState(
-                                  () => _familyController.text = 'unknown',
+                                  () => _familyController.text = 'Unknown',
                                 ),
                               ),
                             ],
@@ -11766,23 +12412,69 @@ class _UploadSpeciesInformationScreenState
                             'Species found naturally only in the Philippines and nowhere else in the world.',
                           ),
                           const SizedBox(height: 6),
-                          _dropdownField(
-                            hint: 'Select yes or no',
-                            value: _endemicToPhilippines ? 'Yes' : 'No',
-                            options: const <String>['Yes', 'No'],
-                            onChanged: (String? value) {
-                              if (value != null) {
-                                setState(
-                                  () => _endemicToPhilippines = value == 'Yes',
-                                );
-                              }
-                            },
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _dropdownField(
+                                  hint: 'Select yes, no, or unknown',
+                                  value: _endemicToPhilippines.isEmpty
+                                      ? null
+                                      : _endemicToPhilippines,
+                                  options: const <String>[
+                                    'Yes',
+                                    'No',
+                                    'Unknown',
+                                  ],
+                                  onChanged: (String? value) {
+                                    if (value != null) {
+                                      setState(() {
+                                        _endemicToPhilippines = value;
+                                        _endemicStatus = null;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                height: 46,
+                                child: OutlinedButton(
+                                  onPressed: _autoDetectEndemicStatus,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _uploadPrimary,
+                                    side: const BorderSide(
+                                      color: _uploadPrimary,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  child: const Text('Auto-Detect'),
+                                ),
+                              ),
+                            ],
                           ),
+                          if (_endemicStatus != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _endemicStatus!,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: _endemicStatusColor,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // ── Observation / Collection Details Card ─────────────
+                    // ── Observation / Collection Details Card
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -11977,11 +12669,1454 @@ class _UploadSpeciesInformationScreenState
   }
 }
 
+// ── DAO 2026-20 reference (Threat Level "Check DAO 2026-20" helper)
+// Curated, offline reference data ported from
+// BLOOOM-main/frontend/dao-2026-20-orchid-reference.js so the mobile app's
+// Threat Level field has the same in-app guide the web researcher dashboard
+// does. Sourced from DENR Administrative Order No. 2026-20, "Updated
+// National List of Threatened Philippine Plants and Their Categories"
+// (Sec. 4.9, Sec. 4.13, Sec. 6) — this replaced the app's earlier IUCN Red
+// List-based reference now that DAO 2026-20 is the governing classification
+// used for Philippine orchid conservation status.
+class DaoCategoryDef {
+  const DaoCategoryDef({
+    required this.code,
+    required this.label,
+    required this.color,
+    required this.bg,
+    required this.definition,
+    required this.criteria,
+  });
+  final String code;
+  final String label;
+  final Color color;
+  final Color bg;
+  final String definition;
+  final String criteria;
+}
+
+const List<DaoCategoryDef> kDao202620Categories = <DaoCategoryDef>[
+  DaoCategoryDef(
+    code: 'CR',
+    label: 'Critically Endangered',
+    color: Color(0xFFB91C1C),
+    bg: Color(0xFFFEF2F2),
+    definition:
+        'A species, subspecies, variety, or other infraspecific categories '
+        'facing extremely high risk of extinction in the wild in the '
+        'immediate future.',
+    criteria: 'DAO 2026-20, Sec. 4.13.1.',
+  ),
+  DaoCategoryDef(
+    code: 'EN',
+    label: 'Endangered',
+    color: Color(0xFFC2410C),
+    bg: Color(0xFFFFF7ED),
+    definition:
+        'A species, subspecies, variety, or forma that is not critically '
+        'endangered but whose survival in the wild is unlikely if the '
+        'causal factors continue operating.',
+    criteria: 'DAO 2026-20, Sec. 4.13.2.',
+  ),
+  DaoCategoryDef(
+    code: 'VU',
+    label: 'Vulnerable',
+    color: Color(0xFFA16207),
+    bg: Color(0xFFFEFCE8),
+    definition:
+        'A species or subspecies, variety, forma or other infraspecific '
+        'categories of plant that is not critically endangered nor '
+        'endangered but is under threat from adverse factors throughout '
+        'its range and is likely to move to the endangered category in '
+        'the future.',
+    criteria: 'DAO 2026-20, Sec. 4.13.3.',
+  ),
+  DaoCategoryDef(
+    code: 'OTS',
+    label: 'Other Threatened Species',
+    color: Color(0xFF6D28D9),
+    bg: Color(0xFFF5F3FF),
+    definition:
+        'A species, subspecies, varieties, or other infraspecific '
+        'categories that is not critically endangered, endangered nor '
+        'vulnerable but is under threat from adverse factors, such as '
+        'over collection throughout its range, and is likely to move to '
+        'the vulnerable category in the near future.',
+    criteria: 'DAO 2026-20, Sec. 4.13.4.',
+  ),
+  DaoCategoryDef(
+    code: 'NL',
+    label: 'Not Listed',
+    color: Color(0xFF475569),
+    bg: Color(0xFFF8FAFC),
+    definition:
+        'Not included in the DAO 2026-20 threatened plant list — treated '
+        'as an Other Wildlife Species (OWS).',
+    criteria:
+        'DAO 2026-20, Sec. 4.9 / Sec. 7. Absence from the list is not a '
+        'formal safety assessment; it means DENR has not placed this '
+        'species in a threatened category.',
+  ),
+];
+
+class DaoOrchidRef {
+  const DaoOrchidRef({
+    required this.sci,
+    required this.fullName,
+    required this.common,
+    required this.genus,
+    required this.category,
+    required this.endemic,
+  });
+  final String sci;
+  final String fullName;
+  final String common;
+  final String genus;
+  final String category;
+  final bool endemic;
+}
+
+// sci: clean binomial ("Genus species") used for matching against the
+// submission form's Scientific Name field | fullName: exact name with
+// authorship as printed in DAO 2026-20 | common: common/local name as
+// printed (empty where DAO 2026-20 gives none) | category: code from
+// kDao202620Categories | endemic: true where DAO 2026-20 marks the species
+// with the endemism asterisk. Every Orchidaceae entry in DAO 2026-20 Sec. 6
+// is included — all 108 species across Categories A-D.
+const List<DaoOrchidRef> kDao202620OrchidReference = <DaoOrchidRef>[
+  // -- Category A: Critically Endangered (32) ----------------------------
+  DaoOrchidRef(
+    sci: 'Amesiella monticola',
+    fullName: 'Amesiella monticola Cootes & D.P.Banks',
+    common: 'montane amesiella',
+    genus: 'Amesiella',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum cootesii',
+    fullName: 'Bulbophyllum cootesii M.A.Clem.',
+    common: 'Cootes bulbophyllum',
+    genus: 'Bulbophyllum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Ceratocentron fesselii',
+    fullName: 'Ceratocentron fesselii Senghas',
+    common: 'Fessel horned orchid',
+    genus: 'Ceratocentron',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas boholensis',
+    fullName: 'Corybas boholensis Tandang, R.Bustam., T.Reyes Jr. & S.P.Lyon',
+    common: 'Bohol helmet orchid',
+    genus: 'Corybas',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas hamiguitanensis',
+    fullName: 'Corybas hamiguitanensis Tandang, Galindon & R.Bustam.',
+    common: 'Hamiguitan helmet orchid',
+    genus: 'Corybas',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas kaiganganianus',
+    fullName: 'Corybas kaiganganianus Tandang, A.S.Rob. & M.D.Angeles',
+    common: 'limestone helmet orchid',
+    genus: 'Corybas',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium schuetzei',
+    fullName: 'Dendrobium schuetzei Rolfe',
+    common: 'Scheutze sanggumay',
+    genus: 'Dendrobium',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Gastrochilus calceolaris',
+    fullName: 'Gastrochilus calceolaris (Buch.-Ham. ex Sm.) D.Don',
+    common: '',
+    genus: 'Gastrochilus',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum ravanii',
+    fullName: 'Grammatophyllum ravanii D.Tiu',
+    common: 'Ravan giant orchid',
+    genus: 'Grammatophyllum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum speciosum',
+    fullName: 'Grammatophyllum speciosum Blume',
+    common: 'malatubo, giant orchid',
+    genus: 'Grammatophyllum',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum wallisii',
+    fullName: 'Grammatophyllum wallisii Rchb.f',
+    common: 'Wallis giant orchid',
+    genus: 'Grammatophyllum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Mycaranthes leonardoi',
+    fullName: 'Mycaranthes leonardoi Ferreras & Suarez',
+    common: 'Leonardo mycaranthes',
+    genus: 'Mycaranthes',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum acmodontum',
+    fullName: 'Paphiopedilum acmodontum Schoser ex M.W.Wood',
+    common: 'pointed-tooth lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum adductum',
+    fullName: 'Paphiopedilum adductum Asher',
+    common: 'Mindanao lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum argus',
+    fullName: 'Paphiopedilum argus (Rchb.f.) Stein',
+    common: 'spotted-petal lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum barbatum',
+    fullName: 'Paphiopedilum barbatum (Lindl.) Pfitzer',
+    common: 'bearded lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum ciliolare',
+    fullName: 'Paphiopedilum ciliolare (Rchb.f.) Stein',
+    common: 'short-haired lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum fowliei',
+    fullName: 'Paphiopedilum fowliei Birk',
+    common: 'Fowlie lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum haynaldianum',
+    fullName: 'Paphiopedilum haynaldianum (Rchb.f.) Stein',
+    common: 'Haynald lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum hennisianum',
+    fullName: 'Paphiopedilum hennisianum (M.W.Wood) Fowlie',
+    common: 'Hennis lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum lowii',
+    fullName: 'Paphiopedilum lowii (Lindl.) Stein.',
+    common: 'Low lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum parnatanum',
+    fullName: 'Paphiopedilum parnatanum Cavestro',
+    common: "Parnata's lady slipper orchid",
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum philippinense',
+    fullName: 'Paphiopedilum philippinense (Rchb.f.) Stein',
+    common: 'Philippine lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum randsii',
+    fullName: 'Paphiopedilum randsii Fowlie',
+    common: 'Rands lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Paphiopedilum urbanianum',
+    fullName: 'Paphiopedilum urbanianum Fowlie',
+    common: 'Urban lady slipper orchid',
+    genus: 'Paphiopedilum',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis micholitzii',
+    fullName: 'Phalaenopsis micholitzii Rolfe',
+    common: 'Micholitz moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phragmorchis teretifolia',
+    fullName: 'Phragmorchis teretifolia L.O.Williams',
+    common: '',
+    genus: 'Phragmorchis',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Renanthera caloptera',
+    fullName: 'Renanthera caloptera (Rchb.f.) Kocyan & Schult.',
+    common: '',
+    genus: 'Renanthera',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Stigmatodactylus aquamarinus',
+    fullName: 'Stigmatodactylus aquamarinus A.S.Rob. & Gironella',
+    common: '',
+    genus: 'Stigmatodactylus',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Stigmatodactylus dalagangpalawanicum',
+    fullName: 'Stigmatodactylus dalagangpalawanicum A.S.Rob',
+    common: '',
+    genus: 'Stigmatodactylus',
+    category: 'CR',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Vanda lamellata',
+    fullName: 'Vanda lamellata Lindl.',
+    common: 'bo-o',
+    genus: 'Vanda',
+    category: 'CR',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Vanda sanderiana',
+    fullName: 'Vanda sanderiana Rchb.f.',
+    common: 'waling-waling',
+    genus: 'Vanda',
+    category: 'CR',
+    endemic: true,
+  ),
+
+  // -- Category B: Endangered (48) -----------------------------------------
+  DaoOrchidRef(
+    sci: 'Amesiella philippinensis',
+    fullName: 'Amesiella philippinensis (Ames) Garay',
+    common: 'Philippine amesiella',
+    genus: 'Amesiella',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Aerides lawrenceae',
+    fullName: 'Aerides lawrenceae Rchb.f.',
+    common: "Lawrence cat's tail orchid",
+    genus: 'Aerides',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Arachnis flos-aeris',
+    fullName: 'Arachnis flos-aeris (L.) Rchb.f.',
+    common: 'scorpion orchid',
+    genus: 'Arachnis',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum cumingii',
+    fullName: 'Bulbophyllum cumingii (Lindl.) Rchb.f.',
+    common: 'Cuming bulbophyllum',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum facetum',
+    fullName: 'Bulbophyllum facetum Garay, Hamer & Siegerist',
+    common: '',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum loherianum',
+    fullName: 'Bulbophyllum loherianum (Kraenzl.) Ames',
+    common: 'Loher bulbophyllum',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum piestoglossum',
+    fullName: 'Bulbophyllum piestoglossum J.J.Verm.',
+    common: '',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum nymphopolitanum',
+    fullName: 'Bulbophyllum nymphopolitanum Kraenzl.',
+    common: '',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum savaiense',
+    fullName:
+        'Bulbophyllum savaiense Schltr. ssp. subcubicum (J.J.Sm.) J.J.Verm.',
+    common: '',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum stellatum',
+    fullName: 'Bulbophyllum stellatum Ames',
+    common: '',
+    genus: 'Bulbophyllum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Cleisostoma sagittatum',
+    fullName: 'Cleisostoma sagittatum Blume',
+    common: '',
+    genus: 'Cleisostoma',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Coelogyne confusa',
+    fullName: 'Coelogyne confusa Ames',
+    common: '',
+    genus: 'Coelogyne',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Coelogyne palawanensis',
+    fullName: 'Coelogyne palawanensis Ames',
+    common: 'Palawan coelogyne',
+    genus: 'Coelogyne',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas circinatus',
+    fullName: 'Corybas circinatus Tandang & R.Bustam.',
+    common: 'Palawan helmet orchid',
+    genus: 'Corybas',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas laceratus',
+    fullName: 'Corybas laceratus L.O.Williams',
+    common: 'saw-toothed helmet orchid',
+    genus: 'Corybas',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas merrillii',
+    fullName: 'Corybas merrillii (Ames) Ames',
+    common: 'Merrill helmet orchid',
+    genus: 'Corybas',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Corybas ramosianus',
+    fullName: 'Corybas ramosianus J.Dransf.',
+    common: 'Ramos helmet orchid',
+    genus: 'Corybas',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Cylindrolobus oliviacamposiae',
+    fullName: 'Cylindrolobus oliviacamposiae Naive, Mabanta & Cootes',
+    common: '',
+    genus: 'Cylindrolobus',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Cymbidium aliciae',
+    fullName: 'Cymbidium aliciae Quisumb.',
+    common: '',
+    genus: 'Cymbidium',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Cymbidium ensifolium',
+    fullName: 'Cymbidium ensifolium (L.) Sw.',
+    common: '',
+    genus: 'Cymbidium',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium bullenianum',
+    fullName: 'Dendrobium bullenianum Rchb.f',
+    common: 'Bullen dendrobium',
+    genus: 'Dendrobium',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium goldschmidtianum',
+    fullName: 'Dendrobium goldschmidtianum Kraenzl.',
+    common: 'Goldschmidt dendrobium',
+    genus: 'Dendrobium',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium lunatum',
+    fullName: 'Dendrobium lunatum Lindl.',
+    common: 'Moonlight dendrobium',
+    genus: 'Dendrobium',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrochilum kopfii',
+    fullName: 'Dendrochilum kopfii Luckel',
+    common: 'Kopf dendrochilum',
+    genus: 'Dendrochilum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum martae',
+    fullName: 'Grammatophyllum martae Quisumb. ex Valmayor & D.Tiu',
+    common: 'Marta dapugay',
+    genus: 'Grammatophyllum',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum measuresianum',
+    fullName: 'Grammatophyllum measuresianum Sander',
+    common: 'Measures dapugay',
+    genus: 'Grammatophyllum',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis amabilis',
+    fullName: 'Phalaenopsis amabilis (L.) Blume',
+    common: 'mariposa',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis hieroglyphica',
+    fullName: 'Phalaenopsis hieroglyphica (Rchb.f.) H.R.Sweet',
+    common: 'hieroglyphic moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis lindenii',
+    fullName: 'Phalaenopsis lindenii Loher',
+    common: 'Linden moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis lueddemanniana',
+    fullName: 'Phalaenopsis lueddemanniana Rchb.f.',
+    common: 'Lueddemann moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis pallens',
+    fullName: 'Phalaenopsis pallens (Lindl.) Rchb.f.',
+    common: 'pale moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis philippinensis',
+    fullName: 'Phalaenopsis philippinensis Golamco ex Fowlie & C.Z.Tsang',
+    common: 'Philippine moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis pulchra',
+    fullName: 'Phalaenopsis pulchra (Rchb.f.) H.R.Sweet',
+    common: 'beautiful moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis reichenbachiana',
+    fullName: 'Phalaenopsis reichenbachiana Rchb.f. & Sander',
+    common: 'Reichenbach moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis sanderiana',
+    fullName: 'Phalaenopsis sanderiana Rchb.f.',
+    common: 'Sander moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis schilleriana',
+    fullName: 'Phalaenopsis schilleriana Rchb.f.',
+    common: 'Schiller moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis stuartiana',
+    fullName: 'Phalaenopsis stuartiana Rchb.f.',
+    common: 'Stuart moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Pseuderia samarana',
+    fullName: 'Pseuderia samarana Z.D.Meneses & Cootes',
+    common: '',
+    genus: 'Pseuderia',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Renanthera monachica',
+    fullName: 'Renanthera monachica Ames',
+    common: 'dancing lady fire orchid',
+    genus: 'Renanthera',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Renanthera philippinensis',
+    fullName: 'Renanthera philippinensis (Ames & Quisumb.) L.O.Williams',
+    common: 'Philippine fire orchid',
+    genus: 'Renanthera',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Renanthera storiei',
+    fullName: 'Renanthera storiei Rchb.f.',
+    common: 'Storie fire orchid',
+    genus: 'Renanthera',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Trichoglottis fasciata',
+    fullName: 'Trichoglottis fasciata Rchb.f.',
+    common: 'hairy-lipped orchid',
+    genus: 'Trichoglottis',
+    category: 'EN',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Trichoglottis loheriana',
+    fullName: 'Trichoglottis loheriana (Kraenzl.) L.O.Williams',
+    common: 'Loher hairy-lipped orchid',
+    genus: 'Trichoglottis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Trichoglottis luzonensis',
+    fullName: 'Trichoglottis luzonensis (Ames) Ames',
+    common: 'Luzon hairy-lipped orchid',
+    genus: 'Trichoglottis',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Vanda javierae',
+    fullName: 'Vanda javierae D.Tiu ex Fessel & Luckel',
+    common: 'Javier vanda',
+    genus: 'Vanda',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Vanda luzonica',
+    fullName: 'Vanda luzonica Loher ex Rolfe',
+    common: 'Luzon vanda',
+    genus: 'Vanda',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Vanda merrillii',
+    fullName: 'Vanda merrillii Ames & Quisumb.',
+    common: 'Merrill vanda',
+    genus: 'Vanda',
+    category: 'EN',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Vanda scandens',
+    fullName: 'Vanda scandens Holttum',
+    common: 'climbing vanda',
+    genus: 'Vanda',
+    category: 'EN',
+    endemic: false,
+  ),
+
+  // -- Category C: Vulnerable (27) -----------------------------------------
+  DaoOrchidRef(
+    sci: 'Aerides leeana',
+    fullName: 'Aerides leeana Rchb.f.',
+    common: '',
+    genus: 'Aerides',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Aerides quinquevulnera',
+    fullName: 'Aerides quinquevulnera Lindl.',
+    common: 'five-wound aerides',
+    genus: 'Aerides',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Blepharoglossum palawanense',
+    fullName: 'Blepharoglossum palawanense (Ames) L.Li',
+    common: '',
+    genus: 'Blepharoglossum',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum curranii',
+    fullName: 'Bulbophyllum curranii Ames',
+    common: 'Curran bulbophyllum',
+    genus: 'Bulbophyllum',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Bulbophyllum papulosum',
+    fullName: 'Bulbophyllum papulosum Garay',
+    common: '',
+    genus: 'Bulbophyllum',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Cymboglossum palawanense',
+    fullName: 'Cymboglossum palawanense (Ames) Ormerod & Cootes',
+    common: '',
+    genus: 'Cymboglossum',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium nemorale',
+    fullName: 'Dendrobium nemorale L.O.Williams',
+    common: '',
+    genus: 'Dendrobium',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium sanderae',
+    fullName: 'Dendrobium sanderae Rolfe',
+    common: 'Sander dendrobium',
+    genus: 'Dendrobium',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium secundum',
+    fullName: 'Dendrobium secundum (Blume) Lindl. ex Wall.',
+    common: '',
+    genus: 'Dendrobium',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium usterioides',
+    fullName: 'Dendrobium usterioides Ames',
+    common: '',
+    genus: 'Dendrobium',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrobium victoria-reginae',
+    fullName: 'Dendrobium victoria-reginae Loher',
+    common: 'Queen Victoria dendrobium',
+    genus: 'Dendrobium',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrochilum ignisiflorum',
+    fullName: 'Dendrochilum ignisiflorum M.N.Tamayo & R.Bustam.',
+    common: 'fire dendrochilum',
+    genus: 'Dendrochilum',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Dendrochilum kingii',
+    fullName: 'Dendrochilum kingii (Hook.f.) J.J.Sm.',
+    common: 'King dendrochilum',
+    genus: 'Dendrochilum',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Dilochia deleoniae',
+    fullName: 'Dilochia deleoniae Tandang & Galindon',
+    common: 'De Leon ground orchid',
+    genus: 'Dilochia',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Epigeneium stella-silvae',
+    fullName: 'Epigeneium stella-silvae (Loher & Kraenzl.) Summerh.',
+    common: 'Stella Silva epigeneium',
+    genus: 'Epigeneium',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Epigeneium treacherianum',
+    fullName: 'Epigeneium treacherianum (Rchb.f ex Hook.f.) Summerh.',
+    common: '',
+    genus: 'Epigeneium',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum multiflorum',
+    fullName: 'Grammatophyllum multiflorum Lindl.',
+    common: 'rosa mia',
+    genus: 'Grammatophyllum',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Grammatophyllum scriptum',
+    fullName: 'Grammatophyllum scriptum (L.) Blume',
+    common: 'dapugay',
+    genus: 'Grammatophyllum',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis aphrodite',
+    fullName: 'Phalaenopsis aphrodite Rchb.f',
+    common: 'aphrodite moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis bastianii',
+    fullName: 'Phalaenopsis bastianii O.Gruss & Roellke',
+    common: 'mariposa',
+    genus: 'Phalaenopsis',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis cornu-cervi',
+    fullName: 'Phalaenopsis cornu-cervi (Breda) Blume & Rchb.f.',
+    common: "deer's horn moth orchid",
+    genus: 'Phalaenopsis',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis equestris',
+    fullName: 'Phalaenopsis equestris (Schauer) Rchb.f',
+    common: 'moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis fasciata',
+    fullName: 'Phalaenopsis fasciata Rchb.f.',
+    common: '',
+    genus: 'Phalaenopsis',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Phalaenopsis mariae',
+    fullName: 'Phalaenopsis mariae Burb. ex R.Warner & H.Williams',
+    common: 'Maria moth orchid',
+    genus: 'Phalaenopsis',
+    category: 'VU',
+    endemic: false,
+  ),
+  DaoOrchidRef(
+    sci: 'Pinalia curranii',
+    fullName: 'Pinalia curranii (Leav.) W.Suarez & Cootes',
+    common: '',
+    genus: 'Pinalia',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Renanthera matutina',
+    fullName: 'Renanthera matutina Lindl.',
+    common: '',
+    genus: 'Renanthera',
+    category: 'VU',
+    endemic: true,
+  ),
+  DaoOrchidRef(
+    sci: 'Vandopsis lissochiloides',
+    fullName: 'Vandopsis lissochiloides (Gaudich.) Pfitzer',
+    common: '',
+    genus: 'Vandopsis',
+    category: 'VU',
+    endemic: false,
+  ),
+
+  // -- Category D: Other Threatened Species (1) ----------------------------
+  DaoOrchidRef(
+    sci: 'Acanthophippium mantinianum',
+    fullName: 'Acanthophippium mantinianum L.Linden & Cogn.',
+    common: 'Mantin acanthophippium',
+    genus: 'Acanthophippium',
+    category: 'OTS',
+    endemic: true,
+  ),
+];
+
+DaoCategoryDef? _daoCategoryByCode(String code) {
+  for (final DaoCategoryDef cat in kDao202620Categories) {
+    if (cat.code == code) return cat;
+  }
+  return null;
+}
+
+// DAO 2026-20 category code -> the Threat Level dropdown option label used
+// on the upload form (Page: Conservation & Threat Data).
+const Map<String, String> kDao202620CategoryToThreatLevelOption =
+    <String, String>{
+      'CR': 'Critically Endangered',
+      'EN': 'Endangered',
+      'VU': 'Vulnerable',
+      'OTS': 'Other Threatened Species',
+    };
+
+String _normalizeDaoSciName(String value) {
+  final String v = value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  return v.endsWith('.') ? v.substring(0, v.length - 1) : v;
+}
+
+// Looks a Scientific Name up against the DAO 2026-20 orchid list — shared by
+// the Threat Level and Endemicity auto-detect helpers on the upload form.
+DaoOrchidRef? findDaoOrchidMatch(String scientificName) {
+  final String target = _normalizeDaoSciName(scientificName);
+  if (target.isEmpty) return null;
+  for (final DaoOrchidRef ref in kDao202620OrchidReference) {
+    if (_normalizeDaoSciName(ref.sci) == target) return ref;
+  }
+  return null;
+}
+
+Future<void> showDaoGuideDialog(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.6),
+    builder: (BuildContext context) => const _DaoGuideDialog(),
+  );
+}
+
+class _DaoGuideDialog extends StatefulWidget {
+  const _DaoGuideDialog();
+  @override
+  State<_DaoGuideDialog> createState() => _DaoGuideDialogState();
+}
+
+class _DaoGuideDialogState extends State<_DaoGuideDialog> {
+  bool _searchTab = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _categoryFilter = '';
+  String _genusFilter = '';
+  static const Color _headerStart = Color(0xFF145A1E);
+  static const Color _headerEnd = Color(0xFF3D6C36);
+  List<String> get _genusOptions {
+    final List<String> genera =
+        kDao202620OrchidReference
+            .map((DaoOrchidRef s) => s.genus)
+            .toSet()
+            .toList()
+          ..sort();
+    return genera;
+  }
+
+  List<DaoOrchidRef> get _filteredSpecies {
+    final String query = _searchController.text.trim().toLowerCase();
+    return kDao202620OrchidReference
+        .where((DaoOrchidRef s) {
+          if (_categoryFilter.isNotEmpty && s.category != _categoryFilter) {
+            return false;
+          }
+          if (_genusFilter.isNotEmpty && s.genus != _genusFilter) {
+            return false;
+          }
+          if (query.isEmpty) return true;
+          final String haystack =
+              '${s.sci} ${s.fullName} ${s.common} ${s.genus}'.toLowerCase();
+          return haystack.contains(query);
+        })
+        .toList(growable: false);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Widget _tabButton(String label, bool isActive, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        margin: const EdgeInsets.only(right: 18),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isActive ? _headerStart : Colors.transparent,
+              width: 2.5,
+            ),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: isActive ? _headerStart : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryGuideTab() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        for (final DaoCategoryDef cat in kDao202620Categories)
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: cat.bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: cat.color.withValues(alpha: 0.25)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '${cat.label} (${cat.code})',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: cat.color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  cat.definition,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: cat.color,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  cat.criteria,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFF475569),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSearchTab() {
+    final List<DaoOrchidRef> results = _filteredSpecies;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        TextField(
+          controller: _searchController,
+          onChanged: (_) => setState(() {}),
+          decoration: _uploadInputDecoration(
+            hintText: 'Search scientific, common name, or genus...',
+          ).copyWith(prefixIcon: const Icon(Icons.search_rounded, size: 18)),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                isDense: true,
+                initialValue: _categoryFilter.isEmpty ? null : _categoryFilter,
+                items: <DropdownMenuItem<String>>[
+                  const DropdownMenuItem<String>(
+                    value: '',
+                    child: Text('All Categories'),
+                  ),
+                  for (final DaoCategoryDef cat in kDao202620Categories)
+                    DropdownMenuItem<String>(
+                      value: cat.code,
+                      child: Text('${cat.label} (${cat.code})'),
+                    ),
+                ],
+                onChanged: (String? value) =>
+                    setState(() => _categoryFilter = value ?? ''),
+                decoration: _uploadInputDecoration(hintText: 'All Categories'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                isDense: true,
+                initialValue: _genusFilter.isEmpty ? null : _genusFilter,
+                items: <DropdownMenuItem<String>>[
+                  const DropdownMenuItem<String>(
+                    value: '',
+                    child: Text('All Genera'),
+                  ),
+                  for (final String genus in _genusOptions)
+                    DropdownMenuItem<String>(value: genus, child: Text(genus)),
+                ],
+                onChanged: (String? value) =>
+                    setState(() => _genusFilter = value ?? ''),
+                decoration: _uploadInputDecoration(hintText: 'All Genera'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          '${results.length} of ${kDao202620OrchidReference.length} DAO 2026-20 orchid species',
+          style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+        ),
+        const SizedBox(height: 6),
+        if (results.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              'No matches found.',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF94A3B8),
+              ),
+            ),
+          )
+        else
+          for (final DaoOrchidRef s in results)
+            Builder(
+              builder: (BuildContext context) {
+                final DaoCategoryDef? cat = _daoCategoryByCode(s.category);
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Flexible(
+                                      child: Text(
+                                        s.sci,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF145A1E),
+                                        ),
+                                      ),
+                                    ),
+                                    if (s.endemic) ...<Widget>[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 1,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF0FDFA),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFF99F6E4),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Endemic',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF0F766E),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                Text(
+                                  s.common.isEmpty
+                                      ? 'No recorded common/local name'
+                                      : s.common,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF334155),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  s.fullName,
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontStyle: FontStyle.italic,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (cat != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: cat.bg,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cat.color),
+                              ),
+                              child: Text(
+                                cat.label,
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: cat.color,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        const SizedBox(height: 4),
+        const Text(
+          'This lists every orchid species in DENR Administrative Order '
+          'No. 2026-20, "Updated National List of Threatened Philippine '
+          'Plants and Their Categories." A species not appearing here is '
+          'not formally placed in a threatened category by DENR — record '
+          'it as "Not Listed," which is not the same as confirmed safe.',
+          style: TextStyle(
+            fontSize: 10.5,
+            color: Color(0xFF94A3B8),
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    return Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.all(20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 560,
+          maxHeight: screenSize.height * 0.85,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[_headerStart, _headerEnd],
+                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                children: <Widget>[
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'DAO 2026-20 Reference Guide',
+                          style: TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Official DENR AO No. 2026-20 threat categories — '
+                          'no need to leave BLOOM.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFD1F2D8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+              child: Row(
+                children: <Widget>[
+                  _tabButton(
+                    'DAO 2026-20 Threat Category Guide',
+                    !_searchTab,
+                    () => setState(() => _searchTab = false),
+                  ),
+                  _tabButton(
+                    'Search Assessed Orchids',
+                    _searchTab,
+                    () => setState(() => _searchTab = true),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(18),
+                child: _searchTab
+                    ? _buildSearchTab()
+                    : _buildCategoryGuideTab(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class UploadSpeciesValueScreen extends StatefulWidget {
   const UploadSpeciesValueScreen({required this.flowData, super.key});
-
   final UploadSpeciesFlowData flowData;
-
   @override
   State<UploadSpeciesValueScreen> createState() =>
       _UploadSpeciesValueScreenState();
@@ -11989,7 +14124,6 @@ class UploadSpeciesValueScreen extends StatefulWidget {
 
 class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
   late final UploadSpeciesFlowData _flowData;
-
   static const List<String> _ethnobotanicalOptions = <String>[
     'Medicinal use',
     'Traditional remedy',
@@ -11997,7 +14131,6 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
     'Ritual and ceremonial use',
     'No documented use',
   ];
-
   static const List<String> _aestheticAppealOptions = <String>[
     'Large vibrant blooms',
     'Distinctive petal pattern',
@@ -12005,7 +14138,6 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
     'Elegant growth habit',
     'High ornamental value',
   ];
-
   static const List<String> _cultivationOptions = <String>[
     'Easy to cultivate',
     'Moderate care required',
@@ -12013,15 +14145,6 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
     'Best in greenhouse conditions',
     'Suitable for home growers',
   ];
-
-  static const List<String> _rarityOptions = <String>[
-    'Common',
-    'Uncommon',
-    'Rare',
-    'Very rare',
-    'Critically rare',
-  ];
-
   static const List<String> _culturalImportanceOptions = <String>[
     'Regional symbol species',
     'Used in local celebrations',
@@ -12029,106 +14152,221 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
     'Cultural heritage value',
     'No major cultural record',
   ];
-
   static const List<String> _lifeStageOptions = <String>[
     'Seedling',
     'Juvenile',
     'Mature',
   ];
-
   static const List<String> _phenologyOptions = <String>[
     'Vegetative',
     'Budding',
     'Flowering',
     'Fruiting',
   ];
-
   static const List<String> _populationStatusOptions = <String>[
     'Abundant',
     'Common',
     'Rare',
   ];
-
   static const List<String> _threatLevelOptions = <String>[
     'Critically Endangered',
     'Endangered',
     'Vulnerable',
-    'Least Concern',
+    'Other Threatened Species',
+    'Not Listed',
   ];
-
   static const List<String> _threatTypeOptions = <String>[
     'Logging',
     'Collection',
     'Fire',
     'Land Conversion',
   ];
-
   String? _selectedEthnobotanicalImportance;
   String? _selectedAestheticAppeal;
   String? _selectedCultivation;
-  String? _selectedRarity;
   String? _selectedCulturalImportance;
   String? _selectedLifeStage;
   String? _selectedPhenology;
   String? _selectedPopulationStatus;
   String? _selectedThreatLevel;
-  String? _selectedThreatType;
+  final List<String> _selectedThreatTypes = <String>[];
   bool _isSavingDraft = false;
-
+  // "Type your own" mode per dropdown — lets a researcher enter a value
+  // that isn't in the predefined list, saved to the DB as free text.
+  bool _ethnobotanicalCustom = false;
+  bool _aestheticCustom = false;
+  bool _cultivationCustom = false;
+  bool _culturalCustom = false;
+  bool _lifeStageCustom = false;
+  bool _phenologyCustom = false;
+  bool _populationStatusCustom = false;
+  bool _threatLevelCustom = false;
+  final TextEditingController _ethnobotanicalCustomController =
+      TextEditingController();
+  final TextEditingController _aestheticCustomController =
+      TextEditingController();
+  final TextEditingController _cultivationCustomController =
+      TextEditingController();
+  final TextEditingController _culturalCustomController =
+      TextEditingController();
+  final TextEditingController _lifeStageCustomController =
+      TextEditingController();
+  final TextEditingController _phenologyCustomController =
+      TextEditingController();
+  final TextEditingController _populationStatusCustomController =
+      TextEditingController();
+  final TextEditingController _threatLevelCustomController =
+      TextEditingController();
+  final TextEditingController _threatTypeCustomController =
+      TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _lifeStageKey = GlobalKey();
   final GlobalKey _phenologyKey = GlobalKey();
   final GlobalKey _populationStatusKey = GlobalKey();
   final GlobalKey _threatLevelKey = GlobalKey();
-  final GlobalKey _rarityKey = GlobalKey();
-
   String? _lifeStageError;
   String? _phenologyError;
   String? _populationStatusError;
   String? _threatLevelError;
-  String? _rarityError;
-
+  // DAO 2026-20 Auto-Detect status message shown under the Threat Level
+  // field, matching the web dashboard's autoDetectThreatLevel() helper.
+  String? _threatLevelStatus;
+  Color _threatLevelStatusColor = const Color(0xFF145A1E);
   @override
   void initState() {
     super.initState();
     _flowData = widget.flowData;
+    _selectedEthnobotanicalImportance = _seedEditable(
+      _flowData.ethnobotanicalImportance,
+      _ethnobotanicalOptions,
+      _ethnobotanicalCustomController,
+      (bool v) => _ethnobotanicalCustom = v,
+    );
+    _selectedAestheticAppeal = _seedEditable(
+      _flowData.aestheticAppeal,
+      _aestheticAppealOptions,
+      _aestheticCustomController,
+      (bool v) => _aestheticCustom = v,
+    );
+    _selectedCultivation = _seedEditable(
+      _flowData.cultivation,
+      _cultivationOptions,
+      _cultivationCustomController,
+      (bool v) => _cultivationCustom = v,
+    );
+    _selectedCulturalImportance = _seedEditable(
+      _flowData.culturalImportance,
+      _culturalImportanceOptions,
+      _culturalCustomController,
+      (bool v) => _culturalCustom = v,
+    );
+    _selectedLifeStage = _seedEditable(
+      _flowData.lifeStage,
+      _lifeStageOptions,
+      _lifeStageCustomController,
+      (bool v) => _lifeStageCustom = v,
+    );
+    _selectedPhenology = _seedEditable(
+      _flowData.phenology,
+      _phenologyOptions,
+      _phenologyCustomController,
+      (bool v) => _phenologyCustom = v,
+    );
+    _selectedPopulationStatus = _seedEditable(
+      _flowData.populationStatus,
+      _populationStatusOptions,
+      _populationStatusCustomController,
+      (bool v) => _populationStatusCustom = v,
+    );
+    _selectedThreatLevel = _seedEditable(
+      _flowData.threatLevel,
+      _threatLevelOptions,
+      _threatLevelCustomController,
+      (bool v) => _threatLevelCustom = v,
+    );
+    _selectedThreatTypes.addAll(
+      _flowData.threatTypes.where((String t) => t.trim().isNotEmpty),
+    );
+    // Auto-run the DAO 2026-20 lookup once on load if Threat Level hasn't
+    // been set yet, matching the "automatically input" behavior requested
+    // for this field — still freely overridable via the dropdown or the
+    // Auto-Detect button afterward.
+    if ((_selectedThreatLevel ?? '').trim().isEmpty) {
+      _applyThreatLevelDetection(silent: true);
+    }
+  }
 
-    _selectedEthnobotanicalImportance =
-        _flowData.ethnobotanicalImportance.trim().isEmpty
-        ? null
-        : _flowData.ethnobotanicalImportance.trim();
-    _selectedAestheticAppeal = _flowData.aestheticAppeal.trim().isEmpty
-        ? null
-        : _flowData.aestheticAppeal.trim();
-    _selectedCultivation = _flowData.cultivation.trim().isEmpty
-        ? null
-        : _flowData.cultivation.trim();
-    _selectedRarity = _flowData.rarity.trim().isEmpty
-        ? null
-        : _flowData.rarity.trim();
-    _selectedCulturalImportance = _flowData.culturalImportance.trim().isEmpty
-        ? null
-        : _flowData.culturalImportance.trim();
-    _selectedLifeStage = _flowData.lifeStage.trim().isEmpty
-        ? null
-        : _flowData.lifeStage.trim();
-    _selectedPhenology = _flowData.phenology.trim().isEmpty
-        ? null
-        : _flowData.phenology.trim();
-    _selectedPopulationStatus = _flowData.populationStatus.trim().isEmpty
-        ? null
-        : _flowData.populationStatus.trim();
-    _selectedThreatLevel = _flowData.threatLevel.trim().isEmpty
-        ? null
-        : _flowData.threatLevel.trim();
-    _selectedThreatType = _flowData.threatType.trim().isEmpty
-        ? null
-        : _flowData.threatType.trim();
+  // Looks the Scientific Name (set on Page 1, Basic Taxonomic Information)
+  // up against the DAO 2026-20 orchid list and fills in Threat Level —
+  // mirrors the web dashboard's autoDetectThreatLevel(). The dropdown stays
+  // enabled afterward so a researcher can still correct it by hand.
+  void _applyThreatLevelDetection({bool silent = false}) {
+    final String sciName = _flowData.scientificName.trim();
+    if (sciName.isEmpty) {
+      if (!silent) {
+        _threatLevelStatus =
+            'Enter the Scientific Name on Page 1 (Basic Taxonomic '
+            'Information) first.';
+        _threatLevelStatusColor = const Color(0xFFB42318);
+      }
+      return;
+    }
+    final DaoOrchidRef? match = findDaoOrchidMatch(sciName);
+    if (match != null) {
+      final String label =
+          kDao202620CategoryToThreatLevelOption[match.category] ??
+          match.category;
+      _selectedThreatLevel = label;
+      _threatLevelCustom = false;
+      _threatLevelError = null;
+      _threatLevelStatus =
+          'Matched "${match.fullName}" in DAO 2026-20 — set to $label.';
+      _threatLevelStatusColor = const Color(0xFF145A1E);
+    } else {
+      _selectedThreatLevel = 'Not Listed';
+      _threatLevelCustom = false;
+      _threatLevelError = null;
+      _threatLevelStatus =
+          '"$sciName" was not found in the DAO 2026-20 threatened list — '
+          'set to Not Listed.';
+      _threatLevelStatusColor = const Color(0xFF64748B);
+    }
+  }
+
+  void _autoDetectThreatLevel() {
+    setState(_applyThreatLevelDetection);
+  }
+
+  // Seeds a dropdown+type-your-own field: if the stored value isn't one of
+  // the predefined options, treat it as a custom value the researcher typed
+  // in previously and pre-fill the "type your own" text field with it.
+  String? _seedEditable(
+    String storedValue,
+    List<String> options,
+    TextEditingController customController,
+    void Function(bool) setCustom,
+  ) {
+    final String v = storedValue.trim();
+    if (v.isEmpty) return null;
+    if (!options.contains(v)) {
+      setCustom(true);
+      customController.text = v;
+    }
+    return v;
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _ethnobotanicalCustomController.dispose();
+    _aestheticCustomController.dispose();
+    _cultivationCustomController.dispose();
+    _culturalCustomController.dispose();
+    _lifeStageCustomController.dispose();
+    _phenologyCustomController.dispose();
+    _populationStatusCustomController.dispose();
+    _threatLevelCustomController.dispose();
+    _threatTypeCustomController.dispose();
     super.dispose();
   }
 
@@ -12145,18 +14383,16 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
         (_selectedEthnobotanicalImportance ?? '').trim();
     _flowData.aestheticAppeal = (_selectedAestheticAppeal ?? '').trim();
     _flowData.cultivation = (_selectedCultivation ?? '').trim();
-    _flowData.rarity = (_selectedRarity ?? '').trim();
     _flowData.culturalImportance = (_selectedCulturalImportance ?? '').trim();
     _flowData.lifeStage = (_selectedLifeStage ?? '').trim();
     _flowData.phenology = (_selectedPhenology ?? '').trim();
     _flowData.populationStatus = (_selectedPopulationStatus ?? '').trim();
     _flowData.threatLevel = (_selectedThreatLevel ?? '').trim();
-    _flowData.threatType = (_selectedThreatType ?? '').trim();
+    _flowData.threatTypes = List<String>.from(_selectedThreatTypes);
   }
 
   Future<void> _openImagesScreen() async {
     _syncFlowDataFromForm();
-
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -12186,209 +14422,178 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
     }
   }
 
-  List<String> _optionsWithExistingValue(
-    List<String> options,
-    String? selectedValue,
-  ) {
-    final String normalized = (selectedValue ?? '').trim();
-    if (normalized.isEmpty || options.contains(normalized)) {
-      return options;
-    }
-
-    return <String>[normalized, ...options];
-  }
-
+  static const String _otherSentinel = 'Other';
+  // Plain dropdown (no search box) that also lets the researcher type a
+  // custom value when the one they need isn't in the predefined list
+  // picking "Other" reveals a free-text field whose value is what actually
+  // gets saved to the database.
   Widget _buildDropdownField({
     required String label,
     required String hint,
     required String? value,
     required List<String> options,
-    required ValueChanged<String?> onChanged,
+    required bool isCustom,
+    required TextEditingController customController,
+    required void Function(String? value, bool isCustom) onChanged,
     String? errorText,
+    String? labelActionText,
+    VoidCallback? onLabelAction,
   }) {
-    final List<String> resolvedOptions = _optionsWithExistingValue(
-      options,
-      value,
-    );
-    final bool hasError = errorText != null;
-
+    final List<String> resolvedOptions = <String>[...options, _otherSentinel];
+    final String? dropdownValue = isCustom
+        ? _otherSentinel
+        : _matchDropdownOption(value, options);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel(label),
-        const SizedBox(height: 4),
-        InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () async {
-            final String? picked = await _showSearchablePicker(
-              title: label,
-              options: resolvedOptions,
-              selectedValue: value,
-            );
-            if (picked != null) {
-              onChanged(picked);
-            }
-          },
-          child: InputDecorator(
-            isEmpty: (value ?? '').trim().isEmpty,
-            decoration: _fieldDecoration().copyWith(
-              suffixIcon: Icon(
-                Icons.search_rounded,
-                color: _mutedTextColor,
-                size: 20,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: hasError
-                      ? const Color(0xFFB84040)
-                      : _uploadBorderColor,
-                  width: hasError ? 1.5 : 1,
+        Row(
+          children: <Widget>[
+            _fieldLabel(label),
+            if (onLabelAction != null && labelActionText != null) ...<Widget>[
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: onLabelAction,
+                child: Text(
+                  labelActionText,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: _uploadPrimary,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
-            ),
-            child: Text(
-              (value ?? '').trim().isEmpty ? hint : value!.trim(),
-              style: (value ?? '').trim().isEmpty
-                  ? _uploadHintTextStyle
-                  : _uploadInputTextStyle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 4),
+        DropdownButtonFormField<String>(
+          isDense: true,
+          isExpanded: true,
+          initialValue: dropdownValue,
+          items: resolvedOptions
+              .map(
+                (String option) => DropdownMenuItem<String>(
+                  value: option,
+                  child: Text(option),
+                ),
+              )
+              .toList(growable: false),
+          onChanged: (String? picked) {
+            if (picked == _otherSentinel) {
+              onChanged(
+                customController.text.trim().isEmpty
+                    ? null
+                    : customController.text.trim(),
+                true,
+              );
+            } else {
+              onChanged(picked, false);
+            }
+          },
+          style: _uploadInputTextStyle,
+          decoration: _fieldDecoration().copyWith(
+            hintText: hint,
+            errorText: errorText,
           ),
         ),
-        if (hasError)
-          Padding(
-            padding: const EdgeInsets.only(top: 6, left: 12),
-            child: Text(
-              errorText,
-              style: TextStyle(fontSize: 12, color: Color(0xFFB00020)),
+        if (isCustom) ...<Widget>[
+          const SizedBox(height: 8),
+          TextField(
+            controller: customController,
+            style: _uploadInputTextStyle,
+            decoration: _fieldDecoration().copyWith(
+              hintText: 'Type your own value',
             ),
+            onChanged: (String text) =>
+                onChanged(text.trim().isEmpty ? null : text.trim(), true),
           ),
+        ],
       ],
     );
   }
 
-  Future<String?> _showSearchablePicker({
-    required String title,
-    required List<String> options,
-    String? selectedValue,
-  }) async {
-    return showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: _surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        String query = '';
-        List<String> filtered = options;
-
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 14,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+  // Multi-select (chips, no search box) that also lets the researcher add
+  // threat types beyond the predefined list — matches the web dashboard's
+  // "choose one or more" checkbox group for Threat Type.
+  Widget _buildThreatTypeField() {
+    final List<String> customValues = _selectedThreatTypes
+        .where((String t) => !_threatTypeOptions.contains(t))
+        .toList(growable: false);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _fieldLabel('Threat Type'),
+        const SizedBox(height: 2),
+        Text(
+          'Choose one or more.',
+          style: TextStyle(
+            fontSize: 11,
+            fontStyle: FontStyle.italic,
+            color: _mutedTextColor,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: <Widget>[
+            for (final String option in _threatTypeOptions)
+              FilterChip(
+                label: Text(option),
+                selected: _selectedThreatTypes.contains(option),
+                onSelected: (bool isSelected) {
+                  setState(() {
+                    if (isSelected) {
+                      _selectedThreatTypes.add(option);
+                    } else {
+                      _selectedThreatTypes.remove(option);
+                    }
+                  });
+                },
               ),
-              child: SizedBox(
-                height: 430,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        fontStyle: FontStyle.italic,
-                        color: _textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      onChanged: (String value) {
-                        setModalState(() {
-                          query = value.trim().toLowerCase();
-                          filtered = options
-                              .where(
-                                (String option) =>
-                                    option.toLowerCase().contains(query),
-                              )
-                              .toList(growable: false);
-                        });
-                      },
-                      decoration:
-                          _uploadInputDecoration(
-                            hintText: 'Search options...',
-                          ).copyWith(
-                            prefixIcon: Icon(
-                              Icons.search_rounded,
-                              size: 20,
-                              color: _mutedTextColor,
-                            ),
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Text(
-                                'No matches found.',
-                                style: TextStyle(
-                                  color: _mutedTextColor,
-                                  fontSize: 13,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              itemCount: filtered.length,
-                              separatorBuilder:
-                                  (BuildContext context, int index) =>
-                                      Divider(height: 1, color: _lineColor),
-                              itemBuilder: (BuildContext context, int index) {
-                                final String option = filtered[index];
-                                final bool isSelected =
-                                    option.trim() ==
-                                    (selectedValue ?? '').trim();
-
-                                return ListTile(
-                                  dense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  title: Text(
-                                    option,
-                                    style: TextStyle(
-                                      color: _textColor,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  trailing: isSelected
-                                      ? const Icon(
-                                          Icons.check_rounded,
-                                          size: 18,
-                                          color: _primaryColor,
-                                        )
-                                      : null,
-                                  onTap: () =>
-                                      Navigator.of(context).pop(option),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
+            for (final String custom in customValues)
+              InputChip(
+                label: Text(custom),
+                onDeleted: () {
+                  setState(() => _selectedThreatTypes.remove(custom));
+                },
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: TextField(
+                controller: _threatTypeCustomController,
+                style: _uploadInputTextStyle,
+                decoration: _fieldDecoration().copyWith(
+                  hintText: 'Type your own threat type',
                 ),
+                onSubmitted: (_) => _addCustomThreatType(),
               ),
-            );
-          },
-        );
-      },
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _addCustomThreatType,
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  void _addCustomThreatType() {
+    final String text = _threatTypeCustomController.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      if (!_selectedThreatTypes.contains(text)) {
+        _selectedThreatTypes.add(text);
+      }
+      _threatTypeCustomController.clear();
+    });
   }
 
   @override
@@ -12416,7 +14621,7 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // ── Ecological / Biological Data ──────────────────────
+                    // ── Ecological / Biological Data
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -12445,10 +14650,13 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                                 hint: 'Select life stage',
                                 value: _selectedLifeStage,
                                 options: _lifeStageOptions,
+                                isCustom: _lifeStageCustom,
+                                customController: _lifeStageCustomController,
                                 errorText: _lifeStageError,
-                                onChanged: (String? value) {
+                                onChanged: (String? value, bool isCustom) {
                                   setState(() {
                                     _lifeStageError = null;
+                                    _lifeStageCustom = isCustom;
                                     _selectedLifeStage = value;
                                   });
                                 },
@@ -12465,10 +14673,13 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                                 hint: 'Select phenology',
                                 value: _selectedPhenology,
                                 options: _phenologyOptions,
+                                isCustom: _phenologyCustom,
+                                customController: _phenologyCustomController,
                                 errorText: _phenologyError,
-                                onChanged: (String? value) {
+                                onChanged: (String? value, bool isCustom) {
                                   setState(() {
                                     _phenologyError = null;
+                                    _phenologyCustom = isCustom;
                                     _selectedPhenology = value;
                                   });
                                 },
@@ -12479,7 +14690,7 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // ── Conservation & Threat Data ────────────────────────
+                    // ── Conservation & Threat Data
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -12508,10 +14719,14 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                                 hint: 'Select population status',
                                 value: _selectedPopulationStatus,
                                 options: _populationStatusOptions,
+                                isCustom: _populationStatusCustom,
+                                customController:
+                                    _populationStatusCustomController,
                                 errorText: _populationStatusError,
-                                onChanged: (String? value) {
+                                onChanged: (String? value, bool isCustom) {
                                   setState(() {
                                     _populationStatusError = null;
+                                    _populationStatusCustom = isCustom;
                                     _selectedPopulationStatus = value;
                                   });
                                 },
@@ -12528,33 +14743,70 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                                 hint: 'Select threat level',
                                 value: _selectedThreatLevel,
                                 options: _threatLevelOptions,
+                                isCustom: _threatLevelCustom,
+                                customController: _threatLevelCustomController,
                                 errorText: _threatLevelError,
-                                onChanged: (String? value) {
+                                labelActionText: '(Check DAO 2026-20)',
+                                onLabelAction: () =>
+                                    showDaoGuideDialog(context),
+                                onChanged: (String? value, bool isCustom) {
                                   setState(() {
                                     _threatLevelError = null;
+                                    _threatLevelCustom = isCustom;
                                     _selectedThreatLevel = value;
+                                    _threatLevelStatus = null;
                                   });
                                 },
                               ),
+                              const SizedBox(height: 6),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: OutlinedButton.icon(
+                                  onPressed: _autoDetectThreatLevel,
+                                  icon: const Icon(
+                                    Icons.auto_fix_high_rounded,
+                                    size: 15,
+                                  ),
+                                  label: const Text('Auto-Detect'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: _uploadPrimary,
+                                    side: const BorderSide(
+                                      color: _uploadPrimary,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              ),
+                              if (_threatLevelStatus != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  _threatLevelStatus!,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: _threatLevelStatusColor,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                           const SizedBox(height: 10),
-                          _buildDropdownField(
-                            label: 'Threat Type',
-                            hint: 'Select threat type',
-                            value: _selectedThreatType,
-                            options: _threatTypeOptions,
-                            onChanged: (String? value) {
-                              setState(() {
-                                _selectedThreatType = value;
-                              });
-                            },
-                          ),
+                          _buildThreatTypeField(),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // ── Species Value ─────────────────────────────────────
+                    // ── Species Value
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -12579,8 +14831,11 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                             hint: 'Select ethnobotanical importance',
                             value: _selectedEthnobotanicalImportance,
                             options: _ethnobotanicalOptions,
-                            onChanged: (String? value) {
+                            isCustom: _ethnobotanicalCustom,
+                            customController: _ethnobotanicalCustomController,
+                            onChanged: (String? value, bool isCustom) {
                               setState(() {
+                                _ethnobotanicalCustom = isCustom;
                                 _selectedEthnobotanicalImportance = value;
                               });
                             },
@@ -12591,8 +14846,11 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                             hint: 'Select aesthetic appeal',
                             value: _selectedAestheticAppeal,
                             options: _aestheticAppealOptions,
-                            onChanged: (String? value) {
+                            isCustom: _aestheticCustom,
+                            customController: _aestheticCustomController,
+                            onChanged: (String? value, bool isCustom) {
                               setState(() {
+                                _aestheticCustom = isCustom;
                                 _selectedAestheticAppeal = value;
                               });
                             },
@@ -12603,31 +14861,14 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                             hint: 'Select cultivation level',
                             value: _selectedCultivation,
                             options: _cultivationOptions,
-                            onChanged: (String? value) {
+                            isCustom: _cultivationCustom,
+                            customController: _cultivationCustomController,
+                            onChanged: (String? value, bool isCustom) {
                               setState(() {
+                                _cultivationCustom = isCustom;
                                 _selectedCultivation = value;
                               });
                             },
-                          ),
-                          const SizedBox(height: 10),
-                          Column(
-                            key: _rarityKey,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildDropdownField(
-                                label: 'Rarity',
-                                hint: 'Select rarity level',
-                                value: _selectedRarity,
-                                options: _rarityOptions,
-                                errorText: _rarityError,
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    _rarityError = null;
-                                    _selectedRarity = value;
-                                  });
-                                },
-                              ),
-                            ],
                           ),
                           const SizedBox(height: 10),
                           _buildDropdownField(
@@ -12635,8 +14876,11 @@ class _UploadSpeciesValueScreenState extends State<UploadSpeciesValueScreen> {
                             hint: 'Select cultural importance',
                             value: _selectedCulturalImportance,
                             options: _culturalImportanceOptions,
-                            onChanged: (String? value) {
+                            isCustom: _culturalCustom,
+                            customController: _culturalCustomController,
+                            onChanged: (String? value, bool isCustom) {
                               setState(() {
+                                _culturalCustom = isCustom;
                                 _selectedCulturalImportance = value;
                               });
                             },
@@ -12675,11 +14919,9 @@ class UploadSpeciesSightingsScreen extends StatefulWidget {
     this.showSpeciesValueStep = true,
     super.key,
   });
-
   final UploadSpeciesFlowData flowData;
   final String flowTitle;
   final bool showSpeciesValueStep;
-
   @override
   State<UploadSpeciesSightingsScreen> createState() =>
       _UploadSpeciesSightingsScreenState();
@@ -12688,48 +14930,41 @@ class UploadSpeciesSightingsScreen extends StatefulWidget {
 class _UploadSpeciesSightingsScreenState
     extends State<UploadSpeciesSightingsScreen> {
   late final UploadSpeciesFlowData _flowData;
-
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _mountainController = TextEditingController();
   final TextEditingController _altitudeController = TextEditingController();
   final TextEditingController _elevationController = TextEditingController();
-
   static const List<String> _habitatTypeOptions = <String>[
     'lowland forest',
     'montane forest',
     'mossy forest',
     'Others',
   ];
-
   static const List<String> _microHabitatOptions = <String>[
     'Canopy',
     'understory',
     'forest floor',
     'rock surface',
   ];
-
   static const List<String> _specificSiteOptions = <String>[
     'trail',
     'ridge',
     'streamside',
     'Other',
   ];
-
   static const List<String> _growthSubstrateOptions = <String>[
     'tree bark',
     'soil',
     'rock',
     'decaying wood',
   ];
-
   static const List<String> _lightExposureOptions = <String>[
     'full shade',
     'partial',
     'direct',
   ];
-
   static const List<String> _soilTypeOptions = <String>[
     'Sandy soil',
     'Clay soil',
@@ -12738,7 +14973,6 @@ class _UploadSpeciesSightingsScreenState
     'Volcanic soil',
     'Laterite soil',
   ];
-
   static const List<String> _nearbyWaterSourceOptions = <String>[
     'River',
     'Stream',
@@ -12748,7 +14982,6 @@ class _UploadSpeciesSightingsScreenState
     'None',
     'Unidentified',
   ];
-
   String? _selectedHabitatType;
   String? _selectedMicroHabitat;
   String? _selectedSpecificSite;
@@ -12756,15 +14989,18 @@ class _UploadSpeciesSightingsScreenState
   String? _selectedLightExposure;
   String? _selectedSoilType;
   String? _selectedNearbyWaterSource;
-
+  // "Which Trail" — mirrors the web dashboard's map_trails-backed dropdown
+  // with GPS-proximity auto-suggestion (autoDetectTrailFromCoords).
+  static const double _trailProximityMeters = 300;
+  List<MapTrail> _trails = <MapTrail>[];
+  bool _trailsLoading = false;
+  String? _selectedTrailName;
   late TextEditingController _otherSpecificSiteController;
   late TextEditingController _otherHabitatTypeController;
   late TextEditingController _hostTreeSpeciesController;
   late TextEditingController _hostTreeDiameterController;
   late TextEditingController _canopyCoverController;
-
   bool _isResolvingLocation = false;
-
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _locationFieldKey = GlobalKey();
   final GlobalKey _mountainFieldKey = GlobalKey();
@@ -12772,7 +15008,6 @@ class _UploadSpeciesSightingsScreenState
   final GlobalKey _elevationFieldKey = GlobalKey();
   final GlobalKey _habitatTypeFieldKey = GlobalKey();
   final GlobalKey _microHabitatFieldKey = GlobalKey();
-
   String? _locationError;
   String? _coordinateError;
   String? _mountainError;
@@ -12781,31 +15016,34 @@ class _UploadSpeciesSightingsScreenState
   String? _habitatTypeError;
   String? _microHabitatError;
   bool _isSavingDraft = false;
-
   @override
   void initState() {
     super.initState();
     _flowData = widget.flowData;
-
     _locationController.text = _flowData.location;
     _latitudeController.text = _flowData.latitude;
     _longitudeController.text = _flowData.longitude;
     _mountainController.text = 'Mt. Busa';
     _altitudeController.text = _flowData.altitude;
     _elevationController.text = _flowData.elevation;
-
     _latitudeController.addListener(_reverseGeocodeFromCoordinates);
     _longitudeController.addListener(_reverseGeocodeFromCoordinates);
-
+    _latitudeController.addListener(_autoDetectTrailFromCoords);
+    _longitudeController.addListener(_autoDetectTrailFromCoords);
     _selectedHabitatType = _flowData.habitatType.trim().isEmpty
         ? null
         : _flowData.habitatType.trim();
     _selectedMicroHabitat = _flowData.microHabitat.trim().isEmpty
         ? null
         : _flowData.microHabitat.trim();
-    _selectedSpecificSite = _flowData.specificSite.trim().isEmpty
+    _selectedSpecificSite = _flowData.specificSiteZone.trim().isEmpty
         ? null
-        : _flowData.specificSite.trim();
+        : _flowData.specificSiteZone.trim();
+    if (_selectedSpecificSite == 'trail') {
+      _selectedTrailName = _flowData.specificSite.trim().isEmpty
+          ? null
+          : _flowData.specificSite.trim();
+    }
     _selectedGrowthSubstrate = _flowData.growthSubstrate.trim().isEmpty
         ? null
         : _flowData.growthSubstrate.trim();
@@ -12818,8 +15056,9 @@ class _UploadSpeciesSightingsScreenState
     _selectedNearbyWaterSource = _flowData.nearbyWaterSource.trim().isEmpty
         ? null
         : _flowData.nearbyWaterSource.trim();
-
-    _otherSpecificSiteController = TextEditingController();
+    _otherSpecificSiteController = TextEditingController(
+      text: _selectedSpecificSite == 'Other' ? _flowData.specificSite : '',
+    );
     _otherHabitatTypeController = TextEditingController();
     _hostTreeSpeciesController = TextEditingController(
       text: _flowData.hostTreeSpecies,
@@ -12828,6 +15067,88 @@ class _UploadSpeciesSightingsScreenState
       text: _flowData.hostTreeDiameter,
     );
     _canopyCoverController = TextEditingController(text: _flowData.canopyCover);
+    _loadTrails();
+  }
+
+  Future<void> _loadTrails() async {
+    if (!mounted) return;
+    setState(() => _trailsLoading = true);
+    try {
+      final List<MapTrail> trails = await MapTrailsCache.load();
+      if (!mounted) return;
+      setState(() {
+        _trails = trails;
+        _trailsLoading = false;
+      });
+      _autoDetectTrailFromCoords();
+    } catch (_) {
+      if (mounted) setState(() => _trailsLoading = false);
+    }
+  }
+
+  // Local flat-earth projection distance from a point to a line segment
+  // accurate enough over the few-km span of a mountain trail. Mirrors web's
+  // distanceToSegmentMeters (researcher-dashboard.html).
+  double _distanceToSegmentMeters(LatLng p, LatLng a, LatLng b) {
+    const double mPerDegLat = 111320;
+    final double mPerDegLng = 111320 * cos(a.latitude * pi / 180);
+    final double px = (p.longitude - a.longitude) * mPerDegLng;
+    final double py = (p.latitude - a.latitude) * mPerDegLat;
+    final double bx = (b.longitude - a.longitude) * mPerDegLng;
+    final double by = (b.latitude - a.latitude) * mPerDegLat;
+    final double lenSq = bx * bx + by * by;
+    double t = lenSq > 0 ? (px * bx + py * by) / lenSq : 0;
+    t = t.clamp(0.0, 1.0);
+    final double dx = px - t * bx;
+    final double dy = py - t * by;
+    return sqrt(dx * dx + dy * dy);
+  }
+
+  double _distanceToTrailMeters(LatLng p, MapTrail trail) {
+    if (trail.points.isEmpty) return double.infinity;
+    if (trail.points.length == 1) {
+      return Geolocator.distanceBetween(
+        p.latitude,
+        p.longitude,
+        trail.points.first.latitude,
+        trail.points.first.longitude,
+      );
+    }
+    double min = double.infinity;
+    for (int i = 0; i < trail.points.length - 1; i++) {
+      final double d = _distanceToSegmentMeters(
+        p,
+        trail.points[i],
+        trail.points[i + 1],
+      );
+      if (d < min) min = d;
+    }
+    return min;
+  }
+
+  // Auto-suggests the nearest mapped trail once GPS coordinates are filled,
+  // matching web's autoDetectTrailFromCoords — only when the researcher
+  // hasn't already picked a trail themselves.
+  void _autoDetectTrailFromCoords() {
+    if (_trails.isEmpty || _selectedTrailName != null) return;
+    final double? lat = double.tryParse(_latitudeController.text.trim());
+    final double? lng = double.tryParse(_longitudeController.text.trim());
+    if (lat == null || lng == null) return;
+    MapTrail? best;
+    double bestDistance = double.infinity;
+    for (final MapTrail trail in _trails) {
+      final double d = _distanceToTrailMeters(LatLng(lat, lng), trail);
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = trail;
+      }
+    }
+    if (best == null || bestDistance > _trailProximityMeters) return;
+    if (!mounted) return;
+    setState(() {
+      _selectedSpecificSite = 'trail';
+      _selectedTrailName = best!.name;
+    });
   }
 
   @override
@@ -12908,12 +15229,10 @@ class _UploadSpeciesSightingsScreenState
         ),
       );
       if (!mounted) return;
-
       String locationLabel =
           '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
       String province = '';
       String municipality = '';
-
       try {
         final Uri uri = Uri.https(
           'nominatim.openstreetmap.org',
@@ -12956,7 +15275,6 @@ class _UploadSpeciesSightingsScreenState
           }
         }
       } catch (_) {}
-
       if (!mounted) return;
       setState(() {
         _locationController.text = locationLabel;
@@ -12969,7 +15287,6 @@ class _UploadSpeciesSightingsScreenState
       });
       _flowData.province = province;
       _flowData.municipality = municipality;
-
       final double? terrainElevation = await fetchOpenElevationMeters(
         position.latitude,
         position.longitude,
@@ -12995,12 +15312,9 @@ class _UploadSpeciesSightingsScreenState
   Future<void> _reverseGeocodeFromCoordinates() async {
     final double? lat = double.tryParse(_latitudeController.text.trim());
     final double? lng = double.tryParse(_longitudeController.text.trim());
-
     if (lat == null || lng == null) return;
-
     if (!mounted) return;
     setState(() => _isResolvingLocation = true);
-
     try {
       final Uri uri = Uri.https(
         'nominatim.openstreetmap.org',
@@ -13015,7 +15329,6 @@ class _UploadSpeciesSightingsScreenState
         uri,
         headers: <String, String>{'User-Agent': 'bloom-mobile-upload/1.0'},
       );
-
       if (response.statusCode == 200) {
         final dynamic decoded = jsonDecode(response.body);
         if (decoded is Map<String, dynamic>) {
@@ -13039,7 +15352,6 @@ class _UploadSpeciesSightingsScreenState
               municipality,
               province,
             ].where((String s) => s.isNotEmpty).join(', ');
-
             if (!mounted) return;
             setState(() {
               if (resolved.isNotEmpty) {
@@ -13055,9 +15367,7 @@ class _UploadSpeciesSightingsScreenState
         }
       }
     } catch (_) {}
-
     if (mounted) setState(() => _isResolvingLocation = false);
-
     final double? terrainElevation = await fetchOpenElevationMeters(lat, lng);
     if (terrainElevation != null && mounted) {
       setState(() {
@@ -13089,130 +15399,7 @@ class _UploadSpeciesSightingsScreenState
     if (normalized.isEmpty || options.contains(normalized)) {
       return options;
     }
-
     return <String>[normalized, ...options];
-  }
-
-  Future<String?> _showSearchablePicker({
-    required String title,
-    required List<String> options,
-    String? selectedValue,
-  }) async {
-    return showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: _surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        String query = '';
-        List<String> filtered = options;
-
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 14,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              child: SizedBox(
-                height: 430,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        fontStyle: FontStyle.italic,
-                        color: _textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      onChanged: (String value) {
-                        setModalState(() {
-                          query = value.trim().toLowerCase();
-                          filtered = options
-                              .where(
-                                (String option) =>
-                                    option.toLowerCase().contains(query),
-                              )
-                              .toList(growable: false);
-                        });
-                      },
-                      decoration:
-                          _uploadInputDecoration(
-                            hintText: 'Search options...',
-                          ).copyWith(
-                            prefixIcon: Icon(
-                              Icons.search_rounded,
-                              size: 20,
-                              color: _mutedTextColor,
-                            ),
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Text(
-                                'No matches found.',
-                                style: TextStyle(
-                                  color: _mutedTextColor,
-                                  fontSize: 13,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              itemCount: filtered.length,
-                              separatorBuilder:
-                                  (BuildContext context, int index) =>
-                                      Divider(height: 1, color: _lineColor),
-                              itemBuilder: (BuildContext context, int index) {
-                                final String option = filtered[index];
-                                final bool isSelected =
-                                    option.trim() ==
-                                    (selectedValue ?? '').trim();
-
-                                return ListTile(
-                                  dense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  title: Text(
-                                    option,
-                                    style: TextStyle(
-                                      color: _textColor,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  trailing: isSelected
-                                      ? const Icon(
-                                          Icons.check_rounded,
-                                          size: 18,
-                                          color: _primaryColor,
-                                        )
-                                      : null,
-                                  onTap: () =>
-                                      Navigator.of(context).pop(option),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   Widget _buildSearchableDropdownField({
@@ -13227,7 +15414,6 @@ class _UploadSpeciesSightingsScreenState
       options,
       value,
     );
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -13235,36 +15421,21 @@ class _UploadSpeciesSightingsScreenState
             ? _uploadFieldLabelWithTooltip(label, tooltip)
             : _fieldLabel(label),
         const SizedBox(height: 4),
-        InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () async {
-            final String? picked = await _showSearchablePicker(
-              title: label,
-              options: resolvedOptions,
-              selectedValue: value,
-            );
-            if (picked != null) {
-              onChanged(picked);
-            }
-          },
-          child: InputDecorator(
-            isEmpty: (value ?? '').trim().isEmpty,
-            decoration: _uploadInputDecoration().copyWith(
-              suffixIcon: Icon(
-                Icons.search_rounded,
-                color: _mutedTextColor,
-                size: 20,
-              ),
-            ),
-            child: Text(
-              (value ?? '').trim().isEmpty ? hint : value!.trim(),
-              style: (value ?? '').trim().isEmpty
-                  ? _uploadHintTextStyle
-                  : _uploadInputTextStyle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+        DropdownButtonFormField<String>(
+          isDense: true,
+          isExpanded: true,
+          initialValue: _matchDropdownOption(value, resolvedOptions),
+          items: resolvedOptions
+              .map(
+                (String option) => DropdownMenuItem<String>(
+                  value: option,
+                  child: Text(option),
+                ),
+              )
+              .toList(growable: false),
+          onChanged: onChanged,
+          style: _uploadInputTextStyle,
+          decoration: _uploadInputDecoration(hintText: hint),
         ),
       ],
     );
@@ -13282,9 +15453,16 @@ class _UploadSpeciesSightingsScreenState
       _flowData.habitatType = _otherHabitatTypeController.text.trim();
     }
     _flowData.microHabitat = (_selectedMicroHabitat ?? '').trim();
-    _flowData.specificSite = (_selectedSpecificSite ?? '').trim();
-    if (_selectedSpecificSite == 'Other') {
+    _flowData.specificSiteZone = (_selectedSpecificSite ?? '').trim();
+    // specific_site_other mirrors web: trail name when zone is "trail", the
+    // free-text description when "Other", empty otherwise (ridge/streamside
+    // carry no extra text — the zone value itself is enough).
+    if (_selectedSpecificSite == 'trail') {
+      _flowData.specificSite = (_selectedTrailName ?? '').trim();
+    } else if (_selectedSpecificSite == 'Other') {
       _flowData.specificSite = _otherSpecificSiteController.text.trim();
+    } else {
+      _flowData.specificSite = '';
     }
     _flowData.growthSubstrate = (_selectedGrowthSubstrate ?? '').trim();
     _flowData.hostTreeSpecies = _selectedGrowthSubstrate == 'tree bark'
@@ -13301,7 +15479,6 @@ class _UploadSpeciesSightingsScreenState
 
   Future<void> _showNextPlaceholder() async {
     _syncFlowDataFromForm();
-
     setState(() {
       _locationError = null;
       _coordinateError = null;
@@ -13311,7 +15488,6 @@ class _UploadSpeciesSightingsScreenState
       _habitatTypeError = null;
       _microHabitatError = null;
     });
-
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -13360,7 +15536,6 @@ class _UploadSpeciesSightingsScreenState
           });
         },
       ),
-
       if (_selectedGrowthSubstrate == 'tree bark') ...<Widget>[
         const SizedBox(height: 10),
         _fieldLabel('Tree Species'),
@@ -13532,7 +15707,7 @@ class _UploadSpeciesSightingsScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // ── Geographical Location Card ───────────────────────
+                    // ── Geographical Location Card
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -13740,8 +15915,12 @@ class _UploadSpeciesSightingsScreenState
                             hint: 'Trail, Ridge, Streamside, Others…',
                             value: _selectedSpecificSite,
                             options: _specificSiteOptions,
-                            onChanged: (String? value) =>
-                                setState(() => _selectedSpecificSite = value),
+                            onChanged: (String? value) => setState(() {
+                              _selectedSpecificSite = value;
+                              if (value != 'trail') {
+                                _selectedTrailName = null;
+                              }
+                            }),
                           ),
                           if (_selectedSpecificSite == 'Other') ...<Widget>[
                             const SizedBox(height: 10),
@@ -13751,6 +15930,59 @@ class _UploadSpeciesSightingsScreenState
                               controller: _otherSpecificSiteController,
                               hintText: 'Enter site description',
                             ),
+                          ],
+                          if (_selectedSpecificSite == 'trail') ...<Widget>[
+                            const SizedBox(height: 10),
+                            _fieldLabel('Which Trail'),
+                            const SizedBox(height: 6),
+                            _trailsLoading
+                                ? const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 8),
+                                    child: SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  )
+                                : DropdownButtonFormField<String>(
+                                    isDense: true,
+                                    isExpanded: true,
+                                    initialValue: _matchDropdownOption(
+                                      _selectedTrailName,
+                                      _optionsWithExistingValue(
+                                        _trails
+                                            .map((MapTrail t) => t.name)
+                                            .toList(),
+                                        _selectedTrailName,
+                                      ),
+                                    ),
+                                    items:
+                                        _optionsWithExistingValue(
+                                              _trails
+                                                  .map((MapTrail t) => t.name)
+                                                  .toList(),
+                                              _selectedTrailName,
+                                            )
+                                            .map(
+                                              (String option) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: option,
+                                                    child: Text(option),
+                                                  ),
+                                            )
+                                            .toList(growable: false),
+                                    onChanged: (String? value) {
+                                      setState(() {
+                                        _selectedTrailName = value;
+                                      });
+                                    },
+                                    style: _uploadInputTextStyle,
+                                    decoration: _fieldDecoration(
+                                      'Select the nearest mapped trail',
+                                    ),
+                                  ),
                           ],
                           const SizedBox(height: 12),
                           Row(
@@ -13826,7 +16058,7 @@ class _UploadSpeciesSightingsScreenState
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // ── Habitat Information Card ────────────────────────
+                    // ── Habitat Information Card
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -13880,10 +16112,8 @@ class UploadSpeciesMorphologyScreen extends StatefulWidget {
     this.showSpeciesValueStep = true,
     super.key,
   });
-
   final UploadSpeciesFlowData flowData;
   final bool showSpeciesValueStep;
-
   @override
   State<UploadSpeciesMorphologyScreen> createState() =>
       _UploadSpeciesMorphologyScreenState();
@@ -13892,7 +16122,6 @@ class UploadSpeciesMorphologyScreen extends StatefulWidget {
 class _UploadSpeciesMorphologyScreenState
     extends State<UploadSpeciesMorphologyScreen> {
   late final UploadSpeciesFlowData _flowData;
-
   static const List<String> _flowerColorOptions = <String>[
     'White',
     'Cream',
@@ -13906,7 +16135,6 @@ class _UploadSpeciesMorphologyScreenState
     'Multicolor',
     'Other...',
   ];
-
   static const List<String> _monthOptions = <String>[
     'January',
     'February',
@@ -13921,9 +16149,7 @@ class _UploadSpeciesMorphologyScreenState
     'November',
     'December',
   ];
-
   static const List<String> _pseudobulbOptions = <String>['Yes', 'No'];
-
   static const List<String> _leafShapeOptions = <String>[
     'Linear & Narrow',
     'Rounded & Oval',
@@ -13931,39 +16157,33 @@ class _UploadSpeciesMorphologyScreenState
     'Reversed',
     'Specialized Shapes',
   ];
-
   static const List<String> _leafTextureOptions = <String>[
     'Smooth',
     'Leathery',
     'Hairy or Fuzzy',
     'Thin or Fragile',
   ];
-
   static const List<String> _leafArrangementOptions = <String>[
     'Alternate',
     'Opposite',
     'Whorled',
   ];
-
   static const List<String> _inflorescenceTypeOptions = <String>[
     'Raceme',
     'Spike',
     'Panicle',
     'Solitary',
   ];
-
   static const List<String> _petalCharacteristicsOptions = <String>[
     'Obovate',
     'Elliptic',
     'Spatulate',
   ];
-
   static const List<String> _labellumOptions = <String>[
     'Trilobed (Three-lobed)',
     'Saccate (Bag-like)',
     'Spurred',
   ];
-
   static const List<String> _fragranceOptions = <String>[
     'None',
     'Faint',
@@ -13972,27 +16192,23 @@ class _UploadSpeciesMorphologyScreenState
     'Musky',
     'Spicy',
   ];
-
   static const List<String> _bloomingStageOptions = <String>[
     'Budding',
     'Anthesis (Early)',
     'Full Bloom',
     'Senescent',
   ];
-
   static const List<String> _fruitTypeOptions = <String>[
     'Capsule',
     'Pod',
     'Berry',
   ];
-
   static const List<String> _seedCapsuleConditionOptions = <String>[
     'Immature (Green)',
     'Mature (Yellow/Brown)',
     'Dehisced (Split)',
     'Aborted',
   ];
-
   String? _selectedLeafType;
   String? _selectedFlowerColor;
   late TextEditingController _flowerColorCustomController;
@@ -14000,13 +16216,11 @@ class _UploadSpeciesMorphologyScreenState
   String? _selectedFloweringToMonth;
   bool _floweringSeasonUnknown = false;
   bool _isSavingDraft = false;
-
   // Plant Structure
   late TextEditingController _plantHeightController;
   String? _selectedPseudobulbPresent;
   late TextEditingController _stemLengthController;
   late TextEditingController _rootLengthController;
-
   // Leaves
   late TextEditingController _numberOfLeavesController;
   String? _selectedLeafShape;
@@ -14014,7 +16228,6 @@ class _UploadSpeciesMorphologyScreenState
   late TextEditingController _leafWidthController;
   List<String> _selectedLeafTexture = <String>[];
   String? _selectedLeafArrangement;
-
   // Flowers
   late TextEditingController _numberOfFlowersController;
   late TextEditingController _flowerDiameterController;
@@ -14024,12 +16237,10 @@ class _UploadSpeciesMorphologyScreenState
   String? _selectedLabellumDescription;
   String? _selectedFragrance;
   String? _selectedBloomingStage;
-
   // Fruits/Seeds
   String? _selectedFruitPresent;
   String? _selectedFruitType;
   String? _selectedSeedCapsuleCondition;
-
   @override
   void initState() {
     super.initState();
@@ -14062,7 +16273,6 @@ class _UploadSpeciesMorphologyScreenState
             _flowData.floweringToMonth == 'Unknown'
         ? null
         : _flowData.floweringToMonth;
-
     // Plant Structure
     _plantHeightController = TextEditingController(text: _flowData.plantHeight);
     _selectedPseudobulbPresent = _flowData.pseudobulbPresent.trim().isEmpty
@@ -14070,7 +16280,6 @@ class _UploadSpeciesMorphologyScreenState
         : _flowData.pseudobulbPresent;
     _stemLengthController = TextEditingController(text: _flowData.stemLength);
     _rootLengthController = TextEditingController(text: _flowData.rootLength);
-
     // Leaves
     _numberOfLeavesController = TextEditingController(
       text: _flowData.numberOfLeaves,
@@ -14086,7 +16295,6 @@ class _UploadSpeciesMorphologyScreenState
     _selectedLeafArrangement = _flowData.leafArrangement.trim().isEmpty
         ? null
         : _flowData.leafArrangement;
-
     // Flowers
     _numberOfFlowersController = TextEditingController(
       text: _flowData.numberOfFlowers,
@@ -14113,7 +16321,6 @@ class _UploadSpeciesMorphologyScreenState
     _selectedBloomingStage = _flowData.bloomingStage.trim().isEmpty
         ? null
         : _flowData.bloomingStage;
-
     // Fruits/Seeds
     _selectedFruitPresent = _flowData.fruitPresent.trim().isEmpty
         ? null
@@ -14154,13 +16361,11 @@ class _UploadSpeciesMorphologyScreenState
       _flowData.floweringFromMonth = (_selectedFloweringFromMonth ?? '').trim();
       _flowData.floweringToMonth = (_selectedFloweringToMonth ?? '').trim();
     }
-
     // Plant Structure
     _flowData.plantHeight = _plantHeightController.text.trim();
     _flowData.pseudobulbPresent = (_selectedPseudobulbPresent ?? '').trim();
     _flowData.stemLength = _stemLengthController.text.trim();
     _flowData.rootLength = _rootLengthController.text.trim();
-
     // Leaves
     _flowData.numberOfLeaves = _numberOfLeavesController.text.trim();
     _flowData.leafShape = (_selectedLeafShape ?? '').trim();
@@ -14168,7 +16373,6 @@ class _UploadSpeciesMorphologyScreenState
     _flowData.leafWidth = _leafWidthController.text.trim();
     _flowData.leafTexture = _selectedLeafTexture.join(', ');
     _flowData.leafArrangement = (_selectedLeafArrangement ?? '').trim();
-
     // Flowers
     _flowData.numberOfFlowers = _numberOfFlowersController.text.trim();
     _flowData.flowerDiameter = _flowerDiameterController.text.trim();
@@ -14180,7 +16384,6 @@ class _UploadSpeciesMorphologyScreenState
     _flowData.labellumDescription = (_selectedLabellumDescription ?? '').trim();
     _flowData.fragrance = (_selectedFragrance ?? '').trim();
     _flowData.bloomingStage = (_selectedBloomingStage ?? '').trim();
-
     // Fruits/Seeds
     _flowData.fruitPresent = (_selectedFruitPresent ?? '').trim();
     _flowData.fruitType = (_selectedFruitType ?? '').trim();
@@ -14221,7 +16424,6 @@ class _UploadSpeciesMorphologyScreenState
   }
 
   InputDecoration _fieldDecoration() => _uploadInputDecoration();
-
   Widget _dropdownField({
     required String hint,
     required String? value,
@@ -14231,7 +16433,7 @@ class _UploadSpeciesMorphologyScreenState
     return DropdownButtonFormField<String>(
       isDense: true,
       isExpanded: true,
-      initialValue: value,
+      initialValue: _matchDropdownOption(value, options),
       items: options
           .map(
             (String option) =>
@@ -14248,7 +16450,6 @@ class _UploadSpeciesMorphologyScreenState
   }
 
   Widget _fieldLabel(String text) => Text(text, style: _uploadFieldLabelStyle);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14273,7 +16474,7 @@ class _UploadSpeciesMorphologyScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // ── Plant Structure ───────────────────────────────────
+                    // ── Plant Structure
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -14363,7 +16564,7 @@ class _UploadSpeciesMorphologyScreenState
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // ── Leaves ────────────────────────────────────────────
+                    // ── Leaves
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -14543,7 +16744,7 @@ class _UploadSpeciesMorphologyScreenState
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // ── Flowers ───────────────────────────────────────────
+                    // ── Flowers
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -14827,7 +17028,7 @@ class _UploadSpeciesMorphologyScreenState
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // ── Fruits / Seeds ────────────────────────────────────
+                    // ── Fruits / Seeds
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -14922,11 +17123,9 @@ class _ContributorEntry {
     String other = '',
   }) : nameController = TextEditingController(text: name),
        otherController = TextEditingController(text: other);
-
   final TextEditingController nameController;
   final TextEditingController otherController;
   String? selectedPosition;
-
   void dispose() {
     nameController.dispose();
     otherController.dispose();
@@ -14944,11 +17143,23 @@ class _ContributorEntry {
   ];
 }
 
+class _RelatedStudyFormEntry {
+  _RelatedStudyFormEntry({String title = '', String link = '', this.filePath})
+    : titleController = TextEditingController(text: title),
+      linkController = TextEditingController(text: link);
+  final TextEditingController titleController;
+  final TextEditingController linkController;
+  String? filePath;
+  String get fileName => (filePath ?? '').split('/').last.split('\\').last;
+  void dispose() {
+    titleController.dispose();
+    linkController.dispose();
+  }
+}
+
 class UploadSpeciesImagesScreen extends StatefulWidget {
   const UploadSpeciesImagesScreen({required this.flowData, super.key});
-
   final UploadSpeciesFlowData flowData;
-
   @override
   State<UploadSpeciesImagesScreen> createState() =>
       _UploadSpeciesImagesScreenState();
@@ -14956,12 +17167,14 @@ class UploadSpeciesImagesScreen extends StatefulWidget {
 
 class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
   final ImagePicker _imagePicker = ImagePicker();
-  static const int _maxImageBytes = 5 * 1024 * 1024;
+  // Original (uncompressed) photos are kept — see _pickImagesForCategory
+  // so GPS EXIF survives for offline coordinate auto-fill; the size cap is
+  // correspondingly higher than a typical re-encoded upload limit.
+  static const int _maxImageBytes = 12 * 1024 * 1024;
   static const String _catSpecimen = 'specimen_photo';
   static const String _catWholePlant = 'whole_plant';
   static const String _catCloseupFlower = 'closeup_flower';
   static const String _catHabitat = 'habitat_photo';
-
   late final UploadSpeciesFlowData _flowData;
   final List<UploadSpeciesImageDraft> _specimenPhotos =
       <UploadSpeciesImageDraft>[];
@@ -14972,28 +17185,22 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
   final List<UploadSpeciesImageDraft> _habitatPhotos =
       <UploadSpeciesImageDraft>[];
   final Map<String, Uint8List> _imageBytesCache = <String, Uint8List>{};
-
   String? _videoPath;
   bool _isPickingImage = false;
   bool _isPickingVideo = false;
   bool _isSavingDraft = false;
   String? _headResearcherError;
-
   late final TextEditingController _headResearcherController;
   late final TextEditingController _institutionController;
   late final TextEditingController _researcherNotesController;
   late final TextEditingController _unusualObservationsController;
-  late final TextEditingController _studyTitleController;
-  late final TextEditingController _studyLinkController;
-  String? _studyFilePath;
-  String? _studyFileName;
+  final List<_RelatedStudyFormEntry> _relatedStudyEntries =
+      <_RelatedStudyFormEntry>[];
   final List<_ContributorEntry> _contributorEntries = <_ContributorEntry>[];
-
   @override
   void initState() {
     super.initState();
     _flowData = widget.flowData;
-
     for (final UploadSpeciesImageDraft image in _flowData.images) {
       _listForCategory(image.category).add(
         UploadSpeciesImageDraft(
@@ -15005,7 +17212,6 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
       );
       _loadPreviewForPath(image.path);
     }
-
     _videoPath = _flowData.videoPath.trim().isEmpty
         ? null
         : _flowData.videoPath.trim();
@@ -15019,13 +17225,18 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
     _unusualObservationsController = TextEditingController(
       text: _flowData.unusualObservations,
     );
-    _studyTitleController = TextEditingController(text: _flowData.studyTitle);
-    _studyLinkController = TextEditingController(text: _flowData.studyLink);
-    if (_flowData.studyFilePath.trim().isNotEmpty) {
-      _studyFilePath = _flowData.studyFilePath;
-      _studyFileName = _flowData.studyFilePath.split('/').last.split('\\').last;
+    for (final UploadRelatedStudyEntry study in _flowData.relatedStudies) {
+      _relatedStudyEntries.add(
+        _RelatedStudyFormEntry(
+          title: study.title,
+          link: study.link,
+          filePath: study.filePath.trim().isEmpty ? null : study.filePath,
+        ),
+      );
     }
-
+    if (_relatedStudyEntries.isEmpty) {
+      _relatedStudyEntries.add(_RelatedStudyFormEntry());
+    }
     if (_flowData.contributors.isNotEmpty) {
       for (final UploadContributorDraft c in _flowData.contributors) {
         final bool isKnown = _ContributorEntry.positionOptions
@@ -15053,8 +17264,9 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
     _institutionController.dispose();
     _researcherNotesController.dispose();
     _unusualObservationsController.dispose();
-    _studyTitleController.dispose();
-    _studyLinkController.dispose();
+    for (final _RelatedStudyFormEntry e in _relatedStudyEntries) {
+      e.dispose();
+    }
     for (final _ContributorEntry e in _contributorEntries) {
       e.dispose();
     }
@@ -15153,12 +17365,8 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
         }
       }
     } catch (_) {}
-
     if (_flowData.elevation.trim().isEmpty) {
-      final double? terrainElevation = await fetchOpenElevationMeters(
-        lat,
-        lng,
-      );
+      final double? terrainElevation = await fetchOpenElevationMeters(lat, lng);
       if (terrainElevation != null) {
         _flowData.elevation = terrainElevation.toStringAsFixed(1);
       }
@@ -15173,10 +17381,11 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
       _isPickingImage = true;
     });
     try {
-      final List<XFile> picked = await _imagePicker.pickMultiImage(
-        imageQuality: 80,
-        maxWidth: 2048,
-      );
+      // No imageQuality/maxWidth here on purpose: image_picker recompresses
+      // through those, which strips EXIF (including GPS) on most devices
+      // that would silently break the auto-fill-coordinates-from-photo
+      // feature below. Picking the original file keeps the GPS tag intact.
+      final List<XFile> picked = await _imagePicker.pickMultiImage();
       if (picked.isEmpty) {
         return;
       }
@@ -15221,7 +17430,6 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text('$added image(s) added.')));
       }
-
       // Auto-fill GPS from EXIF — scan every uploaded image until one has coords.
       if (added > 0 &&
           _flowData.latitude.trim().isEmpty &&
@@ -15321,9 +17529,15 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
     _flowData.institution = _institutionController.text.trim();
     _flowData.researcherNotes = _researcherNotesController.text.trim();
     _flowData.unusualObservations = _unusualObservationsController.text.trim();
-    _flowData.studyTitle = _studyTitleController.text.trim();
-    _flowData.studyLink = _studyLinkController.text.trim();
-    _flowData.studyFilePath = _studyFilePath ?? '';
+    _flowData.relatedStudies = _relatedStudyEntries
+        .map(
+          (_RelatedStudyFormEntry e) => UploadRelatedStudyEntry(
+            title: e.titleController.text.trim(),
+            link: e.linkController.text.trim(),
+            filePath: e.filePath ?? '',
+          ),
+        )
+        .toList();
     _flowData.contributors = _contributorEntries
         .where((e) => e.nameController.text.trim().isNotEmpty)
         .map(
@@ -15339,7 +17553,7 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
         .toList(growable: false);
   }
 
-  Future<void> _pickStudyFile() async {
+  Future<void> _pickStudyFile(int index) async {
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: <String>['pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx'],
@@ -15349,15 +17563,161 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
     if (result != null && result.files.isNotEmpty) {
       final PlatformFile file = result.files.first;
       setState(() {
-        _studyFilePath = file.path;
-        _studyFileName = file.name;
+        _relatedStudyEntries[index].filePath = file.path;
       });
     }
   }
 
+  void _addRelatedStudy() {
+    setState(() {
+      _relatedStudyEntries.add(_RelatedStudyFormEntry());
+    });
+  }
+
+  void _removeRelatedStudy(int index) {
+    setState(() {
+      _relatedStudyEntries[index].dispose();
+      _relatedStudyEntries.removeAt(index);
+    });
+  }
+
+  Widget _buildRelatedStudyEntry(int index) {
+    final _RelatedStudyFormEntry entry = _relatedStudyEntries[index];
+    final bool hasFile = (entry.filePath ?? '').trim().isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        if (_relatedStudyEntries.length > 1)
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  'Study ${index + 1}',
+                  style: _uploadFieldLabelStyle.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _removeRelatedStudy(index),
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                  color: _uploadPrimary,
+                ),
+              ),
+            ],
+          ),
+        if (_relatedStudyEntries.length > 1) const SizedBox(height: 8),
+        // Title of Study
+        Text('Title of Study', style: _uploadFieldLabelStyle),
+        const SizedBox(height: 6),
+        TextField(
+          controller: entry.titleController,
+          style: _uploadInputTextStyle,
+          decoration: _uploadInputDecoration(
+            hintText: 'Enter the title of the related study',
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Source Link
+        Text('Source Link', style: _uploadFieldLabelStyle),
+        const SizedBox(height: 6),
+        TextField(
+          controller: entry.linkController,
+          style: _uploadInputTextStyle,
+          keyboardType: TextInputType.url,
+          decoration: _uploadInputDecoration(hintText: 'https://doi.org/...')
+              .copyWith(
+                prefixIcon: const Icon(
+                  Icons.link_rounded,
+                  size: 18,
+                  color: _uploadPrimary,
+                ),
+              ),
+        ),
+        const SizedBox(height: 12),
+        // File Upload
+        Text('Upload Study File', style: _uploadFieldLabelStyle),
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: () => _pickStudyFile(index),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5FAF0),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFD0E8CC), width: 1.5),
+            ),
+            child: hasFile
+                ? Row(
+                    children: <Widget>[
+                      const Icon(
+                        Icons.description_outlined,
+                        size: 20,
+                        color: _uploadPrimary,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          entry.fileName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF082809),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          entry.filePath = null;
+                        }),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: _uploadPrimary,
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const <Widget>[
+                      Icon(
+                        Icons.upload_file_rounded,
+                        size: 20,
+                        color: _uploadPrimary,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Tap to attach a file',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: _uploadPrimary,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Accepted: PDF, DOC, DOCX, PPT, PPTX, TXT',
+          style: TextStyle(
+            fontSize: 11,
+            color: Color(0xFF9CA3AF),
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _saveDraft() async {
     if (_isSavingDraft) return;
-
     // Validate required field
     if (_headResearcherController.text.trim().isEmpty) {
       setState(
@@ -15365,7 +17725,6 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
       );
       return;
     }
-
     setState(() {
       _isSavingDraft = true;
     });
@@ -15588,7 +17947,7 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // ── Multimedia Documentation ──────────────────────
+                    // ── Multimedia Documentation
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -15625,7 +17984,7 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // ── Video Documentation ───────────────────────────
+                    // ── Video Documentation
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -15698,7 +18057,7 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // ── Contributors ───────────────────────────────────
+                    // ── Contributors
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -15857,7 +18216,7 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // ── Notes & Remarks ─────────────────────────────────
+                    // ── Notes & Remarks
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -15884,7 +18243,7 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // ── Related Study ────────────────────────────────────
+                    // ── Related Study
                     _uploadFormCard(
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -15917,120 +18276,29 @@ class _UploadSpeciesImagesScreenState extends State<UploadSpeciesImagesScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
-                          // Title of Study
-                          Text('Title of Study', style: _uploadFieldLabelStyle),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _studyTitleController,
-                            style: _uploadInputTextStyle,
-                            decoration: _uploadInputDecoration(
-                              hintText: 'Enter the title of the related study',
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Source Link
-                          Text('Source Link', style: _uploadFieldLabelStyle),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _studyLinkController,
-                            style: _uploadInputTextStyle,
-                            keyboardType: TextInputType.url,
-                            decoration:
-                                _uploadInputDecoration(
-                                  hintText: 'https://doi.org/...',
-                                ).copyWith(
-                                  prefixIcon: const Icon(
-                                    Icons.link_rounded,
-                                    size: 18,
-                                    color: _uploadPrimary,
-                                  ),
-                                ),
-                          ),
-                          const SizedBox(height: 12),
-                          // File Upload
-                          Text(
-                            'Upload Study File',
-                            style: _uploadFieldLabelStyle,
-                          ),
-                          const SizedBox(height: 6),
-                          GestureDetector(
-                            onTap: _pickStudyFile,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
+                          for (int i = 0; i < _relatedStudyEntries.length; i++)
+                            Padding(
+                              padding: EdgeInsets.only(
+                                bottom: i == _relatedStudyEntries.length - 1
+                                    ? 0
+                                    : 18,
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5FAF0),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFD0E8CC),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: _studyFileName != null
-                                  ? Row(
-                                      children: <Widget>[
-                                        const Icon(
-                                          Icons.description_outlined,
-                                          size: 20,
-                                          color: _uploadPrimary,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Text(
-                                            _studyFileName!,
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              color: Color(0xFF082809),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () => setState(() {
-                                            _studyFilePath = null;
-                                            _studyFileName = null;
-                                          }),
-                                          child: const Icon(
-                                            Icons.close_rounded,
-                                            size: 18,
-                                            color: _uploadPrimary,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: const <Widget>[
-                                        Icon(
-                                          Icons.upload_file_rounded,
-                                          size: 20,
-                                          color: _uploadPrimary,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Tap to attach a file',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: _uploadPrimary,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                              child: _buildRelatedStudyEntry(i),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Accepted: PDF, DOC, DOCX, PPT, PPTX, TXT',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF9CA3AF),
-                              fontStyle: FontStyle.italic,
+                          const SizedBox(height: 10),
+                          TextButton.icon(
+                            onPressed: _addRelatedStudy,
+                            icon: const Icon(
+                              Icons.add_circle_outline_rounded,
+                              size: 18,
+                              color: _uploadPrimary,
+                            ),
+                            label: const Text(
+                              'Add Another Study',
+                              style: TextStyle(
+                                color: _uploadPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -16074,18 +18342,15 @@ class _WebDraft {
     required this.scientificName,
     required this.rawData,
   });
-
   final String draftId;
   final DateTime updatedAt;
   final String scientificName;
   final Map<String, dynamic> rawData;
-
   static Future<List<_WebDraft>> load() async {
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String? email = supabase.auth.currentUser?.email;
       if (email == null || email.isEmpty) return const <_WebDraft>[];
-
       final List<dynamic> rows = await supabase
           .from('species_sightings')
           .select(
@@ -16094,8 +18359,8 @@ class _WebDraft {
           )
           .eq('researcher_email', email)
           .eq('review_status', 'draft')
-          .order('updated_at', ascending: false);
-
+          .order('updated_at', ascending: false)
+          .timeout(_kNetworkTimeout);
       return rows
           .whereType<Map>()
           // Exclude mobile-synced rows — those are owned by local app storage,
@@ -16169,7 +18434,6 @@ class _WebDraft {
         <String, dynamic>{};
     final List<dynamic> teamMemberRows =
         (r['sighting_team_member'] as List?) ?? <dynamic>[];
-
     String prefStr(String flatKey, Map<String, dynamic> sub, String subKey) {
       final dynamic v = sub[subKey];
       if (v != null) {
@@ -16179,11 +18443,7 @@ class _WebDraft {
       return str(flatKey);
     }
 
-    String prefNumStr(
-      String flatKey,
-      Map<String, dynamic> sub,
-      String subKey,
-    ) {
+    String prefNumStr(String flatKey, Map<String, dynamic> sub, String subKey) {
       final dynamic v = sub[subKey];
       if (v != null) {
         final String s = v.toString().trim();
@@ -16212,6 +18472,57 @@ class _WebDraft {
       return str(flatKey);
     }
 
+    List<String> prefListStr(
+      String flatKey,
+      Map<String, dynamic> sub,
+      String subKey,
+    ) {
+      final dynamic v = sub[subKey];
+      if (v is List && v.isNotEmpty) {
+        return v
+            .map((dynamic e) => e.toString().trim())
+            .where((String s) => s.isNotEmpty)
+            .toList();
+      }
+      final String single = str(flatKey);
+      return single.isNotEmpty ? <String>[single] : <String>[];
+    }
+
+    List<UploadRelatedStudyEntry> parseRelatedStudies(String key) {
+      final dynamic raw = r[key];
+      if (raw == null) return <UploadRelatedStudyEntry>[];
+      dynamic decoded = raw;
+      if (raw is String) {
+        final String trimmed = raw.trim();
+        if (trimmed.isEmpty) return <UploadRelatedStudyEntry>[];
+        try {
+          decoded = jsonDecode(trimmed);
+        } catch (_) {
+          return <UploadRelatedStudyEntry>[];
+        }
+      }
+      if (decoded is List) {
+        return decoded
+            .whereType<Map>()
+            .map(
+              (Map e) => UploadRelatedStudyEntry.fromJson(
+                Map<String, dynamic>.from(e),
+              ),
+            )
+            .toList();
+      }
+      if (decoded is Map) {
+        // Legacy single-study rows stored one JSON object instead of an array.
+        final UploadRelatedStudyEntry entry = UploadRelatedStudyEntry.fromJson(
+          Map<String, dynamic>.from(decoded),
+        );
+        return entry.isEmpty
+            ? <UploadRelatedStudyEntry>[]
+            : <UploadRelatedStudyEntry>[entry];
+      }
+      return <UploadRelatedStudyEntry>[];
+    }
+
     List<String> parseArr(String key) {
       final dynamic v = r[key];
       if (v == null) return <String>[];
@@ -16232,7 +18543,11 @@ class _WebDraft {
     }
 
     String floweringFrom = '', floweringTo = '';
-    final String fs = prefStr('flowering_season', morphology, 'flowering_season');
+    final String fs = prefStr(
+      'flowering_season',
+      morphology,
+      'flowering_season',
+    );
     if (fs.contains('–')) {
       final List<String> parts = fs.split('–');
       floweringFrom = parts[0].trim();
@@ -16244,7 +18559,6 @@ class _WebDraft {
     } else {
       floweringFrom = fs;
     }
-
     // Prefer the joined sighting_team_member rows (what submitNormalizedSighting
     // writes); fall back to the flat team_members column for older rows.
     List<UploadContributorDraft> teamContributors;
@@ -16290,17 +18604,35 @@ class _WebDraft {
         teamStr = (teamRaw ?? '').toString().trim();
       }
     }
-
     final String conf = str('identification_confidence');
-
+    // species_sightings.genus is written by the web app's submit flow but
+    // not always by this app's (see submitNormalizedSighting), so fall back
+    // to deriving genus/species-epithet from scientific_name the same way
+    // researcher-dashboard.html's openDraftForEditing does — otherwise
+    // reopening a cloud-stored draft here would leave Genus/Species blank
+    // even though Scientific Name is restored correctly.
+    final String sciNameForSplit = str('scientific_name');
+    final String genusVal = str('genus').isNotEmpty
+        ? str('genus')
+        : (sciNameForSplit.isNotEmpty
+              ? sciNameForSplit.split(RegExp(r'\s+')).first
+              : '');
+    final String familyVal =
+        (sciNameForSplit.isNotEmpty &&
+            genusVal.isNotEmpty &&
+            sciNameForSplit.toLowerCase().startsWith(genusVal.toLowerCase()))
+        ? sciNameForSplit.substring(genusVal.length).trim()
+        : '';
     return UploadSpeciesFlowData(
       draftId: 'WEB-SIGHTING-$draftId',
       entryId: str('entry_id'),
+      genus: genusVal,
+      family: familyVal,
       scientificName: str('scientific_name'),
       commonNames: parseArr('common_names'),
       localNames: parseArr('local_names'),
       identificationConfidence: conf.isNotEmpty ? conf : 'Confirmed',
-      endemicToPhilippines: r['endemic_to_philippines'] == true,
+      endemicToPhilippines: normalizeEndemicFlag(r['endemic_to_philippines']),
       observationDate: str('observation_date'),
       observationTime: str('observation_time'),
       collectionMethod: str('collection_method'),
@@ -16309,10 +18641,8 @@ class _WebDraft {
       mountain: str('mountain_name'),
       province: str('province'),
       municipality: str('municipality'),
-      specificSite: str('specific_site_zone').isNotEmpty
-          ? str('specific_site_zone')
-          : str('specific_site'),
-      altitude: str('specific_site_zone'),
+      specificSite: str('specific_site_other'),
+      specificSiteZone: str('specific_site_zone'),
       latitude: numStr('latitude'),
       longitude: numStr('longitude'),
       elevation: numStr('elevation_meters'),
@@ -16345,11 +18675,7 @@ class _WebDraft {
       ),
       stemLength: prefNumStr('stem_length', morphology, 'stem_length_cm'),
       rootLength: prefNumStr('root_length', morphology, 'root_length_cm'),
-      numberOfLeaves: prefNumStr(
-        'number_of_leaves',
-        morphology,
-        'leaf_count',
-      ),
+      numberOfLeaves: prefNumStr('number_of_leaves', morphology, 'leaf_count'),
       leafShape: prefStr('leaf_shape', morphology, 'leaf_shape'),
       leafLength: prefNumStr('leaf_length', morphology, 'leaf_length_cm'),
       leafWidth: prefNumStr('leaf_width', morphology, 'leaf_width_cm'),
@@ -16418,11 +18744,7 @@ class _WebDraft {
         'population_status',
       ),
       threatLevel: prefStr('threat_level', conservation, 'threat_level'),
-      threatType: prefFirstListStr(
-        'threat_types',
-        conservation,
-        'threat_types',
-      ),
+      threatTypes: prefListStr('threat_types', conservation, 'threat_types'),
       institution: str('institution'),
       teamMembers: teamStr,
       contributors: teamContributors,
@@ -16434,8 +18756,7 @@ class _WebDraft {
       cultivation: str('cultivation'),
       rarity: str('rarity'),
       culturalImportance: str('cultural_importance'),
-      studyTitle: str('study_title'),
-      studyLink: str('study_link'),
+      relatedStudies: parseRelatedStudies('related_study'),
       updatedAt: updatedAt,
     );
   }
@@ -16447,7 +18768,6 @@ class _AnyDraft {
       web = null,
       updatedAt = d.updatedAt;
   _AnyDraft.fromWeb(_WebDraft d) : app = null, web = d, updatedAt = d.updatedAt;
-
   final UploadSpeciesFlowData? app;
   final _WebDraft? web;
   final DateTime updatedAt;
@@ -16456,7 +18776,6 @@ class _AnyDraft {
 
 class UploadSpeciesDraftsScreen extends StatefulWidget {
   const UploadSpeciesDraftsScreen({super.key});
-
   @override
   State<UploadSpeciesDraftsScreen> createState() =>
       _UploadSpeciesDraftsScreenState();
@@ -16465,18 +18784,19 @@ class UploadSpeciesDraftsScreen extends StatefulWidget {
 class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
   final UploadSpeciesDraftSubmissionApi _submissionApi =
       UploadSpeciesDraftSubmissionApi();
-
   late Future<List<_AnyDraft>> _allDraftsFuture;
   String? _submittingDraftKey;
-
   @override
   void initState() {
     super.initState();
-    // Sync first so local supabaseSightingIds are up-to-date before the list
-    // loads, preventing synced mobile drafts from appearing with a "Web" badge.
-    _allDraftsFuture = UploadSpeciesDraftStore.syncUnsyncedDrafts().then(
-      (_) => _loadAllDrafts(),
-    );
+    // Show local drafts immediately (no network needed) instead of blocking
+    // on a sync of every unsynced draft first — that made the whole screen
+    // hang offline. Sync runs in the background and refreshes the list if it
+    // changes anything (e.g. a synced mobile draft losing its "Web" badge).
+    _allDraftsFuture = _loadAllDrafts();
+    UploadSpeciesDraftStore.syncUnsyncedDrafts().then((_) {
+      if (mounted) _reloadDrafts();
+    });
   }
 
   @override
@@ -16493,7 +18813,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
     final List<UploadSpeciesFlowData> appDrafts =
         results[0] as List<UploadSpeciesFlowData>;
     final List<_WebDraft> webDrafts = results[1] as List<_WebDraft>;
-
     // IDs of web sightings that the user is currently editing locally.
     final Set<String> locallyEditedWebIds = appDrafts
         .where(
@@ -16505,7 +18824,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
               d.draftId!.substring('WEB-SIGHTING-'.length),
         )
         .toSet();
-
     // Supabase sighting_ids that already correspond to a local mobile draft,
     // so we don't show the same draft twice (once as local, once as web).
     final Set<String> mobileSyncedWebIds = appDrafts
@@ -16516,7 +18834,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
         )
         .map((UploadSpeciesFlowData d) => d.supabaseSightingId!.toString())
         .toSet();
-
     final List<_AnyDraft> combined = <_AnyDraft>[
       // Regular local app drafts (including those synced to Supabase).
       ...appDrafts
@@ -16565,7 +18882,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
   }
 
   String _webDraftKey(_WebDraft draft) => 'WEB-SIGHTING-${draft.draftId}';
-
   String _formatDraftTimestamp(DateTime timestamp) {
     const List<String> months = <String>[
       'Jan',
@@ -16581,7 +18897,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
       'Nov',
       'Dec',
     ];
-
     return '${months[timestamp.month - 1]} ${timestamp.day}, ${timestamp.year}';
   }
 
@@ -16590,7 +18905,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
     if (normalized.isEmpty) {
       return null;
     }
-
     try {
       return await XFile(normalized).readAsBytes();
     } catch (_) {
@@ -16612,7 +18926,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
         child: Icon(Icons.image_outlined, color: _mutedTextColor),
       );
     }
-
     return FutureBuilder<Uint8List?>(
       future: _loadDraftPreview(draft.images.first.path),
       builder: (BuildContext context, AsyncSnapshot<Uint8List?> snapshot) {
@@ -16630,7 +18943,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
             child: Icon(Icons.broken_image_outlined, color: _mutedTextColor),
           );
         }
-
         return ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: Image.memory(bytes, width: 78, height: 78, fit: BoxFit.cover),
@@ -16645,7 +18957,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
         builder: (_) => UploadSpeciesInformationScreen(flowData: draft.copy()),
       ),
     );
-
     _reloadDrafts();
   }
 
@@ -16654,7 +18965,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
     if (draftId.isNotEmpty) {
       return draftId;
     }
-
     return '${draft.updatedAt.microsecondsSinceEpoch}-$fallback';
   }
 
@@ -16665,13 +18975,11 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
     if (_submittingDraftKey != null) {
       return;
     }
-
     final String? validationError =
         UploadSpeciesFlowValidators.validateSpeciesInformation(draft) ??
         UploadSpeciesFlowValidators.validateSightings(draft) ??
         UploadSpeciesFlowValidators.validateSpeciesValues(draft) ??
         UploadSpeciesFlowValidators.validateImagesAndContributors(draft);
-
     if (validationError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -16682,41 +18990,36 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
       );
       return;
     }
-
     setState(() {
       _submittingDraftKey = draftKey;
     });
-
     try {
       final Map<String, dynamic> result = await _submissionApi.submitDraft(
         draft,
       );
-
       final String draftId = (draft.draftId ?? '').trim();
       if (draftId.isNotEmpty && !draftId.startsWith('WEB-SIGHTING-')) {
         // Only delete from local store for regular app drafts.
         // Web sighting drafts are updated in the DB by _updateWebSightingDraft.
         await UploadSpeciesDraftStore.deleteDraft(draftId);
       }
-
       if (!mounted) {
         return;
       }
-
       _reloadDrafts();
-
       final int submissionCount =
           int.tryParse((result['submissionCount'] ?? '').toString()) ??
           draft.images.length;
-
+      final String safeName = draft.scientificName.trim().isEmpty
+          ? 'Unnamed species'
+          : draft.scientificName.trim();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Draft submitted successfully. $submissionCount image(s) uploaded.',
+            'Submission pending review: $safeName ($submissionCount image(s) uploaded).',
           ),
         ),
       );
-
       Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => const UploadsStatusScreen()),
       );
@@ -16724,7 +19027,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
       if (!mounted) {
         return;
       }
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
@@ -16732,7 +19034,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
       if (!mounted) {
         return;
       }
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -16821,7 +19122,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
         draft.latitude.trim().isNotEmpty &&
         draft.longitude.trim().isNotEmpty &&
         draft.headResearcher.trim().isNotEmpty;
-
     return Container(
       decoration: BoxDecoration(
         color: _surfaceColor,
@@ -16983,7 +19283,6 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
         (draft.rawData['mountain_name'] ?? draft.rawData['location'] ?? '')
             .toString()
             .trim();
-
     return Container(
       decoration: BoxDecoration(
         color: _surfaceColor,
@@ -17216,63 +19515,72 @@ class _UploadSpeciesDraftsScreenState extends State<UploadSpeciesDraftsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _appBackgroundColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _UploadFormHeader(title: 'My Drafts'),
-              const SizedBox(height: 16),
-              Expanded(
-                child: FutureBuilder<List<_AnyDraft>>(
-                  future: _allDraftsFuture,
-                  builder:
-                      (
-                        BuildContext context,
-                        AsyncSnapshot<List<_AnyDraft>> snapshot,
-                      ) {
-                        if (snapshot.connectionState != ConnectionState.done) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        final List<_AnyDraft> all =
-                            snapshot.data ?? <_AnyDraft>[];
-                        if (all.isEmpty) {
-                          return Center(
-                            child: Text(
-                              'No drafts saved yet.',
-                              style: TextStyle(
-                                color: _mutedTextColor,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          );
-                        }
-                        return ListView.separated(
-                          itemCount: all.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (BuildContext context, int index) {
-                            final _AnyDraft entry = all[index];
-                            if (entry.isWeb) {
-                              return _buildWebDraftCard(entry.web!);
-                            }
-                            final UploadSpeciesFlowData draft = entry.app!;
-                            final String key = _draftKey(
-                              draft,
-                              fallback: index,
-                            );
-                            return _buildAppDraftCard(draft, key);
-                          },
-                        );
-                      },
+      body: Column(
+        children: [
+          const OfflineBanner(),
+          Expanded(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _UploadFormHeader(title: 'My Drafts'),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: FutureBuilder<List<_AnyDraft>>(
+                        future: _allDraftsFuture,
+                        builder:
+                            (
+                              BuildContext context,
+                              AsyncSnapshot<List<_AnyDraft>> snapshot,
+                            ) {
+                              if (snapshot.connectionState !=
+                                  ConnectionState.done) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              final List<_AnyDraft> all =
+                                  snapshot.data ?? <_AnyDraft>[];
+                              if (all.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'No drafts saved yet.',
+                                    style: TextStyle(
+                                      color: _mutedTextColor,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return ListView.separated(
+                                itemCount: all.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(height: 10),
+                                itemBuilder: (BuildContext context, int index) {
+                                  final _AnyDraft entry = all[index];
+                                  if (entry.isWeb) {
+                                    return _buildWebDraftCard(entry.web!);
+                                  }
+                                  final UploadSpeciesFlowData draft =
+                                      entry.app!;
+                                  final String key = _draftKey(
+                                    draft,
+                                    fallback: index,
+                                  );
+                                  return _buildAppDraftCard(draft, key);
+                                },
+                              );
+                            },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -17285,10 +19593,8 @@ class _DraftSubmitPreviewSheet extends StatelessWidget {
   });
   final UploadSpeciesFlowData draft;
   final VoidCallback onConfirmSubmit;
-
   String _fileBasename(String path) =>
       path.replaceAll('\\', '/').split('/').last;
-
   Widget _imageGrid(List<UploadSpeciesImageDraft> images) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -17471,7 +19777,6 @@ class _DraftSubmitPreviewSheet extends StatelessWidget {
     final bool hasHeadResearcher = draft.headResearcher.trim().isNotEmpty;
     final bool isReady =
         hasName && hasDate && hasLocation && hasCoords && hasHeadResearcher;
-
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.88,
@@ -17566,7 +19871,9 @@ class _DraftSubmitPreviewSheet extends StatelessWidget {
                   _row('ID Confidence', draft.identificationConfidence),
                   _row(
                     'Endemic to PH',
-                    draft.endemicToPhilippines ? 'Yes' : 'No',
+                    draft.endemicToPhilippines.isEmpty
+                        ? '-'
+                        : draft.endemicToPhilippines,
                   ),
                 ]),
                 _section('SIGHTING & LOCATION', <Widget>[
@@ -17650,8 +19957,7 @@ class _DraftSubmitPreviewSheet extends StatelessWidget {
                   _row('Phenology', draft.phenology),
                   _row('Population Status', draft.populationStatus),
                   _row('Threat Level', draft.threatLevel),
-                  _row('Threat Type', draft.threatType),
-                  _row('Rarity', draft.rarity),
+                  _row('Threat Type', draft.threatTypes.join(', ')),
                   _row(
                     'Ethnobotanical Importance',
                     draft.ethnobotanicalImportance,
@@ -17693,22 +19999,52 @@ class _DraftSubmitPreviewSheet extends StatelessWidget {
                       'Video',
                       _fileBasename(draft.videoPath),
                     ),
-                  if (draft.studyFilePath.trim().isNotEmpty)
-                    _fileRow(
-                      Icons.attach_file_rounded,
-                      'Study File',
-                      _fileBasename(draft.studyFilePath),
-                    ),
+                  for (final UploadRelatedStudyEntry study
+                      in draft.relatedStudies)
+                    if (study.filePath.trim().isNotEmpty)
+                      _fileRow(
+                        Icons.attach_file_rounded,
+                        'Study File',
+                        _fileBasename(study.filePath),
+                      ),
                   if (draft.videoPath.trim().isEmpty &&
-                      draft.studyFilePath.trim().isEmpty)
+                      draft.relatedStudies.every(
+                        (UploadRelatedStudyEntry s) =>
+                            s.filePath.trim().isEmpty,
+                      ))
                     _row('Files', ''),
                 ]),
-                _section('RELATED STUDY', <Widget>[
-                  _row('Study Title', draft.studyTitle),
-                  _row('Study Link', draft.studyLink),
-                  if (draft.studyFilePath.trim().isNotEmpty)
-                    _row('Study File', _fileBasename(draft.studyFilePath)),
-                ]),
+                _section(
+                  'RELATED STUDY',
+                  draft.relatedStudies.isEmpty
+                      ? <Widget>[
+                          _row('Study Title', ''),
+                          _row('Study Link', ''),
+                        ]
+                      : <Widget>[
+                          for (
+                            int i = 0;
+                            i < draft.relatedStudies.length;
+                            i++
+                          ) ...<Widget>[
+                            _row(
+                              'Study ${i + 1} Title',
+                              draft.relatedStudies[i].title,
+                            ),
+                            _row(
+                              'Study ${i + 1} Link',
+                              draft.relatedStudies[i].link,
+                            ),
+                            if (draft.relatedStudies[i].filePath
+                                .trim()
+                                .isNotEmpty)
+                              _row(
+                                'Study ${i + 1} File',
+                                _fileBasename(draft.relatedStudies[i].filePath),
+                              ),
+                          ],
+                        ],
+                ),
                 _section('NOTES & REMARKS', <Widget>[
                   _row('Researcher Notes', draft.researcherNotes),
                   _row('Unusual Observations', draft.unusualObservations),
@@ -17760,13 +20096,11 @@ class SubmissionStatusItem {
     required this.status,
     required this.statusColor,
   });
-
   final String imageUrl;
   final String title;
   final String uploadedDate;
   final String status;
   final Color statusColor;
-
   factory SubmissionStatusItem.fromJson(Map<String, dynamic> json) {
     final String title = (json['scientificName'] ?? '').toString().trim();
     final String statusRaw = (json['status'] ?? '')
@@ -17774,7 +20108,6 @@ class SubmissionStatusItem {
         .trim()
         .toLowerCase();
     final String imageUrlRaw = (json['imageUrl'] ?? '').toString().trim();
-
     return SubmissionStatusItem(
       imageUrl: imageUrlRaw,
       title: title.isNotEmpty ? title : 'Unnamed species',
@@ -17783,13 +20116,11 @@ class SubmissionStatusItem {
       statusColor: _statusColor(statusRaw),
     );
   }
-
   static String _formatDate(String raw) {
     final String value = raw.trim();
     if (value.isEmpty) {
       return 'Unknown date';
     }
-
     try {
       final DateTime parsed = DateTime.parse(value);
       const List<String> months = <String>[
@@ -17806,7 +20137,6 @@ class SubmissionStatusItem {
         'November',
         'December',
       ];
-
       return '${months[parsed.month - 1]} ${parsed.day}, ${parsed.year}';
     } catch (_) {
       return value;
@@ -17814,7 +20144,6 @@ class SubmissionStatusItem {
   }
 
   static String _statusLabel(String status) => reviewStatusLabel(status);
-
   static Color _statusColor(String status) {
     return reviewStatusColor(status);
   }
@@ -17889,7 +20218,6 @@ class _SubmissionFull {
     required this.closeupFlowerUrl,
     required this.habitatPhotoUrl,
   });
-
   final String entryId;
   final String sightingId;
   bool get is3d => entryId.startsWith('BLOOM-3D-');
@@ -17897,7 +20225,7 @@ class _SubmissionFull {
   final String commonNames;
   final String localNames;
   final String identificationConfidence;
-  final bool endemicToPhilippines;
+  final String endemicToPhilippines;
   final String status;
   final Color statusColor;
   final String uploadedDate;
@@ -17957,7 +20285,6 @@ class _SubmissionFull {
   final String reviewNotes;
   final String closeupFlowerUrl;
   final String habitatPhotoUrl;
-
   static String _jsonArrayToString(dynamic raw) {
     if (raw == null) return '';
     if (raw is List) return raw.map((e) => e.toString()).join(', ');
@@ -17978,7 +20305,6 @@ class _SubmissionFull {
         .toLowerCase();
     final Color statusColor = reviewStatusColor(statusRaw);
     final String statusLabel = reviewStatusLabel(statusRaw);
-
     final String rawDate = (row['created_at'] ?? '').toString().trim();
     String uploadedDate = rawDate;
     try {
@@ -17999,7 +20325,6 @@ class _SubmissionFull {
       ];
       uploadedDate = '${months[d.month - 1]} ${d.day}, ${d.year}';
     } catch (_) {}
-
     final dynamic teamRaw = row['team_members'];
     String teamMembersStr = '';
     try {
@@ -18025,7 +20350,6 @@ class _SubmissionFull {
     } catch (_) {
       teamMembersStr = (teamRaw ?? '').toString().trim();
     }
-
     String str(String key) => (row[key] ?? '').toString().trim();
     String num(String key) {
       final dynamic v = row[key];
@@ -18060,7 +20384,6 @@ class _SubmissionFull {
     final Map<String, dynamic>? mountainEmbed = row['mountain'] is Map
         ? (row['mountain'] as Map).cast<String, dynamic>()
         : null;
-
     String prefStr(String flatKey, Map<String, dynamic> sub, String subKey) {
       final dynamic v = sub[subKey];
       if (v != null) {
@@ -18079,7 +20402,11 @@ class _SubmissionFull {
       return num(flatKey);
     }
 
-    String prefBoolStr(String flatKey, Map<String, dynamic> sub, String subKey) {
+    String prefBoolStr(
+      String flatKey,
+      Map<String, dynamic> sub,
+      String subKey,
+    ) {
       final dynamic v = sub[subKey];
       if (v is bool) return v ? 'Yes' : 'No';
       return str(flatKey);
@@ -18091,7 +20418,8 @@ class _SubmissionFull {
       String subKey,
     ) {
       final dynamic v = sub[subKey];
-      if (v is List && v.isNotEmpty) return v.map((e) => e.toString()).join(', ');
+      if (v is List && v.isNotEmpty)
+        return v.map((e) => e.toString()).join(', ');
       return _jsonArrayToString(row[flatKey]);
     }
 
@@ -18119,11 +20447,9 @@ class _SubmissionFull {
           .where((String s) => s.isNotEmpty)
           .join(', ');
     }
-
-    final String mountainLabel = str('mountain_name').isNotEmpty
-        ? str('mountain_name')
-        : (mountainEmbed?['mountain_name'] ?? '').toString().trim();
-
+    final String mountainLabel = (mountainEmbed?['mountain_name'] ?? '')
+        .toString()
+        .trim();
     return _SubmissionFull(
       entryId: str('entry_id'),
       sightingId: str('sighting_id'),
@@ -18131,7 +20457,7 @@ class _SubmissionFull {
       commonNames: _jsonArrayToString(row['common_names']),
       localNames: _jsonArrayToString(row['local_names']),
       identificationConfidence: str('identification_confidence'),
-      endemicToPhilippines: boolean('endemic_to_philippines'),
+      endemicToPhilippines: normalizeEndemicFlag(row['endemic_to_philippines']),
       status: statusLabel,
       statusColor: statusColor,
       uploadedDate: uploadedDate,
@@ -18147,7 +20473,7 @@ class _SubmissionFull {
       municipality: str('municipality'),
       specificSite: str('specific_site_zone').isNotEmpty
           ? str('specific_site_zone')
-          : str('specific_site'),
+          : str('specific_site_other'),
       latitude: num('latitude'),
       longitude: num('longitude'),
       elevationMeters: num('elevation_meters'),
@@ -18184,11 +20510,7 @@ class _SubmissionFull {
         'leaf_arrangement',
       ),
       flowerColor: prefStr('flower_color', morphology, 'flower_color'),
-      flowerCount: prefNumStr(
-        'number_of_flowers',
-        morphology,
-        'flower_count',
-      ),
+      flowerCount: prefNumStr('number_of_flowers', morphology, 'flower_count'),
       flowerDiameter: prefNumStr(
         'flower_diameter',
         morphology,
@@ -18262,14 +20584,13 @@ class _SubmissionFull {
 
 class UploadsStatusScreen extends StatefulWidget {
   const UploadsStatusScreen({super.key});
-
   @override
   State<UploadsStatusScreen> createState() => _UploadsStatusScreenState();
 }
 
 class _UploadsStatusScreenState extends State<UploadsStatusScreen> {
+  static const String _cacheKey = 'my_submissions';
   late final Future<List<_SubmissionFull>> _itemsFuture;
-
   @override
   void initState() {
     super.initState();
@@ -18283,32 +20604,26 @@ class _UploadsStatusScreenState extends State<UploadsStatusScreen> {
       final List<dynamic> data = await supabase
           .from('species_sightings')
           .select(
-            'entry_id, sighting_id, researcher_name, scientific_name, review_status, '
+            'entry_id, sighting_id, scientific_name, review_status, '
             'common_names, local_names, identification_confidence, endemic_to_philippines, '
             'created_at, observation_date, observation_time, collection_method, '
-            'observation_type, voucher_collected, mountain_name, mountain(mountain_name), '
-            'province, municipality, '
-            'specific_site_zone, specific_site, latitude, longitude, elevation_meters, '
-            'habitat_type, microhabitat, growth_substrate, host_tree_species, '
-            'light_exposure, soil_type, nearby_water_source, '
-            'plant_height, stem_length, root_length, pseudobulb_present, '
-            'number_of_leaves, leaf_shape, leaf_length, leaf_width, leaf_arrangement, '
-            'flower_color, number_of_flowers, flower_diameter, '
-            'inflorescence_type, petal_characteristics, sepal_characteristics, '
-            'labellum_description, fragrance, '
-            'blooming_stage, flowering_season, fruit_present, fruit_type, seed_capsule_condition, '
-            'life_stage, phenology, population_count, population_status, '
-            'threat_level, threat_types, institution, team_members, researcher_notes, '
-            'related_study, review_notes, '
-            'whole_plant_photo_path, closeup_flower_photo_path, habitat_photo_path, '
+            'observation_type, voucher_collected, mountain(mountain_name), '
+            'specific_site_zone, specific_site_other, latitude, longitude, elevation_meters, '
+            'researcher_notes, related_study, '
             'sighting_habitat(*), sighting_morphology(*), sighting_conservation(*), '
             'sighting_team_member(*), sighting_media(*, picture(*))',
           )
           .eq('researcher_email', userEmail)
-          .order('created_at', ascending: false);
-
-      return data
+          .order('created_at', ascending: false)
+          .timeout(_kNetworkTimeout);
+      final List<Map<String, dynamic>> rows = data
           .whereType<Map>()
+          .map((Map r) => Map<String, dynamic>.from(r))
+          .toList(growable: false);
+      // Cache raw rows (not the parsed model) so _SubmissionFull.fromRow
+      // stays the single source of truth for how a row is interpreted.
+      unawaited(OfflineCache.save(_cacheKey, rows));
+      return rows
           .where(
             (Map row) =>
                 (row['review_status'] ?? '').toString().toLowerCase() !=
@@ -18317,6 +20632,21 @@ class _UploadsStatusScreenState extends State<UploadsStatusScreen> {
           .map(_SubmissionFull.fromRow)
           .toList(growable: false);
     } catch (_) {
+      final dynamic cached = await OfflineCache.load(_cacheKey);
+      if (cached is List) {
+        try {
+          return cached
+              .whereType<Map>()
+              .map((Map r) => Map<String, dynamic>.from(r))
+              .where(
+                (Map row) =>
+                    (row['review_status'] ?? '').toString().toLowerCase() !=
+                    'draft',
+              )
+              .map(_SubmissionFull.fromRow)
+              .toList(growable: false);
+        } catch (_) {}
+      }
       return const <_SubmissionFull>[];
     }
   }
@@ -18373,7 +20703,7 @@ class _UploadsStatusScreenState extends State<UploadsStatusScreen> {
             children: <Widget>[
               const _UploadFormHeader(title: 'My Submissions'),
               const SizedBox(height: 14),
-              // ── Submissions list ──────────────────────────────
+              // ── Submissions list
               Expanded(
                 child: FutureBuilder<List<_SubmissionFull>>(
                   future: _itemsFuture,
@@ -18406,9 +20736,7 @@ class _UploadsStatusScreenState extends State<UploadsStatusScreen> {
 
 class _SubmissionDetailSheet extends StatelessWidget {
   const _SubmissionDetailSheet({required this.item});
-
   final _SubmissionFull item;
-
   Widget _section(String title, List<Widget> rows) {
     final List<Widget> nonEmpty = rows
         .whereType<_DetailRow>()
@@ -18436,7 +20764,6 @@ class _SubmissionDetailSheet extends StatelessWidget {
 
   _DetailRow _row(String label, String value) =>
       _DetailRow(label: label, value: value);
-
   Widget _photoRow(String label, String url) {
     if (url.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -18564,7 +20891,7 @@ class _SubmissionDetailSheet extends StatelessWidget {
                 controller: sc,
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                 children: <Widget>[
-                  // ── Photos first for quick visual review ──
+                  // ── Photos first for quick visual review
                   if (item.imageUrl.isNotEmpty ||
                       item.closeupFlowerUrl.isNotEmpty ||
                       item.habitatPhotoUrl.isNotEmpty) ...<Widget>[
@@ -18588,10 +20915,7 @@ class _SubmissionDetailSheet extends StatelessWidget {
                     _row('Common Name(s)', item.commonNames),
                     _row('Local Name(s)', item.localNames),
                     _row('Confidence', item.identificationConfidence),
-                    _row(
-                      'Endemic to Philippines',
-                      item.endemicToPhilippines ? 'Yes' : '',
-                    ),
+                    _row('Endemic to Philippines', item.endemicToPhilippines),
                   ]),
                   _section('SIGHTING & LOCATION', <Widget>[
                     _row('Submitted', item.uploadedDate),
@@ -18813,10 +21137,8 @@ class _SubmissionDetailSheet extends StatelessWidget {
 
 class _DetailRow extends StatelessWidget {
   const _DetailRow({required this.label, required this.value});
-
   final String label;
   final String value;
-
   @override
   Widget build(BuildContext context) {
     if (value.trim().isEmpty) return const SizedBox.shrink();
@@ -18860,17 +21182,14 @@ class _UploadStatusTile extends StatelessWidget {
     required this.status,
     required this.statusColor,
   });
-
   final String imageUrl;
   final String title;
   final String uploadedDate;
   final String status;
   final Color statusColor;
-
   @override
   Widget build(BuildContext context) {
     final bool hasImageUrl = imageUrl.trim().isNotEmpty;
-
     return Container(
       decoration: BoxDecoration(
         color: _surfaceColor,
@@ -18997,21 +21316,17 @@ const TextStyle _uploadSectionTitleStyle = TextStyle(
   color: _uploadPrimary,
   letterSpacing: 0.3,
 );
-
 TextStyle get _uploadFieldLabelStyle => TextStyle(
   fontSize: 13,
   fontWeight: FontWeight.w500,
   color: _kIsDark ? const Color(0xFFBCC4CF) : _primarySoftColor,
 );
-
 TextStyle get _uploadInputTextStyle =>
     TextStyle(fontSize: 14, color: _textColor);
-
 const TextStyle _uploadHintTextStyle = TextStyle(
   fontSize: 14,
   color: _hintTextColor,
 );
-
 Widget _uploadFieldLabelWithTooltip(String label, String tooltip) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.center,
@@ -19027,6 +21342,18 @@ Widget _uploadFieldLabelWithTooltip(String label, String tooltip) {
       ),
     ],
   );
+}
+
+// Guards DropdownButtonFormField against values loaded from drafts (e.g. the
+// web dashboard) that don't exactly match this app's option casing/wording,
+// which would otherwise trip the "exactly one item" assertion and crash.
+String? _matchDropdownOption(String? value, List<String> options) {
+  if (value == null || value.isEmpty) return null;
+  if (options.contains(value)) return value;
+  for (final String option in options) {
+    if (option.toLowerCase() == value.toLowerCase()) return option;
+  }
+  return null;
 }
 
 InputDecoration _uploadInputDecoration({String? hintText}) {
@@ -19191,18 +21518,15 @@ class _UploadFormHeader extends StatelessWidget {
     this.stepIcon = Icons.eco_outlined,
     this.entryId = '',
   });
-
   final String title;
   final String sectionTitle;
   final int step;
   final int totalSteps;
   final IconData stepIcon;
   final String entryId;
-
   @override
   Widget build(BuildContext context) {
     final NavigatorState navigator = Navigator.of(context);
-
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -19383,15 +21707,12 @@ class _UploadFormHeader extends StatelessWidget {
 
 class _RequirementBullet extends StatelessWidget {
   const _RequirementBullet({required this.text, this.level = 0, this.suffix});
-
   final String text;
   final int level;
   final String? suffix;
-
   @override
   Widget build(BuildContext context) {
     final double indent = level == 0 ? 8 : 28;
-
     return Padding(
       padding: EdgeInsets.only(left: indent, bottom: 8),
       child: RichText(
@@ -19432,17 +21753,14 @@ class _UploadActionRow extends StatelessWidget {
     required this.onTap,
     this.badgeCount,
   });
-
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final int? badgeCount;
-
   String _badgeText(int count) {
     if (count > 99) {
       return '99+';
     }
-
     return '$count';
   }
 
@@ -19544,14 +21862,12 @@ class _UploadActionRow extends StatelessWidget {
 
 class MapScreen extends StatefulWidget {
   const MapScreen({required this.authController, super.key});
-
   final AppAuthController authController;
-
   @override
   State<MapScreen> createState() => _MapScreenState();
 }
 
-// ── Trail data (map_trails table) ─────────────────────────────────────────
+// ── Trail data (map_trails table)
 // Fallback used only if the map_trails fetch fails (e.g. offline) so the map
 // still shows something instead of a blank screen.
 const List<LatLng> _kBusaTrailFallback = <LatLng>[
@@ -19571,17 +21887,21 @@ class MapTrail {
     required this.color,
     required this.points,
   });
-
   final int trailId;
   final String name;
   final Color color;
   final List<LatLng> points;
-
-  static Color _parseHexColor(dynamic raw, {Color fallback = const Color(0xFF86EFAC)}) {
+  static Color _parseHexColor(
+    dynamic raw, {
+    Color fallback = const Color(0xFF86EFAC),
+  }) {
     final String s = (raw ?? '').toString().trim();
     if (s.isEmpty) return fallback;
     final String hex = s.startsWith('#') ? s.substring(1) : s;
-    final int? value = int.tryParse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
+    final int? value = int.tryParse(
+      hex.length == 6 ? 'FF$hex' : hex,
+      radix: 16,
+    );
     return value != null ? Color(value) : fallback;
   }
 
@@ -19592,10 +21912,8 @@ class MapTrail {
         .whereType<List>()
         .where((List p) => p.length >= 2)
         .map(
-          (List p) => LatLng(
-            (p[0] as num).toDouble(),
-            (p[1] as num).toDouble(),
-          ),
+          (List p) =>
+              LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()),
         )
         .toList();
     if (points.isEmpty) return null;
@@ -19608,28 +21926,66 @@ class MapTrail {
       points: points,
     );
   }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'trailId': trailId,
+    'name': name,
+    'color': color.toARGB32(),
+    'points': points
+        .map((LatLng p) => <double>[p.latitude, p.longitude])
+        .toList(),
+  };
+  static MapTrail? fromJson(Map<String, dynamic> json) {
+    final dynamic rawPoints = json['points'];
+    if (rawPoints is! List || rawPoints.isEmpty) return null;
+    final List<LatLng> points = rawPoints
+        .whereType<List>()
+        .where((List p) => p.length >= 2)
+        .map(
+          (List p) =>
+              LatLng((p[0] as num).toDouble(), (p[1] as num).toDouble()),
+        )
+        .toList();
+    if (points.isEmpty) return null;
+    return MapTrail(
+      trailId: (json['trailId'] as num?)?.toInt() ?? 0,
+      name: (json['name'] ?? 'Trail').toString(),
+      color: Color((json['color'] as num?)?.toInt() ?? 0xFF86EFAC),
+      points: points,
+    );
+  }
 }
 
 /// Simple in-memory cache so the three map screens (catalog preview,
 /// catalog fullscreen, main map) share one fetch instead of each hitting
 /// Supabase separately.
 class MapTrailsCache {
+  static const String _diskCacheKey = 'map_trails';
   static List<MapTrail>? _cached;
   static Future<List<MapTrail>>? _inflight;
-
   static Future<List<MapTrail>> load({bool forceRefresh = false}) {
     if (!forceRefresh && _cached != null) {
       return Future<List<MapTrail>>.value(_cached);
     }
     if (_inflight != null) return _inflight!;
-    _inflight = _fetch().then((List<MapTrail> trails) {
-      _cached = trails;
-      _inflight = null;
-      return trails;
-    }).catchError((Object _) {
-      _inflight = null;
-      return _cached ??
-          <MapTrail>[
+    _inflight = _fetch()
+        .then((List<MapTrail> trails) {
+          _cached = trails;
+          _inflight = null;
+          unawaited(
+            OfflineCache.save(
+              _diskCacheKey,
+              trails.map((MapTrail t) => t.toJson()).toList(),
+            ),
+          );
+          return trails;
+        })
+        .catchError((Object _) async {
+          _inflight = null;
+          if (_cached != null) return _cached!;
+          final List<MapTrail>? onDisk = await _loadFromDisk();
+          if (onDisk != null && onDisk.isNotEmpty) return onDisk;
+          return <MapTrail>[
             MapTrail(
               trailId: 0,
               name: 'Mt. Busa Trail',
@@ -19637,15 +21993,26 @@ class MapTrailsCache {
               points: _kBusaTrailFallback,
             ),
           ];
-    });
+        });
     return _inflight!;
+  }
+
+  static Future<List<MapTrail>?> _loadFromDisk() async {
+    final dynamic raw = await OfflineCache.load(_diskCacheKey);
+    if (raw is! List) return null;
+    return raw
+        .whereType<Map>()
+        .map((Map m) => MapTrail.fromJson(Map<String, dynamic>.from(m)))
+        .whereType<MapTrail>()
+        .toList();
   }
 
   static Future<List<MapTrail>> _fetch() async {
     final List<dynamic> rows = await Supabase.instance.client
         .from('map_trails')
         .select('trail_id, name, color, coordinates, archived')
-        .order('trail_id');
+        .order('trail_id', ascending: true)
+        .timeout(_kNetworkTimeout);
     return rows
         .whereType<Map>()
         .where((Map r) => r['archived'] != true)
@@ -19697,20 +22064,42 @@ class _MapScreenState extends State<MapScreen> {
   bool _mapReady = false;
   Position? _currentPosition;
   List<MapTrail> _trails = const <MapTrail>[];
+  // Which trails are currently hidden — mirrors web's toggleTrail: every
+  // trail starts visible, tapping its pill removes/re-adds it from the map.
+  final Set<int> _hiddenTrailIds = <int>{};
   final ValueNotifier<_MapLayer> _activeLayerNotifier = ValueNotifier(
     _MapLayer.satellite,
   );
   final ValueNotifier<double> _mapRotationNotifier = ValueNotifier(0.0);
-
   static const LatLng _kCenter = LatLng(6.090, 124.713);
   static const double _kInitialZoom = 13;
+  List<MapTrail> get _displayTrails => _trails.isNotEmpty
+      ? _trails
+      : <MapTrail>[
+          MapTrail(
+            trailId: 0,
+            name: 'Mt. Busa Trail',
+            color: const Color(0xFF86EFAC),
+            points: _kBusaTrailFallback,
+          ),
+        ];
+  List<MapTrail> get _visibleTrails => _displayTrails
+      .where((MapTrail t) => !_hiddenTrailIds.contains(t.trailId))
+      .toList(growable: false);
+  void _toggleTrail(int trailId) {
+    setState(() {
+      if (_hiddenTrailIds.contains(trailId)) {
+        _hiddenTrailIds.remove(trailId);
+      } else {
+        _hiddenTrailIds.add(trailId);
+      }
+    });
+  }
 
   List<LatLng> get _primaryTrailPoints =>
       _trails.isNotEmpty ? _trails.first.points : _kBusaTrailFallback;
-
   String get _primaryTrailName =>
       _trails.isNotEmpty ? _trails.first.name : 'Mt. Busa Trail';
-
   String _tileUrlFor(_MapLayer layer) {
     switch (layer) {
       case _MapLayer.satellite:
@@ -19772,12 +22161,10 @@ class _MapScreenState extends State<MapScreen> {
     _mapController.camera.center,
     _mapController.camera.zoom + 1,
   );
-
   void _zoomOut() => _mapController.move(
     _mapController.camera.center,
     _mapController.camera.zoom - 1,
   );
-
   void _flyToCurrentLocation() {
     if (_currentPosition == null) return;
     _mapController.move(
@@ -19796,7 +22183,7 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          // ── Full-screen flutter_map ──────────────────────────────
+          // ── Full-screen flutter_map
           Positioned.fill(
             child: RepaintBoundary(
               child: FlutterMap(
@@ -19827,18 +22214,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ),
                   PolylineLayer(
-                    polylines: buildTrailGlowPolylines(
-                      _trails.isNotEmpty
-                          ? _trails
-                          : <MapTrail>[
-                              MapTrail(
-                                trailId: 0,
-                                name: 'Mt. Busa Trail',
-                                color: const Color(0xFF86EFAC),
-                                points: _kBusaTrailFallback,
-                              ),
-                            ],
-                    ),
+                    polylines: buildTrailGlowPolylines(_visibleTrails),
                   ),
                   if (_currentPosition != null)
                     MarkerLayer(
@@ -19875,8 +22251,91 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
           ),
-
-          // ── Zoom + locate + compass buttons (right side) ─────────
+          // ── Trail show/hide pills (top)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+                child: SizedBox(
+                  height: 34,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _displayTrails.length,
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const SizedBox(width: 8),
+                    itemBuilder: (BuildContext context, int index) {
+                      final MapTrail trail = _displayTrails[index];
+                      final bool isVisible = !_hiddenTrailIds.contains(
+                        trail.trailId,
+                      );
+                      return GestureDetector(
+                        onTap: () => _toggleTrail(trail.trailId),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isVisible
+                                ? const Color(0xFF4DB86A)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFF4DB86A),
+                              width: 1.5,
+                            ),
+                            boxShadow: isVisible
+                                ? const <BoxShadow>[
+                                    BoxShadow(
+                                      color: Color(0x594DB86A),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ]
+                                : const <BoxShadow>[
+                                    BoxShadow(
+                                      color: Color(0x26000000),
+                                      blurRadius: 6,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(
+                                Icons.route_rounded,
+                                size: 14,
+                                color: isVisible
+                                    ? const Color(0xFF0A2710)
+                                    : const Color(0xFF4DB86A),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                trail.name,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: isVisible
+                                      ? const Color(0xFF0A2710)
+                                      : const Color(0xFF4DB86A),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // ── Zoom + locate + compass buttons (right side)
           Positioned(
             right: 12,
             top: 0,
@@ -19941,8 +22400,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
           ),
-
-          // ── Bottom info card (draggable) ─────────────────────────
+          // ── Bottom info card (draggable)
           Positioned(
             left: 0,
             right: 0,
@@ -20109,7 +22567,6 @@ class _CompassNeedlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final double cx = size.width / 2;
     final double cy = size.height / 2;
-
     // North half — red, points up
     final ui.Path north = ui.Path()
       ..moveTo(cx, 0)
@@ -20118,7 +22575,6 @@ class _CompassNeedlePainter extends CustomPainter {
       ..lineTo(cx - cx * 0.55, cy)
       ..close();
     canvas.drawPath(north, Paint()..color = const Color(0xFFE53935));
-
     // South half — grey, points down
     final ui.Path south = ui.Path()
       ..moveTo(cx, size.height)
@@ -20127,7 +22583,6 @@ class _CompassNeedlePainter extends CustomPainter {
       ..lineTo(cx - cx * 0.55, cy)
       ..close();
     canvas.drawPath(south, Paint()..color = const Color(0xFF9E9E9E));
-
     // Centre dot
     canvas.drawCircle(
       Offset(cx, cy),
@@ -20143,13 +22598,11 @@ class _CompassNeedlePainter extends CustomPainter {
 class NotificationController extends ChangeNotifier {
   static const String _prefsKey = 'notif_read_ids_v1';
   static const String _deletedPrefsKey = 'notif_deleted_ids_v1';
-
   List<AppNotification> _raw = <AppNotification>[];
   Set<String> _readIds = <String>{};
   Set<String> _deletedIds = <String>{};
   bool _isLoading = false;
   bool _disposed = false;
-
   @override
   void dispose() {
     _disposed = true;
@@ -20163,26 +22616,23 @@ class NotificationController extends ChangeNotifier {
   List<AppNotification> get notifications => _raw;
   int get unreadCount => _raw.where((AppNotification n) => !n.read).length;
   bool get isLoading => _isLoading;
-
   Future<void> load() async {
     _isLoading = true;
     _notify();
-
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     _readIds = (prefs.getStringList(_prefsKey) ?? <String>[]).toSet();
     _deletedIds = (prefs.getStringList(_deletedPrefsKey) ?? <String>[]).toSet();
-
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String userEmail = supabase.auth.currentUser?.email ?? '';
       final List<dynamic> data = await supabase
           .from('species_sightings')
-          .select('sighting_id, scientific_name, review_status, created_at')
+          .select(
+            'sighting_id, scientific_name, review_status, created_at, updated_at',
+          )
           .eq('researcher_email', userEmail)
           .order('created_at', ascending: false);
-
       final List<AppNotification> notifs = <AppNotification>[];
-
       final String? accountStatus = supabase
           .auth
           .currentUser
@@ -20196,29 +22646,41 @@ class NotificationController extends ChangeNotifier {
             message:
                 'Your account is under verification. Awaiting superadmin approval.',
             timestamp: 'Today',
+            dateLabel: _formatDateLabel(DateTime.now()),
             read: _readIds.contains('account_pending_0'),
           ),
         );
       }
-
       for (int i = 0; i < data.length; i++) {
         final Map<String, dynamic> item = Map<String, dynamic>.from(
           data[i] as Map,
         );
         final String status = (item['review_status'] ?? '').toString().trim();
+        // Drafts haven't been submitted yet, so they aren't a review event.
+        if (status.toLowerCase() == 'draft') continue;
         final String scientificName = (item['scientific_name'] ?? '')
             .toString()
             .trim();
-        final DateTime uploadedAt =
+        // Prefer updated_at (bumped whenever the review status actually
+        // changes) over created_at (frozen at original draft creation) so
+        // the notification's date reflects the event it's about, not when
+        // the underlying row was first drafted.
+        final DateTime eventAt =
+            DateTime.tryParse((item['updated_at'] ?? '').toString()) ??
             DateTime.tryParse((item['created_at'] ?? '').toString()) ??
             DateTime.now();
-        final String id = (item['sighting_id'] ?? i + 1).toString();
+        final String sightingId = (item['sighting_id'] ?? i + 1).toString();
+        // Include status in the id so a later status change (e.g. pending ->
+        // approved) is treated as a new, unread notification instead of
+        // inheriting the read state of the earlier status's notification.
+        final String id = '${sightingId}_${status.toLowerCase()}';
         notifs.add(
           AppNotification(
             id: id,
             type: status.isEmpty ? 'pending' : status,
             message: _messageForSubmission(status, scientificName),
-            timestamp: _bucketForDate(uploadedAt),
+            timestamp: _bucketForDate(eventAt),
+            dateLabel: _formatDateLabel(eventAt),
             read: _readIds.contains(id),
           ),
         );
@@ -20229,7 +22691,6 @@ class NotificationController extends ChangeNotifier {
     } catch (_) {
       _raw = const <AppNotification>[];
     }
-
     _isLoading = false;
     _notify();
   }
@@ -20255,6 +22716,7 @@ class NotificationController extends ChangeNotifier {
                   type: n.type,
                   message: n.message,
                   timestamp: n.timestamp,
+                  dateLabel: n.dateLabel,
                   read: true,
                 )
               : n,
@@ -20276,6 +22738,7 @@ class NotificationController extends ChangeNotifier {
             type: n.type,
             message: n.message,
             timestamp: n.timestamp,
+            dateLabel: n.dateLabel,
             read: true,
           ),
         )
@@ -20295,6 +22758,33 @@ class NotificationController extends ChangeNotifier {
     return 'Earlier';
   }
 
+  static const List<String> _monthNames = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  /// Formats a real date/time for display, e.g. "Jul 23, 2026 · 3:45 PM"
+  /// the actual timestamp was already being fetched (`created_at`) but
+  /// previously only fed into the coarse Today/Past 7 days/Earlier bucket.
+  String _formatDateLabel(DateTime value) {
+    final DateTime local = value.toLocal();
+    final int hour24 = local.hour;
+    final int hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
+    final String period = hour24 < 12 ? 'AM' : 'PM';
+    final String minute = local.minute.toString().padLeft(2, '0');
+    return '${_monthNames[local.month - 1]} ${local.day}, ${local.year} · $hour12:$minute $period';
+  }
+
   String _messageForSubmission(String status, String scientificName) {
     final String safeName = scientificName.isEmpty
         ? 'Unnamed species'
@@ -20304,6 +22794,8 @@ class NotificationController extends ChangeNotifier {
         return 'Submission approved: $safeName';
       case 'rejected':
         return 'Submission rejected: $safeName';
+      case 'revision':
+        return 'Submission needs revision: $safeName';
       default:
         return 'Submission pending review: $safeName';
     }
@@ -20312,9 +22804,7 @@ class NotificationController extends ChangeNotifier {
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({required this.controller, super.key});
-
   final NotificationController controller;
-
   Widget _buildSection(
     BuildContext context,
     String title,
@@ -20406,17 +22896,33 @@ class NotificationsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          item.message,
-                          style: TextStyle(
-                            color: item.read ? _mutedTextColor : _textColor,
-                            fontSize: 15,
-                            height: 1.25,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: item.read
-                                ? FontWeight.w400
-                                : FontWeight.w600,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              item.message,
+                              style: TextStyle(
+                                color: item.read ? _mutedTextColor : _textColor,
+                                fontSize: 15,
+                                height: 1.25,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: item.read
+                                    ? FontWeight.w400
+                                    : FontWeight.w600,
+                              ),
+                            ),
+                            if (item.dateLabel.isNotEmpty) ...<Widget>[
+                              const SizedBox(height: 4),
+                              Text(
+                                item.dateLabel,
+                                style: TextStyle(
+                                  color: _mutedTextColor,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -20507,7 +23013,6 @@ class NotificationsScreen extends StatelessWidget {
             final List<AppNotification> notifications =
                 controller.notifications;
             final int unreadCount = controller.unreadCount;
-
             final List<AppNotification> today = notifications
                 .where((AppNotification n) => n.timestamp == 'Today')
                 .toList(growable: false);
@@ -20517,7 +23022,6 @@ class NotificationsScreen extends StatelessWidget {
             final List<AppNotification> older = notifications
                 .where((AppNotification n) => n.timestamp == 'Earlier')
                 .toList(growable: false);
-
             return RefreshIndicator(
               onRefresh: controller.load,
               child: ListView(
@@ -20633,15 +23137,15 @@ class NotificationsScreen extends StatelessWidget {
 
 class _NotificationDetailDialog extends StatelessWidget {
   const _NotificationDetailDialog({required this.notification});
-
   final AppNotification notification;
-
   IconData get _icon {
     switch (notification.type.toLowerCase()) {
       case 'approved':
         return Icons.check_circle_outline_rounded;
       case 'rejected':
         return Icons.cancel_outlined;
+      case 'revision':
+        return Icons.edit_note_rounded;
       case 'verification':
         return Icons.verified_user_outlined;
       default:
@@ -20655,6 +23159,8 @@ class _NotificationDetailDialog extends StatelessWidget {
         return const Color(0xFF2E7D32);
       case 'rejected':
         return const Color(0xFFC62828);
+      case 'revision':
+        return const Color(0xFFF57F17);
       case 'verification':
         return const Color(0xFFF57F17);
       default:
@@ -20718,7 +23224,9 @@ class _NotificationDetailDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              notification.timestamp,
+              notification.dateLabel.isNotEmpty
+                  ? notification.dateLabel
+                  : notification.timestamp,
               style: TextStyle(
                 fontSize: 12,
                 color: _mutedTextColor,
@@ -20735,24 +23243,19 @@ class _NotificationDetailDialog extends StatelessWidget {
 
 class AuthApiException implements Exception {
   AuthApiException(this.message);
-
   final String message;
-
   @override
   String toString() => message;
 }
 
 class AppAuthController extends ChangeNotifier {
   AppAuthController();
-
   AppUser? _user;
   bool _isInitializing = true;
   bool _isDarkMode = false;
-
   AppUser? get user => _user;
   bool get isInitializing => _isInitializing;
   bool get isDarkMode => _isDarkMode;
-
   Future<void> toggleDarkMode() async {
     _isDarkMode = !_isDarkMode;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -20772,18 +23275,14 @@ class AppAuthController extends ChangeNotifier {
           .then<Object?>((v) => v)
           .timeout(const Duration(seconds: 5), onTimeout: () => null),
     ]);
-
     final SharedPreferences prefs = results[1] as SharedPreferences;
     _isDarkMode = prefs.getBool('darkMode') ?? false;
-
     final User? currentUser = Supabase.instance.client.auth.currentUser;
     if (currentUser != null) {
       _user = AppUser.fromSupabaseUser(currentUser);
     }
-
     _isInitializing = false;
     notifyListeners();
-
     if (currentUser != null) {
       await _syncProfileStatus(currentUser.id);
     }
@@ -20797,16 +23296,36 @@ class AppAuthController extends ChangeNotifier {
     try {
       final Map<String, dynamic>? row = await Supabase.instance.client
           .from('user_profiles')
-          .select('status')
+          .select('status, first_name, last_name, full_name, avatar_url')
           .eq('id', authUserId)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(_kNetworkTimeout);
       final String status = (row?['status'] ?? 'approved').toString().trim();
       if (_user == null) return;
       if (status == 'disabled') {
         await logout();
         return;
       }
-      _user = _user!.copyWith(profileStatus: status.isEmpty ? 'approved' : status);
+      // user_profiles is the cross-platform source of truth for name/photo
+      // (shared with the web dashboard, which writes different auth
+      // user_metadata keys than this app does) — prefer it when present,
+      // fall back to whatever AppUser.fromSupabaseUser already read from
+      // auth user_metadata for accounts that haven't synced here yet.
+      final String? profFirst = (row?['first_name'] as String?)?.trim();
+      final String? profLast = (row?['last_name'] as String?)?.trim();
+      final String? profFull = (row?['full_name'] as String?)?.trim();
+      final String? profAvatar = (row?['avatar_url'] as String?)?.trim();
+      _user = _user!.copyWith(
+        profileStatus: status.isEmpty ? 'approved' : status,
+        firstName: (profFirst != null && profFirst.isNotEmpty)
+            ? profFirst
+            : null,
+        lastName: (profLast != null && profLast.isNotEmpty) ? profLast : null,
+        name: (profFull != null && profFull.isNotEmpty) ? profFull : null,
+        profilePhotoUrl: (profAvatar != null && profAvatar.isNotEmpty)
+            ? profAvatar
+            : null,
+      );
       notifyListeners();
     } catch (_) {
       // Non-fatal: if user_profiles is unreachable, don't lock the
@@ -20828,10 +23347,8 @@ class AppAuthController extends ChangeNotifier {
     if (normalizedEmail.isEmpty || password.trim().isEmpty) {
       throw AuthApiException('Email and password are required.');
     }
-
     final SupabaseClient supabase = Supabase.instance.client;
     final bool isSignup = name != null && name.trim().isNotEmpty;
-
     try {
       if (isSignup) {
         final String trimmedName = name.trim();
@@ -20924,9 +23441,7 @@ class AppAuthController extends ChangeNotifier {
         'Authentication failed: ${e.runtimeType}. Check your connection and try again.',
       );
     }
-
     notifyListeners();
-
     final String? authUserId = Supabase.instance.client.auth.currentUser?.id;
     if (authUserId != null) {
       await _syncProfileStatus(authUserId);
@@ -20942,7 +23457,6 @@ class AppAuthController extends ChangeNotifier {
   }) async {
     final AppUser? current = _user;
     if (current == null) throw AuthApiException('No active user session.');
-
     final String resolvedName = name.trim();
     final String resolvedUsername = username.trim().replaceFirst(
       RegExp(r'^@+'),
@@ -20951,11 +23465,9 @@ class AppAuthController extends ChangeNotifier {
     final String resolvedLocation = location.trim();
     final String resolvedAffiliation = affiliation ?? current.affiliation;
     final String resolvedPhotoUrl = profilePhotoUrl ?? current.profilePhotoUrl;
-
     if (resolvedName.isEmpty || resolvedUsername.isEmpty) {
       throw AuthApiException('Name and username are required.');
     }
-
     final UserResponse response = await Supabase.instance.client.auth
         .updateUser(
           UserAttributes(
@@ -20978,7 +23490,36 @@ class AppAuthController extends ChangeNotifier {
             affiliation: resolvedAffiliation,
             profilePhotoUrl: resolvedPhotoUrl,
           );
-
+    // Mirror into user_profiles too — the canonical cross-platform store
+    // the web dashboard reads, since it writes/reads a different auth
+    // user_metadata key set than this app does.
+    final String? authUserId =
+        updatedUser?.id ?? Supabase.instance.client.auth.currentUser?.id;
+    if (authUserId != null) {
+      final List<String> nameParts = resolvedName.split(RegExp(r'\s+'));
+      final String splitFirst = nameParts.isNotEmpty ? nameParts.first : '';
+      final String splitLast = nameParts.length > 1
+          ? nameParts.sublist(1).join(' ')
+          : '';
+      try {
+        await Supabase.instance.client
+            .from('user_profiles')
+            .update(<String, dynamic>{
+              'first_name': splitFirst.isNotEmpty ? splitFirst : null,
+              'last_name': splitLast.isNotEmpty ? splitLast : null,
+              'full_name': resolvedName.isNotEmpty ? resolvedName : null,
+              'avatar_url': resolvedPhotoUrl.isNotEmpty
+                  ? resolvedPhotoUrl
+                  : null,
+              'affiliation': resolvedAffiliation.isNotEmpty
+                  ? resolvedAffiliation
+                  : null,
+            })
+            .eq('id', authUserId);
+      } catch (_) {
+        // Non-fatal: auth user_metadata above already saved successfully.
+      }
+    }
     notifyListeners();
   }
 
@@ -21023,7 +23564,6 @@ class AppUser {
     this.accountStatus = 'verified',
     this.profileStatus = 'approved',
   });
-
   final int? accountId;
   final int? userId;
   final String name;
@@ -21043,11 +23583,9 @@ class AppUser {
   // (Supabase Auth's own email-verification metadata). Mirrors web's
   // researcher-dashboard.html status gating.
   final String profileStatus;
-
   bool get isPendingVerification => accountStatus == 'pending_verification';
   bool get isPendingApproval => profileStatus == 'pending';
   bool get isDisabled => profileStatus == 'disabled';
-
   factory AppUser.fromSupabaseUser(User user) {
     final Map<String, dynamic> meta = Map<String, dynamic>.from(
       user.userMetadata ?? <String, dynamic>{},
@@ -21069,13 +23607,11 @@ class AppUser {
       accountStatus: (meta['account_status'] ?? 'verified').toString(),
     );
   }
-
   factory AppUser.fromJson(Map<String, dynamic> json) {
     final int? parsedAccountId = int.tryParse(
       (json['accountId'] ?? '').toString(),
     );
     final int? parsedUserId = int.tryParse((json['userId'] ?? '').toString());
-
     return AppUser(
       accountId: parsedAccountId,
       userId: parsedUserId,
@@ -21093,7 +23629,6 @@ class AppUser {
       accountStatus: (json['account_status'] ?? 'verified').toString(),
     );
   }
-
   AppUser copyWith({
     int? accountId,
     int? userId,
@@ -21159,7 +23694,6 @@ class Orchid {
     required this.endemicStatus,
     required this.description,
   });
-
   final String id;
   final String scientificName;
   final String commonName;
@@ -21177,13 +23711,17 @@ class AppNotification {
     required this.message,
     required this.timestamp,
     required this.read,
+    this.dateLabel = '',
   });
-
   final String id;
   final String type;
   final String message;
   final String timestamp;
   final bool read;
+  // Formatted actual date/time (e.g. "Jul 23, 2026 · 3:45 PM"), distinct
+  // from `timestamp` which only ever holds a coarse bucket label
+  // ("Today"/"Past 7 days"/"Earlier") used for section grouping.
+  final String dateLabel;
 }
 
 class AppStats {
@@ -21194,7 +23732,6 @@ class AppStats {
     this.myPendingCount = 0,
     this.myApprovedCount = 0,
   });
-
   final int totalSpecies;
   final int pendingSubmissions;
   final int totalSightings;
@@ -21202,6 +23739,20 @@ class AppStats {
   // chips), unlike the catalog-wide totals above.
   final int myPendingCount;
   final int myApprovedCount;
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'totalSpecies': totalSpecies,
+    'pendingSubmissions': pendingSubmissions,
+    'totalSightings': totalSightings,
+    'myPendingCount': myPendingCount,
+    'myApprovedCount': myApprovedCount,
+  };
+  static AppStats fromJson(Map<String, dynamic> json) => AppStats(
+    totalSpecies: (json['totalSpecies'] as num?)?.toInt() ?? 0,
+    pendingSubmissions: (json['pendingSubmissions'] as num?)?.toInt() ?? 0,
+    totalSightings: (json['totalSightings'] as num?)?.toInt() ?? 0,
+    myPendingCount: (json['myPendingCount'] as num?)?.toInt() ?? 0,
+    myApprovedCount: (json['myApprovedCount'] as num?)?.toInt() ?? 0,
+  );
 }
 
 class SpeciesHighlight {
@@ -21210,10 +23761,20 @@ class SpeciesHighlight {
     required this.imageUrl,
     this.commonName = 'Common Name',
   });
-
   final String scientificName;
   final String imageUrl;
   final String commonName;
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'scientificName': scientificName,
+    'imageUrl': imageUrl,
+    'commonName': commonName,
+  };
+  static SpeciesHighlight fromJson(Map<String, dynamic> json) =>
+      SpeciesHighlight(
+        scientificName: (json['scientificName'] ?? '').toString(),
+        imageUrl: (json['imageUrl'] ?? '').toString(),
+        commonName: (json['commonName'] ?? 'Common Name').toString(),
+      );
 }
 
 class CatalogSpecies {
@@ -21228,7 +23789,6 @@ class CatalogSpecies {
     this.localName,
     this.model3dUrl,
   });
-
   final int? id;
   final String scientificName;
   final String commonName;
@@ -21238,11 +23798,32 @@ class CatalogSpecies {
   final double? longitude;
   final String? localName;
   final String? model3dUrl;
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'scientificName': scientificName,
+    'commonName': commonName,
+    'genus': genus,
+    'imageUrl': imageUrl,
+    'latitude': latitude,
+    'longitude': longitude,
+    'localName': localName,
+    'model3dUrl': model3dUrl,
+  };
+  static CatalogSpecies fromJson(Map<String, dynamic> json) => CatalogSpecies(
+    id: json['id'] as int?,
+    scientificName: (json['scientificName'] ?? '').toString(),
+    commonName: (json['commonName'] ?? '').toString(),
+    genus: (json['genus'] ?? '').toString(),
+    imageUrl: json['imageUrl'] as String?,
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
+    localName: json['localName'] as String?,
+    model3dUrl: json['model3dUrl'] as String?,
+  );
 }
 
 class CatalogGroup {
   const CatalogGroup({required this.title, required this.species});
-
   final String title;
   final List<CatalogSpecies> species;
 }

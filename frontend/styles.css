@@ -515,6 +515,11 @@ body::before {
   box-shadow: 0 8px 20px rgba(20, 90, 30, 0.3);
 }
 
+/* Force required asterisk color globally (highest specificity) */
+body .required-asterisk, .dashboard-page .required-asterisk {
+  color: #b42318 !important;
+}
+
 .catalog-search:hover {
   box-shadow: 0 8px 20px rgba(20, 90, 30, 0.3);
 }
@@ -714,6 +719,20 @@ body::before {
   color: #999;
   font-weight: 500;
   text-transform: uppercase;
+/* Required asterisk styling (make them red across all forms) */
+.required-asterisk {
+  color: #b42318 !important;
+  margin-left: 6px;
+}
+
+/* Simple fade-out animation used for transient submission feedback */
+.fade-out {
+  animation: fadeOut 600ms ease forwards;
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
   letter-spacing: 0.5px;
 }
 
@@ -2639,6 +2658,26 @@ table tbody tr:hover {
   border-color: #fde68a;
 }
 
+/* Shown next to a submission's species name when that species already has
+   a published catalog entry — this submission will publish as an
+   additional sighting of it rather than a brand-new species. */
+.sub-existing-species-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #b8ebcf;
+  background: #ecfdf3;
+  color: #13683a;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 .submission-action-btn {
   background: linear-gradient(180deg, #2fd31f 0%, #15a10c 45%, #088f08 100%);
   color: #ffffff;
@@ -3483,6 +3522,11 @@ textarea.form-control {
   color: rgba(230,190,70,.9) !important;
   border-color: rgba(185,145,25,.35) !important;
 }
+.sub-existing-species-badge {
+  background: rgba(10,70,35,.65) !important;
+  color: rgba(90,220,130,.95) !important;
+  border-color: rgba(50,170,90,.35) !important;
+}
 /* View / Edit action buttons */
 .submission-action-btn {
   background: var(--dt-bg-input) !important;
@@ -3762,6 +3806,13 @@ body.researcher-theme #detailModalCard > div:first-child {
   transform:translateX(-50%);
   background:#1e293b;
   color:#fff;
+  /* .field-help is usually nested inside a <label>, and some labels
+     (e.g. #researcher-submission-panel label) set
+     -webkit-text-fill-color !important — which is inherited by this
+     pseudo-element and paints over `color` in WebKit/Blink, making the
+     tooltip text unreadable dark-on-dark. Set it explicitly here so it
+     can't inherit a conflicting value. */
+  -webkit-text-fill-color:#fff;
   padding:0.45rem 0.7rem;
   border-radius:7px;
   font-size:0.73rem;
@@ -3977,6 +4028,13 @@ body.researcher-theme #detailModalCard > div:first-child {
   background: #145A1E !important;
   border-color: #145A1E !important;
   color: #ffffff !important;
+}
+#submission-flowering-season-start:disabled,
+#submission-flowering-season-end:disabled {
+  background: #f1f5f4 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 [id^="submission-remove-common-"],
 [id^="submission-remove-local-"] {
@@ -4780,6 +4838,9 @@ body.researcher-theme .submission-status-badge.status-revision {
 }
 body.researcher-theme .submission-status-badge.status-draft {
   background: #fefce8 !important; color: #7a5c00 !important; border-color: #fde68a !important;
+}
+body.researcher-theme .sub-existing-species-badge {
+  background: #ecfdf3 !important; color: #13683a !important; border-color: #b8ebcf !important;
 }
 /* Submissions table */
 body.researcher-theme .submissions-table-shell {
