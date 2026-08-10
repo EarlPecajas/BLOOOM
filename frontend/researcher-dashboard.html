@@ -33,6 +33,24 @@
       }
     </script>
     <style>
+      /* Belt-and-suspenders: ID selectors win regardless of theme/body-class state */
+      #search-input, #search-filter, #conservation-filter {
+        background-color: #FFFFFF !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
+      /* Genus group headers — shown across the full grid width when the
+         Genus filter is active, one per genus, right before its cards. */
+      .catalog-genus-header {
+        grid-column: 1 / -1;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #145A1E;
+        padding: 1.1rem 0 .4rem;
+        margin-top: .25rem;
+        border-bottom: 2px solid #E7ECE7;
+      }
+      .catalog-genus-header:first-child { margin-top: 0; }
       .detail-step-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8d9b2;transition:all .2s;}
 
       /* ── Map trail/route toggle ── */
@@ -568,6 +586,9 @@
       .collection3d-model-wrap model-viewer:fullscreen { width: 100vw; height: 100vh; }
       .collection3d-fs-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; background: rgba(0,0,0,0.55); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; backdrop-filter: blur(3px); transition: background .15s; }
       .collection3d-fs-btn:hover { background: rgba(0,0,0,0.75); }
+
+      /* Ensure required asterisks render red even if external CSS is cached */
+      .required-asterisk { color: #b42318 !important; margin-left: 6px; }
     </style>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -892,12 +913,11 @@
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(700px,100%);">
-          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Search filter">
             <option value="all">All</option>
-            <option value="species">Species</option>
             <option value="genus">Genus</option>
           </select>
-          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;" aria-label="Conservation status filter">
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Conservation status filter">
             <option value="all">Conservation Status</option>
             <option value="critically endangered">Critically Endangered</option>
             <option value="endangered">Endangered</option>
@@ -905,7 +925,7 @@
             <option value="least concern">Least Concern</option>
             <option value="unassigned">Not Listed</option>
           </select>
-          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
+          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;background-color:#FFFFFF !important;color:#1a3a1c !important;" />
         </div>
       </div>
 
@@ -1027,9 +1047,6 @@
             </div>
 
             <div id="dashboard-orchid-detail-page-7" class="orchid-detail-page" hidden>
-              <div class="orchid-detail-row" id="dashboard-row-ethnobotanical"><span class="orchid-detail-label">Ethnobotanical Value</span><span id="dashboard-detail-ethnobotanical">-</span></div>
-              <div class="orchid-detail-row" id="dashboard-row-horticulture"><span class="orchid-detail-label">Horticulture Value</span><span id="dashboard-detail-horticulture">-</span></div>
-              <div class="orchid-detail-row" id="dashboard-row-cultural"><span class="orchid-detail-label">Cultural Importance</span><span id="dashboard-detail-cultural">-</span></div>
               <div class="orchid-detail-row" id="dashboard-row-researcher"><span class="orchid-detail-label">Researcher</span><span id="dashboard-detail-researcher">-</span></div>
               <div class="orchid-detail-row" id="dashboard-row-team-members"><span class="orchid-detail-label">Team Members</span><span id="dashboard-detail-team-members">-</span></div>
             </div>
@@ -1508,9 +1525,9 @@
               </div>
             </div>
             <div class="submission-field submission-field--full">
-              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature)</label>
+              <label for="submission-scientific-name" style="font-size:0.88rem;font-weight:600;color:#334155;">Scientific Name (Binomial Nomenclature) <span class="required-asterisk" style="color:#b42318 !important;">*</span></label>
               <div style="display:flex;gap:0.5rem;">
-                <input id="submission-scientific-name" type="text" list="known-species-datalist" placeholder="Scientific Name (auto-filled from Genus + Species, or pick/type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;font-style:italic;" />
+                <input id="submission-scientific-name" type="text" list="known-species-datalist" placeholder="Scientific Name (auto-filled from Genus + Species, or pick/type manually)" class="submission-text-input" style="flex:1;font-family:Inter,Roboto,sans-serif;font-style:italic;" required />
                 <button type="button" id="submission-scientific-idk" style="padding:0.72rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;white-space:nowrap;">Unknown</button>
               </div>
               <span id="submission-scientific-name-hint" style="display:none;font-size:0.78rem;color:#b42318;margin-top:0.3rem;">Scientific name must start with a capital letter (e.g., Phalaenopsis amabilis).</span>
@@ -1531,14 +1548,14 @@
               <div id="submission-local-names-wrap" style="display:grid;gap:0.45rem;"></div>
             </div>
             <div class="submission-field">
-              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
-              <select id="submission-identification-confidence" class="submission-select"><option value="" disabled selected hidden>Taxonomic Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
+              <label for="submission-identification-confidence" style="font-size:0.88rem;font-weight:600;color:#334155;">Taxonomic Identification Confidence <span class="required-asterisk" style="color:#b42318 !important;">*</span><span class="field-help" data-tooltip="Required. Select: Confirmed (verified by expert), Probable (fairly certain), or Unidentified (uncertain).">?</span></label>
+              <select id="submission-identification-confidence" class="submission-select" required><option value="" disabled selected hidden>Taxonomic Identification Confidence</option><option value="Confirmed">Confirmed</option><option value="Probable">Probable</option><option value="Unidentified">Unidentified</option></select>
             </div>
             <div class="submission-field" style="position:relative;">
               <label for="submission-endemic-philippines" style="font-size:0.88rem;font-weight:600;color:#334155;">Endemic to the Philippines <span class="field-help" data-tooltip="Optional. Is this orchid species endemic (found only) in the Philippines?">?</span></label>
               <div style="display:flex;gap:0.4rem;align-items:center;">
                 <select id="submission-endemic-philippines" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Endemic to the Philippines</option><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select>
-                <button type="button" onclick="autoDetectEndemicStatus()" title="Look up the Scientific Name against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+                <button type="button" onclick="autoDetectEndemicStatus()" title="Look up the Scientific Name against DAO 2026-20" style="flex-shrink:0;padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
               </div>
               <div id="submission-endemic-status" style="margin-top:0.3rem;padding:0.2rem 0;font-size:0.76rem;line-height:1.35;display:none;"></div>
             </div>
@@ -1550,7 +1567,7 @@
               <strong>Observation / Collection Details</strong>
             </div>
             <div class="submission-field">
-              <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
+              <label for="submission-observation-date" style="font-size:0.88rem;font-weight:600;color:#334155;">Observation Date <span class="required-asterisk" style="color:#b42318 !important;">*</span><span class="field-help" data-tooltip="Required. Enter the date you observed the orchid (YYYY-MM-DD format).">?</span></label>
               <input id="submission-observation-date" type="date" class="submission-text-input submission-date-input" />
             </div>
             <div class="submission-field">
@@ -1597,17 +1614,19 @@
               <label for="submission-specific-site-other" style="font-size:0.88rem;font-weight:600;color:#334155;">Specific Site (if Others) <span class="field-help" data-tooltip="Optional. Use this when the zone is set to Others.">?</span></label>
               <input id="submission-specific-site-other" type="text" placeholder="Specific Site (if Others)" class="submission-text-input" />
             </div>
-            <div style="grid-column:1/-1;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-              <button type="button" id="submission-use-gps" style="padding:0.55rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Use My GPS Location</button>
-              <span id="submission-gps-status" style="font-size:0.85rem;color:#64748b;"></span>
-            </div>
-            <div class="submission-field">
-              <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
-              <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" class="submission-text-input" />
-            </div>
-            <div class="submission-field">
-              <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span style="color:#b42318;">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
-              <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
+            <div style="grid-column:1/-1;display:flex;align-items:flex-end;gap:0.85rem;flex-wrap:wrap;">
+              <div class="submission-field" style="flex:1;min-width:160px;">
+                <label for="submission-latitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Latitude <span class="required-asterisk">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -90 to +90 (North is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+                <input id="submission-latitude" type="number" step="any" placeholder="GPS Latitude" class="submission-text-input" />
+              </div>
+              <div class="submission-field" style="flex:1;min-width:160px;">
+                <label for="submission-longitude" style="font-size:0.88rem;font-weight:600;color:#334155;">GPS Longitude <span class="required-asterisk">*</span><span class="field-help" data-tooltip="Required. Decimal degrees: -180 to +180 (East is positive). Use 5-6 decimal places for accuracy.">?</span></label>
+                <input id="submission-longitude" type="number" step="any" placeholder="GPS Longitude" class="submission-text-input" />
+              </div>
+              <div style="position:relative;">
+                <button type="button" id="submission-use-gps" title="Use my current GPS location" style="padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;white-space:nowrap;">Auto-Detect</button>
+                <span id="submission-gps-status" style="position:absolute;top:100%;right:0;margin-top:0.3rem;font-size:0.85rem;color:#64748b;white-space:nowrap;"></span>
+              </div>
             </div>
             <div class="submission-field">
               <label for="submission-elevation" style="font-size:0.88rem;font-weight:600;color:#334155;">Elevation / Altitude (meters) <span class="field-help" data-tooltip="Auto-filled from GPS if available, or enter manually.">?</span></label>
@@ -1815,7 +1834,7 @@
               <label for="submission-threat-level" style="font-size:0.88rem;font-weight:600;color:#334155;">Threat Level <button type="button" onclick="openIucnGuideModal()" style="font-weight:500;color:#2f6f4f;font-size:0.78rem;text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">(Check DAO 2026-20)</button></label>
               <div style="display:flex;gap:0.4rem;align-items:center;">
                 <select id="submission-threat-level" class="submission-select" style="flex:1;"><option value="" disabled selected hidden>Threat Level</option><option value="Critically Endangered">Critically Endangered</option><option value="Endangered">Endangered</option><option value="Vulnerable">Vulnerable</option><option value="Other Threatened Species">Other Threatened Species</option><option value="Not Listed">Not Listed</option></select>
-                <button type="button" onclick="autoDetectThreatLevel()" title="Look up the Scientific Name (Page 1, Basic Taxonomic Information) against DAO 2026-20" style="flex-shrink:0;padding:0.6rem 0.7rem;border:1px solid #145A1E;border-radius:8px;background:#145A1E;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
+                <button type="button" onclick="autoDetectThreatLevel()" title="Look up the Scientific Name (Page 1, Basic Taxonomic Information) against DAO 2026-20" style="flex-shrink:0;padding:0.65rem 1rem;border:1px solid #145A1E;border-radius:8px;background:#eaf3ea;color:#145A1E;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Auto-Detect</button>
               </div>
               <div id="submission-threat-level-status" style="position:absolute;top:100%;left:0;right:0;margin-top:0.3rem;padding:0.2rem 0;background:#fff;font-size:0.76rem;line-height:1.35;display:none;z-index:2;"></div>
             </div>
@@ -1837,8 +1856,8 @@
               <div style="font-size:0.82rem;color:#64748b;margin-top:0.25rem;">Up to 3 photos per category. Whole plant photo is required.</div>
             </div>
             <div style="grid-column:1/-1;">
-              <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span style="color:#b42318;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
-              <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" />
+                <label style="display:block;font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">Whole Plant Photo <span class="required-asterisk" style="color:#b42318 !important;">*</span> <span style="font-weight:400;color:#64748b;">(max 3)</span></label>
+              <input id="submission-whole-plant-photo" type="file" accept="image/*" multiple style="width:100%;padding:0.6rem 0.7rem;border:1px solid #d4ddd7;border-radius:8px;" required />
               <div id="submission-whole-plant-photo-err" style="font-size:0.82rem;color:#b42318;display:none;margin-top:0.2rem;"></div>
               <div id="submission-whole-plant-photo-existing" class="submission-existing-photos" style="display:none;margin-top:0.5rem;gap:0.5rem;flex-wrap:wrap;"></div>
               <div id="submission-whole-plant-photographer-wrap" style="display:none;margin-top:0.4rem;">
@@ -1874,8 +1893,8 @@
               <strong>Notes, Remarks, and Researchers</strong>
             </div>
             <div class="submission-field">
-              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name</label>
-              <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" class="submission-text-input" />
+              <label for="submission-head-observer" style="font-size:0.88rem;font-weight:600;color:#334155;">Head Observer / Researcher Name <span class="required-asterisk" style="color:#b42318 !important;">*</span></label>
+              <input id="submission-head-observer" type="text" placeholder="Head Observer / Researcher Name" class="submission-text-input" required />
             </div>
             <div class="submission-field">
               <label for="submission-institution" style="font-size:0.88rem;font-weight:600;color:#334155;">Institution / Organization</label>
@@ -1883,14 +1902,14 @@
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.55rem;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
-                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members <span style="color:#b42318;">*</span></span>
+                <span style="font-size:0.88rem;font-weight:600;color:#334155;">Team Members <span class="required-asterisk" style="color:#b42318 !important;">*</span></span>
                 <button type="button" id="submission-add-team-member" style="padding:0.45rem 0.8rem;border:1px solid #d4ddd7;border-radius:8px;background:#f6f8f7;font-size:0.85rem;white-space:nowrap;">+ Add Member</button>
               </div>
               <div id="submission-team-members-wrap" style="display:grid;gap:0.5rem;"></div>
             </div>
             <div style="grid-column:1/-1;display:grid;gap:0.35rem;">
-              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes</label>
-              <textarea id="submission-researcher-notes" placeholder="Researcher Notes" class="submission-textarea" style="min-height:90px;"></textarea>
+              <label for="submission-researcher-notes" style="font-size:0.88rem;font-weight:600;color:#334155;">Researcher Notes <span class="required-asterisk" style="color:#b42318 !important;">*</span></label>
+              <textarea id="submission-researcher-notes" placeholder="Researcher Notes" class="submission-textarea" style="min-height:90px;" required></textarea>
             </div>
 
             <!-- Related Study -->
@@ -1946,7 +1965,7 @@
 
         <!-- Quick-facts strip -->
         <div id="detailContent" style="background:#fff;border-bottom:1px solid #e2e8f0;padding:0.9rem 1.75rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem 1.5rem;">
-          <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Family</p><p id="detailLocation" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
+          <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Family</p><p id="detailLocation" style="margin:0;font-size:0.9rem;font-weight:600;font-style:italic;color:#1e293b;"></p></div>
           <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Observed</p><p id="detailDate" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
           <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Common Name</p><p id="detailHabitat" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
           <div><p style="margin:0 0 0.18rem;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">Review Status</p><p id="detailStatus" style="margin:0;font-size:0.9rem;font-weight:600;color:#1e293b;"></p></div>
@@ -2259,6 +2278,9 @@
         isAdminRole = activeRole === 'admin' || activeRole === 'denr';
         isResearcherRole = !isAdminRole;
 
+        // Ensure realtime notifications are wired for this researcher
+        try { if (typeof setupRealtimeNotifications === 'function') setupRealtimeNotifications(resolved); } catch (e) { console.error('setupRealtimeNotifications error', e); }
+
         if (isAdminRole && !isResearcherRole) {
           window.location.href = 'denr-dashboard.html';
           return;
@@ -2480,6 +2502,9 @@
             if (hintEl) hintEl.style.display = 'block';
             return showErr('Scientific Name must start with a capital letter (e.g., Phalaenopsis amabilis).');
           }
+          // Require Taxonomic Identification Confidence on page 1
+          const idConf = (document.getElementById('submission-identification-confidence')?.value || '').trim();
+          if (!idConf) return showErr('Taxonomic Identification Confidence is required.');
         }
         if (p === 2) {
           const date = document.getElementById('submission-observation-date')?.value;
@@ -2748,6 +2773,8 @@
           addTeamMemberBtn.addEventListener('click', function() {
             if (!teamMembersWrap) return;
             teamMembersWrap.appendChild(createTeamMemberInput(teamMembersWrap.children.length + 1));
+            // ensure labels for any newly added required inputs are marked
+            if (typeof markRequiredLabels === 'function') markRequiredLabels(document.getElementById('researcher-submission-form'));
           });
         }
 
@@ -2765,6 +2792,9 @@
             goToSubmissionPage(currentSubmissionPage + 1);
           });
         }
+
+        // Ensure labels are marked when initializing the form
+        try { markRequiredLabels(document.getElementById('researcher-submission-form')); } catch (e) { /* ignore */ }
 
         // Save as Draft button
         const draftBtn = document.getElementById('submission-draft-btn');
@@ -2855,6 +2885,86 @@
           scientificEl.style.borderColor = ok ? '' : '#b42318';
           return ok;
         }
+        // Mark labels for required fields with a red asterisk span.
+        function markRequiredLabels(formEl) {
+          if (!formEl) return;
+          const controls = Array.from(formEl.querySelectorAll('input,select,textarea')).filter(el => el.required || el.dataset.required === 'true');
+          controls.forEach(ctrl => {
+            const id = ctrl.id;
+            if (!id) return;
+            const label = formEl.querySelector(`label[for="${id}"]`);
+            if (!label) return;
+            let span = label.querySelector('.required-asterisk');
+            if (!span) {
+              span = document.createElement('span');
+              span.className = 'required-asterisk';
+              span.textContent = '*';
+              span.style.setProperty('color', '#b42318', 'important');
+              span.style.setProperty('margin-left', '6px', 'important');
+              label.appendChild(span);
+            } else {
+              span.style.setProperty('color', '#b42318', 'important');
+            }
+          });
+        }
+        // Enforce inline styles (with !important) on .required-asterisk elements
+        // to prevent parent opacity or CSS overrides from dimming them.
+        function enforceRequiredAsteriskStyles(rootEl) {
+          const root = rootEl || document;
+          const nodes = Array.from(root.querySelectorAll('.required-asterisk'));
+          nodes.forEach(span => {
+            try {
+              span.style.setProperty('color', '#b42318', 'important');
+              span.style.setProperty('opacity', '1', 'important');
+              span.style.setProperty('filter', 'none', 'important');
+              span.style.setProperty('mix-blend-mode', 'normal', 'important');
+              span.style.setProperty('text-shadow', '0 0 0.6px #b42318', 'important');
+              span.style.setProperty('pointer-events', 'none', 'important');
+              span.style.setProperty('z-index', '1000000', 'important');
+              span.style.setProperty('font-weight', '700', 'important');
+            } catch (e) { /* ignore */ }
+          });
+        }
+
+        // MutationObserver that watches for new .required-asterisk nodes or
+        // attribute/class changes and applies enforced inline styles.
+        (function setupRequiredAsteriskObserver() {
+          try {
+            // apply once immediately
+            enforceRequiredAsteriskStyles(document);
+            const mo = new MutationObserver(mutations => {
+              let needsEnforce = false;
+              for (const m of mutations) {
+                if (m.type === 'childList' && m.addedNodes && m.addedNodes.length) {
+                  for (const n of m.addedNodes) {
+                    if (n.nodeType === 1 && (n.classList && n.classList.contains('required-asterisk'))) {
+                      enforceRequiredAsteriskStyles(n.parentNode || document);
+                      needsEnforce = false;
+                    } else if (n.nodeType === 1) {
+                      // check descendants
+                      if (n.querySelector && n.querySelector('.required-asterisk')) {
+                        enforceRequiredAsteriskStyles(n);
+                        needsEnforce = false;
+                      } else {
+                        needsEnforce = true;
+                      }
+                    }
+                  }
+                }
+                if (m.type === 'attributes' && m.target && (m.attributeName === 'class' || m.attributeName === 'style')) {
+                  if (m.target.classList && m.target.classList.contains('required-asterisk')) {
+                    enforceRequiredAsteriskStyles(m.target);
+                    needsEnforce = false;
+                  } else {
+                    needsEnforce = true;
+                  }
+                }
+              }
+              if (needsEnforce) enforceRequiredAsteriskStyles(document);
+            });
+            mo.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+          } catch (e) { /* ignore */ }
+        })();
         function syncScientificName() {
           const g = (genusEl?.value || '').trim();
           const s = (speciesEl?.value || '').trim();
@@ -3003,7 +3113,7 @@
               if (gpsStatus) gpsStatus.textContent = 'Geolocation is not supported by this browser.';
               return;
             }
-            if (gpsStatus) gpsStatus.textContent = 'Getting location…';
+            if (gpsStatus) gpsStatus.textContent = 'Locating…';
             navigator.geolocation.getCurrentPosition(
               function(pos) {
                 const lat = document.getElementById('submission-latitude');
@@ -3015,10 +3125,9 @@
                 if (elev) {
                   if (pos.coords.altitude !== null) {
                     elev.value = pos.coords.altitude.toFixed(1);
-                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
+                    if (gpsStatus) gpsStatus.textContent = '';
                   } else {
                     // Fallback: fetch elevation from external service when device doesn't provide altitude
-                    if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy), looking up elevation...`;
                     const latVal = pos.coords.latitude.toFixed(6);
                     const lngVal = pos.coords.longitude.toFixed(6);
                     // Use Open-Elevation public API (no API key). It's best-effort and may fail or be rate-limited.
@@ -3027,16 +3136,16 @@
                       .then((data) => {
                         if (data && data.results && data.results[0] && typeof data.results[0].elevation === 'number') {
                           elev.value = data.results[0].elevation.toFixed(1);
-                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy)`;
-                        } else {
-                          if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation unknown`;
                         }
+                        if (gpsStatus) gpsStatus.textContent = '';
                       })
                       .catch((err) => {
                         console.warn('Elevation lookup failed', err);
-                        if (gpsStatus) gpsStatus.textContent = `Location set (±${Math.round(pos.coords.accuracy)}m accuracy) — elevation lookup failed`;
+                        if (gpsStatus) gpsStatus.textContent = '';
                       });
                   }
+                } else {
+                  if (gpsStatus) gpsStatus.textContent = '';
                 }
               },
               function(err) {
@@ -3064,6 +3173,44 @@
         }
         loadSpeciesNameSuggestions();
         researcherSubmissionModal.style.display = 'block';
+        // Normalize any '*' characters inside the modal into styled spans so
+        // they always render as red asterisks. This handles cases where the
+        // '*' is part of a larger text node (e.g. "Label *").
+        (function normalizeModalAsterisks(modalEl) {
+          if (!modalEl) return;
+          const walker = document.createTreeWalker(modalEl, NodeFilter.SHOW_TEXT, null);
+          const nodes = [];
+          while (walker.nextNode()) nodes.push(walker.currentNode);
+          nodes.forEach(tn => {
+            if (!tn || !tn.nodeValue) return;
+            if (!tn.nodeValue.includes('*')) return;
+            // Skip if already inside a required-asterisk span
+            let ancestor = tn.parentNode;
+            while (ancestor && ancestor !== modalEl) {
+              if (ancestor.classList && ancestor.classList.contains('required-asterisk')) return;
+              ancestor = ancestor.parentNode;
+            }
+            const text = tn.nodeValue;
+            const frag = document.createDocumentFragment();
+            let lastIndex = 0;
+            for (let i = 0; i < text.length; i++) {
+              const ch = text[i];
+              if (ch === '*') {
+                // append preceding text if any
+                if (i > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, i)));
+                const span = document.createElement('span');
+                span.className = 'required-asterisk';
+                span.style.setProperty('color', '#b42318', 'important');
+                span.style.setProperty('margin-left', '6px', 'important');
+                span.textContent = '*';
+                frag.appendChild(span);
+                lastIndex = i + 1;
+              }
+            }
+            if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+            tn.parentNode.replaceChild(frag, tn);
+          });
+        })(researcherSubmissionModal);
       }
 
       const addSightingParams = new URLSearchParams(window.location.search);
@@ -3126,6 +3273,12 @@
         (orchidRows || []).forEach((o) => {
           if (o.name) names.add(String(o.name).trim());
           if (o.genus) genusNames.add(String(o.genus).trim());
+        });
+        // Every genus from the DAO 2026-20 reference list, so a researcher can
+        // pick/see a genus that's officially recognized even if it has no
+        // catalog rows or approved sightings yet.
+        (window.DAO_2026_20_ORCHID_REFERENCE || []).forEach((sp) => {
+          if (sp.genus) genusNames.add(String(sp.genus).trim());
         });
         if (bloomSupabase) {
           // Query the catalog directly too — orchidRows may still be empty if the
@@ -3630,10 +3783,20 @@
           const startSel = document.getElementById('submission-flowering-season-start');
           const endSel = document.getElementById('submission-flowering-season-end');
           const hidden = document.getElementById('submission-flowering-season');
-          if (startSel) startSel.value = '';
-          if (endSel) endSel.value = '';
-          if (hidden) hidden.value = 'Unknown';
-          floweringSeasonUnknownBtn.classList.add('is-active');
+          const isActive = floweringSeasonUnknownBtn.classList.contains('is-active');
+          if (isActive) {
+            // Toggle off — unlock the month pickers again.
+            floweringSeasonUnknownBtn.classList.remove('is-active');
+            if (startSel) startSel.disabled = false;
+            if (endSel) endSel.disabled = false;
+            if (hidden) hidden.value = '';
+          } else {
+            // Toggle on — clear any chosen months and lock them out while active.
+            if (startSel) { startSel.value = ''; startSel.disabled = true; }
+            if (endSel) { endSel.value = ''; endSel.disabled = true; }
+            if (hidden) hidden.value = 'Unknown';
+            floweringSeasonUnknownBtn.classList.add('is-active');
+          }
         });
       }
 
@@ -3655,7 +3818,8 @@
           const feedback = document.getElementById('researcher-submission-feedback');
           if (feedback) {
             feedback.style.color = '#4f5f56';
-            feedback.textContent = 'Submitting...';
+            // Provide instant feedback (optimistic) and run heavy work in background
+            feedback.textContent = 'Submission is being processed.';
           }
 
           try {
@@ -3722,6 +3886,34 @@
               throw new Error('Specific Site is required when the zone is set to Others.');
             }
 
+            // Duplicate-submission guard: blocks the SAME researcher from
+            // accidentally submitting the SAME species/date/site twice.
+            // Different researchers may still document the same species —
+            // researcher_email is part of the match key.
+            const dupSiteOther = specificSiteZone === 'trail'
+              ? (document.getElementById('submission-specific-site-trail')?.selectedOptions?.[0]?.textContent || null)
+              : (specificSiteOther || null);
+            const dupMountainName = document.getElementById('submission-mountain')?.value || 'Mt. Busa';
+            const { data: dupMtRow } = await bloomSupabase.from('mountain')
+              .select('mountain_id').ilike('mountain_name', dupMountainName).maybeSingle();
+
+            let dupQuery = bloomSupabase.from('species_sightings')
+              .select('sighting_id')
+              .ilike('scientific_name', sciName)
+              .eq('researcher_email', currentEmail)
+              .eq('observation_date', obsDate)
+              .neq('review_status', 'draft');
+            if (dupMtRow?.mountain_id != null) dupQuery = dupQuery.eq('mountain_id', dupMtRow.mountain_id);
+            if (specificSiteZone) dupQuery = dupQuery.eq('specific_site_zone', specificSiteZone);
+            if (dupSiteOther) dupQuery = dupQuery.eq('specific_site_other', dupSiteOther);
+            if (editDraftId) dupQuery = dupQuery.neq('sighting_id', Number(editDraftId));
+
+            const { data: dupRows, error: dupErr } = await dupQuery;
+            if (dupErr) throw new Error('Could not verify duplicate submissions — please try again.');
+            if (dupRows && dupRows.length > 0) {
+              throw new Error('You already submitted this species at this site and date. Check My Submissions to edit the existing record instead of creating a duplicate.');
+            }
+
             async function uploadFilesFromInput(inputEl, fieldName) {
               const files = Array.from(inputEl?.files || []);
               if (!files.length) {
@@ -3750,34 +3942,64 @@
               return uploadedUrls;
             }
 
-            const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, relatedStudyFileUrls] = await Promise.all([
-              uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
-              uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
-            ]);
+            // Launch the heavy work in background so the UI feels instant.
+            (async () => {
+              try {
+                const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, relatedStudyFileUrls] = await Promise.all([
+                  uploadFilesFromInput(document.getElementById('submission-whole-plant-photo'), 'wholePlantPhoto'),
+                  uploadFilesFromInput(document.getElementById('submission-closeup-flower-photo'), 'closeupFlowerPhoto'),
+                  uploadFilesFromInput(document.getElementById('submission-habitat-photo'), 'habitatPhoto'),
+                  uploadFilesFromInput(document.getElementById('submission-related-study-file'), 'relatedStudy')
+                ]);
 
-            const institution = (document.getElementById('submission-institution')?.value || '').trim() || null;
-            const data = await submitNormalizedSighting({
-              entryId, currentEmail, currentName, headObserver: observerName, institution,
-              commonNames, localNames, leafTextures, threatTypes, teamMembers,
-              wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
-              relatedStudyFileUrls,
-              removedPictureIds: Array.from(removedMediaPictureIds),
-              reviewStatus: 'pending',
-              editDraftId: editDraftId ? Number(editDraftId) : null
-            });
+                const institution = (document.getElementById('submission-institution')?.value || '').trim() || null;
+                const data = await submitNormalizedSighting({
+                  entryId, currentEmail, currentName, headObserver: observerName, institution,
+                  commonNames, localNames, leafTextures, threatTypes, teamMembers,
+                  wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls,
+                  relatedStudyFileUrls,
+                  removedPictureIds: Array.from(removedMediaPictureIds),
+                  reviewStatus: 'pending',
+                  editDraftId: editDraftId ? Number(editDraftId) : null
+                });
 
+                // Optionally show a toast on final success
+                try { showToast(`Submission queued (Entry ID: ${data?.entry_id || entryId})`, 'success'); } catch(_) {}
+              } catch (bgErr) {
+                // Background failure: surface a non-blocking toast and log
+                console.error('Background submission failed', bgErr);
+                try { showToast('Background submission failed — please retry.', 'error'); } catch(_) {}
+              }
+            })();
+
+            // Immediately clear draft metadata and reset the form for a fast UX
             delete researcherSubmissionFormEl.dataset.editDraftId;
             delete researcherSubmissionFormEl.dataset.editDraftEntryId;
             researcherSubmissionFormEl.reset();
+            // .reset() doesn't touch the `disabled` property or CSS classes,
+            // so the Flowering Season Unknown toggle needs clearing by hand
+            // or the month pickers would stay locked on the next submission.
+            const floweringUnknownBtnReset = document.getElementById('submission-flowering-season-unknown');
+            if (floweringUnknownBtnReset) floweringUnknownBtnReset.classList.remove('is-active');
+            const floweringStartSelReset = document.getElementById('submission-flowering-season-start');
+            const floweringEndSelReset = document.getElementById('submission-flowering-season-end');
+            if (floweringStartSelReset) floweringStartSelReset.disabled = false;
+            if (floweringEndSelReset) floweringEndSelReset.disabled = false;
             initializeResearcherSightingForm();
             const feedback = document.getElementById('researcher-submission-feedback');
             if (feedback) {
               feedback.style.color = '#145A1E';
-              feedback.textContent = `Submission sent successfully. Entry ID: ${data?.entry_id || entryId}.`;
+              feedback.textContent = 'Submission Sent';
+              try {
+                // After 5s, animate a fade then clear the content
+                setTimeout(() => {
+                  feedback.classList.add('fade-out');
+                  setTimeout(() => { feedback.textContent = ''; feedback.classList.remove('fade-out'); }, 600);
+                }, 5000);
+              } catch (_) {}
             }
-            await loadSubmissions('');
+            // Try to refresh lightweight submission list but don't block UX
+            try { loadSubmissions(''); } catch (_) {}
             closeResearcherSubmissionModal();
           } catch (error) {
             const feedback = document.getElementById('researcher-submission-feedback');
@@ -4747,7 +4969,7 @@
         });
       }
 
-      function renderOrchidCatalog(items) {
+      function renderOrchidCatalog(items, groupByGenus) {
         if (!catalogGrid) return;
 
         if (items.length === 0) {
@@ -4755,6 +4977,7 @@
           return;
         }
 
+        let lastGenusHeader = null;
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
@@ -4767,7 +4990,17 @@
           // species) silently showed that generic seed photo instead of the
           // thumbnail actually picked during publish.
           const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
-          return `
+
+          let genusHeaderHtml = '';
+          if (groupByGenus) {
+            const genusLabel = orchid.genus || (orchid.name || '').split(' ')[0] || 'Unknown';
+            if (genusLabel !== lastGenusHeader) {
+              lastGenusHeader = genusLabel;
+              genusHeaderHtml = `<div class="catalog-genus-header">${escapeHtml(genusLabel)}</div>`;
+            }
+          }
+
+          return genusHeaderHtml + `
           <button type="button" class="orchid-card orchid-card-button" data-dashboard-orchid-id="${orchid.id}">
             <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
             <div class="orchid-card-info">
@@ -4819,6 +5052,19 @@
           orchidCatalogLoaded = true;
 
           await loadApprovedSightings();
+
+          // orchid_overview lists every species ever published with no
+          // per-sighting publish state of its own — a species whose only
+          // sighting(s) were later unpublished by DENR would otherwise still
+          // show a card here with nothing behind it. Researchers should see
+          // the same catalog the public does, so drop anything with zero
+          // sightings left in the (already catalog_published-filtered)
+          // approved-sightings data. DENR's own catalog view intentionally
+          // stays unfiltered — this filter must not be copied there.
+          orchidRows = orchidRows.filter((orchid) => {
+            const key = String(orchid.name || '').trim().toLowerCase();
+            return (approvedSightingsByScientificName.get(key) || []).length > 0;
+          });
 
           renderOrchidCatalog(orchidRows);
           updateDashboardCounts(orchidRows);
@@ -5090,6 +5336,10 @@
           if (hidden) hidden.value = 'Unknown';
           const unknownBtn = document.getElementById('submission-flowering-season-unknown');
           if (unknownBtn) unknownBtn.classList.add('is-active');
+          const startSel = document.getElementById('submission-flowering-season-start');
+          const endSel = document.getElementById('submission-flowering-season-end');
+          if (startSel) startSel.disabled = true;
+          if (endSel) endSel.disabled = true;
         } else if (seasonStr) {
           const parts = seasonStr.split(/\s*[–\-]\s*/);
           if (parts.length >= 2) {
@@ -5157,6 +5407,11 @@
             setVal('submission-related-study-link', rs.link || '');
           }
         } catch (_) { /* ignore parse errors */ }
+
+        // Skip straight to the last page so a researcher acting on a
+        // revision request sees Submit immediately instead of clicking
+        // Next through every page — Back still reaches earlier pages.
+        if (needsRevision) goToSubmissionPage(SUBMISSION_TOTAL_PAGES);
       }
 
       if (catalogGrid) {
@@ -5223,11 +5478,19 @@
           if (!searchTerm) return true;
 
           if (filterValue === 'genus') return genus.includes(searchTerm);
-          if (filterValue === 'species') return name.includes(searchTerm);
           return name.includes(searchTerm) || genus.includes(searchTerm);
         });
 
-        renderOrchidCatalog(filtered);
+        // "Genus" groups the grid by genus (all Aerides together, all Vanda
+        // together, etc.) instead of the default alphabetical-by-species order.
+        if (filterValue === 'genus') {
+          filtered.sort((a, b) => {
+            const genusCmp = (a.genus || '').toLowerCase().localeCompare((b.genus || '').toLowerCase());
+            return genusCmp !== 0 ? genusCmp : (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
+          });
+        }
+
+        renderOrchidCatalog(filtered, filterValue === 'genus');
       }
 
       // Trail routes are DENR-managed and stored in Supabase (map_trails table),
@@ -5870,11 +6133,6 @@ function refreshConservationHeatMap(summary) {
           if (viewName === 'collection3d') {
             loadCollection3D();
           }
-        searchInput.addEventListener('input', function(e) {
-          const searchTerm = e.target.value.toLowerCase();
-          const filtered = orchidRows.filter((orchid) => orchid.name.toLowerCase().includes(searchTerm));
-          renderOrchidCatalog(filtered);
-        });
       }
 
       const requestedView = new URLSearchParams(window.location.search).get('view');
@@ -7174,7 +7432,7 @@ function refreshConservationHeatMap(summary) {
           const email = String(parsedActiveUser?.email || '').trim();
           if (!email) { list.innerHTML = '<div class="notif-empty">Sign in to see notifications.</div>'; return; }
           const { data: subs } = await bloomSupabase.from('species_sightings')
-            .select('review_status, scientific_name, updated_at')
+            .select('review_status, scientific_name, updated_at, created_at')
             .eq('researcher_email', email)
             .neq('review_status', 'draft')
             .order('updated_at', { ascending: false })
@@ -7184,8 +7442,10 @@ function refreshConservationHeatMap(summary) {
           const approved = rows.filter(s => s.review_status === 'approved').length;
           const rejected = rows.filter(s => s.review_status === 'rejected').length;
           const revision = rows.filter(s => s.review_status === 'revision').length;
+          const late     = rows.filter(isLateSightingRow).length;
 
           const items = [];
+          if (late > 0) items.push({ type:'warning', svg:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>', text:`⚠ ${late} submission${late!==1?'s':''} awaiting DENR review for over ${LATE_PENDING_DAYS} days`, time:'Late — no decision yet', nav:'submissions' });
           if (pending > 0)  items.push({ type:'info',    svg:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>', text:`${pending} submission${pending!==1?'s':''} under review`, time:'Awaiting DENR decision' });
           if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Click to see why and edit', nav:'submissions' });
           if (approved > 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>', text:`${approved} submission${approved!==1?'s':''} approved`, time:'Published to catalog' });
@@ -7201,14 +7461,16 @@ function refreshConservationHeatMap(summary) {
           const badge = document.getElementById('notif-badge');
           const urgentCount = revision + rejected;
           if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
-          updateNotifCard(pending, approved, rejected, revision);
+          updateNotifCard(pending, approved, rejected, revision, late);
         } catch { list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>'; }
       }
 
-      function updateNotifCard(pending, approved, rejected, revision) {
+      function updateNotifCard(pending, approved, rejected, revision, late) {
+        late = late || 0;
         const card = document.getElementById('notif-card-list');
         if (!card) return;
         const items = [];
+        if (late > 0) items.push({ icon:'G', text:`⚠ ${late} submission${late!==1?'s':''} awaiting DENR review for over ${LATE_PENDING_DAYS} days`, time:'Late — no decision yet', nav:'submissions' });
         if (revision > 0) items.push({ icon:'G', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} revision`, time:'Click to see why and edit', nav:'submissions' });
         if (rejected > 0) items.push({ icon:'G', text:`${rejected} submission${rejected!==1?'s':''} rejected by DENR`, time:'See My Submissions', nav:'submissions' });
         if (pending > 0)  items.push({ icon:'G', text:`${pending} submission${pending!==1?'s':''} under DENR review`, time:'Awaiting decision' });
@@ -7235,7 +7497,7 @@ function refreshConservationHeatMap(summary) {
           setTimeout(function() {
             const email = String(window.parsedActiveUser?.email || '').trim();
             if (!email) return;
-            bloomSupabase.from('species_sightings').select('review_status')
+            bloomSupabase.from('species_sightings').select('review_status, created_at')
               .eq('researcher_email', email).neq('review_status','draft')
               .then(({ data }) => {
                 const rows = Array.isArray(data) ? data : [];
@@ -7246,7 +7508,8 @@ function refreshConservationHeatMap(summary) {
                 const a = rows.filter(r=>r.review_status==='approved').length;
                 const rej = rows.filter(r=>r.review_status==='rejected').length;
                 const rev = rows.filter(r=>r.review_status==='revision').length;
-                updateNotifCard(p,a,rej,rev);
+                const late = rows.filter(isLateSightingRow).length;
+                updateNotifCard(p,a,rej,rev,late);
               }).catch(()=>{});
           }, 800);
         }

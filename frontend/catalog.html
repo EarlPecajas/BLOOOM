@@ -53,6 +53,7 @@
       .odm-model3d-wrap model-viewer:fullscreen{width:100vw;height:100vh;}
       .odm-model3d-fs-btn{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.55);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;backdrop-filter:blur(3px);transition:background .15s;}
       .odm-model3d-fs-btn:hover{background:rgba(0,0,0,0.75);}
+      .odm-model3d-ai-badge{position:absolute;top:8px;left:8px;background:rgba(20,90,30,.85);color:#fff;font-size:.66rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:.3rem .55rem;border-radius:20px;z-index:2;backdrop-filter:blur(3px);pointer-events:none;}
 
       /* Scrollable body */
       .odm-body{flex:1;overflow-y:auto;min-height:0;background:#f1f5ef;}
@@ -89,6 +90,8 @@
       .odm-sighting-item-hd{display:flex;align-items:center;justify-content:space-between;padding:0 1rem .3rem;}
       .odm-sighting-item-num{font-weight:800;color:#145A1E;font-size:.88rem;}
       .odm-sighting-item-date{font-size:.76rem;color:#5a8a54;font-weight:600;}
+      .odm-edit-request-btn{width:22px;height:22px;border-radius:6px;border:none;background:#E8F5E3;color:#145A1E;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;}
+      .odm-edit-request-btn:hover{background:#d3ecc9;}
       .odm-sighting-item-subhd{font-size:.8rem;font-weight:800;color:#12321a;margin:.85rem 1rem .5rem;padding-left:.65rem;border-left:3px solid #145A1E;}
       .odm-contributor-card{background:#E8F5E3;border-radius:14px;overflow:hidden;margin:.4rem 1rem .8rem;}
       .odm-contributor-card-hd{background:#0D530E;color:#fff;font-weight:700;font-size:.74rem;padding:.55rem .9rem;}
@@ -208,6 +211,33 @@
         border-color: #145A1E !important;
         box-shadow: 0 0 0 3px rgba(20,90,30,.1) !important;
       }
+      /* Belt-and-suspenders: ID selectors win regardless of theme/body-class state */
+      #search-input, #search-filter, #conservation-filter {
+        background-color: #FFFFFF !important;
+        color: #1a3a1c !important;
+        -webkit-text-fill-color: #1a3a1c !important;
+      }
+      /* styles.css has a global `select option { background: var(--dt-bg-card) }`
+         dark-theme rule for the OPEN dropdown list, separate from the closed
+         select's own background above — this page uses body.catalog-light,
+         not body.researcher-theme (which already has its own override), so
+         it needs its own fix here. */
+      #search-filter option, #conservation-filter option {
+        background-color: #FFFFFF !important;
+        color: #1a3a1c !important;
+      }
+      /* Genus group headers — shown across the full grid width when the
+         Genus filter is active, one per genus, right before its cards. */
+      .catalog-genus-header {
+        grid-column: 1 / -1;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #145A1E;
+        padding: 1.1rem 0 .4rem;
+        margin-top: .25rem;
+        border-bottom: 2px solid #E7ECE7;
+      }
+      .catalog-genus-header:first-child { margin-top: 0; }
       /* View toggle button */
       body.catalog-light .catalog-view-toggle {
         background: #FFFFFF !important;
@@ -322,12 +352,11 @@
           <h1 class="catalog-title">Orchid Catalog</h1>
         </div>
         <div class="catalog-search-wrapper d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end" style="max-width:min(700px,100%);">
-          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;" aria-label="Search filter">
+          <select id="search-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:140px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Search filter">
             <option value="all">All</option>
-            <option value="species">Species</option>
             <option value="genus">Genus</option>
           </select>
-          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;" aria-label="Conservation status filter">
+          <select id="conservation-filter" class="catalog-search-filter form-select form-select-sm flex-shrink-0" style="width:200px;background-color:#FFFFFF !important;color:#1a3a1c !important;" aria-label="Conservation status filter">
             <option value="all">Conservation Status</option>
             <option value="critically endangered">Critically Endangered</option>
             <option value="endangered">Endangered</option>
@@ -335,7 +364,7 @@
             <option value="least concern">Least Concern</option>
             <option value="unassigned">Not Listed</option>
           </select>
-          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;" />
+          <input type="text" placeholder="Search orchids..." class="catalog-search form-control form-control-sm flex-grow-1" id="search-input" style="max-width:360px;background-color:#FFFFFF !important;color:#1a3a1c !important;" />
         </div>
       </div>
 
@@ -347,7 +376,7 @@
 
         <!-- Breadcrumb + close -->
         <div class="odm-topbar">
-          <span class="odm-breadcrumb" id="odm-breadcrumb">Orchidaceae / â / â</span>
+          <span class="odm-breadcrumb" id="odm-breadcrumb"><i>Orchidaceae</i> / â / â</span>
           <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
         </div>
 
@@ -442,6 +471,60 @@
       <img src="" alt="Full orchid view" id="odm-lightbox-img" class="image-lightbox-photo" />
     </div>
 
+    <!-- ── Edit Request Modal (researcher asks DENR to edit their own sighting) ── -->
+    <div id="edit-request-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+      <div style="background:#FFFFFF;border-radius:16px;width:min(440px,92vw);max-height:90vh;overflow-y:auto;padding:1.75rem 1.75rem 1.5rem;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.25);">
+        <button type="button" title="Close" aria-label="Close" onclick="closeEditRequestModal()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:#888;padding:0.2rem 0.4rem;">&times;</button>
+        <h2 style="color:#145A1E;font-size:1.15rem;font-weight:700;margin:0 0 .4rem;">Ask DENR to edit this record</h2>
+        <p style="color:#5a8a54;font-size:.85rem;margin:0 0 1rem;">Describe what needs to change. DENR will review your request and, if approved, send this sighting back to you for revision.</p>
+        <textarea id="editRequestReason" rows="4" placeholder="e.g. The elevation reading was recorded incorrectly and needs to be corrected." style="width:100%;border:1px solid #d8e6d4;border-radius:10px;padding:.65rem .8rem;font:inherit;font-size:.85rem;resize:vertical;box-sizing:border-box;"></textarea>
+        <div id="editRequestError" style="display:none;color:#b42318;font-size:.78rem;margin-top:.5rem;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.25rem;">
+          <button type="button" onclick="closeEditRequestModal()" style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid #d8e6d4;background:#fff;color:#3a4a3a;font-weight:600;font-size:.85rem;cursor:pointer;">Cancel</button>
+          <button type="button" onclick="submitEditRequest()" style="padding:.55rem 1.1rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">Send Request</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var editRequestTargetId = null;
+      function openEditRequestModal(sightingId) {
+        editRequestTargetId = sightingId;
+        var modal = document.getElementById('edit-request-modal');
+        var reasonEl = document.getElementById('editRequestReason');
+        var errEl = document.getElementById('editRequestError');
+        if (reasonEl) reasonEl.value = '';
+        if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; errEl.style.color = '#b42318'; }
+        if (modal) { modal.style.display = 'flex'; }
+      }
+      function closeEditRequestModal() {
+        var modal = document.getElementById('edit-request-modal');
+        if (modal) modal.style.display = 'none';
+        editRequestTargetId = null;
+      }
+      async function submitEditRequest() {
+        var reason = (document.getElementById('editRequestReason')?.value || '').trim();
+        var errEl = document.getElementById('editRequestError');
+        if (!reason) {
+          if (errEl) { errEl.textContent = 'Please describe what needs to change.'; errEl.style.display = 'block'; }
+          return;
+        }
+        if (!currentCatalogUser || !window.bloomSupabase || !editRequestTargetId) return;
+        try {
+          const { error } = await bloomSupabase.from('catalog_edit_requests').insert({
+            sighting_id: editRequestTargetId,
+            researcher_email: currentCatalogUser.email,
+            reason: reason
+          });
+          if (error) throw error;
+          if (errEl) { errEl.style.color = '#145A1E'; errEl.textContent = 'Request sent to DENR.'; errEl.style.display = 'block'; }
+          setTimeout(closeEditRequestModal, 1100);
+        } catch (e) {
+          if (errEl) { errEl.textContent = 'Failed to send request: ' + (e.message || e); errEl.style.display = 'block'; }
+        }
+      }
+    </script>
+
     <script>
       const catalogGrid = document.getElementById('catalog-grid');
       const searchInput = document.getElementById('search-input');
@@ -467,6 +550,7 @@
       let storageImagesByGenus = new Map(); // genus_lower or "genus species" -> publicUrl
       let isListView = false;
       let currentSubmission = null;
+      let currentCatalogUser = null; // { id, email } of the logged-in user, if any — drives the edit-request pencil icon
       const bloomSupabase = window.bloomSupabase;
 
       // Public catalog stays visitor-only; role-specific catalogs live in the dashboards.
@@ -519,9 +603,9 @@
       function parsePhotoArray(value) {
         return parseJsonArrayValue(value).map(function(item) {
           if (item && typeof item === 'object') {
-            return { src: item.src || item.url || '', contributor: item.contributor || item.photographer_name || '' };
+            return { src: item.src || item.url || '', contributor: item.contributor || item.photographer_name || '', uploaded_at: item.uploaded_at || '' };
           }
-          return { src: String(item || ''), contributor: '' };
+          return { src: String(item || ''), contributor: '', uploaded_at: '' };
         }).filter(function(p) { return p.src; });
       }
 
@@ -564,6 +648,7 @@
 
       function normalizePublicSightingRow(row) {
         return {
+          id: row.id,
           scientific_name: row.scientific_name || '',
           common_names: parseJsonArrayValue(row.common_names),
           local_names: parseJsonArrayValue(row.local_names),
@@ -651,7 +736,7 @@
 
         function tag(list, category) {
           return (Array.isArray(list) ? list : []).map(function(p) {
-            return { src: p.src, contributor: p.contributor, category: category };
+            return { src: p.src, contributor: p.contributor, uploaded_at: p.uploaded_at, category: category };
           });
         }
 
@@ -810,6 +895,11 @@
       // and Related Study tab. Defaults to the most recent sighting.
       var odmActiveSightingIndex = 0;
 
+      // sighting_id values (from species_sightings, same as public_approved_sightings.id)
+      // that belong to the logged-in researcher, for the currently-open species —
+      // recomputed each time openOrchidDetails runs. Drives the edit-request pencil icon.
+      var odmMySightingIds = new Set();
+
       function odmActiveSighting(allSightings) {
         return allSightings[odmActiveSightingIndex] || allSightings[0] || {};
       }
@@ -851,69 +941,11 @@
           odmRow('Endemic to Philippines', endemic, 'endemicity') +
           odmRow('Confidence', src.identification_confidence, 'id-confidence');
 
-        function num(value, unit) {
-          return (value === '' || value === null || value === undefined) ? '' : (value + (unit || ''));
-        }
-
-        var leafTextures = Array.isArray(src.leaf_textures) && src.leaf_textures.length
-          ? src.leaf_textures.join(', ') : '';
-
         var extraSections =
-          odmSection('Plant Structure',
-            odmRow('Plant Height', num(src.plant_height_cm, ' cm'), 'height') +
-            odmRow('Pseudobulb Present', src.pseudobulb_present == null ? '' : (src.pseudobulb_present ? 'Yes' : 'No')) +
-            odmRow('Stem Length', num(src.stem_length_cm, ' cm')) +
-            odmRow('Root Length', num(src.root_length_cm, ' cm'))
-          ) +
-          odmSection('Leaf Characteristics',
-            odmRow('Leaf Shape / Type', src.leaf_shape, 'leaf-shape') +
-            odmRow('Leaf Length', num(src.leaf_length_cm, ' cm')) +
-            odmRow('Leaf Width', num(src.leaf_width_cm, ' cm')) +
-            odmRow('Leaf Texture', leafTextures) +
-            odmRow('Leaf Arrangement', src.leaf_arrangement) +
-            odmRow('Number of Leaves', src.leaf_count)
-          ) +
-          odmSection('Flower Characteristics',
-            odmRow('Flower Color', src.flower_color, 'flower-color') +
-            odmRow('Flowering Season', src.flowering_season, 'flowering-season') +
-            odmRow('Number of Flowers', src.flower_count, 'flower-count') +
-            odmRow('Flower Diameter', num(src.flower_diameter_cm, ' cm')) +
-            odmRow('Inflorescence Type', src.inflorescence_type, 'inflorescence') +
-            odmRow('Petal Characteristics', src.petal_characteristics) +
-            odmRow('Sepal Characteristics', src.sepal_characteristics) +
-            odmRow('Labellum Description', src.labellum_lip_description) +
-            odmRow('Fragrance', src.fragrance, 'fragrance') +
-            odmRow('Blooming Stage', src.blooming_stage, 'blooming')
-          ) +
-          odmSection('Fruit &amp; Seeds',
-            odmRow('Fruit Present', src.fruit_present == null ? '' : (src.fruit_present ? 'Yes' : 'No')) +
-            odmRow('Fruit Type', src.fruit_type) +
-            odmRow('Seed Capsule Condition', src.seed_capsule_condition)
-          ) +
-          odmSection('Population &amp; Conservation',
-            odmRow('Population Count', src.population_count !== '' && src.population_count != null
-              ? (src.population_count + ' individual' + (Number(src.population_count) === 1 ? '' : 's')) : '', 'pop-count') +
-            odmRow('Life Stage', src.life_stage, 'life-stage') +
-            odmRow('Phenology', src.phenology, 'phenology') +
-            odmRow('Population Status', src.population_status, 'pop-status') +
-            odmRow('Threat Level', src.threat_level, 'threat')
-          ) +
-          // Species Value & Importance — catalog-wide, DENR-curated narrative
-          // fields (not per-sighting), matching orchid_overview. "Cultivation"
-          // has no data source in this schema, so it always shows "-".
-          odmSection('Species Value &amp; Importance',
-            odmRow('Ethnobotanical Importance', orchid.ethnobotanical, 'ethnobotanical') +
-            odmRow('Aesthetic Appeal', orchid.horticulture_value, 'horticulture-value') +
-            odmRow('Cultivation', '', 'cultivation') +
-            odmRow('Cultural Importance', orchid.cultural_importance, 'cultural-importance')
-          ) +
-          '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
+          (odmHiddenFields.has('researcher-notes') ? '' :
+            '<div class="odm-section"><div class="odm-section-title">Researcher Notes</div>' +
             '<div class="odm-study-note" style="margin:0;' + (src.researcher_notes ? '' : 'color:#9AA6A0;') + '">' +
-            escapeHtml(src.researcher_notes || '-') + '</div></div>' +
-          // Unusual Observations has no data source in this schema (the column
-          // was removed from submissions) — always shows "-", same as mobile.
-          '<div class="odm-section"><div class="odm-section-title">Unusual Observations</div>' +
-            '<div class="odm-study-note" style="margin:0;color:#9AA6A0;">-</div></div>';
+            escapeHtml(src.researcher_notes || '-') + '</div></div>');
 
         document.getElementById('odm-value-extra').innerHTML = extraSections;
       }
@@ -973,37 +1005,31 @@
         var recordedRows = (odmHiddenFields.has('obs-date') ? '' : '<div class="odm-date-pill">' + escapeHtml(date) + '</div>') +
           odmRow('Time of Observation', s.observation_time, 'obs-time') +
           odmRow('Collection Method', s.collection_method, 'collection-method') +
-          odmRow('Observation Type', s.observation_type) +
-          odmRow('Voucher Specimen Collected', s.voucher_collected == null ? '' : (s.voucher_collected ? 'Yes' : 'No'), 'voucher');
+          odmRow('Observation Type', s.observation_type, 'obs-type');
 
         var locationRows = odmRow('Mountain / Site', s.mountain_name, 'mountain') +
-          odmRow('Province', s.province) +
-          odmRow('Municipality', s.municipality) +
-          odmRow('Altitude Zone', s.specific_site_zone, 'site') +
-          odmRow('Specific Site', s.specific_site_other, 'site');
-
-        var habitatRows = odmRow('Habitat Type', s.habitat_type, 'habitat-type') +
-          odmRow('Microhabitat', s.microhabitat, 'microhabitat') +
-          odmRow('Growth Substrate', s.growth_substrate, 'substrate') +
-          odmRow('Host Tree Species', s.host_tree_species, 'host-tree') +
-          odmRow('Host Tree Diameter', s.host_tree_dbh_cm === '' || s.host_tree_dbh_cm == null ? '' : (s.host_tree_dbh_cm + ' cm'), 'host-tree') +
-          odmRow('Canopy Cover', s.canopy_cover_percent === '' || s.canopy_cover_percent == null ? '' : (s.canopy_cover_percent + '%')) +
-          odmRow('Light Exposure', s.light_exposure, 'light') +
-          odmRow('Soil Type', s.soil_type) +
-          odmRow('Nearby Water Source', s.nearby_water_source, 'water');
+          odmRow('Province', s.province, 'mountain') +
+          odmRow('Municipality', s.municipality, 'mountain');
 
         var contributorsSection = odmHiddenFields.has('team') ? '' :
           '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>';
+
+        var isMine = odmMySightingIds.has(s.id);
+        var editRequestBtn = isMine
+          ? '<button type="button" class="odm-edit-request-btn" title="Ask DENR to edit this record" aria-label="Ask DENR to edit this record" onclick="openEditRequestModal(' + s.id + ')">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>' +
+            '</svg></button>'
+          : '';
 
         el.innerHTML =
           '<div class="odm-sighting-item" id="odm-sighting-item-' + i + '">' +
             '<div class="odm-sighting-item-hd">' +
               '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
-              '<span class="odm-sighting-item-date">' + date + '</span>' +
+              '<span style="display:flex;align-items:center;gap:.5rem;">' + editRequestBtn + '<span class="odm-sighting-item-date">' + date + '</span></span>' +
             '</div>' +
             odmSection('Recorded Sighting', recordedRows) +
             odmSection('Location', locationRows) +
-            odmSection('Habitat &amp; Environment', habitatRows) +
             contributorsSection +
           '</div>';
       }
@@ -1056,8 +1082,12 @@
 
       function odmImageGridHtml(items) {
         return '<div class="odm-images-grid">' + items.map(function(it) {
-          var caption = it.contributor
-            ? '<div style="font-size:.68rem;color:#5a8a54;padding:.3rem .1rem 0;text-align:center;">by ' + escapeHtml(it.contributor) + '</div>'
+          var dateStr = it.uploaded_at ? new Date(it.uploaded_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+          var captionText = (it.contributor ? 'by ' + escapeHtml(it.contributor) : '') +
+            (it.contributor && dateStr ? ' · ' : '') +
+            (dateStr ? escapeHtml(dateStr) : '');
+          var caption = captionText
+            ? '<div style="font-size:.68rem;color:#5a8a54;padding:.3rem .1rem 0;text-align:center;">' + captionText + '</div>'
             : '';
           return '<div><div class="odm-img-wrap"><img src="' + escapeHtml(it.src) +
             '" alt="Orchid photo" loading="lazy" style="cursor:zoom-in;" onclick="odmOpenLightbox(\'' + escapeHtml(it.src) + '\')" onerror="this.parentElement.parentElement.style.display=\'none\'"></div>' +
@@ -1155,9 +1185,10 @@
           ? '<a href="' + escapeHtml(studyLink) + '" target="_blank" rel="noopener noreferrer" style="color:#145A1E;word-break:break-all;">' + escapeHtml(studyLink) + '</a>'
           : '-';
 
-        var studyRows = odmRow('Study Title', studyTitle) +
-          '<div class="odm-row"><span class="odm-row-label">Study Link</span><span class="odm-row-value' +
-          (studyLink ? '' : ' odm-row-value--blank') + '">' + studyLinkDisplay + '</span></div>';
+        var studyRows = odmRow('Study Title', studyTitle, 'related-study') +
+          (odmHiddenFields.has('related-study') ? '' :
+            '<div class="odm-row"><span class="odm-row-label">Study Link</span><span class="odm-row-value' +
+            (studyLink ? '' : ' odm-row-value--blank') + '">' + studyLinkDisplay + '</span></div>');
 
         var submittedByRows = odmRow('Researcher', src.researcher_name, 'researcher-name') +
           odmRow('Institution', src.institution, 'institution');
@@ -1174,6 +1205,7 @@
           return;
         }
         el.innerHTML = '<div class="odm-model3d-wrap">' +
+          '<span class="odm-model3d-ai-badge">AI Generated</span>' +
           '<model-viewer src="' + escapeHtml(orchid.model_3d_url) + '" camera-controls auto-rotate ' +
           'shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>' +
           '<button type="button" class="odm-model3d-fs-btn" onclick="odmModel3DFullscreen(this)" ' +
@@ -1240,10 +1272,31 @@
         var scientificKey = normalizeScientificKey(orchid.name);
         var allSightings = approvedSightingsByScientificName.get(scientificKey) || [];
         odmActiveSightingIndex = 0;
+
+        // Feature 4: figure out which of these sightings (if any) belong to
+        // the logged-in researcher, so the pencil "request an edit" icon
+        // only shows on their own sighting(s) — a species page can list
+        // sightings from many different researchers.
+        odmMySightingIds = new Set();
+        if (currentCatalogUser && window.bloomSupabase && allSightings.length) {
+          try {
+            var ownIds = allSightings.map(function(s){ return s.id; }).filter(function(v){ return v != null; });
+            if (ownIds.length) {
+              var ownResp = await bloomSupabase.from('species_sightings')
+                .select('sighting_id, researcher_email').in('sighting_id', ownIds);
+              (ownResp.data || []).forEach(function(r) {
+                if (String(r.researcher_email || '').trim().toLowerCase() === currentCatalogUser.email.toLowerCase()) {
+                  odmMySightingIds.add(r.sighting_id);
+                }
+              });
+            }
+          } catch (e) { console.warn('Edit-request ownership check failed:', e); }
+        }
+
         var orchidName = hasUsableValue(orchid.name) ? String(orchid.name).trim() : 'Orchid';
         var genus = orchid.genus || orchidName.split(' ')[0] || '';
-        document.getElementById('odm-breadcrumb').textContent =
-          'Orchidaceae' + (genus ? ' / ' + genus : '') + ' / ' + orchidName;
+        document.getElementById('odm-breadcrumb').innerHTML =
+          '<i>Orchidaceae</i>' + (genus ? ' / ' + escapeHtml(genus) : '') + ' / ' + escapeHtml(orchidName);
         var count = allSightings.length;
         document.getElementById('odm-map-hint-text').textContent =
           count + ' recorded sighting' + (count !== 1 ? 's' : '') + (count > 0 ? ' · tap a pin to explore' : ' · recorded locations');
@@ -1346,15 +1399,25 @@
         }
       };
 
-      function renderCatalog(items) {
+      function renderCatalog(items, groupByGenus) {
         if (!items || items.length === 0) {
           catalogGrid.innerHTML = '<p>No orchids found in the database.</p>';
           return;
         }
 
+        let lastGenusHeader = null;
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
+
+          let genusHeaderHtml = '';
+          if (groupByGenus) {
+            const genusLabel = orchid.genus || (orchid.name || '').split(' ')[0] || 'Unknown';
+            if (genusLabel !== lastGenusHeader) {
+              lastGenusHeader = genusLabel;
+              genusHeaderHtml = `<div class="catalog-genus-header">${escapeHtml(genusLabel)}</div>`;
+            }
+          }
 
           // orchid.image_url is the real thumbnail DENR actually chose when
           // publishing — it must win over the hardcoded seed placeholder
@@ -1388,7 +1451,7 @@
               || '')
             : (!cardHiddenFields.has('common-names') ? (orchid.common_name || '') : '');
 
-          return `
+          return genusHeaderHtml + `
             <button type="button" class="orchid-card orchid-card-button" data-orchid-id="${orchid.id}" onclick="handleOrchidCardClick(${orchid.id})">
               <img src="${thumbnailImage}" alt="${escapeHtml(orchid.name)}" class="orchid-card-image" onerror="this.onerror=null;this.src='./catalogicon.png';" />
               <div class="orchid-card-info">
@@ -1435,11 +1498,19 @@
           if (!searchTerm) return true;
 
           if (filterValue === 'genus') return genus.includes(searchTerm);
-          if (filterValue === 'species') return name.includes(searchTerm);
           return name.includes(searchTerm) || genus.includes(searchTerm);
         });
 
-        renderCatalog(filtered);
+        // "Genus" groups the grid by genus (all Aerides together, all Vanda
+        // together, etc.) instead of the default alphabetical-by-species order.
+        if (filterValue === 'genus') {
+          filtered.sort((a, b) => {
+            const genusCmp = (a.genus || '').toLowerCase().localeCompare((b.genus || '').toLowerCase());
+            return genusCmp !== 0 ? genusCmp : (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
+          });
+        }
+
+        renderCatalog(filtered, filterValue === 'genus');
       }
 
       // getPublicUrl is synchronous - no auth or network call needed
@@ -1615,9 +1686,26 @@
       syncCatalogViewState();
 
       (async () => {
+        if (window.bloomSupabase) {
+          try {
+            const { data: { session } } = await bloomSupabase.auth.getSession();
+            if (session?.user) currentCatalogUser = { id: session.user.id, email: session.user.email };
+          } catch (_) { /* not logged in — pencil icon simply won't show */ }
+        }
         loadStorageImages(); // synchronous — populates storageImagesByGenus before any render
         catalogGrid.innerHTML = '<div class="catalog-loading-state"><div class="catalog-loading-spinner"></div><p class="catalog-loading-text">Loading orchids…</p></div>';
         await Promise.all([fetchOrchidData(), loadApprovedSightings()]);
+        // orchid_overview lists every species ever published and has no
+        // per-sighting publish state of its own — a species whose only
+        // sighting(s) were all later unpublished would otherwise still show
+        // a card here with nothing behind it. Drop anything with zero
+        // sightings left in the (already catalog_published-filtered)
+        // approved-sightings data instead of touching the shared DB view,
+        // which DENR's own internal catalog management also reads from.
+        orchids = orchids.filter((orchid) => {
+          const key = normalizeScientificKey(orchid.name);
+          return (approvedSightingsByScientificName.get(key) || []).length > 0;
+        });
         if (orchids.length > 0) {
           renderCatalog(orchids); // single render, all data ready
         } else {

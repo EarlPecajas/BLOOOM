@@ -44,6 +44,14 @@ function showToast(message, type, duration) {
   toast.addEventListener('mouseenter', () => clearTimeout(timer));
 }
 
+// A 'pending' sighting older than this counts as "late" in the
+// notification bell/panel on both dashboards.
+const LATE_PENDING_DAYS = 7;
+function isLateSightingRow(row) {
+  if (!row || String(row.review_status).toLowerCase() !== 'pending' || !row.created_at) return false;
+  return (Date.now() - new Date(row.created_at).getTime()) > LATE_PENDING_DAYS * 24 * 60 * 60 * 1000;
+}
+
 let parsedActiveUser = {};
 let activeRole = '';
 let isAdminRole = false;
@@ -184,10 +192,99 @@ async function initializeAuth(redirectCallback) {
 
   syncRoleState(resolved);
   authResolved = true;
+  // Set up realtime notifications for this user (keeps the notif badge live)
+  try {
+    setupRealtimeNotifications(resolved);
+  } catch (e) { /* ignore */ }
 
   // Call the role-specific callback
   if (redirectCallback) {
     redirectCallback(resolved);
+  }
+}
+
+/**
+ * Subscribe to realtime changes and update notification UI when relevant.
+ * Works for both researcher (per-email) and admin/DENR (global) views.
+ */
+function setupRealtimeNotifications(user) {
+  if (!window.bloomSupabase) return;
+  const email = String(user?.email || '').trim().toLowerCase();
+
+  // Helper to safely call the page-level loader if available
+  async function triggerLoad(rec) {
+    try {
+      // Prefer direct badge update for immediate feedback
+      const emailFromRec = String(rec?.researcher_email || '').trim().toLowerCase();
+      const targetEmail = emailFromRec || String(user?.email || '').trim().toLowerCase();
+      await updateNotificationBadge(targetEmail);
+      // Also call full loader if present
+      if (typeof loadNotifItems === 'function') loadNotifItems();
+    } catch (_) {
+      try { if (typeof loadNotifItems === 'function') loadNotifItems(); } catch (_) {}
+    }
+  }
+
+  // Query DB for counts and immediately update the badge and card
+  async function updateNotificationBadge(email) {
+    try {
+      if (!window.bloomSupabase) return;
+      let query = bloomSupabase.from('species_sightings').select('review_status, created_at');
+      if (email) query = query.eq('researcher_email', email);
+      query = query.neq('review_status', 'draft');
+      const { data } = await query;
+      const rows = Array.isArray(data) ? data : [];
+      const pending  = rows.filter(s => s.review_status === 'pending').length;
+      const approved = rows.filter(s => s.review_status === 'approved').length;
+      const rejected = rows.filter(s => s.review_status === 'rejected').length;
+      const revision = rows.filter(s => s.review_status === 'revision').length;
+      const late     = rows.filter(isLateSightingRow).length;
+      const urgentCount = revision + rejected;
+      const badge = document.getElementById('notif-badge');
+      if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
+      try { updateNotifCard(pending, approved, rejected, revision, late); } catch (_) {}
+    } catch (err) {
+      // ignore errors
+    }
+  }
+
+  try {
+    // Newer Supabase client API: channel().on('postgres_changes', ...).subscribe()
+    if (typeof bloomSupabase.channel === 'function') {
+      const chan = bloomSupabase.channel('public-species-sightings');
+      chan.on('postgres_changes', { event: '*', schema: 'public', table: 'species_sightings' }, (payload) => {
+        const rec = payload?.record || payload?.new || payload?.old || {};
+        // If researcher, only trigger when their email is involved
+        if (email) {
+          if (String(rec.researcher_email || '').trim().toLowerCase() === email) triggerLoad(rec);
+        } else {
+          // Admins and anonymous viewers: trigger for any change
+          triggerLoad(rec);
+        }
+      });
+      // subscribe (ignore returned promise/result)
+      try { chan.subscribe(); } catch (_) {}
+      return;
+    }
+
+    // Fallback older API: .from(...).on(...).subscribe()
+    if (email && typeof bloomSupabase.from === 'function') {
+      try {
+        bloomSupabase.from(`species_sightings:researcher_email=eq.${email}`)
+          .on('*', () => triggerLoad())
+          .subscribe();
+        return;
+      } catch (_) {}
+    }
+
+    // Global fallback
+    if (typeof bloomSupabase.from === 'function') {
+      try {
+        bloomSupabase.from('species_sightings').on('*', () => triggerLoad()).subscribe();
+      } catch (_) {}
+    }
+  } catch (err) {
+    console.error('setupRealtimeNotifications failed', err && err.message ? err.message : err);
   }
 }
 
@@ -207,3 +304,40 @@ async function fetchWithAuth(endpoint, options = {}) {
     }
   });
 }
+
+// Ensure there is at most one visible required asterisk per label.
+function dedupeRequiredAsterisks(root = document) {
+  try {
+    const labels = (root || document).querySelectorAll ? (root || document).querySelectorAll('label') : [];
+    labels.forEach(label => {
+      const stars = label.querySelectorAll('.required-asterisk');
+      if (stars && stars.length > 1) {
+        // Keep the first occurrence and remove subsequent ones to avoid visual doubling
+        Array.from(stars).forEach((s, i) => { if (i > 0) s.remove(); });
+      }
+    });
+  } catch (e) { /* ignore */ }
+}
+
+// Run dedupe on initial load and whenever DOM mutations occur that might add asterisks.
+try {
+  // Run once after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => dedupeRequiredAsterisks(document));
+  } else {
+    dedupeRequiredAsterisks(document);
+  }
+
+  // Observe for dynamic changes and dedupe on the fly
+  const _asteriskObserver = new MutationObserver(mutations => {
+    let dirty = false;
+    for (const m of mutations) {
+      if (m.addedNodes && m.addedNodes.length) { dirty = true; break; }
+      if (m.type === 'attributes' && String(m.attributeName).toLowerCase().includes('class')) { dirty = true; break; }
+    }
+    if (dirty) {
+      dedupeRequiredAsterisks(document);
+    }
+  });
+  _asteriskObserver.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true });
+} catch (e) { /* ignore */ }
