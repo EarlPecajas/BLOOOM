@@ -644,7 +644,7 @@
           <span class="sidebar-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </span>
-          <span>3D Image</span>
+          <span>Generate 3D Model</span>
         </a>
         <a href="#" class="sidebar-item" data-view="collection3d" id="sidebar-collection3d-item">
           <span class="sidebar-icon">
@@ -1537,23 +1537,12 @@
 
     <!-- 3D Collection View -->
     <div id="collection3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <h1 class="catalog-title">3D Collection</h1>
-      <div style="background:var(--dt-bg-input);border-radius:12px;padding:2rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:1100px;margin:0 auto;">
-        <p style="margin:0 0 1rem 0;color:var(--dt-muted);font-size:1rem;">Learn orchid anatomy with our three- dimentional models.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;">
-          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Phalaenopsis Flower</h3>
-            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">Petal layers, lip structure, and pollinia placement for beginner anatomy study.</p>
-          </div>
-          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Dendrobium Stem</h3>
-            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">Understand node spacing, pseudobulb regions, and active growth points.</p>
-          </div>
-          <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);">
-            <h3 style="margin:0 0 0.35rem 0;color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Root Network</h3>
-            <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">Explore velamen layers and moisture adaptation features in epiphytic roots.</p>
-          </div>
-        </div>
+      <div style="margin-bottom:1.25rem;">
+        <h1 class="catalog-title">3D Collection</h1>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Every orchid species in the catalog with a 3D model attached.</p>
+      </div>
+      <div id="collection3d-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;">
+        <p style="margin:0;color:var(--dt-muted);font-size:0.95rem;">Loading 3D models…</p>
       </div>
     </div>
 
@@ -1734,6 +1723,11 @@
         .d3v-bdg.rejected{color:#991B1B;background:#FEF2F2;border-color:#FECACA;}
         .d3v-bdg.revision{color:#92400E;background:#FEF3C7;border-color:#FDE68A;}
       .m3d-preview-badge{position:absolute;top:12px;left:12px;z-index:2;padding:0.22rem 0.5rem;border-radius:999px;background:rgba(20,90,30,0.9);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,0.22);backdrop-filter:blur(4px);}
+      .collection3d-model-wrap { position: relative; }
+      .collection3d-model-wrap model-viewer:fullscreen { width: 100vw; height: 100vh; }
+      .collection3d-model-badge { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 0.22rem 0.5rem; border-radius: 999px; background: rgba(20,90,30,0.88); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0,0,0,0.22); backdrop-filter: blur(4px); }
+      .collection3d-fs-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; background: rgba(0,0,0,0.55); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; backdrop-filter: blur(3px); transition: background .15s; }
+      .collection3d-fs-btn:hover { background: rgba(0,0,0,0.75); }
       </style>
     </div>
 
@@ -1741,7 +1735,7 @@
     <!-- 3D Image View -->
     <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="margin-bottom:1.25rem;">
-        <h1 class="catalog-title">3D Image</h1>
+        <h1 class="catalog-title">Generate 3D Model</h1>
         <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Attach a 3D model to an orchid species — upload a .glb file, or generate one automatically with Tripo AI.</p>
       </div>
 
@@ -7185,7 +7179,13 @@
         catalogGrid.innerHTML = items.map((orchid) => {
           const genus = (orchid.genus || (orchid.name || '').split(' ')[0] || '').toLowerCase();
           const fullName = (orchid.name || '').toLowerCase();
-          const thumbnail = storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchid.image_url || orchidImage;
+          // orchid.image_url is the real thumbnail DENR actually chose when
+          // publishing — it must win. storageImagesByGenus is only a handful
+          // of hardcoded seed placeholder photos left over from the original
+          // 10 demo genera; checking it first meant any newly-published
+          // orchid whose genus matched one of those ten (e.g. any new
+          // Aerides species) silently showed that generic seed photo instead.
+          const thumbnail = orchid.image_url || storageImagesByGenus.get(fullName) || storageImagesByGenus.get(genus) || orchidImage;
           const statusKey = normalizeConservationKey(orchid.conservation_status);
           const statusLabel = orchid.conservation_status && statusKey !== 'unassigned' ? orchid.conservation_status : 'Not Listed';
           const pill = CON_STATUS_PILL_STYLE[statusKey] || CON_STATUS_PILL_STYLE.unassigned;
@@ -7323,6 +7323,44 @@
             catalogLoadingMessage.remove();
           }
         }
+      }
+
+      async function loadCollection3D() {
+        await loadOrchidCatalog();
+        renderCollection3D();
+      }
+
+      function renderCollection3D() {
+        const grid = document.getElementById('collection3d-grid');
+        if (!grid) return;
+        const withModels = (orchidRows || []).filter((o) => o.model_3d_url);
+        if (!withModels.length) {
+          grid.innerHTML = '<p style="margin:0;color:var(--dt-muted);font-size:0.95rem;">No 3D models have been uploaded yet.</p>';
+          return;
+        }
+        grid.innerHTML = withModels.map((o) => {
+          return `
+            <div style="border:1px solid var(--dt-border-md);border-radius:12px;padding:1rem;background:var(--dt-bg-input);max-width:320px;">
+              <div class="collection3d-model-wrap" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:var(--dt-bg-panel);margin-bottom:0.75rem;">
+                <model-viewer src="${escapeHtml(o.model_3d_url)}" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>
+                <div class="collection3d-model-badge">AI Generated</div>
+                <button type="button" class="collection3d-fs-btn" onclick="collection3DFullscreen(this)" title="View fullscreen" aria-label="View 3D model fullscreen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                </button>
+              </div>
+              <h3 class="scientific-name" style="margin:0 0 0.35rem 0;color:var(--dt-text);font-family:Inter,Roboto,sans-serif;">${escapeHtml(o.name || 'Unnamed species')}</h3>
+              <p style="margin:0;color:var(--dt-muted);font-size:0.92rem;line-height:1.5;">${escapeHtml(o.common_name || o.genus || '')}</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function collection3DFullscreen(btn) {
+        const wrap = btn.closest('.collection3d-model-wrap');
+        const mv = wrap ? wrap.querySelector('model-viewer') : null;
+        if (!mv) return;
+        if (mv.requestFullscreen) mv.requestFullscreen();
+        else if (mv.webkitRequestFullscreen) mv.webkitRequestFullscreen();
       }
 
       async function loadApprovedSightings() {
@@ -7870,6 +7908,9 @@
           }
           if (viewName === 'model3d') {
             loadModel3DOrchidOptions();
+          }
+          if (viewName === 'collection3d') {
+            loadCollection3D();
           }
           if (viewName === 'report') {
             // Deferred: switchView can run during the initial synchronous page

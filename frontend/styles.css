@@ -3320,7 +3320,9 @@ textarea.form-control {
 #report-view,
 #importexport-view,
 #submissions-view,
-#drafts-view {
+#drafts-view,
+#model3d-view,
+#collection3d-view {
   position: fixed !important;
   top: 84px !important;
   left: 0 !important;
