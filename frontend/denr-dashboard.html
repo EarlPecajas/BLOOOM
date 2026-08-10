@@ -276,6 +276,16 @@
         --dt-text: #145A1E;
         --dt-muted: #577A5C;
         --dt-accent-lt: #1e7a30;
+        /* This is a grid container (see switchView()'s style.display = 'grid').
+           Grid items default to min-width:auto, which locks the track to the
+           widest size it's ever needed (e.g. while the sidebar is collapsed and
+           there's extra room) and then refuses to shrink back once the sidebar
+           re-expands, pushing content past the right edge. min-width:0 lets it
+           shrink to fit again. */
+        min-width: 0;
+      }
+      #dashboard-admin-overview > * {
+        min-width: 0;
       }
       #dashboard-admin-overview .rounded-xl {
         box-shadow: 0 2px 12px rgba(20,90,30,0.08) !important;
@@ -724,11 +734,76 @@
       <div id="dashboard-admin-overview">
 
         <!-- Hero -->
-        <div class="p-6 mb-6" style="background:#FFFFFF;border:1px solid var(--dt-border-md);border-radius:20px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 12px 28px rgba(20,90,30,.06);">
-          <p class="text-xs font-bold uppercase" style="color:#16a34a;letter-spacing:0.14em;margin:0 0 0.5rem;">DENR Control Center</p>
-          <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#12321a;margin:0 0 0.5rem;">Conservation command center</h1>
-          <p class="text-sm" style="color:var(--dt-muted);max-width:560px;margin:0;">Monitor orchid records, conservation status, and researcher submissions from Mt. Busa, Sarangani Province.</p>
+        <div class="p-6 mb-6" style="position:relative;background:linear-gradient(120deg,rgba(10,30,15,.82) 0%,rgba(10,30,15,.55) 45%,rgba(10,30,15,.72) 100%),url('./mtbusa.jpg') center/cover no-repeat;border:1px solid var(--dt-border-md);border-radius:20px;box-shadow:0 1px 2px rgba(20,90,30,.04),0 12px 28px rgba(20,90,30,.06);overflow:hidden;">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-4">
+            <div style="min-width:240px;">
+              <p class="text-xs font-bold uppercase" style="color:#86efac;letter-spacing:0.14em;margin:0 0 0.5rem;">DENR Control Center</p>
+              <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#ffffff;margin:0 0 0.5rem;text-shadow:0 2px 10px rgba(0,0,0,.25);">Conservation command center</h1>
+              <p class="text-sm" style="color:rgba(255,255,255,.85);max-width:560px;margin:0;">Monitor orchid records, conservation status, and researcher submissions from Mt. Busa, Sarangani Province.</p>
+            </div>
+
+            <!-- Live Date/Time + Weather widget -->
+            <div id="hero-datetime-weather" class="d-flex align-items-stretch gap-3" style="flex-shrink:0;">
+              <div style="text-align:right;padding:0.6rem 1rem;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.5);border-radius:14px;min-width:150px;">
+                <p id="hero-live-time" style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.2rem;color:#12321a;margin:0;line-height:1.1;white-space:nowrap;">--:--:-- --</p>
+                <p id="hero-live-date" class="text-xs" style="color:var(--dt-muted);margin:2px 0 0;white-space:nowrap;">Loading date…</p>
+              </div>
+              <div style="text-align:right;padding:0.6rem 1rem;background:rgba(240,253,244,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(187,247,208,.8);border-radius:14px;min-width:150px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;">
+                <div class="d-flex align-items-center gap-2" style="justify-content:flex-end;">
+                  <span id="hero-weather-icon" style="font-size:1.4rem;line-height:1;">🌡️</span>
+                  <span id="hero-weather-temp" style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.2rem;color:#12321a;white-space:nowrap;">--°C</span>
+                </div>
+                <p id="hero-weather-desc" class="text-xs" style="color:var(--dt-muted);margin:2px 0 0;white-space:nowrap;">Loading weather…</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <script>
+          (function(){
+            function updateHeroClock(){
+              var timeEl = document.getElementById('hero-live-time');
+              var dateEl = document.getElementById('hero-live-date');
+              if(!timeEl || !dateEl) return;
+              var now = new Date();
+              timeEl.textContent = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+              dateEl.textContent = now.toLocaleDateString('en-PH', {weekday:'short', year:'numeric', month:'short', day:'numeric'});
+            }
+            updateHeroClock();
+            setInterval(updateHeroClock, 1000);
+
+            var WEATHER_CODES = {
+              0:['☀️','Clear sky'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],
+              45:['🌫️','Fog'],48:['🌫️','Fog'],
+              51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Dense drizzle'],
+              61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],
+              80:['🌧️','Rain showers'],81:['🌧️','Rain showers'],82:['⛈️','Violent showers'],
+              95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Severe thunderstorm']
+            };
+
+            function updateHeroWeather(){
+              var iconEl = document.getElementById('hero-weather-icon');
+              var tempEl = document.getElementById('hero-weather-temp');
+              var descEl = document.getElementById('hero-weather-desc');
+              if(!iconEl || !tempEl || !descEl) return;
+              fetch('https://api.open-meteo.com/v1/forecast?latitude=5.99&longitude=124.78&current_weather=true&timezone=Asia%2FManila')
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                  var cw = data && data.current_weather;
+                  if(!cw) throw new Error('no weather data');
+                  var meta = WEATHER_CODES[cw.weathercode] || ['🌡️','—'];
+                  iconEl.textContent = meta[0];
+                  tempEl.textContent = Math.round(cw.temperature) + '°C';
+                  descEl.textContent = meta[1] + ' · Mt. Busa';
+                })
+                .catch(function(){
+                  descEl.textContent = 'Weather unavailable';
+                });
+            }
+            updateHeroWeather();
+            setInterval(updateHeroWeather, 15 * 60 * 1000);
+          })();
+        </script>
 
         <!-- Stat Strip -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -816,9 +891,9 @@
               <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Live Database
             </span>
           </div>
-          <p class="text-xs mb-4" style="color:var(--dt-muted);margin-left:0.9rem;">IUCN-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
+          <p class="text-xs mb-4" style="color:var(--dt-muted);margin-left:0.9rem;">DAO 2026-20-based orchid conservation monitoring · Mt. Busa, Sarangani Province</p>
 
-          <!-- IUCN Category Cards -->
+          <!-- DAO 2026-20 Category Cards -->
           <div class="grid gap-4 mb-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
 
             <div onclick="showConservationList('critically_endangered','Critically Endangered')"
@@ -7603,16 +7678,28 @@
         try {
           const client = window.bloomSupabase;
           if (!client) return;
-          const { data, error } = await client
-            .from('public_approved_sightings')
-            .select('scientific_name, latitude, longitude, local_names')
-            .not('latitude', 'is', null)
-            .not('longitude', 'is', null);
+          const [sightingsResult, catalogPhotoResult] = await Promise.all([
+            client
+              .from('public_approved_sightings')
+              .select('scientific_name, latitude, longitude, local_names')
+              .not('latitude', 'is', null)
+              .not('longitude', 'is', null),
+            client.from('orchid_overview').select('name, image_url')
+          ]);
+          const { data, error } = sightingsResult;
           if (error || !data) return;
+          // orchid.image_url (the real thumbnail DENR chose when publishing)
+          // must win over the ~10-genus hardcoded seed placeholder photos —
+          // same priority fix as the catalog grid and Generate 3D page.
+          const catalogPhotoByName = new Map(
+            (catalogPhotoResult.data || [])
+              .filter((o) => o.image_url)
+              .map((o) => [String(o.name || '').toLowerCase().trim(), o.image_url])
+          );
           data.forEach(function(row) {
             const sciName = (row.scientific_name || '').toLowerCase().trim();
             const genus = sciName.split(' ')[0];
-            const photoUrl = storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
+            const photoUrl = catalogPhotoByName.get(sciName) || storageImagesByGenus.get(sciName) || storageImagesByGenus.get(genus) || null;
             const displayName = row.scientific_name || 'Unknown';
             let localName = '';
             try {
