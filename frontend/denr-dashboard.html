@@ -1733,7 +1733,7 @@
         .d3v-bdg.approved{color:#065F46;background:#ECFDF5;border-color:#A7F3D0;}
         .d3v-bdg.rejected{color:#991B1B;background:#FEF2F2;border-color:#FECACA;}
         .d3v-bdg.revision{color:#92400E;background:#FEF3C7;border-color:#FDE68A;}
-      .m3d-preview-badge{position:absolute;top:12px;left:12px;z-index:2;padding:0.35rem 0.7rem;border-radius:999px;background:rgba(20,90,30,0.9);color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,0.22);backdrop-filter:blur(4px);} 
+      .m3d-preview-badge{position:absolute;top:12px;left:12px;z-index:2;padding:0.22rem 0.5rem;border-radius:999px;background:rgba(20,90,30,0.9);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,0.22);backdrop-filter:blur(4px);}
       </style>
     </div>
 
@@ -1742,7 +1742,18 @@
     <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="margin-bottom:1.25rem;">
         <h1 class="catalog-title">3D Image</h1>
-        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Upload a 3D (.glb) model and attach it to an orchid species in the catalog.</p>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Attach a 3D model to an orchid species — upload a .glb file, or generate one automatically with Tripo AI.</p>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;">
+        <button id="m3d-tab-btn-generate" type="button" onclick="m3dSwitchTab('generate')"
+          style="padding:0.55rem 1.1rem;border-radius:8px;border:1.5px solid #145A1E;background:#145A1E;color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+          Generate 3d Model
+        </button>
+        <button id="m3d-tab-btn-upload" type="button" onclick="m3dSwitchTab('upload')"
+          style="padding:0.55rem 1.1rem;border-radius:8px;border:1.5px solid var(--dt-border-md);background:var(--dt-bg-input);color:var(--dt-text);font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+          Upload 3D File
+        </button>
       </div>
 
       <div style="display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:1.5rem;align-items:start;">
@@ -1766,16 +1777,62 @@
             </div>
           </div>
 
-          <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
-          <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
-            style="width:100%;padding:0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;margin-bottom:0.5rem;box-sizing:border-box;" />
-          <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
+          <!-- Generate with AI panel -->
+          <div id="m3d-panel-generate">
+            <div id="m3d-gen-source-note" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1rem;line-height:1.4;">
+              Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be sent to Tripo AI automatically.
+            </div>
 
-          <button id="m3d-upload-btn" type="button" onclick="uploadOrchid3DModel()"
-            style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
-            Upload 3D Model
-          </button>
-          <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+            <div style="margin-bottom:1.1rem;">
+              <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.35rem;">Upload Your Own Photos (optional)</label>
+              <p style="font-size:0.78rem;color:var(--dt-muted);margin:0 0 0.6rem;line-height:1.4;">
+                Upload a Front photo alone for a quick single-image model, or add Left / Right / Back for a more accurate multi-angle model. Any angle left blank falls back to the orchid's catalog photo (Front only) or is simply skipped.
+              </p>
+              <div id="m3d-upload-slots" style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.6rem;"></div>
+            </div>
+
+            <details style="margin-bottom:1.1rem;">
+              <summary style="cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--dt-text);">Use a text description instead</summary>
+              <p style="font-size:0.78rem;color:var(--dt-muted);margin:0.5rem 0;line-height:1.4;">Useful when the orchid has no catalog photo yet. If filled in, this description is used instead of the photo.</p>
+              <textarea id="m3d-gen-prompt-override" rows="3" placeholder="e.g. Vanda sanderiana orchid flower, five broad pink-and-brown petals, photorealistic"
+                style="width:100%;padding:0.6rem 0.7rem;border:1.5px solid var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.82rem;box-sizing:border-box;resize:vertical;"></textarea>
+            </details>
+
+            <button id="m3d-gen-btn" type="button" onclick="generateOrchid3DModel()"
+              style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+              Generate 3D Model
+            </button>
+            <div id="m3d-gen-approval-actions" hidden style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+              <button id="m3d-gen-approve-btn" type="button" onclick="approveOrchid3DModel()"
+                style="padding:0.7rem 1.3rem;background:#065F46;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+                Approve &amp; Upload to Catalog
+              </button>
+              <button id="m3d-gen-regenerate-btn" type="button" onclick="regenerateOrchid3DModel()"
+                style="padding:0.7rem 1.3rem;background:var(--dt-bg-input);border:1.5px solid var(--dt-border-md);border-radius:8px;color:var(--dt-text);font-weight:700;font-size:0.85rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+                Regenerate
+              </button>
+            </div>
+            <div id="m3d-gen-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+          </div>
+
+          <!-- Upload GLB panel -->
+          <div id="m3d-panel-upload" style="display:none;">
+            <label for="m3d-file-input" style="display:block;font-size:0.85rem;font-weight:700;color:var(--dt-text);margin-bottom:0.4rem;">GLB File</label>
+            <div style="position:relative;margin-bottom:0.5rem;">
+              <input id="m3d-file-input" type="file" accept=".glb" onchange="m3dOnFileChange()"
+                style="width:100%;padding:0.6rem 2.2rem 0.6rem 0.6rem;border:1.5px dashed var(--dt-border-md);border-radius:8px;background:var(--dt-bg-input);color:var(--dt-text);font-family:Inter,Roboto,sans-serif;font-size:0.85rem;box-sizing:border-box;" />
+              <button id="m3d-file-clear-btn" type="button" onclick="m3dClearFile()" title="Remove file" aria-label="Remove selected file" hidden
+                onmouseenter="this.style.background='#FCA5A5'" onmouseleave="this.style.background='#FEE2E2'"
+                style="position:absolute;top:0.4rem;right:0.5rem;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:#FEE2E2;color:#991B1B;font-size:0.8rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 120ms ease;">✕</button>
+            </div>
+            <div id="m3d-current-hint" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1.25rem;min-height:1.1em;"></div>
+
+            <button id="m3d-upload-btn" type="button" onclick="uploadOrchid3DModel()"
+              style="padding:0.7rem 1.4rem;background:#145A1E;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:Inter,Roboto,sans-serif;">
+              Upload 3D Model
+            </button>
+            <div id="m3d-status" style="margin-top:0.9rem;font-size:0.85rem;"></div>
+          </div>
         </div>
 
         <div style="position:relative;background:var(--dt-bg-input);border-radius:12px;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow:hidden;height:calc(100vh - 230px);min-height:480px;display:flex;align-items:center;justify-content:center;">
@@ -5582,9 +5639,20 @@
         const sel  = document.getElementById('m3d-orchid-select');
         const hint = document.getElementById('m3d-current-hint');
         const fileInput = document.getElementById('m3d-file-input');
+        const clearBtn = document.getElementById('m3d-file-clear-btn');
         if (!sel || !hint) return;
+
+        // Switching orchids abandons any unapproved generated model so it can
+        // never be saved against the wrong species.
+        if (!m3dPendingGeneratedFile || m3dPendingGeneratedFile.orchidId !== sel.value) {
+          m3dPendingGeneratedFile = null;
+          m3dAwaitingApproval = false;
+          m3dHideApprovalUI();
+        }
+
         const row = m3dOrchidRows.find(o => String(o.id) === sel.value);
         if (fileInput) fileInput.value = '';
+        if (clearBtn) clearBtn.hidden = true;
         m3dSetThumbnail(row || null);
         if (row && row.model_3d_url) {
           hint.textContent = 'This orchid already has a 3D model — uploading will replace it.';
@@ -5593,12 +5661,173 @@
           hint.textContent = '';
           m3dSetPreview(null);
         }
+
+        // Uploaded reference photos are per-orchid — abandon them on switch so
+        // a photo meant for one species can never be sent for another.
+        m3dResetUploadSlots();
+        m3dUpdateGenSourceNote();
       }
 
       function m3dOnFileChange() {
         const fileInput = document.getElementById('m3d-file-input');
+        const clearBtn = document.getElementById('m3d-file-clear-btn');
         const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+        if (clearBtn) clearBtn.hidden = !file;
         if (file) m3dSetPreview(URL.createObjectURL(file));
+      }
+
+      // Clears the chosen file so the user can pick a different one without
+      // resetting the orchid they already selected; falls back to that
+      // orchid's existing model preview (or the empty state) via m3dOnOrchidChange.
+      function m3dClearFile() {
+        m3dOnOrchidChange();
+      }
+
+      // ── 3D IMAGE (TRIPO AI) — user-uploaded reference photos ────────
+      // Lets the user supply their own Front/Left/Right/Back photos instead of
+      // the catalog thumbnail. Front upload overrides the catalog photo; the
+      // other angles have no catalog equivalent, so they're simply omitted
+      // from the Tripo AI request when left blank.
+      const M3D_UPLOAD_VIEWS = [
+        { key: 'front', label: 'Front' },
+        { key: 'left',  label: 'Left' },
+        { key: 'right', label: 'Right' },
+        { key: 'back',  label: 'Back' },
+      ];
+      const m3dUploadSlots = { front: null, left: null, right: null, back: null };
+
+      (function m3dBuildUploadSlots() {
+        const container = document.getElementById('m3d-upload-slots');
+        if (!container) return;
+        container.innerHTML = M3D_UPLOAD_VIEWS.map(({ key, label }) => `
+          <div style="border:1.5px dashed var(--dt-border-md);border-radius:8px;padding:0.5rem;display:flex;flex-direction:column;align-items:center;gap:0.35rem;position:relative;">
+            <div style="width:100%;height:70px;border-radius:6px;overflow:hidden;background:var(--dt-bg-panel);display:flex;align-items:center;justify-content:center;">
+              <img id="m3d-upload-${key}-preview" alt="${label}" style="width:100%;height:100%;object-fit:cover;display:none;" />
+              <span id="m3d-upload-${key}-label" style="font-size:0.72rem;color:var(--dt-muted);">${label}${key === 'front' ? '' : ' (optional)'}</span>
+            </div>
+            <input id="m3d-upload-${key}-input" type="file" accept="image/*" style="font-size:0.68rem;width:100%;color:var(--dt-text);" onchange="m3dOnUploadSlotChange('${key}')" />
+            <button type="button" id="m3d-upload-${key}-clear" hidden onclick="m3dClearUploadSlot('${key}')" title="Remove ${label} photo"
+              style="position:absolute;top:4px;right:4px;width:18px;height:18px;padding:0;border:none;border-radius:50%;background:#FEE2E2;color:#991B1B;font-size:0.68rem;font-weight:700;line-height:1;cursor:pointer;">✕</button>
+          </div>
+        `).join('');
+      })();
+
+      function m3dRefreshUploadSlotPreview(view) {
+        const file     = m3dUploadSlots[view];
+        const img      = document.getElementById(`m3d-upload-${view}-preview`);
+        const label    = document.getElementById(`m3d-upload-${view}-label`);
+        const clearBtn = document.getElementById(`m3d-upload-${view}-clear`);
+        if (!img || !label) return;
+        if (file) {
+          img.src = URL.createObjectURL(file);
+          img.style.display = '';
+          label.style.display = 'none';
+          if (clearBtn) clearBtn.hidden = false;
+        } else {
+          img.removeAttribute('src');
+          img.style.display = 'none';
+          label.style.display = '';
+          if (clearBtn) clearBtn.hidden = true;
+        }
+      }
+
+      function m3dOnUploadSlotChange(view) {
+        const input = document.getElementById(`m3d-upload-${view}-input`);
+        m3dUploadSlots[view] = (input && input.files ? input.files[0] : null) || null;
+        m3dRefreshUploadSlotPreview(view);
+        m3dUpdateGenSourceNote();
+      }
+
+      function m3dClearUploadSlot(view) {
+        const input = document.getElementById(`m3d-upload-${view}-input`);
+        if (input) input.value = '';
+        m3dUploadSlots[view] = null;
+        m3dRefreshUploadSlotPreview(view);
+        m3dUpdateGenSourceNote();
+      }
+
+      function m3dResetUploadSlots() {
+        M3D_UPLOAD_VIEWS.forEach(({ key }) => m3dClearUploadSlot(key));
+      }
+
+      // Reflects current orchid + upload state in the note above the Generate button.
+      function m3dUpdateGenSourceNote() {
+        const genNote = document.getElementById('m3d-gen-source-note');
+        if (!genNote) return;
+        const sel = document.getElementById('m3d-orchid-select');
+        const row = sel ? m3dOrchidRows.find(o => String(o.id) === sel.value) : null;
+        const uploadedLabels = M3D_UPLOAD_VIEWS.filter(({ key }) => m3dUploadSlots[key]).map(({ label }) => label);
+
+        if (!row) {
+          genNote.textContent = 'Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be sent to Tripo AI automatically.';
+        } else if (uploadedLabels.length) {
+          genNote.textContent = `Will generate from your uploaded photo${uploadedLabels.length > 1 ? 's' : ''} (${uploadedLabels.join(', ')}) instead of ${row.name}'s catalog photo.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
+        } else if (row.resolved_image_url || row.image_url) {
+          genNote.textContent = `Will generate from ${row.name}'s catalog photo shown above.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
+        } else {
+          genNote.textContent = `${row.name} has no catalog photo yet — upload a photo above, or open "Use a text description instead" below.`;
+        }
+      }
+
+      // ── 3D IMAGE TABS (Upload GLB vs. Generate with AI) ─────────────
+      function m3dSwitchTab(tab) {
+        const uploadPanel   = document.getElementById('m3d-panel-upload');
+        const generatePanel = document.getElementById('m3d-panel-generate');
+        const uploadBtn     = document.getElementById('m3d-tab-btn-upload');
+        const generateBtn   = document.getElementById('m3d-tab-btn-generate');
+        const active   = { border: '#145A1E', background: '#145A1E', color: '#fff' };
+        const inactive = { border: 'var(--dt-border-md)', background: 'var(--dt-bg-input)', color: 'var(--dt-text)' };
+        const style = (btn, s) => { btn.style.borderColor = s.border; btn.style.background = s.background; btn.style.color = s.color; };
+        if (tab === 'generate') {
+          uploadPanel.style.display = 'none';
+          generatePanel.style.display = '';
+          style(uploadBtn, inactive);
+          style(generateBtn, active);
+        } else {
+          uploadPanel.style.display = '';
+          generatePanel.style.display = 'none';
+          style(uploadBtn, active);
+          style(generateBtn, inactive);
+        }
+      }
+
+      // A stale/expired session silently degrades every request to anon-level
+      // access — every "authenticated"-scoped storage RLS policy then rejects
+      // with a generic "row-level security policy" error that looks identical
+      // to a genuinely missing policy. Check explicitly so that case fails
+      // with an actionable message instead (same fix already applied to the
+      // Publish to Catalog flow).
+      async function m3dRequireSession() {
+        const { data: sessionData } = await bloomSupabase.auth.getSession();
+        if (!sessionData || !sessionData.session) {
+          const err = new Error('Your session has expired. Please sign out and sign in again, then retry.');
+          err.m3dStep = 'session check';
+          throw err;
+        }
+      }
+
+      // Uploads/links a .glb file to an orchid: shared by the manual upload
+      // button and the Tripo AI generation flow (once the model is fetched).
+      async function m3dPersistModelFile(orchidId, file) {
+        await m3dRequireSession();
+
+        const path = `orchid-models/${orchidId}-${Date.now()}.glb`;
+        const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+        const { error: upErr } = await bloomSupabase.storage
+          .from(uploadBucket)
+          .upload(path, file, { upsert: false, contentType: 'model/gltf-binary' });
+        if (upErr) { upErr.m3dStep = 'storage upload'; throw upErr; }
+
+        const { data: urlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(path);
+        const modelUrl = urlData.publicUrl;
+
+        const { error: updErr } = await bloomSupabase
+          .from('orchids')
+          .update({ model_3d_url: modelUrl })
+          .eq('orchid_id', orchidId);
+        if (updErr) { updErr.m3dStep = 'orchids table update'; throw updErr; }
+
+        return modelUrl;
       }
 
       async function uploadOrchid3DModel() {
@@ -5618,21 +5847,7 @@
         statusEl.textContent = 'Uploading…';
 
         try {
-          const path = `orchid-models/${orchidId}-${Date.now()}.glb`;
-          const uploadBucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
-          const { error: upErr } = await bloomSupabase.storage
-            .from(uploadBucket)
-            .upload(path, file, { upsert: false, contentType: 'model/gltf-binary' });
-          if (upErr) throw upErr;
-
-          const { data: urlData } = bloomSupabase.storage.from(uploadBucket).getPublicUrl(path);
-          const modelUrl = urlData.publicUrl;
-
-          const { error: updErr } = await bloomSupabase
-            .from('orchids')
-            .update({ model_3d_url: modelUrl })
-            .eq('orchid_id', orchidId);
-          if (updErr) throw updErr;
+          await m3dPersistModelFile(orchidId, file);
 
           statusEl.style.color = '#065F46';
           statusEl.textContent = '3D model uploaded and linked successfully.';
@@ -5642,11 +5857,227 @@
           m3dOnOrchidChange();
         } catch (err) {
           statusEl.style.color = '#991B1B';
-          statusEl.textContent = 'Upload failed: ' + (err.message || 'unknown error');
+          statusEl.textContent = `Upload failed (${err.m3dStep || 'saving'}): ` + (err.message || 'unknown error');
           console.warn('uploadOrchid3DModel failed:', err);
         } finally {
           btn.disabled = false;
         }
+      }
+
+      // ── 3D IMAGE (TRIPO AI) GENERATION ───────────────────────────────
+      function m3dGenSetStatus(text, kind) {
+        const el = document.getElementById('m3d-gen-status');
+        if (!el) return;
+        el.style.color = kind === 'error' ? '#991B1B' : kind === 'success' ? '#065F46' : 'var(--dt-muted)';
+        el.textContent = text;
+      }
+
+      // Polls GET /api/tripo3d?task_id=... until the task succeeds, fails, or times out.
+      // Resolves with the generated model's (temporary) download URL.
+      function m3dPollTripoTask(taskId) {
+        const POLL_MS = 3000;
+        const MAX_ATTEMPTS = 120; // ~6 minutes
+        return new Promise((resolve, reject) => {
+          let attempts = 0;
+          const tick = async () => {
+            attempts += 1;
+            let data;
+            try {
+              const res = await fetch(`/api/tripo3d?task_id=${encodeURIComponent(taskId)}`);
+              data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Status check failed.');
+            } catch (err) {
+              reject(err);
+              return;
+            }
+
+            const status = data.status;
+            if (status === 'success') {
+              const modelUrl = (data.output && (data.output.pbr_model || data.output.model)) || null;
+              if (!modelUrl) { reject(new Error('Tripo AI finished but returned no model file.')); return; }
+              resolve(modelUrl);
+              return;
+            }
+            if (status === 'failed' || status === 'cancelled' || status === 'error') {
+              reject(new Error('Tripo AI reported the generation failed.'));
+              return;
+            }
+
+            const pct = typeof data.progress === 'number' ? ` (${data.progress}%)` : '';
+            m3dGenSetStatus(`Generating 3D model${pct}…`, 'info');
+
+            if (attempts >= MAX_ATTEMPTS) {
+              reject(new Error(`Timed out waiting for Tripo AI (task ${taskId}).`));
+              return;
+            }
+            setTimeout(tick, POLL_MS);
+          };
+          tick();
+        });
+      }
+
+      // Holds the last successfully-generated (but not yet saved) model, keyed by
+      // orchid id. Nothing is written to the orchid catalog until the user
+      // explicitly approves it via approveOrchid3DModel() below; Regenerate
+      // discards it and starts a fresh Tripo AI request.
+      let m3dPendingGeneratedFile = null;
+      let m3dAwaitingApproval = false;
+
+      function m3dShowApprovalUI() {
+        const genBtn  = document.getElementById('m3d-gen-btn');
+        const actions = document.getElementById('m3d-gen-approval-actions');
+        if (genBtn) genBtn.hidden = true;
+        if (actions) actions.hidden = false;
+      }
+
+      function m3dHideApprovalUI() {
+        const genBtn  = document.getElementById('m3d-gen-btn');
+        const actions = document.getElementById('m3d-gen-approval-actions');
+        if (genBtn) genBtn.hidden = false;
+        if (actions) actions.hidden = true;
+      }
+
+      // Uploads a reference photo the user picked for the Front/Left/Right/Back
+      // slots to storage (Tripo AI needs a fetchable URL, not raw file bytes)
+      // and returns its public URL.
+      async function m3dUploadReferencePhoto(orchidId, view, file) {
+        await m3dRequireSession();
+
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `tripo-uploads/${orchidId}-${view}-${Date.now()}.${ext}`;
+        const bucket = window.BLOOM_STORAGE_BUCKET || 'bloom-uploads';
+        const { error: upErr } = await bloomSupabase.storage
+          .from(bucket)
+          .upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
+        if (upErr) { upErr.m3dStep = `uploading ${view} photo`; throw upErr; }
+        const { data } = bloomSupabase.storage.from(bucket).getPublicUrl(path);
+        return data?.publicUrl || null;
+      }
+
+      async function generateOrchid3DModel() {
+        const sel   = document.getElementById('m3d-orchid-select');
+        const btn   = document.getElementById('m3d-gen-btn');
+        const promptEl = document.getElementById('m3d-gen-prompt-override');
+        const orchidId = sel ? sel.value : '';
+
+        if (!orchidId) { m3dGenSetStatus('Select an orchid first.', 'error'); return; }
+
+        const row = m3dOrchidRows.find(o => String(o.id) === String(orchidId));
+        const catalogPhotoUrl = row && (row.resolved_image_url || row.image_url);
+        const promptOverride = promptEl ? promptEl.value.trim() : '';
+
+        m3dPendingGeneratedFile = null;
+        m3dAwaitingApproval = false;
+        m3dHideApprovalUI();
+
+        btn.disabled = true;
+        try {
+          let requestBody;
+          if (promptOverride) {
+            requestBody = { mode: 'text', prompt: promptOverride };
+          } else {
+            const hasUpload = M3D_UPLOAD_VIEWS.some(({ key }) => m3dUploadSlots[key]);
+            if (hasUpload) {
+              m3dGenSetStatus('Uploading your photos…', 'info');
+              const uploadedUrls = {};
+              for (const { key } of M3D_UPLOAD_VIEWS) {
+                const file = m3dUploadSlots[key];
+                if (file) uploadedUrls[key] = await m3dUploadReferencePhoto(orchidId, key, file);
+              }
+              // Front is the only slot with a catalog fallback — Left/Right/Back
+              // have no equivalent catalog photo and are simply omitted if blank.
+              const front = uploadedUrls.front || catalogPhotoUrl;
+              if (!front) {
+                m3dGenSetStatus('Upload a Front photo, or pick an orchid with a catalog photo, before generating.', 'error');
+                return;
+              }
+              const hasOtherAngles = ['left', 'right', 'back'].some((k) => uploadedUrls[k]);
+              requestBody = hasOtherAngles
+                ? { mode: 'multiview', images: { front, left: uploadedUrls.left, right: uploadedUrls.right, back: uploadedUrls.back } }
+                : { mode: 'image', imageUrl: front };
+            } else if (catalogPhotoUrl) {
+              requestBody = { mode: 'image', imageUrl: catalogPhotoUrl };
+            } else {
+              m3dGenSetStatus('This orchid has no catalog photo yet — upload a photo above, or open "Use a text description instead" below and describe it.', 'error');
+              return;
+            }
+          }
+
+          m3dGenSetStatus('Submitting to Tripo AI…', 'info');
+          const createRes = await fetch('/api/tripo3d', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+          });
+          const createData = await createRes.json();
+          if (!createRes.ok || !createData.task_id) {
+            const tripoMsg = createData.details && (createData.details.message || createData.details.error);
+            throw new Error(tripoMsg || createData.error || 'Could not start generation.');
+          }
+
+          m3dGenSetStatus('Generating 3D model… this can take a minute or two.', 'info');
+          const modelUrl = await m3dPollTripoTask(createData.task_id);
+
+          m3dGenSetStatus('Downloading generated model…', 'info');
+          // Routed through our own /api/tripo3d proxy (not fetched directly from
+          // Tripo's URL) so the download isn't at the mercy of Tripo's CORS policy.
+          const downloadRes = await fetch(`/api/tripo3d?model_url=${encodeURIComponent(modelUrl)}`);
+          if (!downloadRes.ok) throw new Error('Could not download the generated model.');
+          const modelBlob = await downloadRes.blob();
+          const glbFile = new File([modelBlob], `${orchidId}-tripo-${Date.now()}.glb`, { type: 'model/gltf-binary' });
+
+          // Held for review — nothing is saved to the catalog until Approve is clicked.
+          m3dPendingGeneratedFile = { orchidId, file: glbFile };
+          m3dAwaitingApproval = true;
+          m3dSetPreview(URL.createObjectURL(glbFile));
+          m3dGenSetStatus('3D model generated. Review it in the preview, then Approve to upload it to the orchid catalog, or Regenerate to try again.', 'success');
+          m3dShowApprovalUI();
+        } catch (err) {
+          const stepPrefix = err.m3dStep ? `Generation failed (${err.m3dStep}): ` : 'Generation failed: ';
+          m3dGenSetStatus(stepPrefix + (err.message || 'unknown error'), 'error');
+          console.warn('generateOrchid3DModel failed:', err);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function approveOrchid3DModel() {
+        const approveBtn = document.getElementById('m3d-gen-approve-btn');
+        const regenBtn   = document.getElementById('m3d-gen-regenerate-btn');
+        const sel        = document.getElementById('m3d-orchid-select');
+
+        if (!m3dPendingGeneratedFile) {
+          m3dGenSetStatus('No generated model waiting for approval — generate one first.', 'error');
+          return;
+        }
+
+        const { orchidId, file } = m3dPendingGeneratedFile;
+        if (approveBtn) approveBtn.disabled = true;
+        if (regenBtn) regenBtn.disabled = true;
+        try {
+          m3dGenSetStatus('Uploading to catalog…', 'info');
+          await m3dPersistModelFile(orchidId, file);
+          m3dPendingGeneratedFile = null;
+          m3dAwaitingApproval = false;
+          m3dHideApprovalUI();
+          m3dGenSetStatus('3D model approved and published to the orchid catalog.', 'success');
+          await loadModel3DOrchidOptions();
+          if (sel) sel.value = orchidId;
+          m3dOnOrchidChange();
+        } catch (err) {
+          m3dGenSetStatus(`Upload failed (${err.m3dStep || 'saving'}): ${err.message || 'unknown error'} — click Approve to retry (no credits used).`, 'error');
+          console.warn('approveOrchid3DModel failed:', err);
+        } finally {
+          if (approveBtn) approveBtn.disabled = false;
+          if (regenBtn) regenBtn.disabled = false;
+        }
+      }
+
+      function regenerateOrchid3DModel() {
+        m3dPendingGeneratedFile = null;
+        m3dAwaitingApproval = false;
+        m3dHideApprovalUI();
+        generateOrchid3DModel();
       }
 
       // ── 3D SUBMISSIONS ─────────────────────────────────────────────
@@ -7952,6 +8383,8 @@
       let editRequestRows = [];
 
       const EDIT_REQUEST_FIELD_LABELS = {
+        common_names: 'Common Name(s)', local_names: 'Local Name(s)',
+        identification_confidence: 'Identification Confidence', endemic_to_philippines: 'Endemic to Philippines',
         observation_date: 'Observation Date', observation_time: 'Time of Observation',
         collection_method: 'Collection Method', observation_type: 'Observation Type',
         voucher_collected: 'Voucher Specimen Collected', specific_site_zone: 'Altitude Zone',
@@ -7960,13 +8393,14 @@
         host_tree_species: 'Host Tree Species', host_tree_dbh_cm: 'Host Tree Diameter (cm)',
         canopy_cover_percent: 'Canopy Cover (%)', light_exposure: 'Light Exposure', soil_type: 'Soil Type',
         nearby_water_source: 'Nearby Water Source', population_status: 'Population Status',
-        threat_level: 'Threat Level', researcher_notes: 'Researcher Notes'
+        threat_level: 'Threat Level', researcher_notes: 'Researcher Notes', related_study: 'Related Study'
       };
 
       function editRequestDisplayValue(v) {
         if (v === null || v === undefined || v === '') return '—';
         if (v === true) return 'Yes';
         if (v === false) return 'No';
+        if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
         return String(v);
       }
 
@@ -8007,7 +8441,7 @@
           const badgeClass = status === 'approved' ? 'status-approved' : status === 'denied' ? 'status-rejected' : 'status-pending';
           const finalized = status !== 'pending';
           const finalizedAttr = finalized ? 'disabled aria-disabled="true"' : '';
-          const changeCount = Object.keys(r.proposed_changes || {}).length;
+          const changeCount = Object.keys(r.proposed_changes || {}).filter((k) => k !== 'new_photos').length;
           return `
             <tr class="submission-row">
               <td class="submission-researcher-cell">
@@ -8049,8 +8483,9 @@
         const r = editRequestRows.find((row) => row.id === requestId);
         if (!r) return;
         const changes = r.proposed_changes || {};
-        const keys = Object.keys(changes);
-        const rowsHtml = keys.length ? keys.map((key) => {
+        const newPhotos = Array.isArray(changes.new_photos) ? changes.new_photos : [];
+        const keys = Object.keys(changes).filter((k) => k !== 'new_photos');
+        const rowsHtml = keys.map((key) => {
           const label = EDIT_REQUEST_FIELD_LABELS[key] || key;
           const oldVal = editRequestDisplayValue(r._sighting ? r._sighting[key] : null);
           const newVal = editRequestDisplayValue(changes[key]);
@@ -8059,7 +8494,17 @@
             <td style="padding:.5rem .7rem;font-size:.82rem;color:#a33;text-decoration:line-through;border-bottom:1px solid #eef2ef;">${escapeHtml(oldVal)}</td>
             <td style="padding:.5rem .7rem;font-size:.82rem;color:#15803d;font-weight:600;border-bottom:1px solid #eef2ef;">${escapeHtml(newVal)}</td>
           </tr>`;
-        }).join('') : `<tr><td colspan="3" style="padding:1rem;text-align:center;color:#666;">No field changes recorded.</td></tr>`;
+        }).join('');
+
+        const photosHtml = newPhotos.length ? `
+          <h3 style="margin:1.1rem 0 .5rem;font-size:.82rem;color:#3a4a3a;">New photos attached (${newPhotos.length})</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.5rem;">
+            ${newPhotos.map((p) => `
+              <div>
+                <img src="${escapeHtml(p.src)}" alt="${escapeHtml(p.category || '')}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #eef2ef;" />
+                <div style="font-size:.66rem;color:#666;text-align:center;margin-top:.2rem;text-transform:capitalize;">${escapeHtml((p.category || '').replace('_', ' '))}</div>
+              </div>`).join('')}
+          </div>` : '';
 
         const finalized = String(r.status || 'pending').toLowerCase() !== 'pending';
         const modal = document.createElement('div');
@@ -8070,14 +8515,16 @@
             <button type="button" onclick="document.getElementById('edit-request-diff-modal').remove()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button>
             <h2 style="margin:0 0 .2rem;color:#145A1E;font-size:1.1rem;">${escapeHtml(r._sighting?.scientific_name || 'Sighting')} — proposed edit</h2>
             <p style="margin:0 0 1rem;color:#666;font-size:.82rem;">From ${escapeHtml(r.researcher_email || '')}${r.reason ? ' — "' + escapeHtml(r.reason) + '"' : ''}</p>
-            <table style="width:100%;border-collapse:collapse;">
+            ${keys.length ? `<table style="width:100%;border-collapse:collapse;">
               <thead><tr>
                 <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Field</th>
                 <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Current</th>
                 <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Proposed</th>
               </tr></thead>
               <tbody>${rowsHtml}</tbody>
-            </table>
+            </table>` : ''}
+            ${!keys.length && !newPhotos.length ? '<p style="padding:1rem;text-align:center;color:#666;">No field changes recorded.</p>' : ''}
+            ${photosHtml}
             <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.25rem;">
               <button type="button" onclick="document.getElementById('edit-request-diff-modal').remove()" style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid #d8e6d4;background:#fff;color:#3a4a3a;font-weight:600;font-size:.85rem;cursor:pointer;">Close</button>
               ${finalized ? '' : `
@@ -8089,6 +8536,29 @@
         document.body.appendChild(modal);
       }
 
+      // Inserts researcher-attached edit-request photos the same way the
+      // original submission flow does (picture upsert + sighting_media row),
+      // run only once a request is approved.
+      async function editRequestInsertNewPhotos(sightingId, newPhotos) {
+        for (let i = 0; i < newPhotos.length; i++) {
+          const p = newPhotos[i];
+          if (!p?.src) continue;
+          let { data: pic } = await bloomSupabase.from('picture')
+            .upsert({ file_path: p.src }, { onConflict: 'file_path' })
+            .select('picture_id').single();
+          if (!pic?.picture_id) {
+            const { data: ex } = await bloomSupabase.from('picture').select('picture_id').eq('file_path', p.src).single();
+            pic = ex;
+          }
+          if (pic?.picture_id) {
+            await bloomSupabase.from('sighting_media').insert({
+              sighting_id: sightingId, picture_id: pic.picture_id,
+              media_category: p.category || 'whole_plant', photographer_name: p.contributor || null, sort_order: i
+            });
+          }
+        }
+      }
+
       // Approving applies the proposed field values directly to
       // species_sightings — no revision-flow detour, no unpublishing —
       // since DENR already reviewed the exact before/after values.
@@ -8096,12 +8566,19 @@
         if (!isAdminRole || !bloomSupabase) return;
         const r = editRequestRows.find((row) => row.id === requestId);
         if (!r) return;
-        const changes = r.proposed_changes || {};
-        if (!Object.keys(changes).length) { showToast('No field changes to apply.', true); return; }
+        const changes = { ...(r.proposed_changes || {}) };
+        const newPhotos = Array.isArray(changes.new_photos) ? changes.new_photos : [];
+        delete changes.new_photos;
+        if (!Object.keys(changes).length && !newPhotos.length) { showToast('No changes to apply.', true); return; }
         try {
-          const { error: sightingErr } = await bloomSupabase
-            .from('species_sightings').update(changes).eq('sighting_id', r.sighting_id);
-          if (sightingErr) throw sightingErr;
+          if (Object.keys(changes).length) {
+            const { error: sightingErr } = await bloomSupabase
+              .from('species_sightings').update(changes).eq('sighting_id', r.sighting_id);
+            if (sightingErr) throw sightingErr;
+          }
+          if (newPhotos.length) {
+            await editRequestInsertNewPhotos(r.sighting_id, newPhotos);
+          }
 
           const { error: reqUpdateErr } = await bloomSupabase
             .from('catalog_edit_requests')

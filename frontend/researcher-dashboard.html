@@ -584,7 +584,7 @@
       /* 3D Collection card model-viewer + fullscreen toggle */
       .collection3d-model-wrap { position: relative; }
       .collection3d-model-wrap model-viewer:fullscreen { width: 100vw; height: 100vh; }
-      .collection3d-model-badge { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 0.3rem 0.6rem; border-radius: 999px; background: rgba(20,90,30,0.88); color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0,0,0,0.22); backdrop-filter: blur(4px); }
+      .collection3d-model-badge { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 0.22rem 0.5rem; border-radius: 999px; background: rgba(20,90,30,0.88); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0,0,0,0.22); backdrop-filter: blur(4px); }
       .collection3d-fs-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; background: rgba(0,0,0,0.55); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; backdrop-filter: blur(3px); transition: background .15s; }
       .collection3d-fs-btn:hover { background: rgba(0,0,0,0.75); }
 
@@ -5095,13 +5095,11 @@
           return;
         }
         grid.innerHTML = withModels.map((o) => {
-          const isAiGenerated = !!(o && (o.is_ai_generated || isAiGeneratedModelUrl(o.model_3d_url)));
-          const badgeHtml = isAiGenerated ? '<div class="collection3d-model-badge">AI Generated</div>' : '';
           return `
             <div style="border:1px solid #d9e6dd;border-radius:12px;padding:1rem;background:linear-gradient(145deg,#fdfefe,#f2f8f4);max-width:320px;">
               <div class="collection3d-model-wrap" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:#eef4f0;margin-bottom:0.75rem;">
                 <model-viewer src="${escapeHtml(o.model_3d_url)}" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>
-                ${badgeHtml}
+                <div class="collection3d-model-badge">AI Generated</div>
                 <button type="button" class="collection3d-fs-btn" onclick="collection3DFullscreen(this)" title="View fullscreen" aria-label="View 3D model fullscreen">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                 </button>
