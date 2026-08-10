@@ -738,7 +738,7 @@
           <div class="d-flex flex-wrap justify-content-between align-items-start gap-4">
             <div style="min-width:240px;">
               <p class="text-xs font-bold uppercase" style="color:#86efac;letter-spacing:0.14em;margin:0 0 0.5rem;">DENR Control Center</p>
-              <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#ffffff;margin:0 0 0.5rem;text-shadow:0 2px 10px rgba(0,0,0,.25);">Conservation command center</h1>
+              <h1 style="font-family:Inter,Roboto,sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:#ffffff;margin:0 0 0.5rem;text-shadow:0 2px 10px rgba(0,0,0,.25);">Conservation Command Center</h1>
               <p class="text-sm" style="color:rgba(255,255,255,.85);max-width:560px;margin:0;">Monitor orchid records, conservation status, and researcher submissions from Mt. Busa, Sarangani Province.</p>
             </div>
 
@@ -1267,6 +1267,9 @@
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Report Type</label>
                 <select id="reportType" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);cursor:pointer;outline:none;transition:border-color 150ms;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" onchange="onReportTypeChange()">
+                  <optgroup label="Species Profile">
+                    <option value="species-profile">Species Profile Report</option>
+                  </optgroup>
                   <optgroup label="Decision-Support Reports">
                     <option value="conservation-priority">Species Conservation Priority Ranking</option>
                     <option value="elevation-profile">Elevational &amp; Vertical Distribution Profile</option>
@@ -1292,7 +1295,7 @@
               </div>
 
               <!-- Date Range -->
-              <div>
+              <div id="dateRangeField">
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Date Range</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
                   <div>
@@ -1308,7 +1311,7 @@
               </div>
 
               <!-- Include Sections -->
-              <div>
+              <div id="genericSectionCheckboxes">
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Include in Report</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
                   <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;border:1.5px solid var(--dt-border-md);border-radius:10px;padding:0.65rem 0.8rem;transition:border-color 150ms,background 150ms,opacity 150ms;" onmouseover="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-accent)';this.style.background='rgba(77,184,106,.1)'}" onmouseout="if(!this.querySelector('input').disabled){this.style.borderColor='var(--dt-border-md)';this.style.background='transparent'}">
@@ -1327,6 +1330,21 @@
                     <input type="checkbox" data-section="recommendations" style="width:15px;height:15px;cursor:pointer;accent-color:#145A1E;flex-shrink:0;" />
                     <span class="text-xs font-semibold" style="color:var(--dt-text);">Recommendations</span>
                   </label>
+                </div>
+              </div>
+
+              <!-- Species Profile: orchid picker + selectable field groups (hidden unless
+                   Report Type = Species Profile Report) -->
+              <div id="speciesProfileFields" style="display:none;flex-direction:column;gap:1.1rem;">
+                <div>
+                  <label class="report-field-label">Select Orchid</label>
+                  <select id="reportOrchidId" class="report-select-input">
+                    <option value="">Loading species…</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="report-field-label">Include in Report</label>
+                  <div id="profileFieldGroups" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
                 </div>
               </div>
 
@@ -1390,6 +1408,10 @@
                 <p class="m-0 text-sm font-bold" style="color:var(--dt-accent-lt);font-family:Inter,Roboto,sans-serif;">Report Types</p>
               </div>
               <div style="display:flex;flex-direction:column;">
+                <div style="padding:1.05rem 1.2rem;border-bottom:1px solid var(--dt-border-md);background:rgba(20,90,30,.14);border-left:3px solid #145A1E;">
+                  <p class="m-0 text-sm font-bold" style="color:var(--dt-accent-lt);">Species Profile</p>
+                  <p class="m-0 text-xs mt-0.5" style="color:var(--dt-text);">Pick one orchid and choose exactly which identity &amp; sighting fields to include — a dossier, not a table</p>
+                </div>
                 <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--dt-border);">
                   <p class="m-0 text-xs font-bold" style="color:var(--dt-text);">Species Inventory</p>
                   <p class="m-0 text-xs mt-0.5" style="color:var(--dt-muted);">All orchids with genus, common names &amp; endemicity</p>
@@ -9390,8 +9412,353 @@
       // report type is currently selected: disables the date range for
       // catalog-wide reports, and disables/unchecks any section a report
       // type doesn't produce (per its reportTypes.includesByDefault).
+      // ── Species Profile Report ──────────────────────────────────────
+      // Pick one orchid and choose exactly which identity & sighting fields
+      // to include — a dossier for a single species, not a table across many.
+      const SPECIES_PROFILE_FIELD_GROUPS = [
+        {
+          id: 'identity', label: 'Species Identity', kind: 'profile',
+          fields: [
+            ['genus', 'Genus'],
+            ['common_name', 'Common Name'],
+            ['endemicity', 'Endemicity'],
+            ['date_discovered', 'Date Recorded'],
+            ['conservation_status', 'Conservation Status'],
+            ['image_url', 'Photo'],
+            ['model_3d_url', '3D Model']
+          ]
+        },
+        // Everything below mirrors the "New Orchid Submission" modal's own 9 pages,
+        // in the same order, so the report reads as the same record the researcher
+        // filled out — group labels and field labels are taken straight from that
+        // form (see submission-page[data-page] in researcher-dashboard.html).
+        {
+          id: 'taxonomic', label: 'Sightings: Basic Taxonomic Information', kind: 'sightings',
+          fields: [
+            ['identification_confidence', 'Taxonomic Identification Confidence'],
+            ['endemic_to_philippines', 'Endemic to the Philippines'],
+            ['common_names_list', 'Vernacular / Common Name(s)'],
+            ['local_names_list', 'Local Name(s)']
+          ]
+        },
+        {
+          id: 'observation', label: 'Sightings: Observation / Collection Details', kind: 'sightings',
+          fields: [
+            ['researcher', 'Head Observer / Researcher Name'],
+            ['submission_date', 'Observation Date'],
+            ['observation_time', 'Observation Time'],
+            ['collection_method', 'Sampling Methodology'],
+            ['observation_type', 'Specimen Observation Type'],
+            ['voucher_collected', 'Voucher Specimen Collected'],
+            ['population_count', 'Number of Orchids in the Area']
+          ]
+        },
+        {
+          id: 'location', label: 'Sightings: Geographical / Location Data', kind: 'sightings',
+          fields: [
+            ['location', 'Mountain / Specific Site'],
+            ['latitude', 'GPS Latitude'],
+            ['longitude', 'GPS Longitude'],
+            ['elevation_meters', 'Elevation / Altitude (m)']
+          ]
+        },
+        {
+          id: 'habitat', label: 'Sightings: Habitat Information', kind: 'sightings',
+          fields: [
+            ['habitat_type', 'Habitat Type'],
+            ['microhabitat', 'Microhabitat'],
+            ['growth_substrate', 'Growth Substrate'],
+            ['host_tree_species', 'Tree Species'],
+            ['host_tree_dbh_cm', 'Tree Diameter / DBH (cm)'],
+            ['canopy_cover_percent', 'Canopy Cover (%)'],
+            ['light_exposure', 'Light Exposure'],
+            ['soil_type', 'Soil Type'],
+            ['nearby_water_source', 'Nearby Water Source']
+          ]
+        },
+        {
+          id: 'morphology', label: 'Sightings: Morphological Characteristics', kind: 'sightings',
+          fields: [
+            ['plant_height_cm', 'Plant Height (cm)'],
+            ['pseudobulb_present', 'Pseudobulb Present'],
+            ['stem_length_cm', 'Stem Length (cm)'],
+            ['root_length_cm', 'Root Length (cm)'],
+            ['leaf_count', 'Number of Leaves'],
+            ['leaf_shape', 'Leaf Shape'],
+            ['leaf_shape_other', 'Leaf Shape (Others)'],
+            ['leaf_length_cm', 'Leaf Length (cm)'],
+            ['leaf_width_cm', 'Leaf Width (cm)'],
+            ['leaf_textures', 'Leaf Texture'],
+            ['leaf_arrangement', 'Leaf Arrangement'],
+            ['flower_color', 'Flower Color'],
+            ['flower_count', 'Number of Flowers'],
+            ['flower_diameter_cm', 'Flower Diameter (cm)'],
+            ['inflorescence_type', 'Inflorescence Type'],
+            ['petal_characteristics', 'Petal Characteristics'],
+            ['sepal_characteristics', 'Sepal Characteristics'],
+            ['labellum_lip_description', 'Labellum / Lip Description'],
+            ['fragrance', 'Fragrance'],
+            ['blooming_stage', 'Blooming Stage'],
+            ['fruit_present', 'Fruit Present'],
+            ['fruit_type', 'Fruit Type'],
+            ['seed_capsule_condition', 'Seed Capsule Condition'],
+            ['flowering_season', 'Flowering Season']
+          ]
+        },
+        {
+          id: 'ecological', label: 'Sightings: Ecological / Biological Data', kind: 'sightings',
+          fields: [
+            ['life_stage', 'Life Stage'],
+            ['phenology', 'Phenology']
+          ]
+        },
+        {
+          id: 'conservation', label: 'Sightings: Conservation & Threat Data', kind: 'sightings',
+          fields: [
+            ['population_status', 'Population Status'],
+            ['threat_level', 'Threat Level'],
+            ['threat_types_list', 'Threat Type']
+          ]
+        },
+        {
+          id: 'media', label: 'Sightings: Multimedia Documentation', kind: 'sightings',
+          fields: [
+            ['whole_plant_photos', 'Whole Plant Photo'],
+            ['closeup_flower_photos', 'Close-up Flower Photo'],
+            ['habitat_photos', 'Habitat Photo']
+          ]
+        },
+        {
+          id: 'notes', label: 'Sightings: Notes, Remarks, and Researchers', kind: 'sightings',
+          fields: [
+            ['institution_name', 'Institution / Organization'],
+            ['team_members_list', 'Team Members'],
+            ['researcher_notes', 'Researcher Notes'],
+            ['related_study', 'Related Study']
+          ]
+        }
+      ];
+
+      function joinListOrDash(list) {
+        return Array.isArray(list) && list.length ? list.join(', ') : '-';
+      }
+
+      function photoCountOrDash(list, label) {
+        const n = Array.isArray(list) ? list.length : 0;
+        return n ? `${n} ${label}${n === 1 ? '' : 's'} on file` : 'None on file';
+      }
+
+      function yesNoOrDash(value) {
+        if (value === true) return 'Yes';
+        if (value === false) return 'No';
+        return value || '-';
+      }
+
+      const SPECIES_PROFILE_SIGHTING_ACCESSORS = {
+        identification_confidence: (s) => s.identification_confidence || '-',
+        endemic_to_philippines:    (s) => s.endemic_to_philippines || '-',
+        common_names_list:         (s) => joinListOrDash(s.common_names),
+        local_names_list:          (s) => joinListOrDash(parseJsonArrayValue(s.local_names)),
+        researcher:                (s) => s.head_observer_name || s.researcher || '-',
+        submission_date:           (s) => s.submission_date || '-',
+        observation_time:         (s) => s.observation_time || '-',
+        collection_method:        (s) => s.collection_method || '-',
+        observation_type:         (s) => s.observation_type || '-',
+        voucher_collected:        (s) => yesNoOrDash(s.voucher_collected),
+        population_count:         (s) => (s.population_count != null ? String(s.population_count) : '-'),
+        location:                  (s) => s.location || '-',
+        latitude:                  (s) => (s.latitude != null ? String(s.latitude) : '-'),
+        longitude:                 (s) => (s.longitude != null ? String(s.longitude) : '-'),
+        elevation_meters:          (s) => (s.elevation_meters != null ? String(s.elevation_meters) : '-'),
+        institution_name:         (s) => s.institution_name || s.institution || '-',
+        habitat_type:              (s) => s.habitat_type || '-',
+        microhabitat:              (s) => s.microhabitat || '-',
+        growth_substrate:          (s) => s.growth_substrate || '-',
+        host_tree_species:        (s) => s.host_tree_species || '-',
+        host_tree_dbh_cm:         (s) => (s.host_tree_dbh_cm != null ? String(s.host_tree_dbh_cm) : '-'),
+        canopy_cover_percent:     (s) => (s.canopy_cover_percent != null ? String(s.canopy_cover_percent) : '-'),
+        light_exposure:            (s) => s.light_exposure || '-',
+        soil_type:                 (s) => s.soil_type || '-',
+        nearby_water_source:      (s) => s.nearby_water_source || '-',
+        plant_height_cm:           (s) => (s.plant_height_cm != null ? String(s.plant_height_cm) : '-'),
+        pseudobulb_present:       (s) => yesNoOrDash(s.pseudobulb_present),
+        stem_length_cm:           (s) => (s.stem_length_cm != null ? String(s.stem_length_cm) : '-'),
+        root_length_cm:           (s) => (s.root_length_cm != null ? String(s.root_length_cm) : '-'),
+        leaf_count:                (s) => (s.leaf_count != null ? String(s.leaf_count) : '-'),
+        leaf_shape:                (s) => s.leaf_shape || '-',
+        leaf_shape_other:         (s) => s.leaf_shape_other || '-',
+        leaf_length_cm:           (s) => (s.leaf_length_cm != null ? String(s.leaf_length_cm) : '-'),
+        leaf_width_cm:            (s) => (s.leaf_width_cm != null ? String(s.leaf_width_cm) : '-'),
+        leaf_textures:             (s) => joinListOrDash(parseJsonArrayValue(s.leaf_textures)),
+        leaf_arrangement:          (s) => s.leaf_arrangement || '-',
+        flower_color:              (s) => s.flower_color || '-',
+        flower_count:              (s) => (s.flower_count != null ? String(s.flower_count) : '-'),
+        flower_diameter_cm:       (s) => (s.flower_diameter_cm != null ? String(s.flower_diameter_cm) : '-'),
+        inflorescence_type:       (s) => s.inflorescence_type || '-',
+        petal_characteristics:    (s) => s.petal_characteristics || '-',
+        sepal_characteristics:    (s) => s.sepal_characteristics || '-',
+        labellum_lip_description: (s) => s.labellum_lip_description || '-',
+        fragrance:                 (s) => s.fragrance || '-',
+        blooming_stage:            (s) => s.blooming_stage || '-',
+        fruit_present:             (s) => yesNoOrDash(s.fruit_present),
+        fruit_type:                (s) => s.fruit_type || '-',
+        seed_capsule_condition:   (s) => s.seed_capsule_condition || '-',
+        flowering_season:          (s) => s.flowering_season || '-',
+        life_stage:                (s) => s.life_stage || '-',
+        phenology:                 (s) => s.phenology || '-',
+        population_status:        (s) => s.population_status || '-',
+        threat_level:              (s) => s.threat_level || '-',
+        threat_types_list:         (s) => joinListOrDash(parseJsonArrayValue(s.threat_types)),
+        whole_plant_photos:       (s) => photoCountOrDash(s.whole_plant_photos, 'photo'),
+        closeup_flower_photos:    (s) => photoCountOrDash(s.closeup_flower_photos, 'photo'),
+        habitat_photos:            (s) => photoCountOrDash(s.habitat_photos, 'photo'),
+        team_members_list:        (s) => {
+          const members = Array.isArray(s.sighting_team_member) ? s.sighting_team_member : [];
+          if (!members.length) return '-';
+          return members.map((m) => (m.member_role ? `${m.member_name} (${m.member_role})` : m.member_name)).join(', ');
+        },
+        researcher_notes:          (s) => s.researcher_notes || '-',
+        related_study:             (s) => s.related_study || '-'
+      };
+
+      function profileIdentityValue(fieldKey, orchid) {
+        switch (fieldKey) {
+          case 'genus':              return orchid.genus || '-';
+          case 'common_name':        return orchid.common_name || '-';
+          case 'endemicity':         return orchid.endemicity || '-';
+          case 'date_discovered':    return orchid.date_discovered
+            ? new Date(orchid.date_discovered).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
+            : 'Not recorded';
+          case 'conservation_status':return conStatusDisplayLabel(orchid.conservation_status);
+          // Excel keeps this as the raw URL (a spreadsheet has nowhere to embed
+          // the image); the PDF builder pulls the photo out separately to render
+          // it as a real image instead of listing it as a text row.
+          case 'image_url':          return orchid.image_url || 'No photo on file';
+          case 'model_3d_url':       return orchid.model_3d_url ? 'Recorded' : 'Not recorded';
+          default:                   return '-';
+        }
+      }
+
+      // jsPDF's addImage needs the bytes already in hand (a data: URL or loaded
+      // Image element) — it can't fetch a remote URL itself. Resolves to null
+      // on any failure so a broken/CORS-blocked photo just gets skipped rather
+      // than failing the whole report.
+      async function loadImageAsDataUrl(url) {
+        if (!url) return null;
+        let objectUrl;
+        try {
+          const response = await fetch(url, { mode: 'cors' });
+          if (!response.ok) return null;
+          const blob = await response.blob();
+          objectUrl = URL.createObjectURL(blob);
+          const img = await new Promise((resolve, reject) => {
+            const el = new Image();
+            el.onload = () => resolve(el);
+            el.onerror = () => reject(new Error('Could not decode image'));
+            el.src = objectUrl;
+          });
+          // Re-encode through canvas as PNG regardless of source format — jsPDF
+          // can't decode WEBP (which some catalog photos are), but every browser
+          // can draw a WEBP to canvas and re-export it as something jsPDF can read.
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 1;
+          canvas.height = img.naturalHeight || 1;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          return { dataUrl: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height };
+        } catch (err) {
+          return null;
+        } finally {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+        }
+      }
+
+      let reportOrchidOptionsLoaded = false;
+      async function ensureReportOrchidOptionsLoaded() {
+        const sel = document.getElementById('reportOrchidId');
+        if (!sel || reportOrchidOptionsLoaded || !bloomSupabase) return;
+        const { data, error } = await bloomSupabase
+          .from('orchid_overview')
+          .select('id, name, common_name')
+          .order('name', { ascending: true });
+        if (error) {
+          sel.innerHTML = '<option value="">Failed to load species</option>';
+          return;
+        }
+        reportOrchidOptionsLoaded = true;
+        sel.innerHTML = (data || []).length
+          ? data.map((o) => `<option value="${o.id}">${escapeHtml(o.name)}${o.common_name ? ' — ' + escapeHtml(o.common_name) : ''}</option>`).join('')
+          : '<option value="">No species in catalog yet</option>';
+      }
+
+      function toggleProfileFieldGroup(groupId) {
+        const body = document.getElementById('profileGroupBody-' + groupId);
+        const header = document.getElementById('profileGroupHeader-' + groupId);
+        if (!body) return;
+        const isOpen = body.style.display === 'flex';
+        body.style.display = isOpen ? 'none' : 'flex';
+        if (header) header.classList.toggle('is-open', !isOpen);
+      }
+
+      function updateProfileFieldGroupCount(groupId) {
+        const countEl = document.getElementById('profileGroupCount-' + groupId);
+        if (!countEl) return;
+        const boxes = document.querySelectorAll('#profileGroupBody-' + groupId + ' input[type="checkbox"]');
+        const checked = Array.from(boxes).filter((b) => b.checked).length;
+        countEl.textContent = `${checked} of ${boxes.length}`;
+      }
+
+      function renderProfileFieldGroups() {
+        const container = document.getElementById('profileFieldGroups');
+        if (!container || container.dataset.rendered) return;
+        container.dataset.rendered = '1';
+        container.innerHTML = SPECIES_PROFILE_FIELD_GROUPS.map((group) => `
+          <div class="profile-field-group" data-group="${group.id}">
+            <button type="button" id="profileGroupHeader-${group.id}" class="profile-field-group-header" onclick="toggleProfileFieldGroup('${group.id}')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <span>${escapeHtml(group.label)}</span>
+              <span class="profile-field-group-count" id="profileGroupCount-${group.id}">${group.fields.length} of ${group.fields.length}</span>
+            </button>
+            <div class="profile-field-group-body" id="profileGroupBody-${group.id}">
+              ${group.fields.map(([key, label]) => `
+                <label class="profile-field-checkbox">
+                  <input type="checkbox" checked data-profile-field="${key}" onchange="updateProfileFieldGroupCount('${group.id}')" />
+                  <span>${escapeHtml(label)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function getSelectedSpeciesProfileFields() {
+        const selected = {};
+        document.querySelectorAll('#profileFieldGroups input[type="checkbox"][data-profile-field]').forEach((el) => {
+          selected[el.getAttribute('data-profile-field')] = el.checked;
+        });
+        return selected;
+      }
+
       function onReportTypeChange() {
         const reportType = document.getElementById('reportType').value;
+        const isProfile = reportType === 'species-profile';
+
+        // Species Profile reports on one orchid's full history rather than a
+        // dated period, and uses its own per-field checklist instead of the
+        // generic section checkboxes — swap the whole control group out
+        // rather than just disabling pieces of it.
+        const dateRangeField = document.getElementById('dateRangeField');
+        const genericCheckboxes = document.getElementById('genericSectionCheckboxes');
+        const profileFields = document.getElementById('speciesProfileFields');
+        if (dateRangeField) dateRangeField.style.display = isProfile ? 'none' : 'block';
+        if (genericCheckboxes) genericCheckboxes.style.display = isProfile ? 'none' : 'block';
+        if (profileFields) profileFields.style.display = isProfile ? 'flex' : 'none';
+
+        if (isProfile) {
+          renderProfileFieldGroups();
+          ensureReportOrchidOptionsLoaded();
+          return;
+        }
+
         const config = reportTypes[reportType] || {};
         const includes = config.includesByDefault || [];
 
@@ -10335,10 +10702,16 @@
 
       async function generateReport() {
         const reportType = document.getElementById('reportType').value;
-        const dateFrom = document.getElementById('dateFrom').value;
-        const dateTo = document.getElementById('dateTo').value;
         const format = document.querySelector('input[name="format"]:checked').value;
         const btn = document.getElementById('generateReportBtn');
+
+        if (reportType === 'species-profile') {
+          await generateSpeciesProfileReport(format, btn);
+          return;
+        }
+
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
 
         const reportConfig = reportTypes[reportType];
         const sections = getSelectedReportSections();
@@ -10386,6 +10759,282 @@
           btn.style.background = '#145A1E';
           btn.innerHTML = originalHTML;
         }
+      }
+
+      async function generateSpeciesProfileReport(format, btn) {
+        const orchidId = document.getElementById('reportOrchidId').value;
+        if (!orchidId) {
+          showReportToast('Please select an orchid.', 'warn');
+          return;
+        }
+        const fields = getSelectedSpeciesProfileFields();
+        if (!Object.values(fields).some(Boolean)) {
+          showReportToast('Please select at least one field to include.', 'warn');
+          return;
+        }
+
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.background = '#2d6fa0';
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;animation:spin 0.8s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Generating…';
+
+        try {
+          const sourceData = await getReportSourceData();
+          const orchid = sourceData.orchids.find((o) => String(o.id) === String(orchidId));
+          if (!orchid) throw new Error('Selected orchid could not be found.');
+
+          const orchidKey = String(orchid.name || '').trim().toLowerCase();
+          const sightings = sourceData.submissions.filter((s) => {
+            if (String(s.species || '').trim().toLowerCase() !== orchidKey) return false;
+            return String(s.review_status || '').toLowerCase() === 'approved';
+          });
+
+          const fileNameBase = `Species_Profile_${(orchid.name || 'orchid').replace(/\s+/g, '_')}`;
+
+          if (format === 'excel') {
+            downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields);
+          } else {
+            // Only fetch the image if it's actually going in the PDF — the
+            // Excel path never needs the bytes, just the URL text.
+            const photo = fields.image_url ? await loadImageAsDataUrl(orchid.image_url) : null;
+            downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, photo);
+          }
+
+          showReportToast('Report downloaded successfully!', 'success');
+        } catch (error) {
+          showReportToast('Could not generate report: ' + error.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.style.background = '#145A1E';
+          btn.innerHTML = originalHTML;
+        }
+      }
+
+      function downloadSpeciesProfileExcel(fileNameBase, orchid, sightings, fields) {
+        const workbook = XLSX.utils.book_new();
+
+        const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
+        const identityFields = identityGroup ? identityGroup.fields.filter(([key]) => fields[key]) : [];
+        if (identityFields.length) {
+          const rows = identityFields.map(([key, label]) => ({ field: label, value: profileIdentityValue(key, orchid) }));
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Species_Identity');
+        }
+
+        const activeSightingColumns = [];
+        SPECIES_PROFILE_FIELD_GROUPS
+          .filter((g) => g.kind === 'sightings')
+          .forEach((g) => g.fields.forEach(([key, label]) => { if (fields[key]) activeSightingColumns.push([key, label]); }));
+
+        if (activeSightingColumns.length) {
+          const rows = sightings.length
+            ? sightings.map((s) => {
+                const row = {};
+                activeSightingColumns.forEach(([key, label]) => { row[label] = SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s); });
+                return row;
+              })
+            : [{ message: `No approved field sightings on file for ${orchid.name}` }];
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Field_Sightings');
+        }
+
+        if (workbook.SheetNames.length === 0) {
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{ message: 'No fields selected' }]), 'Report');
+        }
+
+        XLSX.writeFile(workbook, `${fileNameBase}.xlsx`);
+      }
+
+      function downloadSpeciesProfilePdf(fileNameBase, orchid, sightings, fields, photo) {
+        const { jsPDF } = window.jspdf;
+        // Landscape gives the catalog photo room to sit beside the identity
+        // table instead of stacking above it, and keeps consistent margins
+        // with the per-sighting record cards below.
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const marginL = 14;
+        const marginR = 14;
+        const contentW = pageW - marginL - marginR;
+        const navy = [30, 79, 112];
+        const navyLight = [235, 245, 250];
+        const gray = [100, 116, 139];
+        const grayLight = [248, 250, 252];
+        const generated = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+        const orchidName = orchid.name || 'Unnamed species';
+
+        doc.setFillColor(...navy);
+        doc.rect(0, 0, pageW, 36, 'F');
+        doc.setFontSize(7);
+        doc.setTextColor(180, 210, 230);
+        doc.setFont('helvetica', 'bold');
+        doc.text('BLOOM · DENR BIODIVERSITY MONITORING', marginL, 10);
+
+        doc.setFontSize(15);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.text(orchidName, marginL, 21);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(180, 210, 230);
+        doc.text(`Generated: ${generated}`, marginL, 30);
+
+        doc.setFillColor(255, 255, 255, 0.15);
+        doc.setTextColor(200, 225, 240);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SPECIES PROFILE', pageW - marginR, 20, { align: 'right' });
+
+        let y = 46;
+
+        function sectionHeading(title) {
+          if (y > pageH - 30) { doc.addPage(); y = 18; }
+          doc.setFillColor(...navyLight);
+          doc.roundedRect(marginL, y - 4, contentW, 8, 1, 1, 'F');
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...navy);
+          doc.text(title.toUpperCase(), marginL + 3, y + 0.5);
+          y += 10;
+        }
+
+        function addAutoTable(head, body, marginLeftOverride) {
+          const tableMarginL = marginLeftOverride != null ? marginLeftOverride : marginL;
+          if (y > pageH - 40) { doc.addPage(); y = 18; }
+          doc.autoTable({
+            startY: y,
+            head: [head],
+            body: body,
+            margin: { left: tableMarginL, right: marginR },
+            styles: { font: 'helvetica', fontSize: 8, cellPadding: 3, overflow: 'linebreak', textColor: [30, 40, 50] },
+            headStyles: { fillColor: navy, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            alternateRowStyles: { fillColor: grayLight },
+            tableLineColor: [220, 230, 235],
+            tableLineWidth: 0.2,
+            didDrawPage: function(data) {
+              doc.setFontSize(7);
+              doc.setTextColor(...gray);
+              doc.setFont('helvetica', 'normal');
+              doc.text(`BLOOM – Species Profile: ${orchidName}`, marginL, pageH - 8);
+              doc.text(`Page ${data.pageNumber}`, pageW - marginR, pageH - 8, { align: 'right' });
+              doc.setDrawColor(...navy);
+              doc.setLineWidth(0.3);
+              doc.line(marginL, pageH - 12, pageW - marginR, pageH - 12);
+            }
+          });
+          y = doc.lastAutoTable.finalY + 10;
+        }
+
+        function subLabel(text) {
+          if (y > pageH - 34) { doc.addPage(); y = 18; }
+          doc.setFontSize(8.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...navy);
+          doc.text(text, marginL, y);
+          y += 5;
+        }
+
+        function sightingHeading(index, total, sighting) {
+          if (y > pageH - 40) { doc.addPage(); y = 18; }
+          const who = sighting.head_observer_name || sighting.researcher || 'Unknown observer';
+          const when = sighting.submission_date || 'Undated';
+          doc.setFillColor(...navy);
+          doc.roundedRect(marginL, y - 4, contentW, 7, 1, 1, 'F');
+          doc.setFontSize(8.5);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(255, 255, 255);
+          doc.text(`SIGHTING ${index} OF ${total} — ${String(who).toUpperCase()}, ${when}`, marginL + 3, y + 0.5);
+          y += 9;
+        }
+
+        // The photo is pulled out of the identity rows and drawn as a real
+        // image beside the table instead of listing "Photo: <url>" as text —
+        // that's also why it isn't repeated as a second image at the very
+        // top of the page; this is the one place it appears.
+        const identityGroup = SPECIES_PROFILE_FIELD_GROUPS.find((g) => g.kind === 'profile');
+        const identityRows = identityGroup ? identityGroup.fields.filter(([key]) => fields[key] && key !== 'image_url') : [];
+        const showPhoto = !!(identityGroup && fields.image_url && photo);
+
+        if (identityRows.length || showPhoto) {
+          sectionHeading('Species Identity');
+
+          const photoBoxSize = 50;
+          if (showPhoto && y + photoBoxSize > pageH - 20) { doc.addPage(); y = 18; }
+          const boxX = marginL;
+          const boxY = y;
+
+          if (showPhoto) {
+            doc.setFillColor(...grayLight);
+            doc.roundedRect(boxX, boxY, photoBoxSize, photoBoxSize, 2, 2, 'F');
+            doc.setDrawColor(...navy);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(boxX, boxY, photoBoxSize, photoBoxSize, 2, 2, 'S');
+            const inset = 2;
+            const scale = Math.min((photoBoxSize - inset * 2) / photo.width, (photoBoxSize - inset * 2) / photo.height);
+            const drawW = photo.width * scale;
+            const drawH = photo.height * scale;
+            doc.addImage(photo.dataUrl, boxX + (photoBoxSize - drawW) / 2, boxY + (photoBoxSize - drawH) / 2, drawW, drawH);
+          }
+
+          if (identityRows.length) {
+            addAutoTable(
+              ['Field', 'Value'],
+              identityRows.map(([key, label]) => [label, String(profileIdentityValue(key, orchid))]),
+              showPhoto ? boxX + photoBoxSize + 8 : marginL
+            );
+            if (showPhoto) y = Math.max(y, boxY + photoBoxSize + 10);
+          } else {
+            y = boxY + photoBoxSize + 10;
+          }
+        }
+
+        const sightingGroups = SPECIES_PROFILE_FIELD_GROUPS.filter((g) => g.kind === 'sightings');
+        const anyActiveSightingField = sightingGroups.some((g) => g.fields.some(([key]) => fields[key]));
+
+        if (anyActiveSightingField) {
+          sectionHeading(`Field Sightings (${sightings.length} approved)`);
+          if (!sightings.length) {
+            doc.setFontSize(9); doc.setTextColor(...gray); doc.setFont('helvetica', 'italic');
+            doc.text(`No approved field sightings on file for ${orchidName}.`, marginL, y);
+            y += 8;
+          } else {
+            // One record card per sighting (heading + a small Field/Value table
+            // per active group) instead of one wide table per group across every
+            // sighting — with up to ~50 selectable fields across 9 groups, a
+            // columnar table would need that many columns per row, which is
+            // unreadable at any page size. A vertical card per sighting scales
+            // to however many fields are checked and mirrors how the submission
+            // form itself presents one field group per page.
+            sightings.forEach((s, i) => {
+              sightingHeading(i + 1, sightings.length, s);
+              sightingGroups.forEach((group) => {
+                const activeFields = group.fields.filter(([key]) => fields[key]);
+                if (!activeFields.length) return;
+                subLabel(group.label.replace(/^Sightings: /, ''));
+                addAutoTable(
+                  ['Field', 'Value'],
+                  activeFields.map(([key, label]) => [label, String(SPECIES_PROFILE_SIGHTING_ACCESSORS[key](s))])
+                );
+              });
+            });
+          }
+        }
+
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let p = 1; p <= totalPages; p++) {
+          doc.setPage(p);
+          doc.setFontSize(7);
+          doc.setTextColor(...gray);
+          doc.setFont('helvetica', 'normal');
+          if (p === totalPages) {
+            doc.text(`BLOOM – Species Profile: ${orchidName}`, marginL, pageH - 8);
+            doc.text(`Page ${p} of ${totalPages}`, pageW - marginR, pageH - 8, { align: 'right' });
+            doc.setDrawColor(...navy);
+            doc.setLineWidth(0.3);
+            doc.line(marginL, pageH - 12, pageW - marginR, pageH - 12);
+          }
+        }
+
+        doc.save(`${fileNameBase}.pdf`);
       }
 
       function showReportToast(message, type) {
