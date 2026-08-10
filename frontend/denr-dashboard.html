@@ -5477,12 +5477,18 @@
         return data?.publicUrl || null;
       }
 
-      // Mirrors the catalog's thumbnail priority: seed photo by species/genus, then the DB image_url.
+      // orchid.image_url (DENR's actual published thumbnail) must win over the
+      // hardcoded seed placeholder photos — same priority fix as the catalog
+      // grid (see renderOrchidCatalog). The seed map only covers ~10 demo
+      // genera and those files aren't guaranteed to exist in storage, so
+      // checking it first was showing "No photo available" for almost every
+      // orchid that actually has a real published photo.
       function m3dResolveOrchidPhoto(row) {
+        if (row.image_url) return row.image_url;
         const sciName = (row.name || '').toLowerCase().trim();
         const genus = sciName.split(' ')[0];
         const seedFile = M3D_SEED_CLOSEUP_MAP[sciName] || M3D_SEED_CLOSEUP_MAP[genus];
-        return (seedFile && m3dResolveSeedPhotoUrl(seedFile)) || row.image_url || null;
+        return (seedFile && m3dResolveSeedPhotoUrl(seedFile)) || null;
       }
 
       async function loadModel3DOrchidOptions() {
