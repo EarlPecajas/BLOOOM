@@ -134,6 +134,8 @@
       .odm-breadcrumb{font-size:.72rem;color:#5a8a54;font-style:italic;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
       .odm-close-btn{background:#fff;border:1.5px solid #c8ddc5;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:#3e6639;flex-shrink:0;transition:background .15s,border-color .15s,transform .15s;}
       .odm-close-btn:hover{background:#e8f3e6;border-color:#a8c9a2;transform:rotate(90deg);}
+      .odm-edit-request-btn{background:#fff;border:1.5px solid #c8ddc5;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#145A1E;flex-shrink:0;transition:background .15s,border-color .15s;}
+      .odm-edit-request-btn:hover{background:#e8f3e6;border-color:#a8c9a2;}
       .odm-sighting-bar{display:flex;align-items:center;gap:.45rem;padding:.55rem 1.1rem;background:linear-gradient(90deg,#f2f9f0,#fff);border-bottom:1px solid #e4ede3;font-size:.84rem;color:#162b14;flex-shrink:0;}
       .odm-sighting-bar b{color:#145A1E;font-weight:800;}
       .odm-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem;border-bottom:1.5px solid #d8ecd6;flex-shrink:0;background:#fff;padding:.5rem .5rem 0;}
@@ -174,8 +176,6 @@
       .odm-sighting-item-hd{display:flex;align-items:center;justify-content:space-between;padding:0 1rem .3rem;}
       .odm-sighting-item-num{font-weight:800;color:#145A1E;font-size:.88rem;}
       .odm-sighting-item-date{font-size:.76rem;color:#5a8a54;font-weight:600;}
-      .odm-edit-request-btn{width:22px;height:22px;border-radius:6px;border:none;background:#E8F5E3;color:#145A1E;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;}
-      .odm-edit-request-btn:hover{background:#d3ecc9;}
       .odm-sighting-item-subhd{font-size:.8rem;font-weight:800;color:#12321a;margin:.85rem 1rem .5rem;padding-left:.65rem;border-left:3px solid #145A1E;}
       .odm-contributor-card{background:#E8F5E3;border-radius:14px;overflow:hidden;margin:.4rem 1rem .8rem;}
       .odm-contributor-card-hd{background:#0D530E;color:#fff;font-weight:700;font-size:.74rem;padding:.55rem .9rem;}
@@ -280,6 +280,9 @@
         <!-- Breadcrumb + close -->
         <div class="odm-topbar">
           <span class="odm-breadcrumb" id="odm-breadcrumb"><i>Orchidaceae</i></span>
+          <button type="button" class="odm-edit-request-btn" id="odm-edit-request-btn" title="Ask DENR to edit your submitted sighting" aria-label="Ask DENR to edit your submitted sighting" hidden onclick="openEditRequestModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
           <button type="button" class="odm-close-btn" id="orchid-detail-close-btn" aria-label="Close">&times;</button>
         </div>
 
@@ -365,15 +368,17 @@
 
     <!-- ── Edit Request Modal (researcher asks DENR to edit their own sighting) ── -->
     <div id="edit-request-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
-      <div style="background:#FFFFFF;border-radius:16px;width:min(440px,92vw);max-height:90vh;overflow-y:auto;padding:1.75rem 1.75rem 1.5rem;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.25);">
+      <div style="background:#FFFFFF;border-radius:16px;width:min(620px,94vw);max-height:90vh;overflow-y:auto;padding:1.75rem 1.75rem 1.5rem;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.25);">
         <button type="button" title="Close" aria-label="Close" onclick="closeEditRequestModal()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:#888;padding:0.2rem 0.4rem;">&times;</button>
-        <h2 style="color:#145A1E;font-size:1.15rem;font-weight:700;margin:0 0 .4rem;">Ask DENR to edit this record</h2>
-        <p style="color:#5a8a54;font-size:.85rem;margin:0 0 1rem;">Describe what needs to change. DENR will review your request and, if approved, send this sighting back to you for revision.</p>
-        <textarea id="editRequestReason" rows="4" placeholder="e.g. The elevation reading was recorded incorrectly and needs to be corrected." style="width:100%;border:1px solid #d8e6d4;border-radius:10px;padding:.65rem .8rem;font:inherit;font-size:.85rem;resize:vertical;box-sizing:border-box;"></textarea>
+        <h2 style="color:#145A1E;font-size:1.15rem;font-weight:700;margin:0 0 .4rem;">Edit your sighting</h2>
+        <p style="color:#5a8a54;font-size:.85rem;margin:0 0 1rem;">Change any fields below, then submit. DENR reviews only what you changed and, once approved, it's applied directly to your published record.</p>
+        <div id="editRequestFormFields" style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem .8rem;"></div>
+        <label style="display:block;font-size:.78rem;font-weight:700;color:#3a4a3a;margin:1rem 0 .3rem;">Additional notes for DENR (optional)</label>
+        <textarea id="editRequestReason" rows="2" placeholder="Anything else DENR should know about this edit." style="width:100%;border:1px solid #d8e6d4;border-radius:10px;padding:.55rem .7rem;font:inherit;font-size:.82rem;resize:vertical;box-sizing:border-box;"></textarea>
         <div id="editRequestError" style="display:none;color:#b42318;font-size:.78rem;margin-top:.5rem;"></div>
         <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.25rem;">
           <button type="button" onclick="closeEditRequestModal()" style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid #d8e6d4;background:#fff;color:#3a4a3a;font-weight:600;font-size:.85rem;cursor:pointer;">Cancel</button>
-          <button type="button" onclick="submitEditRequest()" style="padding:.55rem 1.1rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">Send Request</button>
+          <button type="button" onclick="submitEditRequest()" style="padding:.55rem 1.1rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">Send to DENR</button>
         </div>
       </div>
     </div>
@@ -1202,13 +1207,103 @@
 
       // sighting_id values (from species_sightings, same as public_approved_sightings.id)
       // that belong to the logged-in researcher, for the currently-open species —
-      // recomputed each time the page loads. Drives the edit-request pencil icon.
+      // recomputed each time the page loads. Drives the top-right edit-request icon.
       var odmMySightingIds = new Set();
+      var odmCurrentAllSightings = [];
+      var odmEditRequestSightingId = null; // which owned sighting the edit-request icon targets
       let currentDetailUser = null; // { id, email } of the logged-in user, if any
 
+      // Shows the top-right "request an edit" icon only if the researcher
+      // owns at least one sighting of this species — prefers the currently
+      // active (pin-clicked) sighting if they own it, otherwise their first one.
+      function odmUpdateEditRequestButton(allSightings) {
+        var btn = document.getElementById('odm-edit-request-btn');
+        if (!btn) return;
+        if (!odmMySightingIds.size) {
+          odmEditRequestSightingId = null;
+          btn.hidden = true;
+          return;
+        }
+        var active = allSightings[odmActiveSightingIndex];
+        odmEditRequestSightingId = (active && odmMySightingIds.has(active.id))
+          ? active.id
+          : Array.from(odmMySightingIds)[0];
+        btn.hidden = false;
+      }
+
+      // Fields shown in the detail view's Sightings tab that a researcher can
+      // propose edits to. Kept to what's actually displayed there rather than
+      // every field in the full 9-page submission wizard.
+      var EDIT_REQUEST_FIELDS = [
+        { key: 'observation_date', label: 'Observation Date', type: 'date' },
+        { key: 'observation_time', label: 'Time of Observation', type: 'time' },
+        { key: 'collection_method', label: 'Collection Method', type: 'text' },
+        { key: 'observation_type', label: 'Observation Type', type: 'text' },
+        { key: 'voucher_collected', label: 'Voucher Specimen Collected', type: 'yesno' },
+        { key: 'specific_site_zone', label: 'Altitude Zone', type: 'text' },
+        { key: 'specific_site_other', label: 'Specific Site', type: 'text' },
+        { key: 'elevation_meters', label: 'Elevation (m)', type: 'number' },
+        { key: 'habitat_type', label: 'Habitat Type', type: 'text' },
+        { key: 'microhabitat', label: 'Microhabitat', type: 'text' },
+        { key: 'growth_substrate', label: 'Growth Substrate', type: 'text' },
+        { key: 'host_tree_species', label: 'Host Tree Species', type: 'text' },
+        { key: 'host_tree_dbh_cm', label: 'Host Tree Diameter (cm)', type: 'number' },
+        { key: 'canopy_cover_percent', label: 'Canopy Cover (%)', type: 'number' },
+        { key: 'light_exposure', label: 'Light Exposure', type: 'text' },
+        { key: 'soil_type', label: 'Soil Type', type: 'text' },
+        { key: 'nearby_water_source', label: 'Nearby Water Source', type: 'text' },
+        { key: 'population_status', label: 'Population Status', type: 'text' },
+        { key: 'threat_level', label: 'Threat Level', type: 'text' },
+        { key: 'researcher_notes', label: 'Researcher Notes', type: 'textarea', span: 2 }
+      ];
+
+      function editRequestFieldInputHtml(field, value) {
+        var id = 'editreq-' + field.key;
+        var common = 'style="width:100%;border:1px solid #d8e6d4;border-radius:8px;padding:.45rem .6rem;font:inherit;font-size:.82rem;box-sizing:border-box;"';
+        if (field.type === 'yesno') {
+          var v = value === true ? 'yes' : (value === false ? 'no' : '');
+          return '<select id="' + id + '" ' + common + '>' +
+            '<option value=""' + (v === '' ? ' selected' : '') + '>Unknown</option>' +
+            '<option value="yes"' + (v === 'yes' ? ' selected' : '') + '>Yes</option>' +
+            '<option value="no"' + (v === 'no' ? ' selected' : '') + '>No</option>' +
+            '</select>';
+        }
+        if (field.type === 'textarea') {
+          return '<textarea id="' + id + '" rows="3" ' + common + '>' + escapeHtml(value == null ? '' : String(value)) + '</textarea>';
+        }
+        var inputType = field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : (field.type === 'time' ? 'time' : 'text'));
+        var val = value == null ? '' : String(value);
+        if (field.type === 'time' && val.length > 5) val = val.slice(0, 5); // HH:MM:SS -> HH:MM for <input type=time>
+        return '<input id="' + id + '" type="' + inputType + '" value="' + escapeHtml(val) + '" ' + common + ' />';
+      }
+
+      function odmBuildEditRequestForm(sighting) {
+        var container = document.getElementById('editRequestFormFields');
+        container.innerHTML = EDIT_REQUEST_FIELDS.map(function(field) {
+          var spanStyle = field.span === 2 ? 'grid-column:1 / -1;' : '';
+          return '<div style="' + spanStyle + '">' +
+            '<label for="editreq-' + field.key + '" style="display:block;font-size:.72rem;font-weight:700;color:#3a4a3a;margin-bottom:.25rem;">' + escapeHtml(field.label) + '</label>' +
+            editRequestFieldInputHtml(field, sighting[field.key]) +
+            '</div>';
+        }).join('');
+      }
+
+      function editRequestFieldCurrentValue(field) {
+        var el = document.getElementById('editreq-' + field.key);
+        if (!el) return null;
+        var raw = el.value;
+        if (field.type === 'yesno') return raw === 'yes' ? true : (raw === 'no' ? false : null);
+        if (field.type === 'number') return raw === '' ? null : Number(raw);
+        return raw === '' ? null : raw;
+      }
+
       var editRequestTargetId = null;
-      function openEditRequestModal(sightingId) {
-        editRequestTargetId = sightingId;
+      var editRequestOriginalSighting = null;
+      function openEditRequestModal() {
+        if (!odmEditRequestSightingId) return;
+        editRequestTargetId = odmEditRequestSightingId;
+        editRequestOriginalSighting = (odmCurrentAllSightings || []).find(function(s) { return s.id === editRequestTargetId; }) || {};
+        odmBuildEditRequestForm(editRequestOriginalSighting);
         var modal = document.getElementById('edit-request-modal');
         var reasonEl = document.getElementById('editRequestReason');
         var errEl = document.getElementById('editRequestError');
@@ -1220,23 +1315,38 @@
         var modal = document.getElementById('edit-request-modal');
         if (modal) modal.style.display = 'none';
         editRequestTargetId = null;
+        editRequestOriginalSighting = null;
       }
       async function submitEditRequest() {
-        var reason = (document.getElementById('editRequestReason')?.value || '').trim();
         var errEl = document.getElementById('editRequestError');
-        if (!reason) {
-          if (errEl) { errEl.textContent = 'Please describe what needs to change.'; errEl.style.display = 'block'; }
+        if (!currentDetailUser || !window.bloomSupabase || !editRequestTargetId || !editRequestOriginalSighting) return;
+
+        var proposedChanges = {};
+        EDIT_REQUEST_FIELDS.forEach(function(field) {
+          var newVal = editRequestFieldCurrentValue(field);
+          var oldVal = editRequestOriginalSighting[field.key];
+          oldVal = (oldVal === undefined || oldVal === '') ? null : oldVal;
+          var changed = field.type === 'number'
+            ? Number(oldVal) !== Number(newVal) && !(oldVal == null && newVal == null)
+            : String(oldVal == null ? '' : oldVal) !== String(newVal == null ? '' : newVal);
+          if (changed) proposedChanges[field.key] = newVal;
+        });
+
+        if (!Object.keys(proposedChanges).length) {
+          if (errEl) { errEl.textContent = 'Change at least one field before submitting.'; errEl.style.display = 'block'; }
           return;
         }
-        if (!currentDetailUser || !window.bloomSupabase || !editRequestTargetId) return;
+
+        var reason = (document.getElementById('editRequestReason')?.value || '').trim();
         try {
           const { error } = await window.bloomSupabase.from('catalog_edit_requests').insert({
             sighting_id: editRequestTargetId,
             researcher_email: currentDetailUser.email,
-            reason: reason
+            reason: reason || null,
+            proposed_changes: proposedChanges
           });
           if (error) throw error;
-          if (errEl) { errEl.style.color = '#145A1E'; errEl.textContent = 'Request sent to DENR.'; errEl.style.display = 'block'; }
+          if (errEl) { errEl.style.color = '#145A1E'; errEl.textContent = 'Sent to DENR for review.'; errEl.style.display = 'block'; }
           setTimeout(closeEditRequestModal, 1100);
         } catch (e) {
           if (errEl) { errEl.textContent = 'Failed to send request: ' + (e.message || e); errEl.style.display = 'block'; }
@@ -1435,19 +1545,11 @@
         var contributorsSection = odmHiddenFields.has('team') ? '' :
           '<div class="odm-section"><div class="odm-section-title">Contributors</div>' + odmContributorsHtml(s) + '</div>';
 
-        var isMine = odmMySightingIds.has(s.id);
-        var editRequestBtn = isMine
-          ? '<button type="button" class="odm-edit-request-btn" title="Ask DENR to edit this record" aria-label="Ask DENR to edit this record" onclick="openEditRequestModal(' + s.id + ')">' +
-            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-            '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>' +
-            '</svg></button>'
-          : '';
-
         el.innerHTML =
           '<div class="odm-sighting-item" id="odm-sighting-item-' + i + '">' +
             '<div class="odm-sighting-item-hd">' +
               '<span class="odm-sighting-item-num">Sighting #' + (i+1) + '</span>' +
-              '<span style="display:flex;align-items:center;gap:.5rem;">' + editRequestBtn + '<span class="odm-sighting-item-date">' + date + '</span></span>' +
+              '<span class="odm-sighting-item-date">' + date + '</span>' +
             '</div>' +
             odmSection('Recorded Sighting', recordedRows) +
             odmSection('Location', locationRows) +
@@ -1585,12 +1687,10 @@
           el.innerHTML = '<p class="odm-empty">No 3D model available for this species yet.</p>';
           return;
         }
-        var isAiGenerated = !!(orchid && (orchid.is_ai_generated || odmIsAiGeneratedModel(orchid.model_3d_url)));
-        var badgeHtml = isAiGenerated ? '<div class="odm-model3d-badge">AI Generated</div>' : '';
         el.innerHTML = '<div class="odm-model3d-wrap">' +
+          '<div class="odm-model3d-badge">AI Generated</div>' +
           '<model-viewer src="' + escapeHtml(orchid.model_3d_url) + '" camera-controls auto-rotate ' +
           'shadow-intensity="1" exposure="1" style="width:100%;height:100%;"></model-viewer>' +
-          badgeHtml +
           '<button type="button" class="odm-model3d-fs-btn" onclick="odmModel3DFullscreen(this)" ' +
           'title="View fullscreen" aria-label="View 3D model fullscreen">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">' +
@@ -1632,6 +1732,7 @@
         odmPopulateImages(orchid, allSightings);
         odmPopulateStudy(allSightings);
         odmPopulateModel3D(orchid);
+        odmUpdateEditRequestButton(allSightings);
         orchidDetailModal.hidden = false;
         document.body.style.overflow = 'hidden';
 
@@ -2649,10 +2750,10 @@
         currentOrchid = orchid;
         currentAllSightings = allSightings.map(normalizePublicSightingRow);
 
-        // Feature 4: figure out which of these sightings (if any) belong to
-        // the logged-in researcher, so the pencil "request an edit" icon
-        // only shows on their own sighting(s) — a species page can list
-        // sightings from many different researchers.
+        // Figure out which of these sightings (if any) belong to the
+        // logged-in researcher, so the top-right "request an edit" icon
+        // only shows when they actually have a sighting for this species —
+        // a species page can list sightings from many different researchers.
         odmMySightingIds = new Set();
         if (currentDetailUser && window.bloomSupabase && currentAllSightings.length) {
           try {
@@ -2668,6 +2769,7 @@
             }
           } catch (e) { console.warn('Edit-request ownership check failed:', e); }
         }
+        odmCurrentAllSightings = currentAllSightings;
 
         const src = currentAllSightings[0] || {};
         currentSrc = src;

@@ -640,17 +640,17 @@
           </span>
           <span>Submissions</span>
         </a>
-        <a href="#" class="sidebar-item" data-view="editrequests" id="sidebar-editrequests-item">
-          <span class="sidebar-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </span>
-          <span>Edit Requests</span>
-        </a>
         <a href="#" class="sidebar-item" data-view="model3d" id="sidebar-model3d-item">
           <span class="sidebar-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </span>
           <span>3D Image</span>
+        </a>
+        <a href="#" class="sidebar-item" data-view="collection3d" id="sidebar-collection3d-item">
+          <span class="sidebar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </span>
+          <span>3D Collection</span>
         </a>
       </nav>
       <div class="sidebar-bottom">
@@ -1595,6 +1595,7 @@
           <button class="sub-filter-btn" data-filter="pending"  style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Pending</button>
           <button class="sub-filter-btn" data-filter="approved" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Approved</button>
           <button class="sub-filter-btn" data-filter="revision" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">For Revision</button>
+          <button class="sub-filter-btn" data-filter="editrequests" id="denrsub-filter-editrequests" style="padding:0.48rem 1rem;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Edit Requests</button>
         </div>
         <div class="denrsub-search-wrap">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1736,33 +1737,6 @@
       </style>
     </div>
 
-    <!-- Edit Requests View -->
-    <div id="editrequests-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
-      <div style="margin-bottom:1.25rem;">
-        <h1 class="catalog-title">Edit Requests</h1>
-        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Researchers asking to edit a sighting they already submitted. Approving sends it back to them for revision.</p>
-      </div>
-
-      <div class="submissions-table-shell denrsub-table-shell" style="background:var(--dt-bg-input);border-radius:12px;padding:1.5rem;border:1px solid var(--dt-border-md);box-shadow:0 4px 14px rgba(0,0,0,.35);overflow-x:auto;">
-        <table class="submissions-table denrsub-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
-          <thead>
-            <tr class="submissions-table-head">
-              <th style="padding:1rem 0.95rem;text-align:left;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;">Researcher</th>
-              <th style="padding:1rem 0.95rem;text-align:left;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;">Species</th>
-              <th style="padding:1rem 0.95rem;text-align:left;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;">Reason</th>
-              <th style="padding:1rem 0.95rem;text-align:center;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;">Requested</th>
-              <th style="padding:1rem 0.95rem;text-align:center;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;">Status</th>
-              <th style="padding:1rem 0.95rem;text-align:center;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.04em;">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="editrequests-table-body">
-            <tr>
-              <td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Loading edit requests…</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
     <!-- 3D Image View -->
     <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
@@ -3956,9 +3930,9 @@
         sidebarModel3dItem.style.display = isResearcherRole ? 'none' : '';
       }
 
-      const sidebarEditRequestsItem = document.getElementById('sidebar-editrequests-item');
-      if (sidebarEditRequestsItem) {
-        sidebarEditRequestsItem.style.display = isResearcherRole ? 'none' : '';
+      const denrsubFilterEditRequests = document.getElementById('denrsub-filter-editrequests');
+      if (denrsubFilterEditRequests) {
+        denrsubFilterEditRequests.style.display = isResearcherRole ? 'none' : '';
       }
 
       if (isResearcherRole) {
@@ -5404,6 +5378,7 @@
           }
 
           submissionRows = rows.map(normalizeSubmissionRow);
+          if (isAdminRole) await loadEditRequestRows();
           applySubmissionsFilter();
         } catch {
           submissionsTableBody.innerHTML = `
@@ -6790,7 +6765,7 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             </button>
             <span class="orchid-status-pill" style="position:absolute;top:0.55rem;left:0.55rem;z-index:2;font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;padding:0.22rem 0.55rem;border-radius:999px;background:${pill.bg};color:${pill.color};border:1px solid ${pill.border};">${statusLabel}</span>
-            <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" />
+            <img src="${thumbnail}" alt="${orchid.name}" class="orchid-card-image" onerror="this.onerror=null;this.src='${orchidImage}';" />
             <div class="orchid-card-info">
               <p class="orchid-card-name scientific-name">${scientificNameCardHtml(orchid.name)}</p>
               <p class="orchid-card-genus">${orchid.common_name || ''}</p>
@@ -7026,6 +7001,17 @@
       function applySubmissionsFilter() {
         const searchVal = (document.getElementById('submissions-search-input')?.value || '').trim().toLowerCase();
         const statusFilter = activeStatusFilter || 'all';
+
+        if (statusFilter === 'editrequests') {
+          const filteredRequests = editRequestRows.filter(function(r) {
+            if (!searchVal) return true;
+            return [r._sighting?.scientific_name, r.researcher_email, r.status, r.reason]
+              .filter(Boolean).join(' ').toLowerCase().includes(searchVal);
+          });
+          renderEditRequestRows(filteredRequests);
+          return;
+        }
+
         const filtered = submissionRows.filter(function(s) {
           if (String(s.review_status || '').toLowerCase() === 'draft') return false;
           if (String(s.id || s.entry_id || '').startsWith('BLOOM-3D-')) return false;
@@ -7388,7 +7374,7 @@
       }
 
       function switchView(viewName) {
-        if (isResearcherRole && (viewName === 'report' || viewName === 'importexport' || viewName === 'editrequests')) {
+        if (isResearcherRole && (viewName === 'report' || viewName === 'importexport')) {
           viewName = 'orchids';
         }
 
@@ -7447,9 +7433,6 @@
           }
           if (viewName === 'submissions') {
             loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
-          }
-          if (viewName === 'editrequests') {
-            loadEditRequestsTable();
           }
           if (viewName === 'importexport') {
             initImportExportView();
@@ -7962,81 +7945,162 @@
         }
       }
 
-      // ── Edit Requests (researchers asking to edit an already-submitted sighting) ──
-      async function loadEditRequestsTable() {
-        const tbody = document.getElementById('editrequests-table-body');
-        if (!tbody || !bloomSupabase) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">Loading edit requests…</td></tr>';
+      // ── Edit Requests (researchers proposing field edits to an already-
+      // submitted, possibly already-published sighting) — folded into the
+      // Submissions toolbar as a filter tab rather than a separate page, so
+      // it looks and behaves like reviewing any other orchid submission. ──
+      let editRequestRows = [];
+
+      const EDIT_REQUEST_FIELD_LABELS = {
+        observation_date: 'Observation Date', observation_time: 'Time of Observation',
+        collection_method: 'Collection Method', observation_type: 'Observation Type',
+        voucher_collected: 'Voucher Specimen Collected', specific_site_zone: 'Altitude Zone',
+        specific_site_other: 'Specific Site', elevation_meters: 'Elevation (m)',
+        habitat_type: 'Habitat Type', microhabitat: 'Microhabitat', growth_substrate: 'Growth Substrate',
+        host_tree_species: 'Host Tree Species', host_tree_dbh_cm: 'Host Tree Diameter (cm)',
+        canopy_cover_percent: 'Canopy Cover (%)', light_exposure: 'Light Exposure', soil_type: 'Soil Type',
+        nearby_water_source: 'Nearby Water Source', population_status: 'Population Status',
+        threat_level: 'Threat Level', researcher_notes: 'Researcher Notes'
+      };
+
+      function editRequestDisplayValue(v) {
+        if (v === null || v === undefined || v === '') return '—';
+        if (v === true) return 'Yes';
+        if (v === false) return 'No';
+        return String(v);
+      }
+
+      async function loadEditRequestRows() {
+        if (!bloomSupabase) return;
         try {
           const { data: requests, error } = await bloomSupabase
-            .from('catalog_edit_requests')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .from('catalog_edit_requests').select('*').order('created_at', { ascending: false });
           if (error) throw error;
           const rows = requests || [];
-          if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">No edit requests yet.</td></tr>';
-            return;
-          }
-
           const sightingIds = [...new Set(rows.map((r) => r.sighting_id).filter((v) => v != null))];
-          let speciesById = {};
+          let sightingById = {};
           if (sightingIds.length) {
             const { data: sightings } = await bloomSupabase
-              .from('species_sightings')
-              .select('sighting_id, scientific_name')
-              .in('sighting_id', sightingIds);
-            (sightings || []).forEach((s) => { speciesById[s.sighting_id] = s.scientific_name; });
+              .from('species_sightings').select('*').in('sighting_id', sightingIds);
+            (sightings || []).forEach((s) => { sightingById[s.sighting_id] = s; });
           }
+          editRequestRows = rows.map((r) => ({ ...r, _sighting: sightingById[r.sighting_id] || null }));
+        } catch (e) {
+          console.warn('loadEditRequestRows failed:', e);
+          editRequestRows = [];
+        }
+      }
 
-          tbody.innerHTML = rows.map((r) => {
-            const species = escapeHtml(speciesById[r.sighting_id] || '—');
-            const email = escapeHtml(r.researcher_email || '');
-            const reason = escapeHtml(r.reason || '');
-            const status = String(r.status || 'pending').toLowerCase();
-            const badgeClass = status === 'approved' ? 'status-approved' : status === 'denied' ? 'status-rejected' : 'status-pending';
-            const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-            const finalized = status !== 'pending';
-            const finalizedAttr = finalized ? 'disabled aria-disabled="true"' : '';
-            return `
-              <tr class="submission-row">
-                <td class="submission-researcher-cell" style="font-size:0.83rem;">${email}</td>
-                <td class="submission-researcher-cell" style="font-size:0.83rem;font-style:italic;">${species}</td>
-                <td class="submission-researcher-cell" style="font-size:0.83rem;max-width:280px;">${reason}</td>
-                <td style="text-align:center;font-size:0.83rem;">${dateStr}</td>
-                <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${escapeHtml(status.charAt(0).toUpperCase() + status.slice(1))}</span></td>
-                <td style="text-align:center;white-space:nowrap;">
-                  <button type="button" class="sub-action-btn approve" title="${finalized ? 'Already reviewed' : 'Approve — send back to researcher for revision'}" ${finalizedAttr} onclick="approveEditRequest(${r.id}, ${r.sighting_id})">
+      function renderEditRequestRows(items) {
+        if (!submissionsTableBody) return;
+        if (!items.length) {
+          submissionsTableBody.innerHTML = `
+            <tr><td colspan="6" style="padding:1.2rem;color:#666;text-align:center;">No edit requests matched your search.</td></tr>
+          `;
+          return;
+        }
+        submissionsTableBody.innerHTML = items.map((r) => {
+          const species = escapeHtml(r._sighting?.scientific_name || '—');
+          const safeEmail = escapeHtml(r.researcher_email || '');
+          const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+          const status = String(r.status || 'pending').toLowerCase();
+          const badgeClass = status === 'approved' ? 'status-approved' : status === 'denied' ? 'status-rejected' : 'status-pending';
+          const finalized = status !== 'pending';
+          const finalizedAttr = finalized ? 'disabled aria-disabled="true"' : '';
+          const changeCount = Object.keys(r.proposed_changes || {}).length;
+          return `
+            <tr class="submission-row">
+              <td class="submission-researcher-cell">
+                <div class="denrsub-researcher-cell">
+                  <span class="denrsub-avatar">${getInitialsFromName(r.researcher_email)}</span>
+                  <span>${safeEmail}</span>
+                </div>
+              </td>
+              <td class="submission-researcher-cell" style="font-size:0.83rem;">
+                <div class="denrsub-cell-icon-row">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 6 12 13 22 6"/></svg>
+                  <span>${safeEmail}</span>
+                </div>
+              </td>
+              <td class="submission-species-cell"><span class="scientific-name">${species}</span></td>
+              <td class="submission-date-cell">
+                <div class="denrsub-cell-icon-row">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span>${dateStr}</span>
+                </div>
+              </td>
+              <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${escapeHtml(status.charAt(0).toUpperCase() + status.slice(1))}</span></td>
+              <td class="submission-action-cell" style="white-space:nowrap;">
+                <div class="denrsub-actions-cluster">
+                  <button type="button" class="sub-action-btn view" title="View ${changeCount} changed field${changeCount !== 1 ? 's' : ''}" onclick="openEditRequestDiffModal(${r.id})"></button>
+                  <button type="button" class="sub-action-btn approve" title="${finalized ? 'Already reviewed' : 'Approve & apply'}" ${finalizedAttr} onclick="approveEditRequestDirect(${r.id})">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </button>
                   <button type="button" class="sub-action-btn reject" title="${finalized ? 'Already reviewed' : 'Deny'}" ${finalizedAttr} onclick="denyEditRequest(${r.id})">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
-                </td>
-              </tr>`;
-          }).join('');
-        } catch (e) {
-          tbody.innerHTML = '<tr><td colspan="6" style="padding:1.2rem;color:#dc2626;text-align:center;">Could not load edit requests.</td></tr>';
-          console.warn('loadEditRequestsTable failed:', e);
-        }
+                </div>
+              </td>
+            </tr>`;
+        }).join('');
       }
 
-      // Approving reuses the existing pre-publish revision mechanism: the
-      // target sighting's review_status flips to 'revision' with the
-      // researcher's stated reason as review_notes, which pulls it out of
-      // the public catalog and lets them resubmit it through the normal
-      // "for revision" flow (which now jumps straight to the last page).
-      async function approveEditRequest(requestId, sightingId) {
-        if (!isAdminRole || !bloomSupabase) return;
-        try {
-          const { data: reqRow, error: reqErr } = await bloomSupabase
-            .from('catalog_edit_requests').select('reason').eq('id', requestId).single();
-          if (reqErr) throw reqErr;
+      function openEditRequestDiffModal(requestId) {
+        const r = editRequestRows.find((row) => row.id === requestId);
+        if (!r) return;
+        const changes = r.proposed_changes || {};
+        const keys = Object.keys(changes);
+        const rowsHtml = keys.length ? keys.map((key) => {
+          const label = EDIT_REQUEST_FIELD_LABELS[key] || key;
+          const oldVal = editRequestDisplayValue(r._sighting ? r._sighting[key] : null);
+          const newVal = editRequestDisplayValue(changes[key]);
+          return `<tr>
+            <td style="padding:.5rem .7rem;font-size:.82rem;font-weight:600;color:#3a4a3a;border-bottom:1px solid #eef2ef;">${escapeHtml(label)}</td>
+            <td style="padding:.5rem .7rem;font-size:.82rem;color:#a33;text-decoration:line-through;border-bottom:1px solid #eef2ef;">${escapeHtml(oldVal)}</td>
+            <td style="padding:.5rem .7rem;font-size:.82rem;color:#15803d;font-weight:600;border-bottom:1px solid #eef2ef;">${escapeHtml(newVal)}</td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="3" style="padding:1rem;text-align:center;color:#666;">No field changes recorded.</td></tr>`;
 
+        const finalized = String(r.status || 'pending').toLowerCase() !== 'pending';
+        const modal = document.createElement('div');
+        modal.id = 'edit-request-diff-modal';
+        modal.style.cssText = 'position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = `
+          <div style="background:#fff;border-radius:14px;width:min(640px,94vw);max-height:88vh;overflow-y:auto;padding:1.6rem;position:relative;box-shadow:0 16px 50px rgba(0,0,0,.3);">
+            <button type="button" onclick="document.getElementById('edit-request-diff-modal').remove()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button>
+            <h2 style="margin:0 0 .2rem;color:#145A1E;font-size:1.1rem;">${escapeHtml(r._sighting?.scientific_name || 'Sighting')} — proposed edit</h2>
+            <p style="margin:0 0 1rem;color:#666;font-size:.82rem;">From ${escapeHtml(r.researcher_email || '')}${r.reason ? ' — "' + escapeHtml(r.reason) + '"' : ''}</p>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr>
+                <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Field</th>
+                <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Current</th>
+                <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Proposed</th>
+              </tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+            <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.25rem;">
+              <button type="button" onclick="document.getElementById('edit-request-diff-modal').remove()" style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid #d8e6d4;background:#fff;color:#3a4a3a;font-weight:600;font-size:.85rem;cursor:pointer;">Close</button>
+              ${finalized ? '' : `
+              <button type="button" onclick="denyEditRequest(${r.id});document.getElementById('edit-request-diff-modal').remove();" style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid #fca5a5;background:#fff1f2;color:#dc2626;font-weight:600;font-size:.85rem;cursor:pointer;">Deny</button>
+              <button type="button" onclick="approveEditRequestDirect(${r.id});document.getElementById('edit-request-diff-modal').remove();" style="padding:.55rem 1.1rem;border-radius:8px;border:none;background:#145A1E;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">Approve & Apply</button>
+              `}
+            </div>
+          </div>`;
+        document.body.appendChild(modal);
+      }
+
+      // Approving applies the proposed field values directly to
+      // species_sightings — no revision-flow detour, no unpublishing —
+      // since DENR already reviewed the exact before/after values.
+      async function approveEditRequestDirect(requestId) {
+        if (!isAdminRole || !bloomSupabase) return;
+        const r = editRequestRows.find((row) => row.id === requestId);
+        if (!r) return;
+        const changes = r.proposed_changes || {};
+        if (!Object.keys(changes).length) { showToast('No field changes to apply.', true); return; }
+        try {
           const { error: sightingErr } = await bloomSupabase
-            .from('species_sightings')
-            .update({ review_status: 'revision', review_notes: reqRow?.reason || 'Edit requested by researcher.', updated_at: new Date().toISOString() })
-            .eq('sighting_id', sightingId);
+            .from('species_sightings').update(changes).eq('sighting_id', r.sighting_id);
           if (sightingErr) throw sightingErr;
 
           const { error: reqUpdateErr } = await bloomSupabase
@@ -8045,8 +8109,9 @@
             .eq('id', requestId);
           if (reqUpdateErr) throw reqUpdateErr;
 
-          showToast('Approved — sighting sent back to the researcher for revision.');
-          loadEditRequestsTable();
+          showToast('Approved — changes applied to the published record.');
+          await loadEditRequestRows();
+          if (activeStatusFilter === 'editrequests') applySubmissionsFilter();
         } catch (e) {
           showToast('Failed to approve: ' + (e.message || e), true);
         }
@@ -8061,7 +8126,8 @@
             .eq('id', requestId);
           if (error) throw error;
           showToast('Edit request denied.');
-          loadEditRequestsTable();
+          await loadEditRequestRows();
+          if (activeStatusFilter === 'editrequests') applySubmissionsFilter();
         } catch (e) {
           showToast('Failed to deny: ' + (e.message || e), true);
         }
