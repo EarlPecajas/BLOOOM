@@ -211,42 +211,17 @@ function setupRealtimeNotifications(user) {
   if (!window.bloomSupabase) return;
   const email = String(user?.email || '').trim().toLowerCase();
 
-  // Helper to safely call the page-level loader if available
-  async function triggerLoad(rec) {
-    try {
-      // Prefer direct badge update for immediate feedback
-      const emailFromRec = String(rec?.researcher_email || '').trim().toLowerCase();
-      const targetEmail = emailFromRec || String(user?.email || '').trim().toLowerCase();
-      await updateNotificationBadge(targetEmail);
-      // Also call full loader if present
-      if (typeof loadNotifItems === 'function') loadNotifItems();
-    } catch (_) {
-      try { if (typeof loadNotifItems === 'function') loadNotifItems(); } catch (_) {}
-    }
+  // Each page (denr-dashboard.html / researcher-dashboard.html) defines its
+  // own loadNotifItems() that queries, renders, and sets the badge — that's
+  // the single source of truth (it also respects each notification
+  // category's read/unread state). This just triggers it: once right away
+  // (this used to be a blind setTimeout(800) on each page hoping auth had
+  // resolved by then, which is why the badge could sit empty/stale until
+  // the bell was clicked by hand) and again on every relevant DB change.
+  function triggerLoad() {
+    try { if (typeof loadNotifItems === 'function') loadNotifItems(); } catch (_) {}
   }
-
-  // Query DB for counts and immediately update the badge and card
-  async function updateNotificationBadge(email) {
-    try {
-      if (!window.bloomSupabase) return;
-      let query = bloomSupabase.from('species_sightings').select('review_status, created_at');
-      if (email) query = query.eq('researcher_email', email);
-      query = query.neq('review_status', 'draft');
-      const { data } = await query;
-      const rows = Array.isArray(data) ? data : [];
-      const pending  = rows.filter(s => s.review_status === 'pending').length;
-      const approved = rows.filter(s => s.review_status === 'approved').length;
-      const rejected = rows.filter(s => s.review_status === 'rejected').length;
-      const revision = rows.filter(s => s.review_status === 'revision').length;
-      const late     = rows.filter(isLateSightingRow).length;
-      const urgentCount = revision + rejected;
-      const badge = document.getElementById('notif-badge');
-      if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
-      try { updateNotifCard(pending, approved, rejected, revision, late); } catch (_) {}
-    } catch (err) {
-      // ignore errors
-    }
-  }
+  triggerLoad();
 
   try {
     // Newer Supabase client API: channel().on('postgres_changes', ...).subscribe()

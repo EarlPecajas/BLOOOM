@@ -7822,12 +7822,14 @@ function refreshConservationHeatMap(summary) {
         if (panel && btn && !panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) panel.hidden = true;
       });
 
+      // The real trigger is setupRealtimeNotifications() in dashboard-shared.js,
+      // called the moment initializeResearcherAuth() resolves the user — that
+      // used to be guessed at with a blind setTimeout(800) here, which is
+      // exactly why the badge could sit empty until the bell was clicked by
+      // hand on a slow auth check. This is just a cheap early paint for the
+      // rare case auth already resolved before DOMContentLoaded fires.
       document.addEventListener('DOMContentLoaded', function() {
-        if (window.bloomSupabase) {
-          setTimeout(function() {
-            if (String(window.parsedActiveUser?.email || '').trim()) loadNotifItems();
-          }, 800);
-        }
+        if (window.bloomSupabase && String(parsedActiveUser?.email || '').trim()) loadNotifItems();
       });
     </script>
 
