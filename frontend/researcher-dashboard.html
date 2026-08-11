@@ -1375,10 +1375,18 @@
         <h1 class="catalog-title" style="margin:0;">My Submissions</h1>
       </div>
       <div id="submissions-admin-panel">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
-        <input id="submissions-search-input" type="text" placeholder="Search submissions details..." style="width:min(420px,100%);padding:0.75rem 0.9rem;border:1px solid #d3ddd5;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:#fff;" />
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <div id="submissions-filter-tabs" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button type="button" class="sub-filter-btn sub-filter-active" data-filter="all" style="padding:0.48rem 1rem;border:1.5px solid;border-radius:999px;font-size:0.84rem;font-weight:700;cursor:pointer;transition:all 160ms;">All</button>
+          <button type="button" class="sub-filter-btn" data-filter="pending" style="padding:0.48rem 1rem;border:1.5px solid;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Pending</button>
+          <button type="button" class="sub-filter-btn" data-filter="approved" style="padding:0.48rem 1rem;border:1.5px solid;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Approved</button>
+          <button type="button" class="sub-filter-btn" data-filter="revision" style="padding:0.48rem 1rem;border:1.5px solid;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Need Revision</button>
+          <button type="button" class="sub-filter-btn" data-filter="rejected" style="padding:0.48rem 1rem;border:1.5px solid;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Rejected</button>
+          <button type="button" class="sub-filter-btn" data-filter="editrequests" style="padding:0.48rem 1rem;border:1.5px solid;border-radius:999px;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all 160ms;">Edit Requests</button>
+        </div>
+        <input id="submissions-search-input" type="text" placeholder="Search submissions details..." style="width:min(340px,100%);padding:0.75rem 0.9rem;border:1px solid #d3ddd5;border-radius:8px;font-family:Inter,Roboto,sans-serif;font-size:0.92rem;background:#fff;" />
       </div>
-      <div class="submissions-table-shell" style="background:white;border-radius:12px;padding:2rem;border:1px solid #e0e0e0;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);overflow-x:auto;">
+      <div id="submissions-main-table-shell" class="submissions-table-shell" style="background:white;border-radius:12px;padding:2rem;border:1px solid #e0e0e0;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);overflow-x:auto;">
         <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
           <thead>
             <tr class="submissions-table-head">
@@ -1397,10 +1405,10 @@
       </div>
 
       <!-- Edit requests this researcher has sent DENR (from the orchid-detail
-           pencil icon) — kept here so approval status is easy to track without
-           a separate page. Hidden entirely when there are none. -->
-      <div id="my-edit-requests-section" style="display:none;margin-top:2rem;">
-        <h2 style="font-size:1.05rem;color:#145A1E;margin:0 0 .8rem;">My Edit Requests</h2>
+           pencil icon) — its own tab (see submissions-filter-tabs above)
+           rather than stacked below the main table, so it stays reachable
+           even when the researcher has a long submission history. -->
+      <div id="my-edit-requests-section" style="display:none;">
         <div class="submissions-table-shell" style="background:white;border-radius:12px;padding:2rem;border:1px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow-x:auto;">
           <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
             <thead>
@@ -1411,7 +1419,9 @@
                 <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Actions</th>
               </tr>
             </thead>
-            <tbody id="my-edit-requests-table-body"></tbody>
+            <tbody id="my-edit-requests-table-body">
+              <tr><td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">Loading edit requests…</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -4409,6 +4419,37 @@
         };
       }
 
+      // Which "My Submissions" filter tab is active — 'all'/'pending'/
+      // 'approved'/'revision'/'rejected' filter submissionRows by
+      // review_status; 'editrequests' swaps to the edit-requests table
+      // entirely (its own tab rather than a section stacked below a
+      // potentially long submissions list).
+      let activeMySubmissionsFilter = 'all';
+
+      function applyMySubmissionsFilter() {
+        const mainShell = document.getElementById('submissions-main-table-shell');
+        const editSection = document.getElementById('my-edit-requests-section');
+        const searchInput = document.getElementById('submissions-search-input');
+        if (activeMySubmissionsFilter === 'editrequests') {
+          if (mainShell) mainShell.style.display = 'none';
+          if (editSection) editSection.style.display = '';
+          if (searchInput) searchInput.placeholder = 'Search edit requests...';
+          const term = searchInput ? searchInput.value.trim().toLowerCase() : '';
+          const filtered = term
+            ? myEditRequestRows.filter((r) => (r._species || '').toLowerCase().includes(term))
+            : myEditRequestRows;
+          renderMyEditRequestRows(filtered);
+        } else {
+          if (mainShell) mainShell.style.display = '';
+          if (editSection) editSection.style.display = 'none';
+          if (searchInput) searchInput.placeholder = 'Search submissions details...';
+          const filtered = activeMySubmissionsFilter === 'all'
+            ? submissionRows
+            : submissionRows.filter((s) => String(s.review_status || '').toLowerCase() === activeMySubmissionsFilter);
+          renderSubmissions(filtered);
+        }
+      }
+
       function renderSubmissions(items) {
         if (!submissionsTableBody) {
           return;
@@ -4511,7 +4552,7 @@
             ].filter(Boolean).join(' ').toLowerCase().includes(searchValue);
           });
 
-          renderSubmissions(submissionRows);
+          applyMySubmissionsFilter();
         } catch {
           submissionsTableBody.innerHTML = `
             <tr>
@@ -4563,12 +4604,10 @@
       let myEditRequestRows = [];
 
       async function loadMyEditRequestRows() {
-        const section = document.getElementById('my-edit-requests-section');
-        const body = document.getElementById('my-edit-requests-table-body');
-        if (!section || !body || !window.bloomSupabase) return;
+        if (!window.bloomSupabase) return;
         try {
           const currentEmail = String(parsedActiveUser.email || '').trim();
-          if (!currentEmail) { section.style.display = 'none'; return; }
+          if (!currentEmail) { myEditRequestRows = []; return; }
 
           const { data: requests, error } = await window.bloomSupabase
             .from('catalog_edit_requests')
@@ -4577,7 +4616,6 @@
             .order('created_at', { ascending: false });
           if (error) throw error;
           const rows = requests || [];
-          if (!rows.length) { section.style.display = 'none'; myEditRequestRows = []; return; }
 
           const sightingIds = [...new Set(rows.map((r) => r.sighting_id).filter((v) => v != null))];
           let sightingById = {};
@@ -4588,17 +4626,26 @@
           }
 
           myEditRequestRows = rows.map((r) => ({ ...r, _species: sightingById[r.sighting_id]?.scientific_name || '' }));
-          section.style.display = '';
-          renderMyEditRequestRows(myEditRequestRows);
         } catch (e) {
           console.warn('loadMyEditRequestRows failed:', e);
-          section.style.display = 'none';
+          myEditRequestRows = [];
         }
+        // Only re-render immediately if that tab is the one currently showing —
+        // otherwise applyMySubmissionsFilter() picks this up next time it's opened.
+        if (activeMySubmissionsFilter === 'editrequests') applyMySubmissionsFilter();
       }
 
       function renderMyEditRequestRows(items) {
         const body = document.getElementById('my-edit-requests-table-body');
         if (!body) return;
+        if (!items.length) {
+          body.innerHTML = `
+            <tr>
+              <td colspan="4" style="padding:1.2rem;color:#666;text-align:center;">No edit requests yet — use the pencil icon on one of your own published sightings to send one.</td>
+            </tr>
+          `;
+          return;
+        }
         body.innerHTML = items.map((r) => {
           const status = String(r.status || 'pending').toLowerCase();
           const badgeClass = status === 'approved' ? 'status-approved' : status === 'denied' ? 'status-rejected' : 'status-pending';
@@ -5335,7 +5382,23 @@
 
       if (submissionsSearchInput) {
         submissionsSearchInput.addEventListener('input', function() {
-          loadSubmissions(submissionsSearchInput.value.trim());
+          if (activeMySubmissionsFilter === 'editrequests') {
+            applyMySubmissionsFilter();
+          } else {
+            loadSubmissions(submissionsSearchInput.value.trim());
+          }
+        });
+      }
+
+      const submissionsFilterTabsEl = document.getElementById('submissions-filter-tabs');
+      if (submissionsFilterTabsEl) {
+        submissionsFilterTabsEl.addEventListener('click', function(e) {
+          const btn = e.target.closest('.sub-filter-btn');
+          if (!btn) return;
+          activeMySubmissionsFilter = btn.getAttribute('data-filter');
+          submissionsFilterTabsEl.querySelectorAll('.sub-filter-btn').forEach((b) => b.classList.toggle('sub-filter-active', b === btn));
+          if (submissionsSearchInput) submissionsSearchInput.value = '';
+          applyMySubmissionsFilter();
         });
       }
 
@@ -6679,7 +6742,7 @@ function refreshConservationHeatMap(summary) {
 
         currentSubmission.review_status = nextStatus;
         document.getElementById('detailStatus').textContent = getStatusLabel(nextStatus);
-        renderSubmissions(submissionRows);
+        applyMySubmissionsFilter();
       }
 
       async function performDetailAction(action) {
