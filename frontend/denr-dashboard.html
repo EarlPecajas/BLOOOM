@@ -12810,10 +12810,14 @@
           items.push({
             ...cat, count, species,
             info: row ? `${species} · ${who}` : '',
+            sortDate: row ? row[cat.dateField] : null,
             dateStr: row ? fmtNotifDateTime(row[cat.dateField]) : '',
             isRead: readState[cat.key] === count
           });
         });
+        // Most recent event first — a category's position in the list should
+        // track what actually just happened, not a fixed category priority.
+        items.sort((a, b) => new Date(b.sortDate || 0) - new Date(a.sortDate || 0));
         return items;
       }
 

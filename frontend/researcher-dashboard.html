@@ -7756,13 +7756,18 @@ function refreshConservationHeatMap(summary) {
           const matches = rows.filter(cat.match);
           if (!matches.length) return;
           const latest = matches[0]; // rows are ordered by updated_at desc
+          const sortDate = latest?.updated_at || latest?.created_at || null;
           items.push({
             ...cat, count: matches.length,
             info: latest?.scientific_name || '',
-            dateStr: fmtNotifDateTime(latest?.updated_at || latest?.created_at),
+            sortDate,
+            dateStr: fmtNotifDateTime(sortDate),
             isRead: readState[cat.key] === matches.length
           });
         });
+        // Most recent event first — a category's position in the list should
+        // track what actually just happened, not a fixed category priority.
+        items.sort((a, b) => new Date(b.sortDate || 0) - new Date(a.sortDate || 0));
         return items;
       }
 
