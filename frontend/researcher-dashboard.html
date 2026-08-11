@@ -7795,7 +7795,10 @@ function refreshConservationHeatMap(summary) {
             : '<div class="notif-empty">No submissions yet. Start by adding a sighting!</div>';
 
           const badge = document.getElementById('notif-badge');
-          const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).reduce((sum, it) => sum + it.count, 0);
+          // The badge counts unread notification entries, not the submission
+          // totals inside them — "2 need revision" + "3 rejected" (both
+          // unread) is 2 things to look at, not 5.
+          const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).length;
           if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
           updateNotifCard(items);
         } catch { list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>'; }

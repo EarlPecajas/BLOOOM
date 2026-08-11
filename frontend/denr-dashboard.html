@@ -12839,7 +12839,10 @@
             : '<div class="notif-empty">No pending submissions — all clear.</div>';
 
           const badge = document.getElementById('notif-badge');
-          const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).reduce((sum, it) => sum + it.count, 0);
+          // The badge counts unread notification entries, not the submission
+          // totals inside them — "2 need revision" + "5 approved" (both
+          // unread) is 2 things to look at, not 7.
+          const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).length;
           if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
           updateNotifCard(items);
         } catch { list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>'; }
@@ -12852,7 +12855,7 @@
         const rows = items.length ? items : [{ text: () => 'No pending items — all submissions reviewed.', dateStr: 'Up to date', info: '', type: 'success', svg: '<polyline points="20 6 9 17 4 12"/>', key: null, count: 0, filter: 'all', species: null, isRead: true }];
 
         const badgeEl = document.getElementById('notif-card-badge');
-        const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).reduce((sum, it) => sum + it.count, 0);
+        const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).length;
         if (badgeEl) { badgeEl.textContent = urgentCount; badgeEl.style.display = urgentCount > 0 ? '' : 'none'; }
 
         card.innerHTML = rows.map((it, i) => {
