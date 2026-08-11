@@ -1267,6 +1267,7 @@
               <div>
                 <label class="block text-xs font-bold uppercase tracking-wider mb-2" style="color:var(--dt-text);letter-spacing:0.07em;">Report Type</label>
                 <select id="reportType" class="w-full" style="padding:0.68rem 0.9rem;border:1.5px solid var(--dt-border-md);border-radius:10px;font-family:Inter,Roboto,sans-serif;font-size:0.88rem;color:var(--dt-text);background:var(--dt-bg-input);cursor:pointer;outline:none;transition:border-color 150ms;" onfocus="this.style.borderColor='var(--dt-accent)'" onblur="this.style.borderColor='var(--dt-border-md)'" onchange="onReportTypeChange()">
+                  <option value="" selected disabled>Choose a report type</option>
                   <optgroup label="Species Profile">
                     <option value="species-profile">Species Profile Report</option>
                   </optgroup>
@@ -5430,6 +5431,12 @@
           // approved ones); whichever action doesn't apply to the current state is
           // disabled (not hidden), so the action cluster stays visually uniform across rows.
           const inCatalog = catalogNames.has(speciesKey);
+          // Species already has a published catalog entry, but this particular
+          // submission isn't the one contributing to it yet — publishing it will
+          // add it as an additional sighting shown together with the existing
+          // one(s) on that species' map (orchid-detail.html / catalog.html both
+          // already plot every approved+published sighting for a scientific name).
+          const isNewSightingOfExisting = catalogNames.has(speciesKey) && submission.catalog_published !== true;
           const notApproved = !isApproved(submission);
           let publishBtn = '';
           if (isAdminRole) {
@@ -5470,7 +5477,10 @@
                   <span>${safeEmail}</span>
                 </div>
               </td>
-              <td class="submission-species-cell"><span class="scientific-name">${safeSpecies}</span></td>
+              <td class="submission-species-cell">
+                <span class="scientific-name">${safeSpecies}</span>
+                ${isNewSightingOfExisting ? `<span class="sub-existing-species-badge" title="This species is already in the catalog. Publishing this submission will add it as an additional sighting, shown together with the existing sighting(s) on this species' map.">New sighting</span>` : ''}
+              </td>
               <td class="submission-date-cell">
                 <div class="denrsub-cell-icon-row">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -9686,7 +9696,8 @@
         }
         reportOrchidOptionsLoaded = true;
         sel.innerHTML = (data || []).length
-          ? data.map((o) => `<option value="${o.id}">${escapeHtml(o.name)}${o.common_name ? ' — ' + escapeHtml(o.common_name) : ''}</option>`).join('')
+          ? '<option value="" selected disabled>Choose an orchid</option>' +
+            data.map((o) => `<option value="${o.id}">${escapeHtml(o.name)}${o.common_name ? ' — ' + escapeHtml(o.common_name) : ''}</option>`).join('')
           : '<option value="">No species in catalog yet</option>';
       }
 
@@ -9772,7 +9783,6 @@
 
       function resetReportForm() {
         document.getElementById('reportForm').reset();
-        document.getElementById('reportType').value = 'species-inventory';
         selectReportFormat('pdf');
         onReportTypeChange();
       }
@@ -10705,6 +10715,11 @@
         const format = document.querySelector('input[name="format"]:checked').value;
         const btn = document.getElementById('generateReportBtn');
 
+        if (!reportType) {
+          showReportToast('Please choose a report type.', 'warn');
+          return;
+        }
+
         if (reportType === 'species-profile') {
           await generateSpeciesProfileReport(format, btn);
           return;
@@ -11631,6 +11646,41 @@
         const { data: mountains } = await bloomSupabase.from('mountain').select('mountain_id, mountain_name');
         const mountainMap = new Map((mountains || []).map((m) => [String(m.mountain_name || '').trim().toLowerCase(), m.mountain_id]));
 
+        // Species already present in the published catalog (orchid_overview) —
+        // used to flag imported rows as "new sighting of an existing species"
+        // rather than a brand-new species, matching the same catalogNames
+        // heuristic renderSubmissions() already uses for the Publish button.
+        if (!orchidCatalogLoaded) { try { await loadOrchidCatalog(); } catch (e) {} }
+        const catalogNames = new Set((orchidRows || []).map((o) => (o.name || '').trim().toLowerCase()));
+
+        // Strict content-based duplicate guard: import rows almost never carry
+        // an Entry ID (the template dropped that column — it's an internal
+        // generated field), so the only real signal that a row is the same
+        // submission as one already on file is the same researcher recording
+        // the same species at the same site on the same date. Same match key
+        // the researcher submission form itself uses to block accidental
+        // double-submits (see submitEditRequest / submission-form dup guard).
+        const { data: existingSightings } = await bloomSupabase
+          .from('species_sightings')
+          .select('scientific_name, researcher_email, observation_date, mountain_id, specific_site_zone, specific_site_other')
+          .neq('review_status', 'draft');
+        function contentDupKey(species, researcherEmail, obsDate, mtId, siteZone, siteOther) {
+          return [
+            String(species || '').trim().toLowerCase(),
+            String(researcherEmail || '').trim().toLowerCase(),
+            String(obsDate || '').trim(),
+            mtId == null ? '' : String(mtId),
+            String(siteZone || '').trim().toLowerCase(),
+            String(siteOther || '').trim().toLowerCase()
+          ].join('|');
+        }
+        const existingContentKeys = new Set(
+          (existingSightings || []).map((r) => contentDupKey(
+            r.scientific_name, r.researcher_email, r.observation_date, r.mountain_id, r.specific_site_zone, r.specific_site_other
+          ))
+        );
+        const seenContentKeysInFile = new Set();
+
         const REVIEW_STATUSES = ['approved', 'rejected', 'revision', 'pending', 'draft'];
         const BOOL_TRUE = ['yes', 'true', '1'];
         const BOOL_FALSE = ['no', 'false', '0', ''];
@@ -11677,7 +11727,7 @@
 
         const seenEntryIdsInFile = new Set();
         const validRows = [];
-        const results = { imported: 0, duplicates: 0, invalid: 0, errors: [] };
+        const results = { imported: 0, duplicates: 0, invalid: 0, errors: [], newSightingsOfExisting: 0 };
 
         table.forEach((cols, i) => {
           const rowNum = i + 2;
@@ -11726,10 +11776,29 @@
             if (mountainId === null) results.errors.push(`Row ${rowNum}: mountain "${mountainName}" not found — saved without a linked mountain`);
           }
 
+          const rowResearcherEmail = cell(cols, 'researcher_email');
+          const rowSiteZone = cell(cols, 'specific_site_zone');
+          const rowSiteOther = cell(cols, 'specific_site_other');
+          const rowDupKey = species && observationDate
+            ? contentDupKey(species, rowResearcherEmail, observationDate, mountainId, rowSiteZone, rowSiteOther)
+            : null;
+          if (rowDupKey && (existingContentKeys.has(rowDupKey) || seenContentKeysInFile.has(rowDupKey))) {
+            results.duplicates++;
+            results.errors.push(`Row ${rowNum}: duplicate submission — "${species}" already recorded by ${rowResearcherEmail || 'this researcher'} on ${observationDate} at the same site — skipped`);
+            return;
+          }
+
           if (errors.length) {
             results.invalid++;
             errors.forEach((e) => results.errors.push(`Row ${rowNum}: ${e}`));
             return;
+          }
+
+          if (rowDupKey) seenContentKeysInFile.add(rowDupKey);
+
+          if (catalogNames.has(species.trim().toLowerCase())) {
+            results.newSightingsOfExisting++;
+            results.errors.push(`Row ${rowNum}: "${species}" is already in the catalog — imported as a new sighting of that species.`);
           }
 
           validRows.push({
@@ -11969,7 +12038,7 @@
           } else if (ieParsedRows.dataset === 'submissions') {
             const { rows: table, col } = ieParsedRows;
             const r = await importSubmissionsRows(table, col);
-            summaryText = `Import complete: ${r.imported} imported${r.duplicates ? `, ${r.duplicates} duplicate${r.duplicates === 1 ? '' : 's'} skipped` : ''}${r.invalid ? `, ${r.invalid} invalid` : ''}.`;
+            summaryText = `Import complete: ${r.imported} imported${r.newSightingsOfExisting ? ` (${r.newSightingsOfExisting} new sighting${r.newSightingsOfExisting === 1 ? '' : 's'} of species already in the catalog)` : ''}${r.duplicates ? `, ${r.duplicates} duplicate${r.duplicates === 1 ? '' : 's'} skipped` : ''}${r.invalid ? `, ${r.invalid} invalid` : ''}.`;
             errors = r.errors;
             hasIssues = !!(r.duplicates || r.invalid);
             submissionRows = [];
