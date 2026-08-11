@@ -12705,6 +12705,25 @@
 
     <script>
       // ── Notification Bell ──────────────────────────────────────────────
+      // Notifications are aggregate counts per category (e.g. "5 pending"),
+      // not individual DB records, so "read" is tracked per category rather
+      // than per event: a localStorage map of category -> the count it had
+      // when last clicked. If the count is unchanged since then, it's read;
+      // if it changed (more OR fewer), it's unread again — that's genuinely
+      // new information worth re-flagging either way.
+      function denrNotifReadKey() {
+        const email = String((typeof parsedActiveUser !== 'undefined' && parsedActiveUser?.email) || '').trim().toLowerCase();
+        return 'bloomNotifRead_denr_' + (email || 'anon');
+      }
+      function getDenrNotifReadState() {
+        try { return JSON.parse(localStorage.getItem(denrNotifReadKey()) || '{}'); } catch { return {}; }
+      }
+      function markDenrNotifRead(category, count) {
+        const state = getDenrNotifReadState();
+        state[category] = count;
+        try { localStorage.setItem(denrNotifReadKey(), JSON.stringify(state)); } catch {}
+      }
+
       function toggleNotifPanel() {
         const panel = document.getElementById('notif-panel');
         if (!panel) return;
@@ -12713,69 +12732,144 @@
         if (opening) loadNotifItems();
       }
 
+      // Safely embed a value as a single-quoted JS string literal inside a
+      // double-quoted HTML onclick="..." attribute — strips characters that
+      // would otherwise break out of either quoting context. Species names
+      // here are Latin binomials, so stripping quotes/brackets is a no-op
+      // in practice; this is just a safety net.
+      function notifJsStr(str) {
+        return "'" + String(str || '').replace(/[\\'"<>&]/g, '') + "'";
+      }
+
+      function fmtNotifDateTime(iso) {
+        if (!iso) return '';
+        return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+      }
+
+      // Clicking a notification marks its category read (updates the badge
+      // immediately) and takes DENR to the matching Submissions filter,
+      // pre-searched to the specific record that triggered it when known.
+      function handleDenrNotifClick(category, count, species, filterTab) {
+        markDenrNotifRead(category, count);
+        document.getElementById('notif-panel').hidden = true;
+        openDashboardView('submissions');
+        setTimeout(() => {
+          const tabBtn = document.querySelector(`#submissions-filter-tabs .sub-filter-btn[data-filter="${filterTab}"]`);
+          if (tabBtn) tabBtn.click();
+          const searchEl = document.getElementById('submissions-search-input');
+          if (searchEl && species) { searchEl.value = species; searchEl.dispatchEvent(new Event('input')); }
+        }, 50);
+        loadNotifItems();
+      }
+
+      const DENR_NOTIF_CATEGORIES = [
+        { key: 'late', status: 'pending', filter: 'pending', type: 'urgent',
+          svg: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+          text: (n) => `⚠ ${n} submission${n!==1?'s':''} awaiting review for over ${LATE_PENDING_DAYS} days`, dateField: 'created_at', countsTowardBadge: false },
+        { key: 'pending', status: 'pending', filter: 'pending', type: 'urgent',
+          svg: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+          text: (n) => `${n} submission${n!==1?'s':''} awaiting DENR review`, dateField: 'created_at', countsTowardBadge: true },
+        { key: 'revision', status: 'revision', filter: 'revision', type: 'warning',
+          svg: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+          text: (n) => `${n} submission${n!==1?'s':''} sent for revision`, dateField: 'updated_at', countsTowardBadge: true },
+        { key: 'approved', status: 'approved', filter: 'approved', type: 'success',
+          svg: '<polyline points="20 6 9 17 4 12"/>',
+          text: (n) => `${n} submission${n!==1?'s':''} approved this week`, dateField: 'updated_at', countsTowardBadge: false },
+        { key: 'rejected', status: 'rejected', filter: 'all', type: 'urgent',
+          svg: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+          text: (n) => `${n} submission${n!==1?'s':''} rejected this week`, dateField: 'updated_at', countsTowardBadge: false }
+      ];
+
+      async function fetchDenrNotifCategories() {
+        const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+        const lateCutoff = new Date(Date.now() - LATE_PENDING_DAYS*24*60*60*1000).toISOString();
+        const cols = 'scientific_name, researcher_email, head_observer_name, created_at, updated_at';
+        // Dropping head:true returns both an exact count AND (subject to the
+        // .limit() below) the actual most-recent matching row in one request —
+        // no separate query needed just to show which record triggered it.
+        const [pendingRes, approvedRes, rejectedRes, revisionRes, lateRes] = await Promise.all([
+          bloomSupabase.from('species_sightings').select(cols, { count: 'exact' }).eq('review_status', 'pending').order('created_at', { ascending: false }).limit(1),
+          bloomSupabase.from('species_sightings').select(cols, { count: 'exact' }).eq('review_status', 'approved').gte('updated_at', weekAgo).order('updated_at', { ascending: false }).limit(1),
+          bloomSupabase.from('species_sightings').select(cols, { count: 'exact' }).eq('review_status', 'rejected').gte('updated_at', weekAgo).order('updated_at', { ascending: false }).limit(1),
+          bloomSupabase.from('species_sightings').select(cols, { count: 'exact' }).eq('review_status', 'revision').order('updated_at', { ascending: false }).limit(1),
+          bloomSupabase.from('species_sightings').select(cols, { count: 'exact' }).eq('review_status', 'pending').lt('created_at', lateCutoff).order('created_at', { ascending: true }).limit(1),
+        ]);
+        return { pending: pendingRes, approved: approvedRes, rejected: rejectedRes, revision: revisionRes, late: lateRes };
+      }
+
+      function buildDenrNotifItems(resByCategory) {
+        const readState = getDenrNotifReadState();
+        const items = [];
+        DENR_NOTIF_CATEGORIES.forEach((cat) => {
+          const res = resByCategory[cat.key];
+          const count = res?.count ?? 0;
+          if (count <= 0) return;
+          const row = (res.data || [])[0] || null;
+          const who = row ? (row.head_observer_name || row.researcher_email || 'Unknown researcher') : '';
+          const species = row ? (row.scientific_name || 'Unknown species') : '';
+          items.push({
+            ...cat, count, species,
+            info: row ? `${species} · ${who}` : '',
+            dateStr: row ? fmtNotifDateTime(row[cat.dateField]) : '',
+            isRead: readState[cat.key] === count
+          });
+        });
+        return items;
+      }
+
       async function loadNotifItems() {
         const list = document.getElementById('notif-list');
         if (!list || !window.bloomSupabase) return;
         list.innerHTML = '<div class="notif-empty">Loading…</div>';
         try {
-          const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
-          const lateCutoff = new Date(Date.now() - LATE_PENDING_DAYS*24*60*60*1000).toISOString();
-          const [pendingRes, approvedRes, rejectedRes, revisionRes, lateRes] = await Promise.all([
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','pending'),
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','approved').gte('updated_at',weekAgo),
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','rejected').gte('updated_at',weekAgo),
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','revision'),
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','pending').lt('created_at',lateCutoff),
-          ]);
-          const pending  = pendingRes.count  ?? 0;
-          const approved = approvedRes.count ?? 0;
-          const rejected = rejectedRes.count ?? 0;
-          const revision = revisionRes.count ?? 0;
-          const late     = lateRes.count ?? 0;
-          const items = [];
-          if (late > 0) items.push({ type:'urgent', svg:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>', text: `⚠ ${late} submission${late!==1?'s':''} awaiting review for over ${LATE_PENDING_DAYS} days`, time: 'Late — needs attention' });
-          if (pending > 0)  items.push({ type:'urgent',  svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',  text: `${pending} submission${pending!==1?'s':''} awaiting DENR review`, time: 'Action needed' });
-          if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', text: `${revision} submission${revision!==1?'s':''} sent for revision`, time: 'Pending researcher response' });
-          if (approved > 0) items.push({ type:'success', svg:'<polyline points="20 6 9 17 4 12"/>',  text: `${approved} submission${approved!==1?'s':''} approved this week`, time: 'This week' });
-          if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',  text: `${rejected} submission${rejected!==1?'s':''} rejected this week`, time: 'This week' });
-          if (items.length === 0) items.push({ type:'info', svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12.01" y2="16"/><line x1="12" y1="8" x2="12" y2="12"/>', text: 'No pending submissions — all clear.', time: '' });
+          const resByCategory = await fetchDenrNotifCategories();
+          const items = buildDenrNotifItems(resByCategory);
 
-          list.innerHTML = items.map(it => `
-            <div class="notif-item">
-              <span class="notif-icon ${it.type}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg></span>
-              <div><p class="notif-text">${it.text}</p>${it.time ? `<span class="notif-time">${it.time}</span>` : ''}</div>
-            </div>`).join('');
+          list.innerHTML = items.length
+            ? items.map((it) => `
+              <div class="notif-item ${it.isRead ? 'notif-read' : ''}" role="button" tabindex="0"
+                   onclick="handleDenrNotifClick('${it.key}', ${it.count}, ${it.species ? notifJsStr(it.species) : 'null'}, '${it.filter}')">
+                <span class="notif-icon ${it.type}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg></span>
+                <div>
+                  <p class="notif-text">${it.text(it.count)}</p>
+                  ${it.info ? `<span class="notif-info">${escapeHtml(it.info)}</span>` : ''}
+                  ${it.dateStr ? `<span class="notif-time">${it.dateStr}</span>` : ''}
+                </div>
+              </div>`).join('')
+            : '<div class="notif-empty">No pending submissions — all clear.</div>';
 
           const badge = document.getElementById('notif-badge');
-          const urgentCount = pending + revision;
+          const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).reduce((sum, it) => sum + it.count, 0);
           if (badge) { badge.hidden = urgentCount === 0; badge.textContent = urgentCount > 9 ? '9+' : urgentCount; }
-          updateNotifCard(pending, approved, rejected, revision, late);
+          updateNotifCard(items);
         } catch { list.innerHTML = '<div class="notif-empty">Could not load notifications.</div>'; }
       }
 
-      function updateNotifCard(pending, approved, rejected, revision, late) {
-        late = late || 0;
+      function updateNotifCard(items) {
         const card = document.getElementById('notif-card-list');
         if (!card) return;
-        const items = [];
-        if (late > 0) items.push({ type:'urgent', svg:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>', bg:'#fef3c7', stroke:'#d97706', text:`⚠ ${late} submission${late!==1?'s':''} awaiting review for over ${LATE_PENDING_DAYS} days`, time:'Late — needs attention' });
-        if (pending > 0)  items.push({ type:'urgent',  svg:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', bg:'#fee2e2', stroke:'#dc2626', text:`${pending} submission${pending!==1?'s':''} awaiting DENR review`, time:'Action needed' });
-        if (revision > 0) items.push({ type:'warning', svg:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>', bg:'#fef3c7', stroke:'#d97706', text:`${revision} submission${revision!==1?'s':''} need${revision===1?'s':''} researcher revision`, time:'Pending response' });
-        if (approved > 0) items.push({ type:'success', svg:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>', bg:'#dcfce7', stroke:'#16a34a', text:`${approved} submission${approved!==1?'s':''} approved this week`, time:'This week' });
-        if (rejected > 0) items.push({ type:'urgent',  svg:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', bg:'#fee2e2', stroke:'#dc2626', text:`${rejected} submission${rejected!==1?'s':''} rejected this week`, time:'This week' });
-        if (items.length === 0) items.push({ svg:'<polyline points="20 6 9 17 4 12"/>', bg:'#dcfce7', stroke:'#16a34a', text:'No pending items — all submissions reviewed.', time:'Up to date' });
+        const colorByType = { urgent: ['#fee2e2', '#dc2626'], warning: ['#fef3c7', '#d97706'], success: ['#dcfce7', '#16a34a'] };
+        const rows = items.length ? items : [{ text: () => 'No pending items — all submissions reviewed.', dateStr: 'Up to date', info: '', type: 'success', svg: '<polyline points="20 6 9 17 4 12"/>', key: null, count: 0, filter: 'all', species: null, isRead: true }];
 
         const badgeEl = document.getElementById('notif-card-badge');
-        const urgentCount = pending + revision;
+        const urgentCount = items.filter((it) => it.countsTowardBadge && !it.isRead).reduce((sum, it) => sum + it.count, 0);
         if (badgeEl) { badgeEl.textContent = urgentCount; badgeEl.style.display = urgentCount > 0 ? '' : 'none'; }
 
-        card.innerHTML = items.map(it => `
-          <div class="flex gap-3 py-3 ${items.indexOf(it) < items.length-1 ? 'border-b border-gray-50' : ''}">
-            <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:${it.bg};">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${it.stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg>
+        card.innerHTML = rows.map((it, i) => {
+          const [bg, stroke] = colorByType[it.type] || ['#eef2ef', '#4a6a4a'];
+          const clickAttr = it.key ? ` role="button" tabindex="0" style="cursor:pointer;" onclick="handleDenrNotifClick('${it.key}', ${it.count}, ${it.species ? notifJsStr(it.species) : 'null'}, '${it.filter}')"` : '';
+          return `
+          <div class="flex gap-3 py-3 ${i < rows.length-1 ? 'border-b border-gray-50' : ''} ${it.isRead ? 'notif-read' : ''}"${clickAttr}>
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:${bg};">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${it.svg}</svg>
             </span>
-            <div><p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">${it.text}</p><span class="text-xs text-gray-400">${it.time}</span></div>
-          </div>`).join('');
+            <div>
+              <p class="text-sm text-gray-700 font-medium leading-snug mb-0.5">${it.text(it.count)}</p>
+              ${it.info ? `<span class="text-xs text-gray-500 block">${escapeHtml(it.info)}</span>` : ''}
+              <span class="text-xs text-gray-400">${it.dateStr}</span>
+            </div>
+          </div>`;
+        }).join('');
       }
 
       // Close panel on outside click
@@ -12787,20 +12881,9 @@
         }
       });
 
-      // Load badge count on startup
+      // Load badge + panel content on startup
       document.addEventListener('DOMContentLoaded', function() {
-        if (window.bloomSupabase) {
-          const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
-          Promise.all([
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','pending'),
-            bloomSupabase.from('species_sightings').select('*',{count:'exact',head:true}).eq('review_status','revision'),
-          ]).then(([p, r]) => {
-            const count = (p.count ?? 0) + (r.count ?? 0);
-            const badge = document.getElementById('notif-badge');
-            if (badge) { badge.hidden = count === 0; badge.textContent = count > 9 ? '9+' : count; }
-            loadNotifItems();
-          }).catch(() => {});
-        }
+        if (window.bloomSupabase) loadNotifItems();
       });
     </script>
 

@@ -4923,6 +4923,12 @@ body.researcher-theme .submission-edit-btn:hover {
 .notif-icon.warning { background: #fef3c7; color: #d97706; }
 .notif-icon.info    { background: #eff6ff; color: #2563eb; }
 .notif-text  { font-size: 0.82rem; color: #1a3a1c; font-weight: 500; line-height: 1.4; margin: 0 0 0.12rem; }
+.notif-info  { display: block; font-size: 0.72rem; color: #4a6a4a; margin-bottom: 0.1rem; }
 .notif-time  { font-size: 0.72rem; color: #7a8a6a; }
 .notif-empty { padding: 1.25rem 1rem; text-align: center; font-size: 0.84rem; color: #7a8a6a; }
+.notif-item[role="button"] { cursor: pointer; transition: background 120ms; }
+.notif-item[role="button"]:hover, .notif-item[role="button"]:focus-visible { background: #F7F4E8; }
+.notif-item.notif-read { opacity: 0.55; }
+.notif-item.notif-read .notif-icon { background: #eef0ec !important; color: #8a948a !important; }
+.notif-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #dc2626; flex-shrink: 0; margin-top: 0.35rem; }
 
