@@ -8553,13 +8553,55 @@
         identification_confidence: 'Identification Confidence', endemic_to_philippines: 'Endemic to Philippines',
         observation_date: 'Observation Date', observation_time: 'Time of Observation',
         collection_method: 'Collection Method', observation_type: 'Observation Type',
-        voucher_collected: 'Voucher Specimen Collected', specific_site_zone: 'Altitude Zone',
-        specific_site_other: 'Specific Site', elevation_meters: 'Elevation (m)',
+        voucher_collected: 'Voucher Specimen Collected', population_count: 'Number of Orchids in the Area',
+        specific_site_zone: 'Altitude / Site Zone', specific_site_other: 'Specific Site', elevation_meters: 'Elevation (m)',
+        latitude: 'GPS Latitude', longitude: 'GPS Longitude',
         habitat_type: 'Habitat Type', microhabitat: 'Microhabitat', growth_substrate: 'Growth Substrate',
         host_tree_species: 'Host Tree Species', host_tree_dbh_cm: 'Host Tree Diameter (cm)',
         canopy_cover_percent: 'Canopy Cover (%)', light_exposure: 'Light Exposure', soil_type: 'Soil Type',
-        nearby_water_source: 'Nearby Water Source', population_status: 'Population Status',
-        threat_level: 'Threat Level', researcher_notes: 'Researcher Notes', related_study: 'Related Study'
+        nearby_water_source: 'Nearby Water Source',
+        plant_height_cm: 'Plant Height (cm)', pseudobulb_present: 'Pseudobulb Present',
+        stem_length_cm: 'Stem Length (cm)', root_length_cm: 'Root Length (cm)', leaf_count: 'Number of Leaves',
+        leaf_shape: 'Leaf Shape', leaf_shape_other: 'Leaf Shape (Others)', leaf_length_cm: 'Leaf Length (cm)',
+        leaf_width_cm: 'Leaf Width (cm)', leaf_textures: 'Leaf Texture', leaf_arrangement: 'Leaf Arrangement',
+        flower_color: 'Flower Color', flower_count: 'Number of Flowers', flower_diameter_cm: 'Flower Diameter (cm)',
+        inflorescence_type: 'Inflorescence Type', petal_characteristics: 'Petal Characteristics',
+        sepal_characteristics: 'Sepal Characteristics', labellum_lip_description: 'Labellum / Lip Description',
+        fragrance: 'Fragrance', blooming_stage: 'Blooming Stage', flowering_season: 'Flowering Season',
+        fruit_present: 'Fruit Present', fruit_type: 'Fruit Type', seed_capsule_condition: 'Seed Capsule Condition',
+        life_stage: 'Life Stage', phenology: 'Phenology',
+        population_status: 'Population Status', threat_level: 'Threat Level', threat_types: 'Threat Type',
+        researcher_notes: 'Researcher Notes', related_study: 'Related Study'
+      };
+
+      // proposed_changes keys aren't all columns of species_sightings — habitat
+      // /morphology/conservation fields live in their own sub-tables, linked
+      // via sighting_habitat_id/sighting_morphology_id/sighting_conservation_id.
+      // Used by approveEditRequestDirect() to route each changed field to the
+      // table that actually owns it instead of one flat species_sightings update
+      // (which would 400 the instant a request touched any of these fields).
+      const EDIT_REQUEST_TABLE_FOR_FIELD = {
+        habitat_type: 'sighting_habitat', microhabitat: 'sighting_habitat', growth_substrate: 'sighting_habitat',
+        host_tree_species: 'sighting_habitat', host_tree_dbh_cm: 'sighting_habitat', canopy_cover_percent: 'sighting_habitat',
+        light_exposure: 'sighting_habitat', soil_type: 'sighting_habitat', nearby_water_source: 'sighting_habitat',
+
+        plant_height_cm: 'sighting_morphology', pseudobulb_present: 'sighting_morphology', stem_length_cm: 'sighting_morphology',
+        root_length_cm: 'sighting_morphology', leaf_count: 'sighting_morphology', leaf_shape: 'sighting_morphology',
+        leaf_shape_other: 'sighting_morphology', leaf_length_cm: 'sighting_morphology', leaf_width_cm: 'sighting_morphology',
+        leaf_textures: 'sighting_morphology', leaf_arrangement: 'sighting_morphology', flower_color: 'sighting_morphology',
+        flower_count: 'sighting_morphology', flower_diameter_cm: 'sighting_morphology', inflorescence_type: 'sighting_morphology',
+        petal_characteristics: 'sighting_morphology', sepal_characteristics: 'sighting_morphology',
+        labellum_lip_description: 'sighting_morphology', fragrance: 'sighting_morphology', blooming_stage: 'sighting_morphology',
+        flowering_season: 'sighting_morphology', fruit_present: 'sighting_morphology', fruit_type: 'sighting_morphology',
+        seed_capsule_condition: 'sighting_morphology', life_stage: 'sighting_morphology', phenology: 'sighting_morphology',
+        population_count: 'sighting_morphology',
+
+        population_status: 'sighting_conservation', threat_level: 'sighting_conservation', threat_types: 'sighting_conservation'
+      };
+      const EDIT_REQUEST_SUB_ID_COL = {
+        sighting_habitat: 'sighting_habitat_id',
+        sighting_morphology: 'sighting_morphology_id',
+        sighting_conservation: 'sighting_conservation_id'
       };
 
       function editRequestDisplayValue(v) {
@@ -8580,9 +8622,18 @@
           const sightingIds = [...new Set(rows.map((r) => r.sighting_id).filter((v) => v != null))];
           let sightingById = {};
           if (sightingIds.length) {
+            // Join the sub-tables too — the diff modal's "Current" column and
+            // approveEditRequestDirect()'s routing both need habitat/morphology
+            // /conservation values, which don't live on species_sightings itself.
             const { data: sightings } = await bloomSupabase
-              .from('species_sightings').select('*').in('sighting_id', sightingIds);
-            (sightings || []).forEach((s) => { sightingById[s.sighting_id] = s; });
+              .from('species_sightings')
+              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*)')
+              .in('sighting_id', sightingIds);
+            (sightings || []).forEach((s) => {
+              sightingById[s.sighting_id] = Object.assign(
+                {}, s, s.sighting_habitat || {}, s.sighting_morphology || {}, s.sighting_conservation || {}
+              );
+            });
           }
           editRequestRows = rows.map((r) => ({ ...r, _sighting: sightingById[r.sighting_id] || null }));
         } catch (e) {
@@ -8602,6 +8653,8 @@
         submissionsTableBody.innerHTML = items.map((r) => {
           const species = escapeHtml(r._sighting?.scientific_name || '—');
           const safeEmail = escapeHtml(r.researcher_email || '');
+          const researcherName = r._sighting?.head_observer_name || r._sighting?.researcher_name || r.researcher_email || 'Unknown Researcher';
+          const safeName = escapeHtml(researcherName);
           const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
           const status = String(r.status || 'pending').toLowerCase();
           const badgeClass = status === 'approved' ? 'status-approved' : status === 'denied' ? 'status-rejected' : 'status-pending';
@@ -8612,8 +8665,8 @@
             <tr class="submission-row">
               <td class="submission-researcher-cell">
                 <div class="denrsub-researcher-cell">
-                  <span class="denrsub-avatar">${getInitialsFromName(r.researcher_email)}</span>
-                  <span>${safeEmail}</span>
+                  <span class="denrsub-avatar">${getInitialsFromName(researcherName)}</span>
+                  <span>${safeName}</span>
                 </div>
               </td>
               <td class="submission-researcher-cell" style="font-size:0.83rem;">
@@ -8680,7 +8733,7 @@
           <div style="background:#fff;border-radius:14px;width:min(640px,94vw);max-height:88vh;overflow-y:auto;padding:1.6rem;position:relative;box-shadow:0 16px 50px rgba(0,0,0,.3);">
             <button type="button" onclick="document.getElementById('edit-request-diff-modal').remove()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button>
             <h2 style="margin:0 0 .2rem;color:#145A1E;font-size:1.1rem;">${escapeHtml(r._sighting?.scientific_name || 'Sighting')} — proposed edit</h2>
-            <p style="margin:0 0 1rem;color:#666;font-size:.82rem;">From ${escapeHtml(r.researcher_email || '')}${r.reason ? ' — "' + escapeHtml(r.reason) + '"' : ''}</p>
+            <p style="margin:0 0 1rem;color:#666;font-size:.82rem;">From ${escapeHtml(r._sighting?.head_observer_name || r._sighting?.researcher_name || r.researcher_email || 'Unknown Researcher')}${r.reason ? ' — "' + escapeHtml(r.reason) + '"' : ''}</p>
             ${keys.length ? `<table style="width:100%;border-collapse:collapse;">
               <thead><tr>
                 <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Field</th>
@@ -8725,9 +8778,14 @@
         }
       }
 
-      // Approving applies the proposed field values directly to
-      // species_sightings — no revision-flow detour, no unpublishing —
-      // since DENR already reviewed the exact before/after values.
+      // Approving applies the proposed field values directly — no revision-
+      // flow detour, no unpublishing — since DENR already reviewed the exact
+      // before/after values. Changes are split across species_sightings and
+      // its sighting_habitat/morphology/conservation sub-tables since a
+      // proposed field can live in any one of the four (see
+      // EDIT_REQUEST_TABLE_FOR_FIELD); a sub-table row is created on the fly
+      // if the sighting never had one (e.g. an old row saved before that tab
+      // had any values, leaving its sighting_*_id null).
       async function approveEditRequestDirect(requestId) {
         if (!isAdminRole || !bloomSupabase) return;
         const r = editRequestRows.find((row) => row.id === requestId);
@@ -8737,9 +8795,32 @@
         delete changes.new_photos;
         if (!Object.keys(changes).length && !newPhotos.length) { showToast('No changes to apply.', true); return; }
         try {
-          if (Object.keys(changes).length) {
+          const bySubTable = { sighting_habitat: {}, sighting_morphology: {}, sighting_conservation: {} };
+          const directChanges = {};
+          Object.keys(changes).forEach((key) => {
+            const table = EDIT_REQUEST_TABLE_FOR_FIELD[key];
+            if (table) bySubTable[table][key] = changes[key];
+            else directChanges[key] = changes[key];
+          });
+
+          for (const table of Object.keys(bySubTable)) {
+            const fields = bySubTable[table];
+            if (!Object.keys(fields).length) continue;
+            const idCol = EDIT_REQUEST_SUB_ID_COL[table];
+            const existingId = r._sighting ? r._sighting[idCol] : null;
+            if (existingId) {
+              const { error } = await bloomSupabase.from(table).update(fields).eq(idCol, existingId);
+              if (error) throw error;
+            } else {
+              const { data: created, error } = await bloomSupabase.from(table).insert(fields).select(idCol).single();
+              if (error) throw error;
+              directChanges[idCol] = created[idCol];
+            }
+          }
+
+          if (Object.keys(directChanges).length) {
             const { error: sightingErr } = await bloomSupabase
-              .from('species_sightings').update(changes).eq('sighting_id', r.sighting_id);
+              .from('species_sightings').update(directChanges).eq('sighting_id', r.sighting_id);
             if (sightingErr) throw sightingErr;
           }
           if (newPhotos.length) {

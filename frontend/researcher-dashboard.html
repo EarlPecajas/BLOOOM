@@ -3939,7 +3939,14 @@
               return uploadedUrls;
             }
 
-            // Launch the heavy work in background so the UI feels instant.
+            // Launch the heavy work in background so the UI feels instant —
+            // but the form must NOT be reset/read again until this actually
+            // finishes. submitNormalizedSighting() reads several fields
+            // (scientific_name included) live from the DOM at call time;
+            // resetting the form before it runs was blanking those fields
+            // on every submission, not just double-clicks (the form.reset()
+            // used to fire synchronously right after this IIFE was merely
+            // *launched*, long before its first await resolved).
             (async () => {
               try {
                 const [wholePlantPhotoUrls, closeupFlowerPhotoUrls, habitatPhotoUrls, relatedStudyFileUrls] = await Promise.all([
@@ -3960,51 +3967,57 @@
                   editDraftId: editDraftId ? Number(editDraftId) : null
                 });
 
-                // Optionally show a toast on final success
                 try { showToast(`Submission queued (Entry ID: ${data?.entry_id || entryId})`, 'success'); } catch(_) {}
+
+                // Only now — after the DB write actually completed — is it
+                // safe to clear the form and close the modal.
+                delete researcherSubmissionFormEl.dataset.editDraftId;
+                delete researcherSubmissionFormEl.dataset.editDraftEntryId;
+                researcherSubmissionFormEl.reset();
+                // .reset() doesn't touch the `disabled` property or CSS classes,
+                // so the Flowering Season Unknown toggle needs clearing by hand
+                // or the month pickers would stay locked on the next submission.
+                const floweringUnknownBtnReset = document.getElementById('submission-flowering-season-unknown');
+                if (floweringUnknownBtnReset) floweringUnknownBtnReset.classList.remove('is-active');
+                const floweringStartSelReset = document.getElementById('submission-flowering-season-start');
+                const floweringEndSelReset = document.getElementById('submission-flowering-season-end');
+                if (floweringStartSelReset) floweringStartSelReset.disabled = false;
+                if (floweringEndSelReset) floweringEndSelReset.disabled = false;
+                initializeResearcherSightingForm();
+                const feedbackOk = document.getElementById('researcher-submission-feedback');
+                if (feedbackOk) {
+                  feedbackOk.style.color = '#145A1E';
+                  feedbackOk.textContent = 'Submission Sent';
+                  try {
+                    // After 5s, animate a fade then clear the content
+                    setTimeout(() => {
+                      feedbackOk.classList.add('fade-out');
+                      setTimeout(() => { feedbackOk.textContent = ''; feedbackOk.classList.remove('fade-out'); }, 600);
+                    }, 5000);
+                  } catch (_) {}
+                }
+                // Try to refresh lightweight submission list but don't block UX
+                try { loadSubmissions(''); } catch (_) {}
+                closeResearcherSubmissionModal();
               } catch (bgErr) {
-                // Background failure: surface a non-blocking toast and log
                 console.error('Background submission failed', bgErr);
+                const feedbackErr = document.getElementById('researcher-submission-feedback');
+                if (feedbackErr) {
+                  feedbackErr.style.color = '#b42318';
+                  feedbackErr.textContent = bgErr.message || 'Could not submit this record — please retry.';
+                }
                 try { showToast('Background submission failed — please retry.', 'error'); } catch(_) {}
+              } finally {
+                isSubmittingSighting = false;
+                if (submitBtnEl) submitBtnEl.disabled = false;
               }
             })();
-
-            // Immediately clear draft metadata and reset the form for a fast UX
-            delete researcherSubmissionFormEl.dataset.editDraftId;
-            delete researcherSubmissionFormEl.dataset.editDraftEntryId;
-            researcherSubmissionFormEl.reset();
-            // .reset() doesn't touch the `disabled` property or CSS classes,
-            // so the Flowering Season Unknown toggle needs clearing by hand
-            // or the month pickers would stay locked on the next submission.
-            const floweringUnknownBtnReset = document.getElementById('submission-flowering-season-unknown');
-            if (floweringUnknownBtnReset) floweringUnknownBtnReset.classList.remove('is-active');
-            const floweringStartSelReset = document.getElementById('submission-flowering-season-start');
-            const floweringEndSelReset = document.getElementById('submission-flowering-season-end');
-            if (floweringStartSelReset) floweringStartSelReset.disabled = false;
-            if (floweringEndSelReset) floweringEndSelReset.disabled = false;
-            initializeResearcherSightingForm();
-            const feedback = document.getElementById('researcher-submission-feedback');
-            if (feedback) {
-              feedback.style.color = '#145A1E';
-              feedback.textContent = 'Submission Sent';
-              try {
-                // After 5s, animate a fade then clear the content
-                setTimeout(() => {
-                  feedback.classList.add('fade-out');
-                  setTimeout(() => { feedback.textContent = ''; feedback.classList.remove('fade-out'); }, 600);
-                }, 5000);
-              } catch (_) {}
-            }
-            // Try to refresh lightweight submission list but don't block UX
-            try { loadSubmissions(''); } catch (_) {}
-            closeResearcherSubmissionModal();
           } catch (error) {
             const feedback = document.getElementById('researcher-submission-feedback');
             if (feedback) {
               feedback.style.color = '#b42318';
               feedback.textContent = error.message || 'Could not submit this record.';
             }
-          } finally {
             isSubmittingSighting = false;
             if (submitBtnEl) submitBtnEl.disabled = false;
           }

@@ -1249,36 +1249,158 @@
       // Fields shown in the detail view's Sightings tab that a researcher can
       // propose edits to. Kept to what's actually displayed there rather than
       // every field in the full 9-page submission wizard.
+      // Mirrors the full 9-page researcher submission wizard (see
+      // frontend/researcher-dashboard.html) field-for-field, including its
+      // exact dropdown option sets, so a researcher edits a sighting the
+      // same way they originally submitted it. `section` marks the first
+      // field of each wizard-tab group so the form can render a divider.
       var EDIT_REQUEST_FIELDS = [
-        // Species Value tab
-        { key: 'common_names', label: 'Common Name(s)', type: 'list' },
+        // Species Value tab — Basic Taxonomic Information
+        { key: 'common_names', label: 'Common Name(s)', type: 'list', section: 'Basic Taxonomic Information' },
         { key: 'local_names', label: 'Local Name(s)', type: 'list' },
-        { key: 'identification_confidence', label: 'Identification Confidence', type: 'text' },
+        { key: 'identification_confidence', label: 'Identification Confidence', type: 'select', options: ['Confirmed', 'Probable', 'Unidentified'] },
         { key: 'endemic_to_philippines', label: 'Endemic to Philippines', type: 'yesno' },
-        // Sightings tab
-        { key: 'observation_date', label: 'Observation Date', type: 'date' },
+
+        // Sightings tab — Observation / Collection Details
+        { key: 'observation_date', label: 'Observation Date', type: 'date', section: 'Observation / Collection Details' },
         { key: 'observation_time', label: 'Time of Observation', type: 'time' },
-        { key: 'collection_method', label: 'Collection Method', type: 'text' },
-        { key: 'observation_type', label: 'Observation Type', type: 'text' },
+        { key: 'collection_method', label: 'Collection Method', type: 'select', options: [
+          { value: 'transect', label: 'Transect' }, { value: 'quadrat', label: 'Quadrat' },
+          { value: 'opportunistic', label: 'Opportunistic' }, { value: 'random survey', label: 'Random Survey' }
+        ] },
+        { key: 'observation_type', label: 'Observation Type', type: 'select', options: [
+          { value: 'live specimen', label: 'Live Specimen' }, { value: 'flowering', label: 'Flowering' },
+          { value: 'fruiting', label: 'Fruiting' }, { value: 'dead specimen', label: 'Dead Specimen' },
+          { value: 'photographic only', label: 'Photographic Only' }
+        ] },
         { key: 'voucher_collected', label: 'Voucher Specimen Collected', type: 'yesno' },
-        { key: 'specific_site_zone', label: 'Altitude Zone', type: 'text' },
-        { key: 'specific_site_other', label: 'Specific Site', type: 'text' },
+        { key: 'population_count', label: 'Number of Orchids in the Area', type: 'number' },
+
+        // Sightings tab — Geographical / Location Data
+        { key: 'specific_site_zone', label: 'Altitude / Site Zone', type: 'select', section: 'Geographical / Location Data', options: [
+          { value: 'trail', label: 'Trail' }, { value: 'ridge', label: 'Ridge' },
+          { value: 'streamside', label: 'Streamside' }, { value: 'others', label: 'Others' }
+        ] },
+        { key: 'specific_site_other', label: 'Specific Site (if Others / Trail name)', type: 'text' },
+        { key: 'latitude', label: 'GPS Latitude', type: 'number' },
+        { key: 'longitude', label: 'GPS Longitude', type: 'number' },
         { key: 'elevation_meters', label: 'Elevation (m)', type: 'number' },
-        { key: 'habitat_type', label: 'Habitat Type', type: 'text' },
-        { key: 'microhabitat', label: 'Microhabitat', type: 'text' },
-        { key: 'growth_substrate', label: 'Growth Substrate', type: 'text' },
+
+        // Sightings tab — Habitat Information
+        { key: 'habitat_type', label: 'Habitat Type', type: 'select-other', section: 'Habitat Information', options: [
+          { value: 'lowland forest', label: 'Lowland Forest' }, { value: 'montane forest', label: 'Montane Forest' },
+          { value: 'mossy forest', label: 'Mossy Forest' }, { value: 'others', label: 'Others' }
+        ] },
+        { key: 'microhabitat', label: 'Microhabitat', type: 'select', options: [
+          { value: 'canopy', label: 'Canopy' }, { value: 'understory', label: 'Understory' },
+          { value: 'forest floor', label: 'Forest Floor' }, { value: 'rock surface', label: 'Rock Surface' },
+          { value: 'twigs or branches', label: 'Twigs or Branches' }
+        ] },
+        { key: 'growth_substrate', label: 'Growth Substrate', type: 'select', options: [
+          { value: 'tree bark', label: 'Tree Bark (on Tree)' }, { value: 'soil', label: 'Soil' },
+          { value: 'rock', label: 'Rock' }, { value: 'decaying wood', label: 'Decaying Wood' }
+        ] },
         { key: 'host_tree_species', label: 'Host Tree Species', type: 'text' },
         { key: 'host_tree_dbh_cm', label: 'Host Tree Diameter (cm)', type: 'number' },
         { key: 'canopy_cover_percent', label: 'Canopy Cover (%)', type: 'number' },
-        { key: 'light_exposure', label: 'Light Exposure', type: 'text' },
-        { key: 'soil_type', label: 'Soil Type', type: 'text' },
-        { key: 'nearby_water_source', label: 'Nearby Water Source', type: 'text' },
-        { key: 'population_status', label: 'Population Status', type: 'text' },
-        { key: 'threat_level', label: 'Threat Level', type: 'text' },
-        { key: 'researcher_notes', label: 'Researcher Notes', type: 'textarea', span: 2 },
+        { key: 'light_exposure', label: 'Light Exposure', type: 'select', options: [
+          { value: 'full shade', label: 'Full Shade' }, { value: 'partial', label: 'Partial' }, { value: 'direct', label: 'Direct' }
+        ] },
+        { key: 'soil_type', label: 'Soil Type', type: 'select', options: [
+          { value: 'loamy', label: 'Loamy' }, { value: 'clay', label: 'Clay' }, { value: 'sandy', label: 'Sandy' },
+          { value: 'silty', label: 'Silty' }, { value: 'peaty', label: 'Peaty' }, { value: 'rocky', label: 'Rocky' }
+        ] },
+        { key: 'nearby_water_source', label: 'Nearby Water Source', type: 'select', options: [
+          { value: 'riparian', label: 'Riparian' }, { value: 'spring', label: 'Spring' }, { value: 'river', label: 'River' },
+          { value: 'seep', label: 'Seep' }, { value: 'pond', label: 'Pond' }, { value: 'none', label: 'None' },
+          { value: 'unidentified', label: 'Unidentified' }
+        ] },
+
+        // Morphological Characteristics
+        { key: 'plant_height_cm', label: 'Plant Height (cm)', type: 'number', section: 'Morphological Characteristics' },
+        { key: 'pseudobulb_present', label: 'Pseudobulb Present', type: 'yesno' },
+        { key: 'stem_length_cm', label: 'Stem Length (cm)', type: 'number' },
+        { key: 'root_length_cm', label: 'Root Length (cm)', type: 'number' },
+        { key: 'leaf_count', label: 'Number of Leaves', type: 'number' },
+        { key: 'leaf_shape', label: 'Leaf Shape', type: 'select', options: [
+          'Linear & Narrow', 'Rounded & Oval', 'Pointy or Tapered', 'Reversed', 'Specialized Shapes', 'Others'
+        ] },
+        { key: 'leaf_shape_other', label: 'Leaf Shape (Others)', type: 'text' },
+        { key: 'leaf_length_cm', label: 'Leaf Length (cm)', type: 'number' },
+        { key: 'leaf_width_cm', label: 'Leaf Width (cm)', type: 'number' },
+        { key: 'leaf_textures', label: 'Leaf Texture', type: 'checkboxlist', options: ['Smooth', 'Leathery', 'Hairy or Fuzzy', 'Thin or Fragile'] },
+        { key: 'leaf_arrangement', label: 'Leaf Arrangement', type: 'select', options: ['Alternate', 'Opposite', 'Whorled'] },
+        { key: 'flower_color', label: 'Flower Color', type: 'text' },
+        { key: 'flower_count', label: 'Number of Flowers', type: 'number' },
+        { key: 'flower_diameter_cm', label: 'Flower Diameter (cm)', type: 'number' },
+        { key: 'inflorescence_type', label: 'Inflorescence Type', type: 'select', options: ['Raceme', 'Spike', 'Panicle', 'Solitary'] },
+        { key: 'petal_characteristics', label: 'Petal Characteristics', type: 'select', options: ['Obovate', 'Elliptic', 'Spatulate'] },
+        { key: 'sepal_characteristics', label: 'Sepal Characteristics', type: 'text' },
+        { key: 'labellum_lip_description', label: 'Labellum / Lip Description', type: 'select', options: [
+          'Trilobed (Three-lobed)', 'Saccate (Bag-like)', 'Spurred'
+        ] },
+        { key: 'fragrance', label: 'Fragrance', type: 'select', options: ['None', 'Faint', 'Strong', 'Sweet', 'Musky', 'Spicy'] },
+        { key: 'blooming_stage', label: 'Blooming Stage', type: 'select', options: [
+          'Budding', 'Anthesis (Early)', 'Full Bloom', 'Senescent'
+        ] },
+        { key: 'flowering_season', label: 'Flowering Season', type: 'monthrange' },
+        { key: 'fruit_present', label: 'Fruit Present', type: 'yesno' },
+        { key: 'fruit_type', label: 'Fruit Type', type: 'select', options: ['Capsule', 'Pod', 'Berry'] },
+        { key: 'seed_capsule_condition', label: 'Seed Capsule Condition', type: 'select', options: [
+          'Immature (Green)', 'Mature (Yellow/Brown)', 'Dehisced (Split)', 'Aborted'
+        ] },
+
+        // Ecological / Biological Data
+        { key: 'life_stage', label: 'Life Stage', type: 'select', section: 'Ecological / Biological Data', options: [
+          { value: 'Seedling', label: 'Seedling' }, { value: 'juvenile', label: 'Juvenile' }, { value: 'Mature', label: 'Mature' }
+        ] },
+        { key: 'phenology', label: 'Phenology', type: 'select', options: [
+          { value: 'Vegetative', label: 'Vegetative' }, { value: 'budding', label: 'Budding' },
+          { value: 'flowering', label: 'Flowering' }, { value: 'fruiting', label: 'Fruiting' }
+        ] },
+
+        // Conservation & Threat Data
+        { key: 'population_status', label: 'Population Status', type: 'select', section: 'Conservation & Threat Data', options: [
+          { value: 'Abundant', label: 'Abundant' }, { value: 'common', label: 'Common' }, { value: 'rare', label: 'Rare' }
+        ] },
+        { key: 'threat_level', label: 'Threat Level', type: 'select', options: [
+          'Critically Endangered', 'Endangered', 'Vulnerable', 'Other Threatened Species', 'Not Listed'
+        ] },
+        { key: 'threat_types', label: 'Threat Type', type: 'checkboxlist', options: [
+          { value: 'logging', label: 'Logging' }, { value: 'collection', label: 'Collection' },
+          { value: 'Fire', label: 'Fire' }, { value: 'land conversion', label: 'Land Conversion' }
+        ] },
+
+        { key: 'researcher_notes', label: 'Researcher Notes', type: 'textarea', span: 2, section: 'Notes & Related Study' },
+
         // Related Study tab
         { key: 'related_study', label: 'Related Study (title or link)', type: 'text', span: 2 }
       ];
+
+      function editRequestOptionValue(opt) { return typeof opt === 'string' ? opt : opt.value; }
+      function editRequestOptionLabel(opt) { return typeof opt === 'string' ? opt : opt.label; }
+      function editRequestSelectOptionsHtml(options, selectedVal) {
+        return '<option value=""' + (selectedVal ? '' : ' selected') + '>— Not set —</option>' +
+          options.map(function(opt) {
+            var v = editRequestOptionValue(opt), l = editRequestOptionLabel(opt);
+            var sel = String(selectedVal) === String(v) ? ' selected' : '';
+            return '<option value="' + escapeHtml(v) + '"' + sel + '>' + escapeHtml(l) + '</option>';
+          }).join('');
+      }
+
+      function editRequestToggleMonthUnknown(fieldKey) {
+        var id = 'editreq-' + fieldKey;
+        var btn = document.getElementById(id + '-unknown');
+        var startSel = document.getElementById(id + '-start');
+        var endSel = document.getElementById(id + '-end');
+        if (!btn) return;
+        var nowActive = !btn.classList.contains('is-active');
+        btn.classList.toggle('is-active', nowActive);
+        btn.style.background = nowActive ? '#145A1E' : '#f6f8f7';
+        btn.style.color = nowActive ? '#fff' : '#3a4a3a';
+        if (startSel) { startSel.disabled = nowActive; if (nowActive) startSel.value = ''; }
+        if (endSel) { endSel.disabled = nowActive; if (nowActive) endSel.value = ''; }
+      }
 
       function editRequestFieldInputHtml(field, value) {
         var id = 'editreq-' + field.key;
@@ -1290,6 +1412,46 @@
             '<option value="yes"' + (v === 'yes' ? ' selected' : '') + '>Yes</option>' +
             '<option value="no"' + (v === 'no' ? ' selected' : '') + '>No</option>' +
             '</select>';
+        }
+        if (field.type === 'select') {
+          return '<select id="' + id + '" ' + common + '>' + editRequestSelectOptionsHtml(field.options, value == null ? '' : String(value)) + '</select>';
+        }
+        if (field.type === 'select-other') {
+          var strVal = value == null ? '' : String(value);
+          var known = field.options.some(function(o) { return editRequestOptionValue(o) === strVal; });
+          var selectVal = known ? strVal : (strVal ? 'others' : '');
+          var otherText = known ? '' : strVal.replace(/^Others:\s*/i, '');
+          var showOther = selectVal === 'others' ? '' : 'display:none;';
+          return '<select id="' + id + '" ' + common + ' onchange="var o=document.getElementById(\'' + id + '-other-wrap\'); if(o) o.style.display = this.value===\'others\'?\'\':\'none\';">' +
+            editRequestSelectOptionsHtml(field.options, selectVal) + '</select>' +
+            '<div id="' + id + '-other-wrap" style="margin-top:.35rem;' + showOther + '">' +
+            '<input id="' + id + '-other" type="text" placeholder="Specify" value="' + escapeHtml(otherText) + '" ' + common + ' /></div>';
+        }
+        if (field.type === 'checkboxlist') {
+          var selectedArr = Array.isArray(value) ? value.map(String) : [];
+          return '<div id="' + id + '" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.35rem;padding:.5rem .6rem;border:1px solid #d8e6d4;border-radius:8px;background:#fff;">' +
+            field.options.map(function(opt) {
+              var v = editRequestOptionValue(opt), l = editRequestOptionLabel(opt);
+              var checked = selectedArr.indexOf(String(v)) > -1 ? ' checked' : '';
+              return '<label style="display:flex;align-items:center;gap:.4rem;font-weight:400;font-size:.8rem;cursor:pointer;"><input type="checkbox" class="' + id + '-option" value="' + escapeHtml(v) + '"' + checked + ' /> ' + escapeHtml(l) + '</label>';
+            }).join('') + '</div>';
+        }
+        if (field.type === 'monthrange') {
+          var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+          var mrVal = value == null ? '' : String(value);
+          var isUnknown = mrVal.toLowerCase() === 'unknown';
+          var parts = (!isUnknown && mrVal) ? mrVal.split(/[–-]/).map(function(s) { return s.trim(); }) : ['', ''];
+          var monthOptions = function(sel) {
+            return '<option value="">— Month —</option>' + months.map(function(m) {
+              return '<option value="' + m + '"' + (m === sel ? ' selected' : '') + '>' + m + '</option>';
+            }).join('');
+          };
+          return '<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">' +
+            '<select id="' + id + '-start" ' + common + ' style="flex:1;min-width:110px;"' + (isUnknown ? ' disabled' : '') + '>' + monthOptions(parts[0]) + '</select>' +
+            '<span style="color:#64748b;font-size:.8rem;flex-shrink:0;">to</span>' +
+            '<select id="' + id + '-end" ' + common + ' style="flex:1;min-width:110px;"' + (isUnknown ? ' disabled' : '') + '>' + monthOptions(parts[1]) + '</select>' +
+            '<button type="button" id="' + id + '-unknown" class="' + (isUnknown ? 'is-active' : '') + '" onclick="editRequestToggleMonthUnknown(\'' + field.key + '\')" style="flex-shrink:0;padding:.45rem .7rem;border:1px solid #d8e6d4;border-radius:8px;background:' + (isUnknown ? '#145A1E' : '#f6f8f7') + ';color:' + (isUnknown ? '#fff' : '#3a4a3a') + ';font-size:.78rem;cursor:pointer;">Unknown</button>' +
+            '</div>';
         }
         if (field.type === 'textarea') {
           return '<textarea id="' + id + '" rows="3" ' + common + '>' + escapeHtml(value == null ? '' : String(value)) + '</textarea>';
@@ -1306,9 +1468,13 @@
 
       function odmBuildEditRequestForm(sighting) {
         var container = document.getElementById('editRequestFormFields');
-        container.innerHTML = EDIT_REQUEST_FIELDS.map(function(field) {
+        container.innerHTML = EDIT_REQUEST_FIELDS.map(function(field, idx) {
           var spanStyle = field.span === 2 ? 'grid-column:1 / -1;' : '';
-          return '<div style="' + spanStyle + '">' +
+          var sectionHtml = field.section
+            ? '<div style="grid-column:1 / -1;margin:' + (idx === 0 ? '0' : '.9rem') + ' 0 .1rem;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#145A1E;' +
+              (idx === 0 ? '' : 'border-top:1px solid #eef2ef;padding-top:.7rem;') + '">' + escapeHtml(field.section) + '</div>'
+            : '';
+          return sectionHtml + '<div style="' + spanStyle + '">' +
             '<label for="editreq-' + field.key + '" style="display:block;font-size:.72rem;font-weight:700;color:#3a4a3a;margin-bottom:.25rem;">' + escapeHtml(field.label) + '</label>' +
             editRequestFieldInputHtml(field, sighting[field.key]) +
             '</div>';
@@ -1316,10 +1482,31 @@
       }
 
       function editRequestFieldCurrentValue(field) {
-        var el = document.getElementById('editreq-' + field.key);
+        var id = 'editreq-' + field.key;
+        if (field.type === 'checkboxlist') {
+          return Array.from(document.querySelectorAll('.' + id + '-option:checked')).map(function(b) { return b.value; });
+        }
+        if (field.type === 'monthrange') {
+          var btn = document.getElementById(id + '-unknown');
+          if (btn && btn.classList.contains('is-active')) return 'Unknown';
+          var s = document.getElementById(id + '-start')?.value || '';
+          var e = document.getElementById(id + '-end')?.value || '';
+          return s && e ? s + '–' + e : (s || e || null);
+        }
+        if (field.type === 'select-other') {
+          var selEl = document.getElementById(id);
+          if (!selEl) return null;
+          if (selEl.value === 'others') {
+            var other = (document.getElementById(id + '-other')?.value || '').trim();
+            return other ? 'Others: ' + other : 'Others';
+          }
+          return selEl.value === '' ? null : selEl.value;
+        }
+        var el = document.getElementById(id);
         if (!el) return null;
         var raw = el.value;
         if (field.type === 'yesno') return raw === 'yes' ? true : (raw === 'no' ? false : null);
+        if (field.type === 'select') return raw === '' ? null : raw;
         if (field.type === 'number') return raw === '' ? null : Number(raw);
         if (field.type === 'list') return raw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
         return raw === '' ? null : raw;
@@ -1329,9 +1516,9 @@
         if (field.type === 'number') {
           return Number(oldVal) === Number(newVal) || (oldVal == null && newVal == null);
         }
-        if (field.type === 'list') {
-          var a = Array.isArray(oldVal) ? oldVal : [];
-          var b = Array.isArray(newVal) ? newVal : [];
+        if (field.type === 'list' || field.type === 'checkboxlist') {
+          var a = (Array.isArray(oldVal) ? oldVal : []).map(String).sort();
+          var b = (Array.isArray(newVal) ? newVal : []).map(String).sort();
           return a.length === b.length && a.every(function(v, i) { return v === b[i]; });
         }
         return String(oldVal == null ? '' : oldVal) === String(newVal == null ? '' : newVal);
@@ -1363,11 +1550,9 @@
 
       var editRequestTargetId = null;
       var editRequestOriginalSighting = null;
-      function openEditRequestModal() {
+      async function openEditRequestModal() {
         if (!odmEditRequestSightingId) return;
         editRequestTargetId = odmEditRequestSightingId;
-        editRequestOriginalSighting = (odmCurrentAllSightings || []).find(function(s) { return s.id === editRequestTargetId; }) || {};
-        odmBuildEditRequestForm(editRequestOriginalSighting);
         var modal = document.getElementById('edit-request-modal');
         var reasonEl = document.getElementById('editRequestReason');
         var errEl = document.getElementById('editRequestError');
@@ -1377,7 +1562,39 @@
           var input = document.getElementById('editreq-photo-' + cat.key);
           if (input) input.value = '';
         });
+        var container = document.getElementById('editRequestFormFields');
+        if (container) container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:1.5rem;">Loading current values…</div>';
         if (modal) { modal.style.display = 'flex'; }
+
+        // Pull the full raw record (habitat/morphology/conservation included,
+        // flattened onto one object) rather than the trimmed public-view
+        // sighting object used for the map/list — that one only carries a
+        // subset of fields. RLS already lets any authenticated user read
+        // species_sightings, which is fine here since a researcher can only
+        // reach this modal for a sighting the ownership check already
+        // confirmed is their own.
+        editRequestOriginalSighting = (odmCurrentAllSightings || []).find(function(s) { return s.id === editRequestTargetId; }) || {};
+        try {
+          var full = null;
+          if (window.bloomSupabase) {
+            var resp = await window.bloomSupabase
+              .from('species_sightings')
+              .select('*, sighting_habitat(*), sighting_morphology(*), sighting_conservation(*)')
+              .eq('sighting_id', editRequestTargetId)
+              .single();
+            full = resp.data;
+          }
+          if (full) {
+            editRequestOriginalSighting = Object.assign(
+              {}, editRequestOriginalSighting, full,
+              full.sighting_habitat || {}, full.sighting_morphology || {}, full.sighting_conservation || {}
+            );
+          }
+        } catch (e) {
+          console.warn('Failed to load full sighting for edit request:', e);
+        }
+        if (editRequestTargetId !== odmEditRequestSightingId) return; // modal was closed/reopened for a different sighting while this was loading
+        odmBuildEditRequestForm(editRequestOriginalSighting);
       }
       function closeEditRequestModal() {
         var modal = document.getElementById('edit-request-modal');
