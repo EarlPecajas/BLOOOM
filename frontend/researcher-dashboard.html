@@ -1395,6 +1395,26 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Edit requests this researcher has sent DENR (from the orchid-detail
+           pencil icon) — kept here so approval status is easy to track without
+           a separate page. Hidden entirely when there are none. -->
+      <div id="my-edit-requests-section" style="display:none;margin-top:2rem;">
+        <h2 style="font-size:1.05rem;color:#145A1E;margin:0 0 .8rem;">My Edit Requests</h2>
+        <div class="submissions-table-shell" style="background:white;border-radius:12px;padding:2rem;border:1px solid #e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow-x:auto;">
+          <table class="submissions-table" style="width:100%;border-collapse:collapse;font-family:Inter,Roboto,sans-serif;">
+            <thead>
+              <tr class="submissions-table-head">
+                <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Scientific Name</th>
+                <th style="padding:1.2rem;text-align:left;font-weight:600;font-size:0.95rem;">Requested</th>
+                <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Status</th>
+                <th style="padding:1.2rem;text-align:center;font-weight:600;font-size:0.95rem;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="my-edit-requests-table-body"></tbody>
+          </table>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -4501,6 +4521,144 @@
         }
       }
 
+      // ── My Edit Requests (sent from the orchid-detail pencil icon) ──
+      // Read-only tracking of status; approving/denying only happens on the
+      // DENR dashboard. Field labels mirror EDIT_REQUEST_FIELD_LABELS in
+      // denr-dashboard.html so the same proposed_changes JSON reads the same
+      // way on both sides.
+      const MY_EDIT_REQUEST_FIELD_LABELS = {
+        common_names: 'Common Name(s)', local_names: 'Local Name(s)',
+        identification_confidence: 'Identification Confidence', endemic_to_philippines: 'Endemic to Philippines',
+        observation_date: 'Observation Date', observation_time: 'Time of Observation',
+        collection_method: 'Collection Method', observation_type: 'Observation Type',
+        voucher_collected: 'Voucher Specimen Collected', population_count: 'Number of Orchids in the Area',
+        specific_site_zone: 'Altitude / Site Zone', specific_site_other: 'Specific Site', elevation_meters: 'Elevation (m)',
+        latitude: 'GPS Latitude', longitude: 'GPS Longitude',
+        habitat_type: 'Habitat Type', microhabitat: 'Microhabitat', growth_substrate: 'Growth Substrate',
+        host_tree_species: 'Host Tree Species', host_tree_dbh_cm: 'Host Tree Diameter (cm)',
+        canopy_cover_percent: 'Canopy Cover (%)', light_exposure: 'Light Exposure', soil_type: 'Soil Type',
+        nearby_water_source: 'Nearby Water Source',
+        plant_height_cm: 'Plant Height (cm)', pseudobulb_present: 'Pseudobulb Present',
+        stem_length_cm: 'Stem Length (cm)', root_length_cm: 'Root Length (cm)', leaf_count: 'Number of Leaves',
+        leaf_shape: 'Leaf Shape', leaf_shape_other: 'Leaf Shape (Others)', leaf_length_cm: 'Leaf Length (cm)',
+        leaf_width_cm: 'Leaf Width (cm)', leaf_textures: 'Leaf Texture', leaf_arrangement: 'Leaf Arrangement',
+        flower_color: 'Flower Color', flower_count: 'Number of Flowers', flower_diameter_cm: 'Flower Diameter (cm)',
+        inflorescence_type: 'Inflorescence Type', petal_characteristics: 'Petal Characteristics',
+        sepal_characteristics: 'Sepal Characteristics', labellum_lip_description: 'Labellum / Lip Description',
+        fragrance: 'Fragrance', blooming_stage: 'Blooming Stage', flowering_season: 'Flowering Season',
+        fruit_present: 'Fruit Present', fruit_type: 'Fruit Type', seed_capsule_condition: 'Seed Capsule Condition',
+        life_stage: 'Life Stage', phenology: 'Phenology',
+        population_status: 'Population Status', threat_level: 'Threat Level', threat_types: 'Threat Type',
+        researcher_notes: 'Researcher Notes', related_study: 'Related Study'
+      };
+
+      function myEditRequestDisplayValue(v) {
+        if (v === null || v === undefined || v === '') return '—';
+        if (v === true) return 'Yes';
+        if (v === false) return 'No';
+        if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
+        return String(v);
+      }
+
+      let myEditRequestRows = [];
+
+      async function loadMyEditRequestRows() {
+        const section = document.getElementById('my-edit-requests-section');
+        const body = document.getElementById('my-edit-requests-table-body');
+        if (!section || !body || !window.bloomSupabase) return;
+        try {
+          const currentEmail = String(parsedActiveUser.email || '').trim();
+          if (!currentEmail) { section.style.display = 'none'; return; }
+
+          const { data: requests, error } = await window.bloomSupabase
+            .from('catalog_edit_requests')
+            .select('*')
+            .eq('researcher_email', currentEmail)
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          const rows = requests || [];
+          if (!rows.length) { section.style.display = 'none'; myEditRequestRows = []; return; }
+
+          const sightingIds = [...new Set(rows.map((r) => r.sighting_id).filter((v) => v != null))];
+          let sightingById = {};
+          if (sightingIds.length) {
+            const { data: sightings } = await window.bloomSupabase
+              .from('species_sightings').select('sighting_id, scientific_name').in('sighting_id', sightingIds);
+            (sightings || []).forEach((s) => { sightingById[s.sighting_id] = s; });
+          }
+
+          myEditRequestRows = rows.map((r) => ({ ...r, _species: sightingById[r.sighting_id]?.scientific_name || '' }));
+          section.style.display = '';
+          renderMyEditRequestRows(myEditRequestRows);
+        } catch (e) {
+          console.warn('loadMyEditRequestRows failed:', e);
+          section.style.display = 'none';
+        }
+      }
+
+      function renderMyEditRequestRows(items) {
+        const body = document.getElementById('my-edit-requests-table-body');
+        if (!body) return;
+        body.innerHTML = items.map((r) => {
+          const status = String(r.status || 'pending').toLowerCase();
+          const badgeClass = status === 'approved' ? 'status-approved' : status === 'denied' ? 'status-rejected' : 'status-pending';
+          const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+          return `
+            <tr class="submission-row">
+              <td class="submission-species-cell"><span class="scientific-name">${escapeHtml(r._species || 'Sighting')}</span></td>
+              <td class="submission-date-cell">${escapeHtml(dateStr)}</td>
+              <td class="submission-status-cell"><span class="submission-status-badge ${badgeClass}">${escapeHtml(status.charAt(0).toUpperCase() + status.slice(1))}</span></td>
+              <td class="submission-action-cell">
+                <button type="button" class="submission-view-btn" title="View details" onclick="viewMyEditRequestDetails(${r.id})"></button>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+
+      function viewMyEditRequestDetails(requestId) {
+        const r = myEditRequestRows.find((row) => row.id === requestId);
+        if (!r) return;
+        const changes = r.proposed_changes || {};
+        const newPhotos = Array.isArray(changes.new_photos) ? changes.new_photos : [];
+        const keys = Object.keys(changes).filter((k) => k !== 'new_photos');
+        const rowsHtml = keys.map((key) => {
+          const label = MY_EDIT_REQUEST_FIELD_LABELS[key] || key;
+          return `<tr>
+            <td style="padding:.5rem .7rem;font-size:.82rem;font-weight:600;color:#3a4a3a;border-bottom:1px solid #eef2ef;">${escapeHtml(label)}</td>
+            <td style="padding:.5rem .7rem;font-size:.82rem;color:#15803d;font-weight:600;border-bottom:1px solid #eef2ef;">${escapeHtml(myEditRequestDisplayValue(changes[key]))}</td>
+          </tr>`;
+        }).join('');
+
+        const status = String(r.status || 'pending').toLowerCase();
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        const statusColor = status === 'approved' ? '#15803d' : status === 'denied' ? '#dc2626' : '#b45309';
+
+        const modal = document.createElement('div');
+        modal.id = 'my-edit-request-detail-modal';
+        modal.style.cssText = 'position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = `
+          <div style="background:#fff;border-radius:14px;width:min(560px,94vw);max-height:88vh;overflow-y:auto;padding:1.6rem;position:relative;box-shadow:0 16px 50px rgba(0,0,0,.3);">
+            <button type="button" onclick="document.getElementById('my-edit-request-detail-modal').remove()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button>
+            <h2 style="margin:0 0 .2rem;color:#145A1E;font-size:1.1rem;font-style:italic;">${escapeHtml(r._species || 'Sighting')}</h2>
+            <p style="margin:0 0 1rem;font-size:.82rem;font-weight:700;color:${statusColor};">${escapeHtml(statusLabel)}${r.status && status !== 'pending' && r.resolved_at ? ' · ' + escapeHtml(new Date(r.resolved_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) : ''}</p>
+            ${r.denr_response ? `<p style="margin:0 0 1rem;padding:.6rem .8rem;background:#fef2f2;border-radius:8px;color:#7a1c1c;font-size:.82rem;">DENR: "${escapeHtml(r.denr_response)}"</p>` : ''}
+            ${keys.length ? `<table style="width:100%;border-collapse:collapse;">
+              <thead><tr>
+                <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Field</th>
+                <th style="text-align:left;padding:.4rem .7rem;font-size:.72rem;text-transform:uppercase;color:#888;">Requested Value</th>
+              </tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>` : ''}
+            ${!keys.length && !newPhotos.length ? '<p style="padding:1rem;text-align:center;color:#666;">No field changes recorded.</p>' : ''}
+            ${newPhotos.length ? `<h3 style="margin:1.1rem 0 .5rem;font-size:.82rem;color:#3a4a3a;">Photos attached (${newPhotos.length})</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.5rem;">
+                ${newPhotos.map((p) => `<img src="${escapeHtml(p.src)}" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #eef2ef;" />`).join('')}
+              </div>` : ''}
+            ${r.reason ? `<p style="margin:1rem 0 0;font-size:.78rem;color:#666;">Your note: "${escapeHtml(r.reason)}"</p>` : ''}
+          </div>`;
+        document.body.appendChild(modal);
+      }
+
       async function loadDrafts(searchTerm = '') {
         const draftsTableBody = document.getElementById('drafts-table-body');
         if (!draftsTableBody) return;
@@ -6120,6 +6278,7 @@ function refreshConservationHeatMap(summary) {
           }
           if (viewName === 'submissions') {
             loadSubmissions(submissionsSearchInput ? submissionsSearchInput.value.trim() : '');
+            loadMyEditRequestRows();
           }
           if (viewName === 'drafts') {
             const draftsInput = document.getElementById('drafts-search-input');

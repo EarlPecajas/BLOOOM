@@ -479,6 +479,7 @@
       <div style="background:#FFFFFF;border-radius:16px;width:min(620px,94vw);max-height:90vh;overflow-y:auto;padding:1.75rem 1.75rem 1.5rem;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.25);">
         <button type="button" title="Close" aria-label="Close" onclick="closeEditRequestModal()" style="position:absolute;top:.9rem;right:.9rem;border:none;background:none;font-size:1.5rem;line-height:1;cursor:pointer;color:#888;padding:0.2rem 0.4rem;">&times;</button>
         <h2 style="color:#145A1E;font-size:1.15rem;font-weight:700;margin:0 0 .4rem;">Edit your sighting</h2>
+        <span id="editreq-sighting-context" style="display:inline-block;color:#145A1E;font-size:.78rem;font-weight:700;background:#eaf3ea;padding:.25rem .6rem;border-radius:6px;margin-bottom:.6rem;"></span>
         <p style="color:#5a8a54;font-size:.85rem;margin:0 0 1rem;">Change any fields below, then submit. DENR reviews only what you changed and, once approved, it's applied directly to your published record.</p>
         <div id="editRequestFormFields" style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem .8rem;"></div>
         <label style="display:block;font-size:.78rem;font-weight:700;color:#3a4a3a;margin:1rem 0 .3rem;">Add Photos (optional)</label>
@@ -507,10 +508,6 @@
     </div>
 
     <script>
-      // Fields shown across the detail view's Species Value, Sightings, and
-      // Related Study tabs that a researcher can propose edits to. Kept to
-      // what's actually displayed there rather than every field in the full
-      // 9-page submission wizard.
       // Mirrors the full 9-page researcher submission wizard (see
       // frontend/researcher-dashboard.html) field-for-field, including its
       // exact dropdown option sets, so a researcher edits a sighting the
@@ -538,15 +535,18 @@
         { key: 'voucher_collected', label: 'Voucher Specimen Collected', type: 'yesno' },
         { key: 'population_count', label: 'Number of Orchids in the Area', type: 'number' },
 
-        // Sightings tab — Geographical / Location Data
-        { key: 'specific_site_zone', label: 'Altitude / Site Zone', type: 'select', section: 'Geographical / Location Data', options: [
+        // Sightings tab — Geographical / Location Data. Read-only here: GPS
+        // coordinates and site are locked in at submission time and shown
+        // only for context — editing them belongs to a fresh submission, not
+        // a field-correction request, so these render grayed-out/disabled.
+        { key: 'specific_site_zone', label: 'Altitude / Site Zone', type: 'select', section: 'Geographical / Location Data', readOnly: true, options: [
           { value: 'trail', label: 'Trail' }, { value: 'ridge', label: 'Ridge' },
           { value: 'streamside', label: 'Streamside' }, { value: 'others', label: 'Others' }
         ] },
-        { key: 'specific_site_other', label: 'Specific Site (if Others / Trail name)', type: 'text' },
-        { key: 'latitude', label: 'GPS Latitude', type: 'number' },
-        { key: 'longitude', label: 'GPS Longitude', type: 'number' },
-        { key: 'elevation_meters', label: 'Elevation (m)', type: 'number' },
+        { key: 'specific_site_other', label: 'Specific Site (if Others / Trail name)', type: 'text', readOnly: true },
+        { key: 'latitude', label: 'GPS Latitude', type: 'number', readOnly: true },
+        { key: 'longitude', label: 'GPS Longitude', type: 'number', readOnly: true },
+        { key: 'elevation_meters', label: 'Elevation (m)', type: 'number', readOnly: true },
 
         // Sightings tab — Habitat Information
         { key: 'habitat_type', label: 'Habitat Type', type: 'select-other', section: 'Habitat Information', options: [
@@ -666,7 +666,9 @@
 
       function editRequestFieldInputHtml(field, value) {
         var id = 'editreq-' + field.key;
-        var common = 'style="width:100%;border:1px solid #d8e6d4;border-radius:8px;padding:.45rem .6rem;font:inherit;font-size:.82rem;box-sizing:border-box;"';
+        var disabledAttr = field.readOnly ? ' disabled' : '';
+        var common = 'style="width:100%;border:1px solid #d8e6d4;border-radius:8px;padding:.45rem .6rem;font:inherit;font-size:.82rem;box-sizing:border-box;' +
+          (field.readOnly ? 'background:#f0f2f0;color:#8a8a8a;cursor:not-allowed;' : '') + '"';
         if (field.type === 'yesno') {
           var v = value === true ? 'yes' : (value === false ? 'no' : '');
           return '<select id="' + id + '" ' + common + '>' +
@@ -676,7 +678,7 @@
             '</select>';
         }
         if (field.type === 'select') {
-          return '<select id="' + id + '" ' + common + '>' + editRequestSelectOptionsHtml(field.options, value == null ? '' : String(value)) + '</select>';
+          return '<select id="' + id + '" ' + common + disabledAttr + '>' + editRequestSelectOptionsHtml(field.options, value == null ? '' : String(value)) + '</select>';
         }
         if (field.type === 'select-other') {
           var strVal = value == null ? '' : String(value);
@@ -725,7 +727,7 @@
         var inputType = field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : (field.type === 'time' ? 'time' : 'text'));
         var val = value == null ? '' : String(value);
         if (field.type === 'time' && val.length > 5) val = val.slice(0, 5); // HH:MM:SS -> HH:MM for <input type=time>
-        return '<input id="' + id + '" type="' + inputType + '" value="' + escapeHtml(val) + '" ' + common + ' />';
+        return '<input id="' + id + '" type="' + inputType + '" value="' + escapeHtml(val) + '" ' + common + disabledAttr + ' />';
       }
 
       function odmBuildEditRequestForm(sighting) {
@@ -783,6 +785,14 @@
           var b = (Array.isArray(newVal) ? newVal : []).map(String).sort();
           return a.length === b.length && a.every(function(v, i) { return v === b[i]; });
         }
+        if (field.type === 'time') {
+          // DB stores TIME as "HH:MM:SS"; <input type=time> only ever produces
+          // "HH:MM" — compare on minutes so an untouched field never reads as
+          // "changed" just because of the missing seconds component.
+          var ot = oldVal == null ? '' : String(oldVal).slice(0, 5);
+          var nt = newVal == null ? '' : String(newVal).slice(0, 5);
+          return ot === nt;
+        }
         return String(oldVal == null ? '' : oldVal) === String(newVal == null ? '' : newVal);
       }
 
@@ -800,6 +810,18 @@
           var input = document.getElementById('editreq-photo-' + cat.key);
           if (input) input.value = '';
         });
+        // Make it unmistakable which sighting a multi-sighting species' edit
+        // request will apply to — matches whichever pin/sighting was active
+        // when the pencil icon was clicked (see odmUpdateEditRequestButton).
+        var contextEl = document.getElementById('editreq-sighting-context');
+        if (contextEl) {
+          var targetIdx = (odmCurrentAllSightings || []).findIndex(function(s) { return s.id === editRequestTargetId; });
+          var targetSighting = targetIdx >= 0 ? odmCurrentAllSightings[targetIdx] : null;
+          var dateStr = targetSighting && targetSighting.observation_date
+            ? new Date(targetSighting.observation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '';
+          contextEl.textContent = 'Editing Sighting #' + (targetIdx >= 0 ? targetIdx + 1 : '?') + (dateStr ? ' · ' + dateStr : '');
+        }
         var container = document.getElementById('editRequestFormFields');
         if (container) container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:1.5rem;">Loading current values…</div>';
         if (modal) { modal.style.display = 'flex'; }
