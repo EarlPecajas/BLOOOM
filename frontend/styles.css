@@ -628,6 +628,58 @@ body .required-asterisk, .dashboard-page .required-asterisk {
   }
 }
 
+/* Staggered entrance for the hero copy so it cascades in piece by piece
+   instead of appearing all at once, plus a gentle continuous float on the
+   eyebrow pill so the section still feels alive once settled. */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.hero-eyebrow {
+  animation: heroFadeUp 0.7s ease-out both,
+             heroFloat 4s ease-in-out 0.9s infinite;
+}
+
+.hero-copy h1 {
+  animation: heroFadeUp 0.7s ease-out 0.12s both;
+}
+
+.hero-description {
+  animation: heroFadeUp 0.7s ease-out 0.26s both;
+}
+
+.button-group {
+  animation: heroFadeUp 0.7s ease-out 0.4s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy,
+  .hero-eyebrow,
+  .hero-copy h1,
+  .hero-description,
+  .button-group {
+    animation: none;
+  }
+}
+
 @media (max-width: 980px) {
   .hero {
     grid-template-columns: 1fr;
