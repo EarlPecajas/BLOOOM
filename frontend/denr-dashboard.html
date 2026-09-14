@@ -2905,6 +2905,7 @@
                     Upload custom thumbnail
                     <input type="file" id="catalogThumbnailUpload" accept="image/*" style="display:none;" onchange="previewCustomThumbnail(this)">
                   </label>
+                  <p style="margin:0.5rem 0 0;font-size:0.76rem;color:var(--dt-muted);">…or pick "Use as thumbnail" on a photo in the Orchid Gallery below.</p>
                   <div id="customThumbnailPreview" style="display:none;margin-top:0.65rem;"></div>
                 </div>
               </div>
@@ -2916,7 +2917,7 @@
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4db86a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><rect x="13" y="13" width="4" height="4"/></svg>
                   </span>
                   <h4 class="ptc-section-title">Orchid Gallery</h4>
-                  <span style="font-size:0.72rem;color:var(--dt-muted);">Check photos to include in the orchid's gallery</span>
+                  <span style="font-size:0.72rem;color:var(--dt-muted);">Check photos to include in the gallery, or use one as the thumbnail</span>
                 </div>
                 <div style="padding:1rem;">
                   <div id="galleryOptions" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;"></div>
@@ -12179,6 +12180,8 @@
         const file = input.files[0];
         if (!file) return;
         catalogCustomThumbnailFile = file;
+        selectedGalleryThumbnailUrl = null;
+        renderGalleryThumbnailState();
         const reader = new FileReader();
         reader.onload = function(e) {
           const preview = document.getElementById('customThumbnailPreview');
@@ -12193,11 +12196,14 @@
       }
 
       function makeGalleryCard(img, index) {
-        return `<label style="position:relative;cursor:pointer;display:block;" onclick="updateGallerySelection(this);">
-          <input type="checkbox" name="gallery" value="${img}" checked style="position:absolute;opacity:0;width:0;height:0;">
-          <img src="${img}" alt="Photo ${index+1}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2.5px solid #145A1E;transition:border-color 150ms,opacity 150ms;">
-          <span class="gallery-sel-badge" style="display:flex;position:absolute;top:5px;right:5px;background:#145A1E;color:#fff;font-size:0.62rem;font-weight:800;padding:0.18rem 0.45rem;border-radius:999px;text-transform:uppercase;letter-spacing:0.04em;align-items:center;">✓</span>
-        </label>`;
+        return `<div style="position:relative;">
+          <label style="position:relative;cursor:pointer;display:block;" onclick="updateGallerySelection(this);">
+            <input type="checkbox" name="gallery" value="${img}" checked style="position:absolute;opacity:0;width:0;height:0;">
+            <img src="${img}" alt="Photo ${index+1}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:2.5px solid #145A1E;transition:border-color 150ms,opacity 150ms;">
+            <span class="gallery-sel-badge" style="display:flex;position:absolute;top:5px;right:5px;background:#145A1E;color:#fff;font-size:0.62rem;font-weight:800;padding:0.18rem 0.45rem;border-radius:999px;text-transform:uppercase;letter-spacing:0.04em;align-items:center;">✓</span>
+          </label>
+          <button type="button" class="gallery-thumb-btn" data-url="${index}" onclick="event.stopPropagation();selectGalleryThumbnail(this);" style="position:absolute;bottom:5px;left:5px;right:5px;background:rgba(20,90,30,0.85);color:#fff;border:none;font-size:0.62rem;font-weight:700;padding:0.3rem 0.3rem;border-radius:6px;cursor:pointer;">Use as thumbnail</button>
+        </div>`;
       }
 
       function updateGallerySelection(lbl) {
@@ -12208,6 +12214,35 @@
         cb.checked = !cb.checked;
         if (img) { img.style.borderColor = cb.checked ? '#145A1E' : '#e2e8f0'; img.style.opacity = cb.checked ? '1' : '0.45'; }
         if (badge) badge.style.display = cb.checked ? 'flex' : 'none';
+      }
+
+      // Lets DENR pick one of the submission's own gallery photos as the catalog
+      // thumbnail instead of uploading a new file. Mutually exclusive with a
+      // custom upload — picking one clears the other.
+      let selectedGalleryThumbnailUrl = null;
+
+      function selectGalleryThumbnail(btn) {
+        const url = document.querySelectorAll('#galleryOptions img')[Number(btn.dataset.url)]?.getAttribute('src');
+        if (!url) return;
+        selectedGalleryThumbnailUrl = (selectedGalleryThumbnailUrl === url) ? null : url;
+
+        catalogCustomThumbnailFile = null;
+        const uploadInput = document.getElementById('catalogThumbnailUpload');
+        if (uploadInput) uploadInput.value = '';
+        const preview = document.getElementById('customThumbnailPreview');
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+
+        renderGalleryThumbnailState();
+      }
+
+      function renderGalleryThumbnailState() {
+        document.querySelectorAll('.gallery-thumb-btn').forEach((b) => {
+          const url = document.querySelectorAll('#galleryOptions img')[Number(b.dataset.url)]?.getAttribute('src');
+          const isSelected = !!selectedGalleryThumbnailUrl && url === selectedGalleryThumbnailUrl;
+          b.textContent = isSelected ? '★ Thumbnail' : 'Use as thumbnail';
+          b.style.background = isSelected ? '#145A1E' : 'rgba(20,90,30,0.85)';
+        });
       }
 
       function ptcToggleSection(secCheckbox, sectionKey) {
@@ -12271,6 +12306,7 @@
       async function openPostToCatalogModal() {
         if (!currentSubmission) return;
         catalogCustomThumbnailFile = null;
+        selectedGalleryThumbnailUrl = null;
         document.getElementById('customThumbnailPreview').style.display = 'none';
         document.getElementById('customThumbnailPreview').innerHTML = '';
         const uploadInput = document.getElementById('catalogThumbnailUpload');
@@ -12363,8 +12399,8 @@
           }
         } catch(e) { console.error('Genus load error:', e); }
 
-        // Photos — the catalog thumbnail is always a manual upload (see Upload custom
-        // thumbnail above); only the gallery picker offers the submission's own photos.
+        // Photos — the catalog thumbnail can be a manual upload or a photo picked
+        // straight from the submission's own gallery below (see "Use as thumbnail").
         const galleryOptions = document.getElementById('galleryOptions');
         const galleryEmpty   = document.getElementById('galleryOptionsEmpty');
         // whole_plant_photos/etc. can hold plain string URLs (3NF sighting_media path)
@@ -12382,6 +12418,7 @@
           galleryOptions.innerHTML = allImages.map((img, i) => makeGalleryCard(img, i)).join('');
           if (galleryEmpty) galleryEmpty.style.display = 'none';
         }
+        renderGalleryThumbnailState();
 
         document.getElementById('postToCatalogModal').style.display = 'flex';
         // Scroll to top
@@ -12398,16 +12435,16 @@
         const hiddenFields = ptcGetHiddenFields();
         const submitBtn = event.target.querySelector('[type="submit"]');
 
-        // The catalog thumbnail is always a manual upload — never auto-suggested from
-        // submission photos, since those don't necessarily represent the species well.
-        let thumbnailUrl = catalogCustomThumbnailFile ? '__upload__' : null;
+        // The catalog thumbnail is either a manual upload or a submission photo
+        // picked via "Use as thumbnail" in the gallery picker below.
+        let thumbnailUrl = catalogCustomThumbnailFile ? '__upload__' : (selectedGalleryThumbnailUrl || null);
 
         if (!scientificName || !genusName) {
           showToast('Please fill in Scientific Name and Genus.', true);
           return;
         }
         if (!thumbnailUrl) {
-          showToast('Please upload a catalog thumbnail.', true);
+          showToast('Please upload a catalog thumbnail, or choose one from the gallery below.', true);
           return;
         }
 
