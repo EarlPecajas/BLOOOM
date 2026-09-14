@@ -12495,8 +12495,26 @@
                 hidden_fields: hiddenFields, endemicity: endemicityValue
               })
               .select('orchid_id').single();
-            if (orchidError) throw orchidError;
-            orchidId = newOrchid.orchid_id;
+            if (orchidError) {
+              // The lookup above can miss a row that actually exists (RLS on the
+              // SELECT hiding it, a stale read, etc.), so the INSERT then hits
+              // orchids_sci_name_key. Rather than failing the whole publish with
+              // a duplicate-key error, fall back to updating the existing row.
+              if (orchidError.code === '23505') {
+                const { data: retryOrchid, error: retryErr } = await bloomSupabase
+                  .from('orchids').select('orchid_id').eq('sci_name', scientificName).single();
+                if (retryErr) throw retryErr;
+                orchidId = retryOrchid.orchid_id;
+                const { error: updErr2 } = await bloomSupabase.from('orchids')
+                  .update({ genus_id: genusId, is_published: true, hidden_fields: hiddenFields, endemicity: endemicityValue })
+                  .eq('orchid_id', orchidId);
+                if (updErr2) throw updErr2;
+              } else {
+                throw orchidError;
+              }
+            } else {
+              orchidId = newOrchid.orchid_id;
+            }
           }
 
           // Upsert picture row for thumbnail — tag with orchid_id so the public
