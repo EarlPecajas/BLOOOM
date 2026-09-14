@@ -1834,7 +1834,7 @@
     <div id="model3d-view" class="view-section" style="display:none;padding:2rem clamp(1.5rem, 4vw, 3rem);">
       <div style="margin-bottom:1.25rem;">
         <h1 class="catalog-title">Generate 3D Model</h1>
-        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Attach a 3D model to an orchid species — upload a .glb file, or generate one automatically with Tripo AI.</p>
+        <p style="margin:0.35rem 0 0;color:var(--dt-muted);font-size:0.9rem;">Attach a 3D model to an orchid species — upload a .glb file, or generate one automatically.</p>
       </div>
 
       <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;">
@@ -1872,7 +1872,7 @@
           <!-- Generate with AI panel -->
           <div id="m3d-panel-generate">
             <div id="m3d-gen-source-note" style="font-size:0.8rem;color:var(--dt-muted);margin-bottom:1rem;line-height:1.4;">
-              Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be sent to Tripo AI automatically.
+              Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be used automatically.
             </div>
 
             <div style="margin-bottom:1.1rem;">
@@ -5866,7 +5866,7 @@
         const uploadedLabels = M3D_UPLOAD_VIEWS.filter(({ key }) => m3dUploadSlots[key]).map(({ label }) => label);
 
         if (!row) {
-          genNote.textContent = 'Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be sent to Tripo AI automatically.';
+          genNote.textContent = 'Select an orchid above, then optionally upload your own photos below — otherwise its catalog photo will be used automatically.';
         } else if (uploadedLabels.length) {
           genNote.textContent = `Will generate from your uploaded photo${uploadedLabels.length > 1 ? 's' : ''} (${uploadedLabels.join(', ')}) instead of ${row.name}'s catalog photo.${row.model_3d_url ? ' Generating again will replace the existing 3D model.' : ''}`;
         } else if (row.resolved_image_url || row.image_url) {
@@ -6001,20 +6001,20 @@
             const status = data.status;
             if (status === 'success') {
               const modelUrl = (data.output && (data.output.pbr_model || data.output.model)) || null;
-              if (!modelUrl) { reject(new Error('Tripo AI finished but returned no model file.')); return; }
+              if (!modelUrl) { reject(new Error('Generation finished but returned no model file.')); return; }
               resolve(modelUrl);
               return;
             }
             if (status === 'failed' || status === 'cancelled' || status === 'error') {
-              reject(new Error('Tripo AI reported the generation failed.'));
+              reject(new Error('Generation failed.'));
               return;
             }
 
             const pct = typeof data.progress === 'number' ? ` (${data.progress}%)` : '';
-            m3dGenSetStatus(`Generating 3D model${pct}…`, 'info');
+            m3dGenSetStatus(`Generating${pct}…`, 'info');
 
             if (attempts >= MAX_ATTEMPTS) {
-              reject(new Error(`Timed out waiting for Tripo AI (task ${taskId}).`));
+              reject(new Error(`Timed out waiting for generation (task ${taskId}).`));
               return;
             }
             setTimeout(tick, POLL_MS);
@@ -6110,7 +6110,7 @@
             }
           }
 
-          m3dGenSetStatus('Submitting to Tripo AI…', 'info');
+          m3dGenSetStatus('Generating…', 'info');
           const createRes = await fetch('/api/tripo3d', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -6122,7 +6122,7 @@
             throw new Error(tripoMsg || createData.error || 'Could not start generation.');
           }
 
-          m3dGenSetStatus('Generating 3D model… this can take a minute or two.', 'info');
+          m3dGenSetStatus('Generating…', 'info');
           const modelUrl = await m3dPollTripoTask(createData.task_id);
 
           m3dGenSetStatus('Downloading generated model…', 'info');
