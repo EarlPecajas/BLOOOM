@@ -12530,8 +12530,22 @@
           } else {
             const { data: newPic, error: picErr } = await bloomSupabase
               .from('picture').insert({ file_path: thumbnailUrl, orchid_id: orchidId }).select('picture_id').single();
-            if (picErr) throw picErr;
-            picId = newPic.picture_id;
+            if (picErr) {
+              // Same stale-read race — the row exists but the SELECT above missed it.
+              if (picErr.code === '23505') {
+                const { data: retryPic, error: retryPicErr } = await bloomSupabase
+                  .from('picture').select('picture_id, orchid_id').eq('file_path', thumbnailUrl).single();
+                if (retryPicErr) throw retryPicErr;
+                picId = retryPic.picture_id;
+                if (retryPic.orchid_id !== orchidId) {
+                  await bloomSupabase.from('picture').update({ orchid_id: orchidId }).eq('picture_id', picId);
+                }
+              } else {
+                throw picErr;
+              }
+            } else {
+              picId = newPic.picture_id;
+            }
           }
 
           // Insert any extra gallery pictures, likewise tagged with orchid_id
@@ -12539,7 +12553,11 @@
           for (const imgUrl of extraGallery) {
             const { data: ep } = await bloomSupabase.from('picture').select('picture_id, orchid_id').eq('file_path', imgUrl).maybeSingle();
             if (!ep) {
-              await bloomSupabase.from('picture').insert({ file_path: imgUrl, orchid_id: orchidId });
+              const { error: exGalErr } = await bloomSupabase.from('picture').insert({ file_path: imgUrl, orchid_id: orchidId });
+              if (exGalErr && exGalErr.code !== '23505') throw exGalErr;
+              if (exGalErr && exGalErr.code === '23505') {
+                await bloomSupabase.from('picture').update({ orchid_id: orchidId }).eq('file_path', imgUrl);
+              }
             } else if (ep.orchid_id !== orchidId) {
               await bloomSupabase.from('picture').update({ orchid_id: orchidId }).eq('picture_id', ep.picture_id);
             }
@@ -12558,8 +12576,20 @@
               const { data: newStatus, error: statusErr } = await bloomSupabase
                 .from('conservation_status').insert({ conservation_status: selectedStatusLabel })
                 .select('conservation_id').single();
-              if (statusErr) throw statusErr;
-              conservationId = newStatus.conservation_id;
+              if (statusErr) {
+                // Same stale-read race — the row exists but the SELECT above missed it.
+                if (statusErr.code === '23505') {
+                  const { data: retryStatus, error: retryStatusErr } = await bloomSupabase
+                    .from('conservation_status').select('conservation_id')
+                    .ilike('conservation_status', selectedStatusLabel).single();
+                  if (retryStatusErr) throw retryStatusErr;
+                  conservationId = retryStatus.conservation_id;
+                } else {
+                  throw statusErr;
+                }
+              } else {
+                conservationId = newStatus.conservation_id;
+              }
             }
           }
 
@@ -12574,7 +12604,19 @@
           } else {
             const { error: bioErr } = await bloomSupabase.from('biogeography')
               .insert({ orchid_id: orchidId, picture_id: picId, submission_status: 'approved', conservation_id: conservationId });
-            if (bioErr) throw bioErr;
+            if (bioErr) {
+              // Same stale-read race as the orchids lookup above — the row
+              // exists but the SELECT missed it, so INSERT hits
+              // biogeography_orchid_id_key. Fall back to updating it.
+              if (bioErr.code === '23505') {
+                const { error: bioUpdErr } = await bloomSupabase.from('biogeography')
+                  .update({ picture_id: picId, submission_status: 'approved', conservation_id: conservationId })
+                  .eq('orchid_id', orchidId);
+                if (bioUpdErr) throw bioUpdErr;
+              } else {
+                throw bioErr;
+              }
+            }
           }
 
           // Mark the species sighting as catalog-published
