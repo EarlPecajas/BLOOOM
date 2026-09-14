@@ -4020,8 +4020,6 @@
                   editDraftId: editDraftId ? Number(editDraftId) : null
                 });
 
-                try { showToast(`Submission queued (Entry ID: ${data?.entry_id || entryId})`, 'success'); } catch(_) {}
-
                 // Only now — after the DB write actually completed — is it
                 // safe to clear the form and close the modal.
                 delete researcherSubmissionFormEl.dataset.editDraftId;
