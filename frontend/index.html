@@ -157,7 +157,11 @@
       .index-page .panel-title { color: #145A1E !important; text-shadow: none; }
 
       /* Hero panel carousel — rotates through the orchid catalog's own photos */
-      .index-page .hero-panel-track { position: absolute; inset: 0; }
+      .index-page .hero-panel-track {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #eafaf0, #d7ecd9);
+      }
       .index-page .hero-panel-slide {
         position: absolute;
         inset: 0;
@@ -329,9 +333,7 @@
       </section>
 
       <aside class="hero-panel" aria-hidden="true">
-        <div class="hero-panel-track" id="hero-panel-track">
-          <img class="hero-panel-image hero-panel-slide is-active" src="./orchid1.webp" alt="Vanda orchid in bloom" />
-        </div>
+        <div class="hero-panel-track" id="hero-panel-track"></div>
         <div class="hero-panel-dots" id="hero-panel-dots"></div>
         <div class="panel-content">
           <p class="panel-label">Orchid Atlas</p>
@@ -438,9 +440,9 @@
       }
 
       // Hero panel carousel — rotates through real photos from the orchid
-      // catalog (via the public /api/orchids endpoint) instead of one static
-      // image. Falls back to the single bundled image if the fetch fails or
-      // there aren't enough catalog photos to bother rotating.
+      // catalog (via the public /api/orchids endpoint). No bundled fallback
+      // image; the panel just shows its placeholder background until photos
+      // load, and doesn't rotate if there's only one (or zero) to show.
       (function initHeroPanelCarousel() {
         const track = document.getElementById('hero-panel-track');
         const dotsEl = document.getElementById('hero-panel-dots');
@@ -452,7 +454,7 @@
             const photos = (Array.isArray(rows) ? rows : [])
               .filter((r) => r && r.image_url)
               .map((r) => ({ url: r.image_url, name: r.name || '' }));
-            if (photos.length < 2) return;
+            if (photos.length === 0) return;
 
             const MAX_SLIDES = 8;
             const slides = photos.slice(0, MAX_SLIDES);
@@ -468,7 +470,7 @@
             });
 
             let dotEls = [];
-            if (dotsEl) {
+            if (dotsEl && slides.length > 1) {
               dotsEl.innerHTML = '';
               dotEls = slides.map((_, i) => {
                 const dot = document.createElement('button');
@@ -480,6 +482,8 @@
                 return dot;
               });
             }
+
+            if (slides.length <= 1) return; // nothing to rotate
 
             let current = 0;
             let timer = null;
@@ -506,7 +510,7 @@
             restart();
           })
           .catch(() => {
-            // Leave the single static fallback image in place.
+            // Leave the placeholder background in place.
           });
       })();
     </script>
