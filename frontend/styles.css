@@ -654,8 +654,15 @@ body .required-asterisk, .dashboard-page .required-asterisk {
 }
 
 .hero-eyebrow {
-  animation: heroFadeUp 0.7s ease-out both,
-             heroFloat 4s ease-in-out 0.9s infinite;
+  animation: heroFadeUp 0.7s ease-out both;
+}
+
+/* Float lives on its own inner element so it never shares the `transform`
+   property with the entrance animation above — mixing two transform
+   animations on one element is what made the motion look jerky. */
+.hero-eyebrow-float {
+  display: inline-block;
+  animation: heroFloat 4s ease-in-out 0.7s infinite;
 }
 
 .hero-copy h1 {
@@ -673,6 +680,7 @@ body .required-asterisk, .dashboard-page .required-asterisk {
 @media (prefers-reduced-motion: reduce) {
   .hero-copy,
   .hero-eyebrow,
+  .hero-eyebrow-float,
   .hero-copy h1,
   .hero-description,
   .button-group {
