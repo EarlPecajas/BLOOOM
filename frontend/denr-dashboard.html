@@ -12452,6 +12452,15 @@
         submitBtn.textContent = 'Publishing…';
 
         try {
+          // orchids/biogeography/picture all require an authenticated session
+          // per their RLS insert policies — a stale/expired session shows up
+          // as a confusing "row violates row-level security policy" error,
+          // so check for it up front and say what's actually wrong.
+          const { data: sessionData } = await bloomSupabase.auth.getSession();
+          if (!sessionData || !sessionData.session) {
+            throw new Error('Your session has expired. Please sign out and sign in again, then retry.');
+          }
+
           // Upload custom thumbnail if provided
           if (catalogCustomThumbnailFile) {
             const ext = catalogCustomThumbnailFile.name.split('.').pop();
